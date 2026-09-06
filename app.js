@@ -104,6 +104,7 @@ function go(id) {
   if (id === "spp-bersih")   renderSppBersih();
   if (id === "ref-kolektif") refKolektifGotoView("list");
   if (id === "pendaftaran-nominatif") nominatifGotoView("list");
+  if (id === "pendaftaran-approval-surat") { renderApprovalSurat(); apsuGotoView("list"); }
   if (id === "dapem")        { renderDapemMetrics(); renderDapemList(); }
   if (id === "dapem-proses")   renderDapemProses();
   if (id === "dapem-validasi") renderValidasiKep();
@@ -1013,7 +1014,7 @@ function ppKolektifBlock(id, idx) {
           <div class="field">
             <label class="fl caps">NPWP</label>
             <input class="inp pp-npwp-field" id="${fid("npwp")}" placeholder="15 atau 16 digit angka" maxlength="16">
-            <div class="hint">Untuk NPWP terdiri dari 15 Digit (NPWP Lama) dan 16 Digit (NPWP Baru).</div>
+            <div class="hint">Untuk NPWP terdiri dari 15 Digit (NPWP Lama) atau 16 Digit (NPWP Baru).</div>
           </div>
           <div class="grid2">
             <div class="field">
@@ -2942,6 +2943,11 @@ function fmtTgl(iso) {
 function fmtTglHariIni() {
   const d = new Date();
   return `${HARI_ID[d.getDay()]}, ${d.getDate()} ${BULAN_ID[d.getMonth()]} ${d.getFullYear()}`;
+}
+/* Tanggal hari ini dalam format ISO — pasangan fmtTgl() untuk baris baru */
+function isoHariIni() {
+  const d = new Date(), p2 = v => String(v).padStart(2, "0");
+  return `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
 }
 
 /* ------------------------------------------------------- preview file unggahan
@@ -5450,10 +5456,11 @@ function renderNominatifKpa(batch, peserta) {
     const no = kpaNomor(p);
     return `
     <div class="kpa-card">
+      <i class="kpa-sudut" aria-hidden="true"></i>
       <div class="kpa-head">
         <div class="kpa-title">Kartu Peserta <b>ASABRI</b></div>
         <div class="kpa-brand">
-          <img class="kpa-logo" src="logo-asabri-white.png" alt="ASABRI">
+          <img class="kpa-logo" src="logo-asabri-navy.png" alt="ASABRI">
           <div class="kpa-tagline">Sahabat Perjuangan Anda<br>Sepanjang Masa</div>
         </div>
       </div>
@@ -5471,7 +5478,8 @@ function renderNominatifKpa(batch, peserta) {
         </div>
       </div>
       <div class="kpa-foot">
-        <span>📞 1500 043</span><i></i><span>🌐 www.asabri.co.id</span>
+        <span><b class="kpa-fico">✆</b>1500 043</span><i></i>
+        <span><b class="kpa-fico">⌂</b>www.asabri.co.id</span>
       </div>
     </div>`;
   }).join("")
@@ -5484,11 +5492,14 @@ $("#nominatif-kpa-cetak").onclick   = () => window.print();
 const BULAN_ROMAWI = ["I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"];
 
 /* Field yang muncul di bawah "Tujuan Kirim", menyesuaikan pilihannya:
-   dua tujuan pertama dicari dari daftar referensi, "Pengirim" diketik bebas. */
+   dua tujuan pertama dicari dari daftar referensi (alamatnya ikut terisi
+   otomatis), "Pengirim" diketik bebas dan tidak punya rujukan alamat. */
 const SP_TUJUAN = {
-  "Kantor Cabang": { label:"Nama Kantor Cabang", ph:"Cari nama kantor cabang…", daftar:() => DATA_KANTOR_CABANG },
-  "Kesatuan":      { label:"Nama Kesatuan",      ph:"Cari nama kesatuan…",      daftar:() => DATA_KESATUAN      },
-  "Pengirim":      { label:"Nama Pengirim",      ph:"Nama pengirim surat"       }
+  "Kantor Cabang": { label:"Nama Kantor Cabang", ph:"Cari nama kantor cabang…",
+                     daftar:() => DATA_KANTOR_CABANG, alamat:() => DATA_ALAMAT_KANTOR_CABANG },
+  "UKER":          { label:"Nama UKER",          ph:"Cari nama UKER…",
+                     daftar:() => DATA_UKER,          alamat:() => DATA_ALAMAT_UKER },
+  "Pengirim":      { label:"Nama Pengirim",      ph:"Nama pengirim surat" }
 };
 
 function spRenderTujuan() {
@@ -5497,6 +5508,7 @@ function spRenderTujuan() {
     <label class="fl caps" for="sp-tujuan-nama">${esc(t.label)}</label>
     <input class="inp" id="sp-tujuan-nama" placeholder="${esc(t.ph)}" autocomplete="off">
     ${t.daftar ? `<div class="autocomplete-list" id="sp-tujuan-list"></div>` : ""}`;
+  $("#sp-alamat-field").style.display = "none";
   if (!t.daftar) return;
 
   const inp = $("#sp-tujuan-nama"), list = $("#sp-tujuan-list");
@@ -5506,7 +5518,13 @@ function spRenderTujuan() {
     list.innerHTML = hits.map(n => `<div class="autocomplete-item">${esc(n)}</div>`).join("");
     list.classList.toggle("open", hits.length > 0);
   };
-  inp.oninput = cari;
+  /* Alamat hanya muncul kalau namanya benar-benar ada di daftar referensi */
+  const isiAlamat = () => {
+    const alamat = t.alamat()[inp.value.trim()] || "";
+    $("#sp-alamat-field").style.display = alamat ? "" : "none";
+    $("#sp-alamat").value = alamat;
+  };
+  inp.oninput = () => { cari(); isiAlamat(); };
   inp.onfocus = cari;
   inp.onblur  = () => list.classList.remove("open");
   /* mousedown + preventDefault: input tidak kehilangan fokus sebelum item terpilih */
@@ -5516,6 +5534,7 @@ function spRenderTujuan() {
     e.preventDefault();
     inp.value = item.textContent;
     list.classList.remove("open");
+    isiAlamat();
   };
 }
 
@@ -5536,22 +5555,36 @@ function nominatifSuratPengantar(batch) {
       <label class="fl caps" for="sp-tujuan">Tujuan Kirim</label>
       <select class="inp" id="sp-tujuan">
         <option>Kantor Cabang</option>
-        <option>Kesatuan</option>
+        <option>UKER</option>
         <option>Pengirim</option>
       </select>
     </div>
     <div class="field" id="sp-tujuan-field" style="position:relative"></div>
+    <div class="field" id="sp-alamat-field" style="display:none">
+      <label class="fl caps" for="sp-alamat">Alamat</label>
+      <input class="inp" id="sp-alamat" disabled>
+      <div class="hint">Terisi otomatis dari data referensi tujuan kirim.</div>
+    </div>
     <div class="field">
       <label class="fl caps" for="sp-atas-nama">Atas Nama</label>
-      <input class="inp" id="sp-atas-nama" value="Kadiv Kepesertaan">
+      <input class="inp" id="sp-atas-nama" value="Kepala Divisi Kepesertaan dan Pengembangan">
     </div>
     <div class="field">
       <label class="fl caps" for="sp-pejabat">Nama Pejabat</label>
       <input class="inp" id="sp-pejabat" placeholder="Nama pejabat penanda tangan">
     </div>
-    <div class="field" style="margin-bottom:0">
+    <div class="field">
       <label class="fl caps" for="sp-jabatan">Jabatan</label>
       <input class="inp" id="sp-jabatan" placeholder="Jabatan pejabat penanda tangan">
+    </div>
+    <div class="field" style="margin-bottom:0">
+      <label class="fl caps">Upload Tanda Tangan <span class="req">*</span></label>
+      <label class="upload-zone" style="padding:16px">
+        <input type="file" accept=".png,.jpg,.jpeg" style="display:none" id="sp-ttd">
+        <div class="upload-ico" style="font-size:18px;margin-bottom:4px">⬆</div>
+        <div style="font-weight:600;font-size:11.5px">Klik atau seret file ke sini</div>
+        <div class="hint" style="margin-top:2px">PNG, JPG - maks. 2 MB</div>
+      </label>
     </div>
     <div class="form-actions">
       <button class="btn btn-ghost" id="sp-tutup">✕ Tutup</button>
@@ -5570,8 +5603,31 @@ function nominatifSuratPengantar(batch) {
     if (!$("#sp-pejabat").value.trim() || !$("#sp-jabatan").value.trim()) {
       toast("Nama pejabat dan jabatan wajib diisi.", "bad"); return;
     }
+    const ttd = $("#sp-ttd").files[0];
+    if (!ttd) { toast("Tanda tangan pejabat wajib diunggah.", "bad"); return; }
+    /* Surat pengantar tidak langsung tercetak — masuk dulu ke antrean
+       Approval Cetak Surat Pengantar. */
+    apprSuratRows.unshift({
+      _id: apprSuratRows.length ? Math.max(...apprSuratRows.map(r => r._id)) + 1 : 0,
+      tglPengajuan:  fmtTgl(isoHariIni()),
+      nomorSurat:    nomor,
+      nomorBatch:    batch.nomorBatch,
+      tujuanKirim:   $("#sp-tujuan").value,
+      namaTujuan:    $("#sp-tujuan-nama").value.trim(),
+      alamatTujuan:  $("#sp-alamat").value.trim(),
+      atasNama:      $("#sp-atas-nama").value.trim(),
+      pejabat:       $("#sp-pejabat").value.trim(),
+      jabatan:       $("#sp-jabatan").value.trim(),
+      ttdFile:       ttd.name,
+      ttdFileId:     registerFile(ttd),
+      jumlahPeserta: batch.peserta.length,
+      status:        "Tertunda",
+      catatanApproval: ""
+    });
+    apprSuratPage = 1;
+    renderApprovalSurat();
     closeModal();
-    toast(`Surat Pengantar ${nomor} untuk batch ${batch.nomorBatch} dicetak.`, "ok");
+    toast(`Surat Pengantar ${nomor} diajukan untuk approval.`, "ok");
   };
 }
 
@@ -5597,6 +5653,146 @@ document.addEventListener("click", e => {
   const bPage = e.target.closest("[data-nominatif-page]");
   if (bPage) { nominatifPage = +bPage.dataset.nominatifPage; renderNominatif(); }
 });
+
+/* ====================== PENDAFTARAN PESERTA BARU » APPROVAL CETAK SURAT
+   PENGANTAR — antrean surat pengantar yang diajukan dari Daftar Nominatif. */
+let apprSuratRows = DATA_APPROVAL_SURAT.map((r, i) => ({ ...r, _id: i }));
+let apprSuratPage = 1;
+let apprSuratId   = null;
+
+function apsuGotoView(view) {
+  $("#apsu-page-head").style.display   = view === "list" ? "" : "none";
+  $("#apsu-list-view").style.display   = view === "list" ? "" : "none";
+  $("#apsu-detail-view").style.display = view === "list" ? "none" : "";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+const pillApprSurat = s =>
+  s === "Diterima" ? "pill-ok" : s === "Ditolak" ? "pill-bad" : "pill-warn";
+
+function renderApprovalSurat() {
+  const fSurat   = ($("#apsu-f-surat").value  || "").toLowerCase();
+  const fBatch   = ($("#apsu-f-batch").value  || "").toLowerCase();
+  const fTujuan  = $("#apsu-f-tujuan").value;
+  const fNama    = ($("#apsu-f-nama").value   || "").toLowerCase();
+  const fStatus  = $("#apsu-f-status").value;
+  const fTanggal = $("#apsu-f-tanggal").value;
+
+  const rows = apprSuratRows.filter(r =>
+    (fStatus === "all" || r.status === fStatus) &&
+    (fTujuan === "all" || r.tujuanKirim === fTujuan) &&
+    (!fSurat   || r.nomorSurat.toLowerCase().includes(fSurat)) &&
+    (!fBatch   || r.nomorBatch.toLowerCase().includes(fBatch)) &&
+    (!fNama    || r.namaTujuan.toLowerCase().includes(fNama)) &&
+    (!fTanggal || fmtTgl(fTanggal) === r.tglPengajuan));
+
+  const pageSize   = +$("#apsu-page-size").value;
+  const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+  if (apprSuratPage > totalPages) apprSuratPage = totalPages;
+  const start    = (apprSuratPage - 1) * pageSize;
+  const pageRows = rows.slice(start, start + pageSize);
+
+  $("#apsu-body").innerHTML = pageRows.length ? pageRows.map((r, i) => `
+    <tr>
+      <td>${start + i + 1}</td>
+      <td>${esc(r.tglPengajuan)}</td>
+      <td class="t-strong">${esc(r.nomorSurat)}</td>
+      <td>${esc(r.nomorBatch)}</td>
+      <td>${esc(r.tujuanKirim)}</td>
+      <td>${esc(r.namaTujuan)}</td>
+      <td>${r.jumlahPeserta}</td>
+      <td><span class="pill ${pillApprSurat(r.status)}">${esc(r.status.toUpperCase())}</span></td>
+      <td><button class="btn btn-info btn-sm" data-apsu-detail="${r._id}">Detail</button></td>
+    </tr>`).join("")
+    : `<tr><td colspan="9"><div class="empty"><h4>Tidak ada data</h4><p>Coba ubah filter pencarian.</p></div></td></tr>`;
+
+  const shownFrom = rows.length ? start + 1 : 0;
+  const shownTo   = Math.min(start + pageSize, rows.length);
+  $("#apsu-count").textContent = `Menampilkan ${shownFrom}-${shownTo} dari ${rows.length} data`;
+  $("#apsu-pagination").innerHTML = Array.from({ length: totalPages }, (_, i) => i + 1).map(p => `
+    <button class="btn ${p === apprSuratPage ? "btn-primary" : "btn-ghost"} btn-sm" style="min-width:30px;padding:0" data-apsu-page="${p}">${p}</button>
+  `).join("");
+}
+$("#apsu-cari").onclick        = () => { apprSuratPage = 1; renderApprovalSurat(); };
+$("#apsu-f-status").onchange   = () => { apprSuratPage = 1; renderApprovalSurat(); };
+$("#apsu-f-tujuan").onchange   = () => { apprSuratPage = 1; renderApprovalSurat(); };
+$("#apsu-page-size").onchange  = () => { apprSuratPage = 1; renderApprovalSurat(); };
+$("#apsu-export").onclick      = () => toast("Daftar approval cetak surat pengantar diekspor ke Excel.");
+
+const apsuBaris = (label, nilai) =>
+  `<div class="review-row"><div class="fl caps">${esc(label)}</div>
+     <div class="val">${esc(nilai || "-")}</div></div>`;
+
+/* Baris berkas + tombol Preview. Berkas yang diunggah pada sesi ini punya isi
+   asli di filePreviewRegistry (data-preview-file); data contoh hanya menyimpan
+   nama berkas, jadi jatuh ke pratinjau placeholder (data-preview-name). */
+const apsuBarisFile = (label, nama, fileId) =>
+  `<div class="review-row">
+     <div class="fl caps">${esc(label)}</div>
+     <div class="val" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+       <span>${esc(nama || "Belum diunggah")}</span>
+       ${nama ? `<button class="btn btn-ghost btn-sm" type="button" ${
+         fileId && filePreviewRegistry[fileId]
+           ? `data-preview-file="${esc(fileId)}"`
+           : `data-preview-name="${esc(nama)}"`}>👁 Preview</button>` : ""}
+     </div>
+   </div>`;
+
+function renderApprovalSuratDetail(id) {
+  const r = apprSuratRows.find(x => x._id === id);
+  if (!r) return;
+  apprSuratId = id;
+  $("#apsu-detail-sub").textContent = `${r.nomorSurat} — batch ${r.nomorBatch}`;
+  $("#apsu-detail-surat").innerHTML =
+    apsuBaris("Tanggal Pengajuan", r.tglPengajuan) +
+    apsuBaris("Nomor Surat Pengantar", r.nomorSurat) +
+    apsuBaris("Nomor Batch", r.nomorBatch) +
+    apsuBaris("Jumlah Peserta", `${r.jumlahPeserta} peserta`) +
+    apsuBaris("Status", r.status) +
+    (r.catatanApproval ? apsuBaris("Catatan Approval", r.catatanApproval) : "");
+  $("#apsu-detail-tujuan").innerHTML =
+    apsuBaris("Tujuan Kirim", r.tujuanKirim) +
+    apsuBaris(r.tujuanKirim === "Pengirim" ? "Nama Pengirim" : `Nama ${r.tujuanKirim}`, r.namaTujuan) +
+    apsuBaris("Alamat", r.alamatTujuan) +
+    apsuBaris("Atas Nama", r.atasNama) +
+    apsuBaris("Nama Pejabat", r.pejabat) +
+    apsuBaris("Jabatan", r.jabatan) +
+    apsuBarisFile("File Tanda Tangan", r.ttdFile, r.ttdFileId);
+
+  if (r.status !== "Tertunda") {
+    $("#apsu-actions").innerHTML =
+      `<span class="pill ${pillApprSurat(r.status)}">${esc(r.status.toUpperCase())}</span>`;
+    return;
+  }
+  $("#apsu-actions").innerHTML = `
+    <button class="btn btn-danger-solid" id="apsu-tolak">✕ Tolak</button>
+    <button class="btn btn-success" id="apsu-setuju">✓ Setujui</button>`;
+  $("#apsu-setuju").onclick = () => apprConfirmSetujui(catatan => {
+    r.status = "Diterima"; r.catatanApproval = catatan;
+    renderApprovalSurat();
+    toast(`Surat Pengantar ${r.nomorSurat} disetujui dan siap dicetak.`, "ok");
+    apsuGotoView("list");
+  });
+  $("#apsu-tolak").onclick = () => apprConfirmTolak(alasan => {
+    r.status = "Ditolak"; r.catatanApproval = alasan;
+    renderApprovalSurat();
+    toast(`Surat Pengantar ${r.nomorSurat} ditolak.`, "bad");
+    apsuGotoView("list");
+  });
+}
+$("#apsu-kembali").onclick = () => { renderApprovalSurat(); apsuGotoView("list"); };
+
+document.addEventListener("click", e => {
+  const bDetail = e.target.closest("[data-apsu-detail]");
+  if (bDetail) {
+    renderApprovalSuratDetail(+bDetail.dataset.apsuDetail);
+    apsuGotoView("detail");
+    return;
+  }
+  const bPage = e.target.closest("[data-apsu-page]");
+  if (bPage) { apprSuratPage = +bPage.dataset.apsuPage; renderApprovalSurat(); }
+});
+
+renderApprovalSurat();
 
 /* -------------------------------------- Pengelolaan Iuran Premi THT/JKK/JKm */
 let premiPage = 1;

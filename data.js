@@ -844,21 +844,6 @@ const DATA_INSTANSI_PENGIRIM = [
   "PUSKERSIN", "Mabes TNI AD", "Mabes TNI AL", "Mabes TNI AU", "Mabes Polri", "Kementerian Pertahanan"
 ];
 
-/* Pilihan pencarian "Nama Kesatuan" — dipakai field tujuan kirim pada modal
-   Cetak Surat Pengantar (Daftar Nominatif). */
-const DATA_KESATUAN = [
-  "Mabes TNI", "Mabes TNI AD", "Mabes TNI AL", "Mabes TNI AU", "Mabes Polri",
-  "Kementerian Pertahanan", "DITJEN STRAHAN KEMHAN", "ROPEG SETJEN KEMHAN",
-  "KODAM JAYA", "KODAM IV/DIPONEGORO", "KOSTRAD", "KOPASSUS",
-  "KOREM 074/WT", "KOREM 084/BJ", "SKODAM VII/DIP", "ZIDAM IV/DIP",
-  "KODIM 0609 CIMAHI", "KODIM 0610 SUMEDANG", "KODIM 0733/SURAKARTA", "KODIM 0827 SUMENEP",
-  "KODIKMAR KOBANGDIKAL", "LANAL BANYUWANGI", "LANAL BATAM", "LANAL SURABAYA",
-  "LANUD HALIM PERDANAKUSUMA", "LANUD ISWAHJUDI",
-  "POLDA DI YOGYAKARTA", "POLDA JAWA TIMUR", "POLRES BOGOR", "POLRES KAPUAS",
-  "POLRES METRO JAKSEL", "POLRES PALANGKARAYA", "POLRES SIDOARJO",
-  "RUMKIT BHAYANGKARA PUSAT PUSDOKKES POLRI"
-];
-
 /* Pilihan dropdown "Unit Kerja (UKER)" pada form Data Peserta — Pendaftaran
    Peserta Baru. Sebagian entri sudah punya kode (format "KODE - NAMA"),
    sebagian belum (format "- NAMA"), sesuai referensi data ASABRI. */
@@ -899,6 +884,44 @@ const DATA_KANTOR_CABANG_MAP = {
   "Kota Surabaya":    "Kanca Surabaya",
   "Kota Bekasi":      "Kanca Bekasi",
   "Kota Tangerang":   "Kanca Tangerang"
+};
+
+/* Alamat Kantor Cabang & UKER — dipakai field "Alamat" (nonaktif, terisi
+   otomatis) pada modal Cetak Surat Pengantar di layar Daftar Nominatif.
+   Kuncinya harus persis sama dengan isi DATA_KANTOR_CABANG / DATA_UKER. */
+const DATA_ALAMAT_KANTOR_CABANG = {
+  "Kanca Jakarta Pusat":   "Jl. Mayjen Sutoyo No. 11, Cililitan, Jakarta Timur, DKI Jakarta",
+  "Kanca Jakarta Selatan": "Jl. RS Fatmawati Raya No. 39, Cilandak, Jakarta Selatan, DKI Jakarta",
+  "Kanca Jakarta Barat":   "Jl. Daan Mogot No. 108, Grogol, Jakarta Barat, DKI Jakarta",
+  "Kanca Jakarta Timur":   "Jl. Raya Bogor No. 24, Kramat Jati, Jakarta Timur, DKI Jakarta",
+  "Kanca Bandung":         "Jl. Ir. H. Juanda No. 78, Lebakgede, Bandung, Jawa Barat",
+  "Kanca Yogyakarta":      "Jl. Ipda Tut Harsono No. 40, Muja Muju, Yogyakarta, DI Yogyakarta",
+  "Kanca Surabaya":        "Jl. Raya Darmo No. 155, Wonokromo, Surabaya, Jawa Timur",
+  "Kanca Bekasi":          "Jl. Ahmad Yani No. 12, Marga Jaya, Bekasi, Jawa Barat",
+  "Kanca Tangerang":       "Jl. Perintis Kemerdekaan No. 5, Babakan, Tangerang, Banten",
+  "Kanca Semarang":        "Jl. Pemuda No. 118, Sekayu, Semarang, Jawa Tengah",
+  "Kanca Medan":           "Jl. Gatot Subroto No. 88, Sei Sikambing, Medan, Sumatera Utara",
+  "Kanca Makassar":        "Jl. Urip Sumoharjo No. 61, Panaikang, Makassar, Sulawesi Selatan",
+  "Kanca Denpasar":        "Jl. Cok Agung Tresna No. 9, Renon, Denpasar, Bali"
+};
+
+const DATA_ALAMAT_UKER = {
+  "344281 - KOREM-084/W DAM V/BRW":                  "Jl. Ahmad Yani No. 190, Gayungan, Surabaya, Jawa Timur",
+  "639869 - GABRAH 84":                              "Jl. Kesatrian No. 21, Sawahan, Surabaya, Jawa Timur",
+  "- KOREM 084":                                     "Jl. Ahmad Yani No. 190, Gayungan, Surabaya, Jawa Timur",
+  "- KOREM 084/BJ":                                  "Jl. Ahmad Yani No. 190, Gayungan, Surabaya, Jawa Timur",
+  "- KODIM 0827 REM 084/BJ":                         "Jl. Trunojoyo No. 8, Kolor, Sumenep, Jawa Timur",
+  "- SECABA MILSUK ZI TA 1984/1985":                 "Jl. Raya Malang-Surabaya Km. 9, Singosari, Malang, Jawa Timur",
+  "- KODIM 0830 REM 084/BJ":                         "Jl. Kedung Cowek No. 74, Bulak, Surabaya, Jawa Timur",
+  "- KODIM 0828 REM 084/BJ":                         "Jl. Raya Sampang No. 15, Sampang, Jawa Timur",
+  "- KODIM 0829 REM 084/BJ":                         "Jl. Panglima Sudirman No. 3, Bangkalan, Jawa Timur",
+  "- KODIM 0826 REM 084/BJ":                         "Jl. Panglima Sudirman No. 76, Pamekasan, Jawa Timur",
+  "- KODIM 0817 REM 084/BJ":                         "Jl. Sunan Giri No. 12, Gresik, Jawa Timur",
+  "- KODIM 0831 REM 084/BJ":                         "Jl. Kedung Cowek No. 74, Bulak, Surabaya, Jawa Timur",
+  "- MILSUK PAL TA1984/1985":                        "Jl. Ujung Surabaya, Semampir, Surabaya, Jawa Timur",
+  "- MILSUK ARHANUD TA 1984/1985":                   "Jl. Raya Karangploso No. 4, Malang, Jawa Timur",
+  "- SECABA MILSUK KODIKLATDAM VI/SLW TA 1983/1984": "Jl. Terusan Buah Batu No. 2, Bandung, Jawa Barat",
+  "- KOMANDO RESORT KEPOLISIAN 1084 JOMBANG":        "Jl. KH. Wahid Hasyim No. 40, Jombang, Jawa Timur"
 };
 
 /* Saran dokumen yang bisa ditambahkan secara dinamis di step "Berkas
@@ -1433,6 +1456,62 @@ const DATA_UPLOAD_BATCH = [
           { label:"Surat Pengantar", file:"surat-pengantar-fajar.pdf" }
         ] }
     ]
+  }
+];
+
+/* ---------------------------------------------------------------------------
+   15B. APPROVAL CETAK SURAT PENGANTAR
+   Pengajuan cetak Surat Pengantar dari layar Daftar Nominatif menunggu
+   persetujuan di sini. Status: "Tertunda" | "Diterima" | "Ditolak".
+   --------------------------------------------------------------------------- */
+const DATA_APPROVAL_SURAT = [
+  {
+    id: 1,
+    tglPengajuan: "3 September 2026",
+    nomorSurat:   "412/PA.01.01/G/IX/2026",
+    nomorBatch:   "B-KOLEKTIF/2026/08060001",
+    tujuanKirim:  "Kantor Cabang",
+    namaTujuan:   "Kanca Surabaya",
+    alamatTujuan: "Jl. Raya Darmo No. 155, Wonokromo, Surabaya, Jawa Timur",
+    atasNama:     "Kepala Divisi Kepesertaan dan Pengembangan",
+    pejabat:      "Sonny Widjaja",
+    jabatan:      "Kepala Divisi Kepesertaan dan Pengembangan",
+    ttdFile:      "ttd-sonny-widjaja.png",
+    jumlahPeserta: 2,
+    status:       "Tertunda",
+    catatanApproval: ""
+  },
+  {
+    id: 2,
+    tglPengajuan: "1 September 2026",
+    nomorSurat:   "398/PA.01.01/G/IX/2026",
+    nomorBatch:   "B-KOLEKTIF/2026/07200003",
+    tujuanKirim:  "UKER",
+    namaTujuan:   "- KOREM 084/BJ",
+    alamatTujuan: "Jl. Ahmad Yani No. 190, Gayungan, Surabaya, Jawa Timur",
+    atasNama:     "Kepala Divisi Kepesertaan dan Pengembangan",
+    pejabat:      "Rachmat Hidayat",
+    jabatan:      "Kepala Bidang Pendaftaran Peserta",
+    ttdFile:      "ttd-rachmat-hidayat.png",
+    jumlahPeserta: 1,
+    status:       "Diterima",
+    catatanApproval: "Nomor surat dan tujuan kirim sudah sesuai."
+  },
+  {
+    id: 3,
+    tglPengajuan: "28 Agustus 2026",
+    nomorSurat:   "365/PA.01.01/G/VIII/2026",
+    nomorBatch:   "B-KOLEKTIF/2026/08200002",
+    tujuanKirim:  "Pengirim",
+    namaTujuan:   "Letkol Adm. Bagus Prasetyo",
+    alamatTujuan: "",
+    atasNama:     "Kepala Divisi Kepesertaan dan Pengembangan",
+    pejabat:      "Sonny Widjaja",
+    jabatan:      "Kepala Divisi Kepesertaan dan Pengembangan",
+    ttdFile:      "ttd-sonny-widjaja.png",
+    jumlahPeserta: 2,
+    status:       "Ditolak",
+    catatanApproval: "Nama pengirim belum lengkap dengan kesatuannya."
   }
 ];
 

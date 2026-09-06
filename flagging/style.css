@@ -17,6 +17,12 @@
   --navy-top:#003180;      /* pangkal gradien navbar */
   --gold:#FFDE24;          /* aksen "NEXTGEN" */
 
+  /* Kartu KTPA fisik — palet cetak kartu ASABRI, terpisah dari palet aplikasi */
+  --ktpa-navy:#0b2153;     /* dasar kartu */
+  --ktpa-navy-2:#16407f;   /* ujung terang gradien kartu */
+  --ktpa-gold:#e0a83c;     /* aksen emas kartu */
+  --ktpa-gold-soft:#f2d69a;/* teks label & tagline di kartu */
+
   /* Netral = skala slate Tailwind yang dipakai FE */
   --ink:#0f172a;           /* slate-900 — judul */
   --body:#334155;          /* slate-700 — teks isi & sel tabel */
@@ -733,40 +739,110 @@ textarea.inp{height:auto; padding:9px 12px; line-height:1.5}
 .multisel-opt:hover{background:var(--blue-soft); color:var(--navy)}
 .multisel-opt input{margin:0; cursor:pointer; flex-shrink:0}
 
-/* ---------- Kartu KPA (pratinjau cetak) ---------- */
-.kpa-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:18px}
+/* ---------- Kartu KTPA (pratinjau cetak)
+   Meniru kartu fisik ASABRI: dasar putih, pita navy melengkung di sudut kiri
+   atas bergaris emas, serta baji navy + pita emas di sudut kanan bawah.
+   Ukuran huruf memakai satuan cqw (relatif lebar kartu) supaya kartu tetap
+   proporsional di layar maupun saat dicetak; nilai px di atasnya adalah
+   cadangan untuk peramban lama. */
+.kpa-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:20px}
 .kpa-card{
-  border:1px solid var(--line); border-radius:10px; background:var(--surface);
-  padding:20px 22px 16px; color:var(--body);
-  font-family:"Courier New",Consolas,monospace; font-size:12.5px; line-height:1.7;
+  position:relative; overflow:hidden; min-width:0;
+  display:flex; flex-direction:column;
+  aspect-ratio:1.585/1; border-radius:16px; padding:4.5% 5.5% 0;
+  background:linear-gradient(120deg,#ffffff 0%,#ffffff 40%,var(--bg) 72%,var(--line-soft) 100%);
+  color:var(--ktpa-navy); line-height:1.35; font-size:12px; box-shadow:var(--shadow-pop);
+  container-type:inline-size;
+  -webkit-print-color-adjust:exact; print-color-adjust:exact;
 }
-.kpa-head{display:flex; justify-content:space-between; align-items:flex-start; gap:18px; margin-bottom:14px}
-.kpa-org{text-align:center; border-bottom:1.5px solid var(--ink); padding-bottom:6px}
-.kpa-org b{color:var(--ink); font-weight:700; letter-spacing:.02em}
-.kpa-jenis{text-align:right; color:var(--slate)}
-.kpa-no{display:flex; justify-content:flex-end; gap:26px; margin-top:2px}
-.kpa-no b{color:var(--ink); font-weight:700; letter-spacing:.06em}
-.kpa-row{display:flex; gap:8px}
-.kpa-k{flex:0 0 42%; color:var(--slate)}
-.kpa-v{color:var(--ink); font-weight:700}
-.kpa-sts{color:var(--ink); font-weight:700; margin-top:4px}
-.kpa-place{text-align:right; color:var(--slate); margin-top:22px}
-.kpa-foot{display:flex; justify-content:space-between; align-items:flex-end; gap:18px; margin-top:14px}
-.kpa-sign{text-align:right; color:var(--slate)}
-.kpa-sign b{display:block; color:var(--ink); font-weight:700; letter-spacing:.04em}
-.kpa-barcode{display:flex; align-items:stretch; gap:2px; height:46px}
-.kpa-bar{width:2px; background:var(--ink)}
-.kpa-bar.w2{width:4px}
-.kpa-bar.w3{width:6px}
-.kpa-bar.sp{background:none; width:3px}
+/* Pita navy sudut kiri atas — tepi kanan & bawahnya digariskan emas mengikuti
+   lengkungnya, jadi satu bentuk saja sudah menghasilkan dua aksen sekaligus. */
+.kpa-card::before{
+  content:""; position:absolute; left:0; top:0; width:58%; height:31%; z-index:0;
+  background:linear-gradient(135deg,var(--ktpa-navy) 0%,var(--ktpa-navy-2) 100%);
+  border-right:2px solid var(--ktpa-gold); border-bottom:2px solid var(--ktpa-gold);
+  border-radius:16px 0 3.4em 0;
+}
+/* Garis emas tipis di sudut kanan atas */
+.kpa-card::after{
+  content:""; position:absolute; right:13%; top:-22%; width:1.4%; height:54%; z-index:0;
+  background:var(--ktpa-gold); opacity:.55; transform:rotate(28deg);
+}
+/* Sudut kanan bawah: baji navy (elemen) + pita emas di sebelahnya (::before) */
+.kpa-sudut{
+  position:absolute; right:-9%; bottom:-12%; width:14%; height:52%; z-index:0;
+  background:linear-gradient(135deg,var(--ktpa-navy-2) 0%,var(--ktpa-navy) 100%);
+  transform:rotate(28deg);
+}
+.kpa-sudut::before{
+  content:""; position:absolute; right:100%; top:0; margin-right:5px;
+  width:46%; height:100%;
+  background:linear-gradient(180deg,var(--ktpa-gold-soft),var(--ktpa-gold));
+}
+
+/* Ukuran huruf ikut lebar kartu. Dipasang di anak langsung, bukan di .kpa-card,
+   karena satuan cqw tidak boleh mengacu ke kontainer dirinya sendiri. */
+.kpa-head,.kpa-body{font-size:12px; font-size:2.9cqw}
+
+/* min-height menyamai tinggi pita navy, supaya nama peserta selalu mulai di bawahnya */
+.kpa-head{
+  display:flex; justify-content:space-between; align-items:flex-start; gap:1em;
+  position:relative; z-index:2; min-height:5.4em;
+}
+.kpa-title{font-size:1.05em; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:#fff}
+.kpa-title b{color:var(--ktpa-gold); font-weight:800}
+.kpa-title::after{content:""; display:block; width:3.6em; height:3px; margin-top:.55em; background:var(--ktpa-gold)}
+.kpa-brand{text-align:right; flex:0 0 auto}
+.kpa-logo{display:block; height:2.7em; width:auto; margin-left:auto}
+.kpa-tagline{margin-top:.3em; font-size:.62em; line-height:1.3; color:var(--ktpa-navy); font-weight:600}
+
+.kpa-body{display:flex; align-items:center; gap:1.4em; flex:1; padding:.4em 0; position:relative; z-index:2}
+.kpa-info{flex:1; min-width:0}
+.kpa-nama{
+  font-size:1.75em; font-weight:800; letter-spacing:.01em; margin-bottom:.35em; color:var(--ktpa-navy);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.kpa-row{display:flex; align-items:center; gap:.7em; padding:.3em 0; border-top:1px solid var(--line)}
+.kpa-nama + .kpa-row{border-top:0}
+.kpa-ico{
+  flex:0 0 auto; width:1.9em; height:1.9em; border-radius:50%;
+  display:grid; place-items:center; font-size:1.02em; line-height:1;
+  background:var(--ktpa-navy); color:#fff;
+}
+.kpa-rt{min-width:0}
+.kpa-k{font-size:.7em; letter-spacing:.09em; text-transform:uppercase; color:var(--muted)}
+.kpa-v{font-weight:700; letter-spacing:.02em; color:var(--ktpa-navy); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+
+.kpa-qr-wrap{flex:0 0 auto; text-align:center; margin-right:.4em}
+.kpa-qr{
+  width:8.6em; padding:.4em; border-radius:.55em;
+  background:#fff; border:1.5px solid var(--ktpa-gold);
+}
+.kpa-qr svg{display:block; width:100%; height:auto}
+.kpa-kode{margin-top:.5em; font-weight:700; letter-spacing:.06em; font-size:.95em; color:var(--ktpa-navy)}
+
+.kpa-foot{
+  position:relative; z-index:2; margin:auto -5.5% 0; padding:.55em 5.5%;
+  background:#fff; color:var(--ktpa-navy); border-radius:46% 46% 0 0 / 1.6em 1.6em 0 0;
+  display:flex; align-items:center; justify-content:center; gap:1em;
+  font-size:10px; font-size:2.3cqw; font-weight:700;
+}
+.kpa-foot span{display:flex; align-items:center; gap:.5em}
+.kpa-fico{
+  width:1.5em; height:1.5em; border-radius:50%; flex:0 0 auto;
+  display:grid; place-items:center; font-size:.8em; line-height:1;
+  background:var(--navy); color:#fff;
+}
+.kpa-foot i{display:inline-block; width:1px; height:1.1em; background:var(--line); font-style:normal}
 
 /* Cetak: hanya area pratinjau yang ikut tercetak */
 @media print{
   .sidebar,.topbar,.crumb,.toast,.no-print{display:none!important}
   .main,.content{margin:0!important; padding:0!important}
   .print-area{border:0!important; box-shadow:none!important; padding:0!important; margin:0!important}
-  .kpa-grid{grid-template-columns:1fr}
-  .kpa-card{break-inside:avoid; page-break-inside:avoid}
+  /* Dicetak seukuran kartu asli (85,6 × 54 mm), dua kartu per baris */
+  .kpa-grid{grid-template-columns:repeat(2,85.6mm); gap:8mm; justify-content:start}
+  .kpa-card{break-inside:avoid; page-break-inside:avoid; box-shadow:none}
 }
 
 /* ---------- Responsif ---------- */

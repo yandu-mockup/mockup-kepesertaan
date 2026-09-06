@@ -26,6 +26,7 @@
       <button class="nav-item nav-child" data-go="pendaftaran-verifikasi">Verifikasi Kolektif</button>
       <button class="nav-item nav-child" data-go="pendaftaran-approval">Approval Pendaftaran Peserta Baru</button>
       <button class="nav-item nav-child" data-go="pendaftaran-nominatif">Daftar Nominatif</button>
+      <button class="nav-item nav-child" data-go="pendaftaran-approval-surat">Approval Cetak Surat Pengantar</button>
     </div>
 
     <button class="nav-item nav-parent" id="nav-peremajaan-data" aria-expanded="true">
@@ -359,7 +360,7 @@
                 <div class="field">
                   <label class="fl caps">NPWP</label>
                   <input class="inp pp-npwp-field" id="pp2-npwp" placeholder="15 atau 16 digit angka" maxlength="16">
-                  <div class="hint">Untuk NPWP terdiri dari 15 Digit (NPWP Lama) dan 16 Digit (NPWP Baru).</div>
+                  <div class="hint">Untuk NPWP terdiri dari 15 Digit (NPWP Lama) atau 16 Digit (NPWP Baru).</div>
                 </div>
                 <div class="grid2">
                   <div class="field">
@@ -1256,6 +1257,115 @@
           <div class="card print-area">
             <div class="kpa-grid" id="nominatif-kpa-grid"></div>
           </div>
+        </div>
+      </section>
+
+      <!-- ---------- PENDAFTARAN PESERTA BARU » APPROVAL CETAK SURAT PENGANTAR ---------- -->
+      <section class="screen" id="s-pendaftaran-approval-surat">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pendaftaran Peserta Baru</span><span>›</span><b>Approval Cetak Surat Pengantar</b></div>
+        <div class="page-head" id="apsu-page-head">
+          <div>
+            <h1 class="page-title">Approval Cetak Surat Pengantar</h1>
+            <div class="page-sub">Persetujuan pengajuan cetak Surat Pengantar dari layar Daftar Nominatif.</div>
+          </div>
+        </div>
+
+        <!-- ===== list (default) ===== -->
+        <div id="apsu-list-view">
+          <div class="card">
+            <div class="grid3">
+              <div class="field" style="margin-bottom:0">
+                <label class="fl caps">Nomor Surat Pengantar</label>
+                <input class="inp" id="apsu-f-surat" placeholder="xxx/PA.01.01/…">
+              </div>
+              <div class="field" style="margin-bottom:0">
+                <label class="fl caps">Nomor Batch</label>
+                <input class="inp" id="apsu-f-batch" placeholder="B-KOLEKTIF/...">
+              </div>
+              <div class="field" style="margin-bottom:0">
+                <label class="fl caps">Tujuan Kirim</label>
+                <select class="inp" id="apsu-f-tujuan">
+                  <option value="all">Semua Tujuan</option>
+                  <option>Kantor Cabang</option>
+                  <option>UKER</option>
+                  <option>Pengirim</option>
+                </select>
+              </div>
+              <div class="field" style="margin-bottom:0">
+                <label class="fl caps">Nama Tujuan</label>
+                <input class="inp" id="apsu-f-nama" placeholder="Nama kantor cabang / UKER / pengirim">
+              </div>
+              <div class="field" style="margin-bottom:0">
+                <label class="fl caps">Status Pengajuan</label>
+                <select class="inp" id="apsu-f-status">
+                  <option value="Tertunda">Tertunda</option>
+                  <option value="Diterima">Diterima</option>
+                  <option value="Ditolak">Ditolak</option>
+                  <option value="all">Semua Status</option>
+                </select>
+              </div>
+              <div class="field" style="margin-bottom:0">
+                <label class="fl caps">Tanggal Pengajuan</label>
+                <input class="inp" type="date" id="apsu-f-tanggal">
+              </div>
+            </div>
+            <div class="form-actions" style="border-top:0;padding-top:0;justify-content:flex-end">
+              <button class="btn btn-primary" id="apsu-cari">⌕ Cari</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="toolbar" style="justify-content:flex-end">
+              <button class="btn btn-ghost btn-sm" id="apsu-export">▤ Export</button>
+            </div>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr>
+                  <th>No</th><th>Tanggal Pengajuan</th><th>Nomor Surat Pengantar</th><th>Nomor Batch</th>
+                  <th>Tujuan Kirim</th><th>Nama Tujuan</th><th>Jumlah Peserta</th>
+                  <th>Status Pengajuan</th><th>Aksi</th>
+                </tr></thead>
+                <tbody id="apsu-body"></tbody>
+              </table>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+              <div class="tbl-note" id="apsu-count" style="margin:0"></div>
+              <div style="display:flex;align-items:center;gap:14px">
+                <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)">
+                  Baris
+                  <select class="inp" id="apsu-page-size" style="width:64px;height:30px;padding:0 6px;font-size:11px">
+                    <option>10</option><option selected>20</option><option>50</option>
+                  </select>
+                </div>
+                <div id="apsu-pagination" style="display:flex;gap:4px"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== detail approval ===== -->
+        <div id="apsu-detail-view" style="display:none">
+          <div class="head-row">
+            <button class="link-back" id="apsu-kembali">← Kembali</button>
+            <div class="head-divider"></div>
+            <div>
+              <h1 class="page-title" style="font-size:18px;margin:0">Detail Approval Cetak Surat Pengantar</h1>
+              <div class="hint" id="apsu-detail-sub" style="margin:2px 0 0"></div>
+            </div>
+          </div>
+
+          <div class="form-2col">
+            <div class="review-card">
+              <div class="review-card-head">Data Surat Pengantar</div>
+              <div class="review-card-body" id="apsu-detail-surat"></div>
+            </div>
+            <div class="review-card">
+              <div class="review-card-head">Tujuan Kirim &amp; Penanda Tangan</div>
+              <div class="review-card-body" id="apsu-detail-tujuan"></div>
+            </div>
+          </div>
+
+          <div id="apsu-actions" class="form-actions" style="justify-content:flex-end"></div>
         </div>
       </section>
 

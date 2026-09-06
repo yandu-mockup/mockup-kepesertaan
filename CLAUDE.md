@@ -33,7 +33,8 @@ strukturnya. Hampir semua pola sudah pernah dipakai di suatu tempat.
 | `data.js` | Semua data contoh, dikelompokkan bernomor (`1. DAFTAR KOLOM`, dst) |
 | `app.js` | Router, render tabel, validasi |
 | `style.css` | Design system. **Semua warna & komponen didefinisikan di sini** |
-| `logo-asabri-white.png` | Logo di navbar |
+| `logo-asabri-white.png` | Logo di navbar (latar navy) |
+| `logo-asabri-navy.png` | Logo versi navy untuk latar putih — dipakai kartu KTPA di Pratinjau Cetak KPA |
 | `Template Pendaftaran Peserta Kolektif.xlsx` | Berkas yang diunduh tombol "⤓ Unduh template" di Upload Kolektif |
 | `Pemutakhiran Data *.xlsx` (3 berkas) | Template per Jenis Pemutakhiran Data; dirujuk lewat `templateFile` di `DATA_PEREMAJAAN` |
 | `Template Alih Status Kolektif.xlsx` | Berkas yang diunduh tombol "⤓ Unduh Template" di Alih Status mekanisme Kolektif; dirujuk lewat `templateFile` di `DATA_ALIH_STATUS_KOLEKTIF` |
