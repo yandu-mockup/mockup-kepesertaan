@@ -1532,7 +1532,7 @@ const PENGATURAN = {
    16. PENGELOLAAN IURAN PREMI THT, JKK, DAN JKm — daftar peserta aktif untuk
    simulasi perhitungan premi (SIMPRE). Baris dengan ktpa/pangkat/kesatuan
    kosong merepresentasikan data peserta yang belum lengkap tersinkron dari
-   Pengelolaan Data Peserta — tombol "Hitung Premi"-nya nonaktif.
+   Data Peserta — tombol "Hitung Premi"-nya nonaktif.
    --------------------------------------------------------------------------- */
 const DATA_IURAN_PREMI_PESERTA = [
   { ktpa:"ED424185", nrp:"74020098",   nik:"3174012702740003", nama:"Mulyadi",
@@ -2708,7 +2708,7 @@ const DATA_ALIH_STATUS_KOLEKTIF = {
 
 /* ---------------------------------------------------------------------------
    22. PENGELOLAAN DATA PESERTA — daftar induk peserta untuk pencarian
-   Dipakai layar "Pengelolaan Data Peserta". Semua kolom yang bisa dipilih di
+   Dipakai layar "Data Peserta". Semua kolom yang bisa dipilih di
    dropdown "Tipe Pencarian" tersimpan di setiap baris, walau tidak semuanya
    ditampilkan di tabel hasil (sebagian hanya muncul di modal Detail).
    Tanggal disimpan sebagai teks "dd-mm-yyyy" supaya bisa langsung ditampilkan;
@@ -3089,16 +3089,20 @@ function buatRiwayatSptbPeserta(p, n) {
       ({ ket, lama, baru } = putar(SPTB_UBAH_PESERTA, k));
     }
 
-    /* SPTB dari Asabri Mobile diverifikasi dan disetujui petugas kantor
-       cabang tempat peserta terdaftar; yang lewat Sistem YANDU via Klaim
-       disetujui unit di kantor pusat. */
+    /* SPTB yang masuk lewat Asabri Mobile ditandai kanal aplikasinya, bukan
+       nama unit; yang lewat Sistem YANDU via Klaim disetujui unit di kantor
+       pusat. */
     const sumber = putar(SPTB_SUMBER, k);
-    const unit   = sumber === "Asabri Mobile" ? p.profil.kancab : putar(SPTB_UNIT_PUSAT, k);
+    const unit   = sumber === "Asabri Mobile" ? "ASABRI MOBILE" : putar(SPTB_UNIT_PUSAT, k);
 
-    sptb.push({ tglSptb: tgl(hari, blan, thn), tipe, keterangan: ket });
+    /* Petugas yang sama menutup kedua daftar: baris SPTB dan baris perubahan
+       yang dihasilkannya selalu menyebut nama approval yang sama. */
+    const userApproval = `${putar(SPTB_NAMA_PETUGAS, k)} / ${unit}`;
+
+    sptb.push({ tglSptb: tgl(hari, blan, thn), userApproval, tipe, keterangan: ket });
     perubahan.push({
       tglApproval: tgl(Math.min(hari + 3, 28), blan, thn),
-      userApproval: `${putar(SPTB_NAMA_PETUGAS, k)} / ${unit}`,
+      userApproval,
       sumber,
       tipe, lama, baru
     });

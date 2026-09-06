@@ -7260,7 +7260,7 @@ function dpBukaDetail(migrasiId, asal) {
   dpTabAktif     = "profil";
   dpAsalDetail   = asal || "data-peserta";
   $("#dpd-crumb-asal").textContent = dpAsalDetail === "spp-bersih"
-    ? "List Bersih SPP Data Peserta" : "Pengelolaan Data Peserta";
+    ? "List Bersih SPP Data Peserta" : "Data Peserta";
   renderDetailPeserta();
   go("data-peserta-detail");
 }
@@ -7836,8 +7836,7 @@ $("#dkf-simpan").onclick = () => {
   toast(dkfIdx === null ? "Anggota keluarga ditambahkan." : "Data keluarga diperbarui.", "ok");
 };
 
-/* Warna badge Tipe Perubahan SPTB — dipakai bersama oleh tab SPTB dan tab
-   Riwayat Perubahan Data supaya tipe yang sama selalu berwarna sama. */
+/* Warna badge kolom Tipe Perubahan di tab Riwayat Perubahan Data. */
 function dpPillTipeSptb(tipe) {
   if (tipe === "Pangkat")  return "pill-info";
   if (tipe === "Keluarga") return "pill-warn";
@@ -7858,16 +7857,15 @@ function renderTabSptbPeserta() {
       <div class="tbl-wrap">
         <table>
           <thead><tr>
-            <th>No</th><th>Tanggal SPTB</th><th>Tipe Perubahan SPTB</th><th>Keterangan</th>
+            <th>No</th><th>Tanggal SPTB</th><th>User Approval</th>
           </tr></thead>
           <tbody>${rows.length ? rows.map((r, i) => `
             <tr>
               <td>${i + 1}</td>
               <td>${esc(dpTglPanjang(r.tglSptb))}</td>
-              <td><span class="pill ${dpPillTipeSptb(r.tipe)}">${esc(r.tipe)}</span></td>
-              <td>${esc(r.keterangan)}</td>
+              <td>${esc(r.userApproval)}</td>
             </tr>`).join("")
-            : `<tr><td colspan="4"><div class="empty"><h4>Belum ada SPTB</h4><p>Peserta ini belum pernah mengajukan SPTB.</p></div></td></tr>`}
+            : `<tr><td colspan="3"><div class="empty"><h4>Belum ada SPTB</h4><p>Peserta ini belum pernah mengajukan SPTB.</p></div></td></tr>`}
           </tbody>
         </table>
       </div>
@@ -7885,8 +7883,8 @@ function renderTabPerubahanPeserta() {
       <div class="tbl-wrap">
         <table>
           <thead><tr>
-            <th>No</th><th>Tanggal Approval SPTB</th><th>User Approval</th><th>Sumber SPTB</th>
-            <th>Tipe Perubahan SPTB</th><th>Data Lama</th><th>Data Baru</th>
+            <th>No</th><th>Tanggal</th><th>User Approval</th><th>Sumber Perubahan Data</th>
+            <th>Tipe Perubahan</th><th>Data Lama</th><th>Data Baru</th>
           </tr></thead>
           <tbody>${rows.length ? rows.map((r, i) => `
             <tr>
@@ -8007,7 +8005,7 @@ function renderPanelDetailPeserta() {
   $("#dpd-mutakhir").onclick = () => go("peremajaan-pemutakhiran");
 }
 
-/* Layar detail dipakai dua pintu masuk — Pengelolaan Data Peserta dan List
+/* Layar detail dipakai dua pintu masuk — Data Peserta dan List
    Bersih SPP — jadi tombol Kembali mengingat asalnya. */
 let dpAsalDetail = "data-peserta";
 $("#dpd-kembali").onclick = () => go(dpAsalDetail);
@@ -10801,7 +10799,7 @@ document.addEventListener("click", e => {
      List Bersih   — pengajuan yang sudah disetujui, datanya siap dipakai.
    Begitu disetujui, barisnya juga dibentuk menjadi satu peserta lengkap di
    DATA_PESERTA_KELOLA supaya tombol Detail membuka halaman Detail Peserta
-   yang sama persis dengan Pengelolaan Data Peserta. */
+   yang sama persis dengan Data Peserta. */
 let sppRows = DATA_SPP.map((r, i) => ({ ...r, _id: i, rekomendasi: r.rekomendasi.map(k => ({ ...k })) }));
 
 /* Nomor permohonan meneruskan deret data contoh (SPP-2026-00117 terakhir). */
@@ -10815,7 +10813,7 @@ function sppPillStatus(s) {
 function sppTglStrip(t) { return (t || "").replace(/\//g, "-") || "-"; }
 
 /* Bentuk satu baris peserta lengkap dari pengajuan yang disetujui, memakai
-   pembangun data yang sama dengan Pengelolaan Data Peserta, lalu simpan
+   pembangun data yang sama dengan Data Peserta, lalu simpan
    nomor uniknya di baris SPP sebagai penghubung ke layar detail. */
 function sppDaftarkanPeserta(r) {
   if (r.migrasiId) return r.migrasiId;
@@ -11381,7 +11379,7 @@ renderSppApproval();
 /* ========================================== LIST BERSIH SPP DATA PESERTA
    Pengajuan yang sudah disetujui — datanya sudah bersih dan tersedia di
    YANDU NextGen. Tombol Detail memakai halaman Detail Peserta yang sama
-   dengan Pengelolaan Data Peserta lewat nomor unik hasil
+   dengan Data Peserta lewat nomor unik hasil
    sppDaftarkanPeserta(). */
 
 const SPPB_PAGE_SIZE = 10;
