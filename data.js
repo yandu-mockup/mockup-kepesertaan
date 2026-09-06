@@ -122,76 +122,84 @@ const DATA_TAHUN = ["2026", "2027", "2028"];
       Pengajuan Baru PUM KPR — mensimulasikan data yang ditarik dari ASABRI)
    --------------------------------------------------------------------------- */
 const DATA_MASTER_PESERTA = [
-  { kpa:"CD317049", nrp:"119596",             npwp:"73.104.502.7-009.000", nama:"Intan M. Sari",
+  { kpa:"CD317049", nrp:"119596",             npwp:"73.104.502.7-009.000", nik:"3171015001850101", nama:"Intan M. Sari",
     angkatan:"TNI-AL", uker:"Polres Jakarta Barat",  plafonPum:350000000 },
-  { kpa:"CY104869", nrp:"197804081998032003", npwp:"89.231.218.2-603.000", nama:"Made Wardani",
+  { kpa:"CY104869", nrp:"197804081998032003", npwp:"89.231.218.2-603.000", nik:"3174014208780102", nama:"Made Wardani",
     angkatan:"TNI-AL", uker:"Polres Jakarta Selatan", plafonPum:300000000 },
-  { kpa:"CE360625", nrp:"132170",             npwp:"85.465.740.0-514.000", nama:"Kenedi",
+  { kpa:"CE360625", nrp:"132170",             npwp:"85.465.740.0-514.000", nik:"3173012701820103", nama:"Kenedi",
     angkatan:"TNI-AL", uker:"Kodim 0501 Jakarta Pusat", plafonPum:325000000 },
-  { kpa:"CE358403", nrp:"127485",             npwp:"95.023.091.2-643.000", nama:"Firman Dewantoro",
+  { kpa:"CE358403", nrp:"127485",             npwp:"95.023.091.2-643.000", nik:"3216011505790104", nama:"Firman Dewantoro",
     angkatan:"TNI-AL", uker:"Polres Bekasi",         plafonPum:300000000 },
-  { kpa:"CD319552", nrp:"126284",             npwp:"92.704.589.8-126.000", nama:"Aprildo Anang Riyadi",
+  { kpa:"CD319552", nrp:"126284",             npwp:"92.704.589.8-126.000", nik:"3671012403810105", nama:"Aprildo Anang Riyadi",
     angkatan:"TNI-AL", uker:"Polres Tangerang",      plafonPum:350000000 },
-  { kpa:"CC306323", nrp:"14621/P",            npwp:"08.544.963.5-603.000", nama:"Heriyanto, S.KM",
+  { kpa:"CC306323", nrp:"14621/P",            npwp:"08.544.963.5-603.000", nik:"3271010208750106", nama:"Heriyanto, S.KM",
     angkatan:"TNI-AL", uker:"Polres Bogor",          plafonPum:400000000 },
-  { kpa:"CD400871", nrp:"148820",             npwp:"77.310.229.4-882.000", nama:"Yusuf Pratama",
+  { kpa:"CD400871", nrp:"148820",             npwp:"77.310.229.4-882.000", nik:"3374011712880107", nama:"Yusuf Pratama",
     angkatan:"TNI-AD", uker:"Kodim 0733 Semarang",   plafonPum:300000000 },
-  { kpa:"BP000111", nrp:"84071073",           npwp:"12.345.678.9-001.000", nama:"Andi Saputra",
+  { kpa:"BP000111", nrp:"84071073",           npwp:"12.345.678.9-001.000", nik:"3273012909830108", nama:"Andi Saputra",
     angkatan:"Polri",  uker:"Polres Bandung",         plafonPum:320000000 },
-  { kpa:"EP000112", nrp:"199801152020121003", npwp:"23.456.789.0-002.000", nama:"Eko Prasetyo",
+  { kpa:"EP000112", nrp:"199801152020121003", npwp:"23.456.789.0-002.000", nik:"3404010604860109", nama:"Eko Prasetyo",
     angkatan:"TNI-AU", uker:"Lanud Adisutjipto",      plafonPum:310000000 },
 
   /* Ditambahkan supaya tersedia 10 Nomor KPA "bersih" (belum pernah dipakai
      bikin pengajuan) untuk simulasi Pengajuan KPR (PUM) baru — lihat catatan
      di BACA-DULU.md / balasan chat untuk daftar lengkapnya. */
-  { kpa:"AD500221", nrp:"142376",             npwp:"14.257.836.9-114.000", nama:"Bambang Setiawan",
+  { kpa:"AD500221", nrp:"142376",             npwp:"14.257.836.9-114.000", nik:"3305011106790110", nama:"Bambang Setiawan",
     angkatan:"TNI-AD", uker:"Kodim 0709 Kebumen",       plafonPum:340000000 },
-  { kpa:"AL600334", nrp:"198502102010121004", npwp:"25.368.947.0-225.000", nama:"Dewi Anggraini",
+  { kpa:"AL600334", nrp:"198502102010121004", npwp:"25.368.947.0-225.000", nik:"3578012407880211", nama:"Dewi Anggraini",
     angkatan:"TNI-AL", uker:"Lanal Surabaya",           plafonPum:315000000 },
-  { kpa:"AU700445", nrp:"156234",             npwp:"36.479.058.1-336.000", nama:"Rudi Hartono",
+  { kpa:"AU700445", nrp:"156234",             npwp:"36.479.058.1-336.000", nik:"3172011302810112", nama:"Rudi Hartono",
     angkatan:"TNI-AU", uker:"Lanud Halim Perdanakusuma",plafonPum:360000000 },
-  { kpa:"PL800556", nrp:"87023456",           npwp:"47.580.169.2-447.000", nama:"Siti Nurhaliza",
+  { kpa:"PL800556", nrp:"87023456",           npwp:"47.580.169.2-447.000", nik:"3578012009840113", nama:"Siti Nurhaliza",
     angkatan:"Polri",  uker:"Polres Surabaya",          plafonPum:330000000 },
-  { kpa:"AD500667", nrp:"199003152015031002", npwp:"58.691.270.3-558.000", nama:"Joko Widiyanto",
+  { kpa:"AD500667", nrp:"199003152015031002", npwp:"58.691.270.3-558.000", nik:"3211012803900114", nama:"Joko Widiyanto",
     angkatan:"TNI-AD", uker:"Kodim 0610 Sumedang",      plafonPum:305000000 },
-  { kpa:"AL600778", nrp:"163890",             npwp:"69.702.381.4-669.000", nama:"Maria Christina",
+  { kpa:"AL600778", nrp:"163890",             npwp:"69.702.381.4-669.000", nik:"3510011411870115", nama:"Maria Christina",
     angkatan:"TNI-AL", uker:"Lanal Banyuwangi",         plafonPum:295000000 },
-  { kpa:"PL800889", nrp:"91045678",           npwp:"70.813.492.5-770.000", nama:"Agus Salim",
+  { kpa:"PL800889", nrp:"91045678",           npwp:"70.813.492.5-770.000", nik:"3276012706930116", nama:"Agus Salim",
     angkatan:"Polri",  uker:"Polres Depok",             plafonPum:375000000 },
 
   /* Batch ke-2: 10 Nomor KPA "bersih" lagi (berbeda dari batch pertama di atas),
-     juga belum pernah dipakai bikin pengajuan. */
-  { kpa:"TA910123", nrp:"178432",             npwp:"81.924.605.6-881.000", nama:"Slamet Riyadi",
+     juga belum pernah dipakai bikin pengajuan. NIK 5 baris pertama sengaja
+     disamakan dengan DATA_BUM (Nomor KPA yang sama) supaya validasi Klaim
+     KPR (BUM) di pum-baru-cari bisa didemokan lewat KPA maupun NIK. */
+  { kpa:"TA910123", nrp:"178432",             npwp:"81.924.605.6-881.000", nik:"3271051205870001", nama:"Slamet Riyadi",
     angkatan:"TNI-AD", uker:"Kodim 0610 Cimahi",         plafonPum:320000000 },
-  { kpa:"TB920234", nrp:"199105202018081005", npwp:"92.035.716.7-992.000", nama:"Nur Aisyah",
+  { kpa:"TB920234", nrp:"199105202018081005", npwp:"92.035.716.7-992.000", nik:"5171200812900002", nama:"Nur Aisyah",
     angkatan:"TNI-AD", uker:"Kodim 0714 Salatiga",       plafonPum:290000000 },
-  { kpa:"LA930345", nrp:"185673",             npwp:"03.146.827.8-103.000", nama:"Hendra Gunawan",
+  { kpa:"LA930345", nrp:"185673",             npwp:"03.146.827.8-103.000", nik:"3578301103950003", nama:"Hendra Gunawan",
     angkatan:"TNI-AL", uker:"Lanal Batam",               plafonPum:355000000 },
-  { kpa:"LB940456", nrp:"199206182019022003", npwp:"14.257.938.9-214.000", nama:"Putri Ramadhani",
+  { kpa:"LB940456", nrp:"199206182019022003", npwp:"14.257.938.9-214.000", nik:"1271030508880004", nama:"Putri Ramadhani",
     angkatan:"TNI-AL", uker:"Lanal Ambon",               plafonPum:300000000 },
-  { kpa:"UA950567", nrp:"192784",             npwp:"25.368.049.0-325.000", nama:"Yayan Kusuma",
+  { kpa:"UA950567", nrp:"192784",             npwp:"25.368.049.0-325.000", nik:"7371151212920005", nama:"Yayan Kusuma",
     angkatan:"TNI-AU", uker:"Lanud Iswahjudi",           plafonPum:365000000 },
-  { kpa:"UB960678", nrp:"199308142020051004", npwp:"36.479.150.1-436.000", nama:"Lestari Handayani",
+  { kpa:"UB960678", nrp:"199308142020051004", npwp:"36.479.150.1-436.000", nik:"3573011007960122", nama:"Lestari Handayani",
     angkatan:"TNI-AU", uker:"Lanud Sulaiman",            plafonPum:285000000 },
-  { kpa:"PA970789", nrp:"88056789",           npwp:"47.580.261.2-547.000", nama:"Fajar Nugroho",
+  { kpa:"PA970789", nrp:"88056789",           npwp:"47.580.261.2-547.000", nik:"3573012112890123", nama:"Fajar Nugroho",
     angkatan:"Polri",  uker:"Polres Malang",             plafonPum:340000000 },
-  { kpa:"PB980890", nrp:"90067890",           npwp:"58.691.372.3-658.000", nama:"Ratna Sari",
+  { kpa:"PB980890", nrp:"90067890",           npwp:"58.691.372.3-658.000", nik:"3374011809910124", nama:"Ratna Sari",
     angkatan:"Polri",  uker:"Polres Semarang",           plafonPum:310000000 },
-  { kpa:"PC990901", nrp:"92078901",           npwp:"69.702.483.4-769.000", nama:"Wahyu Saputro",
+  { kpa:"PC990901", nrp:"92078901",           npwp:"69.702.483.4-769.000", nik:"3404012504930125", nama:"Wahyu Saputro",
     angkatan:"Polri",  uker:"Polres Yogyakarta",         plafonPum:325000000 },
-  { kpa:"TC911012", nrp:"165789",             npwp:"70.813.594.5-770.000", nama:"Indra Permana",
+  { kpa:"TC911012", nrp:"165789",             npwp:"70.813.594.5-770.000", nik:"3372010306820126", nama:"Indra Permana",
     angkatan:"TNI-AD", uker:"Kodim 0733 Solo",           plafonPum:350000000 },
 
   /* Prajurit dengan Masa Kerja Dinas < 2 Tahun (TMT baru, lihat
      DATA_RIWAYAT_KEPANGKATAN di bawah) — dipakai untuk simulasi jalur
      dokumen "Surat Pernyataan Kesanggupan" bagi peserta Polri baru, dan
      kasus umum peserta TNI dengan masa kerja dinas masih pendek. */
-  { kpa:"AD500992", nrp:"175002",             npwp:"31.560.772.4-992.000", nama:"Dimas Aditya",
+  { kpa:"AD500992", nrp:"175002",             npwp:"31.560.772.4-992.000", nik:"3372011203010127", nama:"Dimas Aditya",
     angkatan:"TNI-AD", uker:"Kodim 0735 Surakarta",      plafonPum:300000000 },
-  { kpa:"AL600992", nrp:"175003",             npwp:"42.671.883.5-992.000", nama:"Reza Firmansyah",
+  { kpa:"AL600992", nrp:"175003",             npwp:"42.671.883.5-992.000", nik:"8103011805020128", nama:"Reza Firmansyah",
     angkatan:"TNI-AL", uker:"Lanal Tual",                plafonPum:300000000 },
-  { kpa:"AU700992", nrp:"175004",             npwp:"53.782.994.6-992.000", nama:"Bagas Wicaksono",
-    angkatan:"TNI-AU", uker:"Lanud Roesmin Nurjadin",    plafonPum:300000000 }
+  { kpa:"AU700992", nrp:"175004",             npwp:"53.782.994.6-992.000", nik:"1471010207030129", nama:"Bagas Wicaksono",
+    angkatan:"TNI-AU", uker:"Lanud Roesmin Nurjadin",    plafonPum:300000000 },
+
+  /* Sudah memiliki Pinjaman KPR (BUM) aktif (lihat DATA_BUM) — dipakai untuk
+     simulasi validasi "sudah memiliki Pinjaman KPR (BUM)" di pencarian
+     Pengajuan Baru KPR (PUM). */
+  { kpa:"AD900123", nrp:"199105102016121003",  npwp:"64.183.275.9-123.000", nik:"3374012004890130", nama:"Yusuf Maulana",
+    angkatan:"TNI-AD", uker:"Kodim 0731 Kudus",          plafonPum:310000000 }
 ];
 
 /* Data dummy peserta untuk testing modul Pengelolaan KPR (PUM) - diimpor apa
@@ -534,6 +542,27 @@ const DATA_DUMMY_PESERTA_TNI_POLRI_ASN_PPPK = [
 ];
 DATA_MASTER_PESERTA.push(...DATA_DUMMY_PESERTA_TNI_POLRI_ASN_PPPK);
 
+/* NRP/NIP dummy yang sengaja dibuat gampang diingat untuk menguji validasi
+   "NRP/NIP sudah terdaftar" di form Pendaftaran Peserta Baru — ketik salah
+   satu nomor di bawah pada field NRP/NIP, pesan error langsung muncul.
+   Formatnya mewakili tiap pola nomor yang dipakai di prototipe: NRP prajurit
+   6 digit, NRP Polri 8 digit, dan NIP PNS/PPPK 18 digit. Ikut didorong ke
+   DATA_MASTER_PESERTA supaya sumber validasinya sama dengan peserta lain.
+   Daftar nomornya juga ditampilkan sebagai catatan di bawah field NRP/NIP. */
+const DATA_NRP_TERDAFTAR_DEMO = [
+  { kpa:"DM000001", nrp:"111111",             npwp:"11.111.111.1-111.000", nama:"Dedi Kurniawan",
+    angkatan:"TNI-AD", uker:"KODIM 0602/SERANG",             plafonPum:300000000 },
+  { kpa:"DM000002", nrp:"222222",             npwp:"22.222.222.2-222.000", nama:"Sri Wahyuni",
+    angkatan:"TNI-AL", uker:"LANTAMAL III JAKARTA",          plafonPum:310000000 },
+  { kpa:"DM000003", nrp:"333333",             npwp:"33.333.333.3-333.000", nama:"Bayu Anggara",
+    angkatan:"TNI-AU", uker:"LANUD HALIM PERDANAKUSUMA",     plafonPum:320000000 },
+  { kpa:"DM000004", nrp:"88001122",           npwp:"44.444.444.4-444.000", nama:"Rina Puspita",
+    angkatan:"Polri",  uker:"POLRES JAKARTA SELATAN",        plafonPum:330000000 },
+  { kpa:"DM000005", nrp:"199001012015011001", npwp:"55.555.555.5-555.000", nama:"Hendra Saputra",
+    angkatan:"KEMHAN", uker:"BIRO SUMBER DAYA MANUSIA KEMHAN", plafonPum:340000000 }
+];
+DATA_MASTER_PESERTA.push(...DATA_NRP_TERDAFTAR_DEMO);
+
 /* Riwayat kepangkatan peserta dari sistem kepesertaan (dipakai di Kepangkatan
    pengajuan KPR (PUM) — ditampilkan otomatis saat KTPA cocok, hanya sebagian
    Nomor KPA di DATA_MASTER_PESERTA yang punya riwayat untuk simulasi). */
@@ -687,37 +716,33 @@ const DATA_RIWAYAT_KEPANGKATAN = {
    dari yang paling luas ke paling spesifik; tiap kombinasi punya Nominal
    Plafon sendiri. Dipakai di form "Input Plafon" (dropdown berjenjang, lihat
    plafonPangkatOptions() di app.js) dan tabel Parameter Plafon. */
-const PLAFON_STATUS_PERSONIL = ["Prajurit", "ASN", "PPPK"];
+const PLAFON_STATUS_PERSONIL = ["Prajurit", "ASN"];
 const PLAFON_ANGKATAN = ["TNI-AD", "TNI-AU", "TNI-AL", "POLRI", "ASN"];
 const PLAFON_KESATUAN = ["Mabes TNI", "Mabes POLRI", "Kementrian Pertahanan"];
 const PLAFON_GOLONGAN = ["TAMTAMA", "BINTARA", "PAMA", "PAMEN", "PATI", "GOL. I", "GOL. II", "GOL. III", "GOL. IV"];
 
-/* Pilihan Pangkat mengikuti kombinasi Status Personil|Angkatan|Golongan.
-   PPPK punya daftar Pangkat sendiri (GOL.I–GOL.XVII, lihat
-   PLAFON_PANGKAT_PPPK) yang tidak bergantung pada Angkatan/Golongan yang
-   dipilih — kedua field itu tetap wajib diisi, tapi tidak mengubah pilihan
-   Pangkat untuk Status Personil PPPK. */
+/* Pilihan Pangkat mengikuti kombinasi Status Personil|Angkatan|Golongan. */
 const PLAFON_PANGKAT = {
   "Prajurit|TNI-AD|TAMTAMA": ["KOPTU", "KOPDA", "PRAKA", "PRATU", "PRADA", "KOPKA"],
-  "Prajurit|TNI-AD|BINTARA": ["SERMA", "SERTU", "PELTU", "PELDA", "SERKA", "SERDA", "CAPA"],
+  "Prajurit|TNI-AD|BINTARA": ["SERMA", "SERTU", "PELTU", "PELDA", "SERKA", "SERDA"],
   "Prajurit|TNI-AD|PAMA":    ["LETDA", "KAPTEN", "LETTU"],
   "Prajurit|TNI-AD|PAMEN":   ["LETKOL", "MAYOR", "KOLONEL"],
   "Prajurit|TNI-AD|PATI":    ["BRIGJEN TNI", "MAYJEN TNI", "JENDERAL TNI", "LETJEN TNI"],
 
   "Prajurit|TNI-AU|TAMTAMA": ["PRAKA", "KOPKA", "PRADA", "KOPTU", "KOPDA", "PRATU"],
-  "Prajurit|TNI-AU|BINTARA": ["PELDA", "CAPA", "SERDA", "SERKA", "SERMA", "PELTU", "SERTU"],
+  "Prajurit|TNI-AU|BINTARA": ["PELDA", "SERDA", "SERKA", "SERMA", "PELTU", "SERTU"],
   "Prajurit|TNI-AU|PAMA":    ["KAPTEN", "LETTU", "LETDA"],
   "Prajurit|TNI-AU|PAMEN":   ["MAYOR", "LETKOL", "KOLONEL"],
   "Prajurit|TNI-AU|PATI":    ["MARSDYA TNI", "MARSDA TNI", "MARSEKAL TNI", "MARSMA TNI"],
 
   "Prajurit|TNI-AL|TAMTAMA": ["KOPTU", "KOPDA", "KELASI KEPALA", "KELASI I", "KOPKA", "KELASI II"],
-  "Prajurit|TNI-AL|BINTARA": ["SERMA", "SERKA", "SERDA", "SERTU", "CAPA", "PELDA", "PELTU"],
+  "Prajurit|TNI-AL|BINTARA": ["SERMA", "SERKA", "SERDA", "SERTU", "PELDA", "PELTU"],
   "Prajurit|TNI-AL|PAMA":    ["LETTU", "KAPTEN", "LETDA"],
   "Prajurit|TNI-AL|PAMEN":   ["LETKOL", "MAYOR", "KOLONEL"],
   "Prajurit|TNI-AL|PATI":    ["LAKSMA TNI", "LAKSDYA TNI", "LAKSDA TNI", "LAKSAMANA TNI"],
 
   "Prajurit|POLRI|TAMTAMA":  ["BHARATU", "ABRIP", "BHARAKA", "ABRIPDA", "ABRIPTU", "BHARADA"],
-  "Prajurit|POLRI|BINTARA":  ["CAPA", "AIPTU", "AIPDA", "BRIPKA", "BRIPTU", "BRIPDA", "BRIGADIR"],
+  "Prajurit|POLRI|BINTARA":  ["AIPTU", "AIPDA", "BRIPKA", "BRIPTU", "BRIPDA", "BRIGADIR"],
   "Prajurit|POLRI|PAMA":     ["AKP", "IPDA", "IPTU"],
   "Prajurit|POLRI|PAMEN":    ["AKBP", "KOMBES POL", "KOMPOL"],
   "Prajurit|POLRI|PATI":     ["KOMJEN POL", "IRJEN POL", "BRIGJEN POL", "JENDERAL POL"],
@@ -727,10 +752,6 @@ const PLAFON_PANGKAT = {
   "ASN|ASN|GOL. III": ["GOL.III/A", "GOL.III/B", "GOL.III/C", "GOL.III/D"],
   "ASN|ASN|GOL. IV":  ["GOL.IV/A", "GOL.IV/B", "GOL.IV/C", "GOL.IV/D", "GOL.IV/E"]
 };
-const PLAFON_PANGKAT_PPPK = [
-  "GOL.I", "GOL.II", "GOL.III", "GOL.IV", "GOL.V", "GOL.VI", "GOL.VII", "GOL.VIII", "GOL.IX",
-  "GOL.X", "GOL.XI", "GOL.XII", "GOL.XIII", "GOL.XIV", "GOL.XV", "GOL.XVI", "GOL.XVII"
-];
 
 const DATA_PARAMETER_PLAFON = [
   { statusPersonil:"Prajurit", angkatan:"TNI-AD", kesatuan:"Mabes TNI",   golongan:"TAMTAMA", pangkat:"PRADA",       nominal:250000000 },
@@ -760,10 +781,7 @@ const DATA_PARAMETER_PLAFON = [
   { statusPersonil:"ASN", angkatan:"ASN", kesatuan:"Kementrian Pertahanan", golongan:"GOL. I",   pangkat:"GOL.I/A",   nominal:180000000 },
   { statusPersonil:"ASN", angkatan:"ASN", kesatuan:"Kementrian Pertahanan", golongan:"GOL. II",  pangkat:"GOL.II/A",  nominal:230000000 },
   { statusPersonil:"ASN", angkatan:"ASN", kesatuan:"Kementrian Pertahanan", golongan:"GOL. III", pangkat:"GOL.III/A", nominal:280000000 },
-  { statusPersonil:"ASN", angkatan:"ASN", kesatuan:"Kementrian Pertahanan", golongan:"GOL. IV",  pangkat:"GOL.IV/A",  nominal:330000000 },
-
-  { statusPersonil:"PPPK", angkatan:"ASN", kesatuan:"Kementrian Pertahanan", golongan:"GOL. I", pangkat:"GOL.I", nominal:200000000 },
-  { statusPersonil:"PPPK", angkatan:"ASN", kesatuan:"Kementrian Pertahanan", golongan:"GOL. V", pangkat:"GOL.V", nominal:250000000 }
+  { statusPersonil:"ASN", angkatan:"ASN", kesatuan:"Kementrian Pertahanan", golongan:"GOL. IV",  pangkat:"GOL.IV/A",  nominal:330000000 }
 ];
 
 /* Pemetaan Pangkat (opsi dropdown "Pangkat" di Data Peserta PUM KPR) → nilai
@@ -781,7 +799,7 @@ const PANGKAT_TO_GOLONGAN = {
 
   /* TNI-AD / TNI-AU: Tamtama & Bintara */
   "PRADA":"TAMTAMA", "PRATU":"TAMTAMA", "PRAKA":"TAMTAMA", "KOPDA":"TAMTAMA", "KOPTU":"TAMTAMA", "KOPKA":"TAMTAMA",
-  "SERDA":"BINTARA", "SERTU":"BINTARA", "SERKA":"BINTARA", "SERMA":"BINTARA", "PELDA":"BINTARA", "PELTU":"BINTARA", "CAPA":"BINTARA",
+  "SERDA":"BINTARA", "SERTU":"BINTARA", "SERKA":"BINTARA", "SERMA":"BINTARA", "PELDA":"BINTARA", "PELTU":"BINTARA",
   /* TNI-AD/AL/AU: Pama & Pamen (nama pangkat sama di ketiga Angkatan) */
   "LETDA":"PAMA", "LETTU":"PAMA", "KAPTEN":"PAMA",
   "MAYOR":"PAMEN", "LETKOL":"PAMEN", "KOLONEL":"PAMEN",
@@ -805,9 +823,40 @@ const PANGKAT_TO_GOLONGAN = {
      PPPK jatuh kembali ke plafon bawaan peserta. */
 };
 
+/* Parameter Pernyataan Tanggung Jawab — isi poin-poin disclaimer "Pernyataan
+   Atas Tanggung Jawab dan Keabsahan Data Pengajuan KPR (PUM)" yang wajib
+   dicentang PIC UNOR/Kesatuan sebelum Simpan Draft Pengajuan (lihat
+   pf6BukaPernyataan() di app.js). Dikelola lewat Sub Modul Parameter
+   Pernyataan Tanggung Jawab — urutan array = urutan nomor poin di popup. */
+const DATA_PERNYATAAN_TANGGUNG_JAWAB = [
+  { judul:"Keabsahan Data & Dokumen",
+    isi:"Seluruh data, dokumen, dan informasi prajurit/anggota/peserta yang diunggah dan diinput ke dalam sistem ini adalah benar, sah, akurat, dan sesuai dengan dokumen aslinya." },
+  { judul:"Verifikasi Internal",
+    isi:"Saya telah melakukan proses pemeriksaan dan verifikasi secara mandiri di tingkat UNOR/Kesatuan atas pemenuhan syarat kelayakan Pengajuan KPR (PUM) ASABRI bagi peserta yang bersangkutan." },
+  { judul:"Pernyataan Tanggung Jawab & Risiko Legal",
+    isi:"Apabila di kemudian hari ditemukan ketidaksesuaian, pemalsuan data/dokumen, atau timbul permasalahan hukum maupun administratif terkait pengajuan ini, maka tanggung jawab penuh (baik administratif, perdata, maupun pidana) berada pada pihak PIC UNOR/Kesatuan, serta membebaskan pihak PT ASABRI (Persero) dari segala tuntutan hukum yang timbul akibat kesalahan penginputan data tersebut." },
+  { judul:"Persetujuan Ketentuan",
+    isi:"Saya telah membaca, memahami, dan menyetujui seluruh syarat, ketentuan, serta prosedur pengajuan PUM KPR yang berlaku di PT ASABRI (Persero)." }
+];
+
 /* Pilihan "Nama Instansi / Kesatuan Pengirim" pada form Pendaftaran Peserta Baru */
 const DATA_INSTANSI_PENGIRIM = [
   "PUSKERSIN", "Mabes TNI AD", "Mabes TNI AL", "Mabes TNI AU", "Mabes Polri", "Kementerian Pertahanan"
+];
+
+/* Pilihan pencarian "Nama Kesatuan" — dipakai field tujuan kirim pada modal
+   Cetak Surat Pengantar (Daftar Nominatif). */
+const DATA_KESATUAN = [
+  "Mabes TNI", "Mabes TNI AD", "Mabes TNI AL", "Mabes TNI AU", "Mabes Polri",
+  "Kementerian Pertahanan", "DITJEN STRAHAN KEMHAN", "ROPEG SETJEN KEMHAN",
+  "KODAM JAYA", "KODAM IV/DIPONEGORO", "KOSTRAD", "KOPASSUS",
+  "KOREM 074/WT", "KOREM 084/BJ", "SKODAM VII/DIP", "ZIDAM IV/DIP",
+  "KODIM 0609 CIMAHI", "KODIM 0610 SUMEDANG", "KODIM 0733/SURAKARTA", "KODIM 0827 SUMENEP",
+  "KODIKMAR KOBANGDIKAL", "LANAL BANYUWANGI", "LANAL BATAM", "LANAL SURABAYA",
+  "LANUD HALIM PERDANAKUSUMA", "LANUD ISWAHJUDI",
+  "POLDA DI YOGYAKARTA", "POLDA JAWA TIMUR", "POLRES BOGOR", "POLRES KAPUAS",
+  "POLRES METRO JAKSEL", "POLRES PALANGKARAYA", "POLRES SIDOARJO",
+  "RUMKIT BHAYANGKARA PUSAT PUSDOKKES POLRI"
 ];
 
 /* Pilihan dropdown "Unit Kerja (UKER)" pada form Data Peserta — Pendaftaran
@@ -876,18 +925,18 @@ const DATA_BERKAS_SARAN = [
 ];
 
 /* Wilayah untuk autocomplete field "Kelurahan" — memilih satu baris otomatis
-   mengisi Kecamatan, Kabupaten/Kota, dan Provinsi */
+   mengisi Kecamatan, Kabupaten/Kota, Provinsi, dan Kode Pos */
 const DATA_WILAYAH = [
-  { kelurahan:"Kebon Jeruk",  kecamatan:"Kebon Jeruk",         kabupaten:"Jakarta Barat",    provinsi:"DKI Jakarta" },
-  { kelurahan:"Kemanggisan",  kecamatan:"Palmerah",            kabupaten:"Jakarta Barat",    provinsi:"DKI Jakarta" },
-  { kelurahan:"Kemang",       kecamatan:"Mampang Prapatan",    kabupaten:"Jakarta Selatan",  provinsi:"DKI Jakarta" },
-  { kelurahan:"Cibubur",      kecamatan:"Ciracas",             kabupaten:"Jakarta Timur",    provinsi:"DKI Jakarta" },
-  { kelurahan:"Sukajadi",     kecamatan:"Sukajadi",            kabupaten:"Kota Bandung",     provinsi:"Jawa Barat" },
-  { kelurahan:"Sukaluyu",     kecamatan:"Cibeunying Kaler",    kabupaten:"Kota Bandung",     provinsi:"Jawa Barat" },
-  { kelurahan:"Ngaglik",      kecamatan:"Ngaglik",             kabupaten:"Sleman",           provinsi:"D.I. Yogyakarta" },
-  { kelurahan:"Rungkut",      kecamatan:"Rungkut",             kabupaten:"Kota Surabaya",    provinsi:"Jawa Timur" },
-  { kelurahan:"Jatiasih",     kecamatan:"Jatiasih",            kabupaten:"Kota Bekasi",      provinsi:"Jawa Barat" },
-  { kelurahan:"Cikokol",      kecamatan:"Tangerang",           kabupaten:"Kota Tangerang",   provinsi:"Banten" }
+  { kelurahan:"Kebon Jeruk",  kecamatan:"Kebon Jeruk",         kabupaten:"Jakarta Barat",    provinsi:"DKI Jakarta",     kodepos:"11530" },
+  { kelurahan:"Kemanggisan",  kecamatan:"Palmerah",            kabupaten:"Jakarta Barat",    provinsi:"DKI Jakarta",     kodepos:"11480" },
+  { kelurahan:"Kemang",       kecamatan:"Mampang Prapatan",    kabupaten:"Jakarta Selatan",  provinsi:"DKI Jakarta",     kodepos:"12730" },
+  { kelurahan:"Cibubur",      kecamatan:"Ciracas",             kabupaten:"Jakarta Timur",    provinsi:"DKI Jakarta",     kodepos:"13720" },
+  { kelurahan:"Sukajadi",     kecamatan:"Sukajadi",            kabupaten:"Kota Bandung",     provinsi:"Jawa Barat",      kodepos:"40162" },
+  { kelurahan:"Sukaluyu",     kecamatan:"Cibeunying Kaler",    kabupaten:"Kota Bandung",     provinsi:"Jawa Barat",      kodepos:"40123" },
+  { kelurahan:"Ngaglik",      kecamatan:"Ngaglik",             kabupaten:"Sleman",           provinsi:"D.I. Yogyakarta", kodepos:"55581" },
+  { kelurahan:"Rungkut",      kecamatan:"Rungkut",             kabupaten:"Kota Surabaya",    provinsi:"Jawa Timur",      kodepos:"60293" },
+  { kelurahan:"Jatiasih",     kecamatan:"Jatiasih",            kabupaten:"Kota Bekasi",      provinsi:"Jawa Barat",      kodepos:"17423" },
+  { kelurahan:"Cikokol",      kecamatan:"Tangerang",           kabupaten:"Kota Tangerang",   provinsi:"Banten",          kodepos:"15117" }
 ];
 
 /* 13 mitra bayar terdaftar untuk penyaluran KPR (PUM) */
@@ -902,7 +951,7 @@ const DATA_MITRA_BAYAR = [
    semua peserta (beri catatan singkat lewat "note"). */
 const DATA_DOKUMEN_PERSYARATAN = {
   "Kredit Rumah": [
-    { label:"Formulir Pengajuan" },
+    { label:"Formulir Pengajuan", note:"Legalisir Kepala Satuan Kerja" },
     { label:"Surat Pernyataan Pengajuan" },
     { label:"Fotocopy KPA" },
     { label:"Fotocopy Kartu Keluarga (KK)" },
@@ -911,7 +960,7 @@ const DATA_DOKUMEN_PERSYARATAN = {
   ],
 
   "Pembelian Rumah Secara Mandiri": [
-    { label:"Formulir Pengajuan" },
+    { label:"Formulir Pengajuan", note:"Legalisir Kepala Satuan Kerja" },
     { label:"Surat Pernyataan Pengajuan" },
     { label:"Fotocopy KPA" },
     { label:"Fotocopy Kartu Keluarga (KK)" },
@@ -921,7 +970,7 @@ const DATA_DOKUMEN_PERSYARATAN = {
   ],
 
   "Membangun Rumah": [
-    { label:"Formulir Pengajuan" },
+    { label:"Formulir Pengajuan", note:"Legalisir Kepala Satuan Kerja" },
     { label:"Surat Pernyataan Pengajuan" },
     { label:"Fotocopy KPA" },
     { label:"Fotocopy Kartu Keluarga (KK)" },
@@ -964,7 +1013,7 @@ const DATA_PUM = [
     status:"Submitted", jumlah:35000000 },
   { kpa:"TA910123", nrp:"178432",             npwp:"81.924.605.6-881.000", nama:"Slamet Riyadi",
     angkatan:"TNI-AD", tglAmbil:"Rab, 19 Agu 2026", tipePum:"Kredit Rumah", tipeRumah:"36/90",
-    status:"Revisi", jumlah:28000000,
+    status:"Revisi", jumlah:28000000, tglRevisi:"2026-08-28T00:00:00.000Z",
     catatanApproval:"Nomor Akad Kredit belum sesuai dengan dokumen Fotocopy Akad Kredit yang diunggah — mohon periksa dan unggah ulang." }
 ];
 
@@ -1032,27 +1081,66 @@ const DATA_PELUNASAN = [
 
 /* ---------------------------------------------------------------------------
    7. PENGELOLAAN KLAIM KPR (BUM)
-   jenisPinjaman: "Program Reguler" | "Program Khusus"
+   Satu baris = satu klaim KPR (BUM) peserta.
+   tmt           : TMT Pengangkatan Awal peserta.
+   tmtAkad       : TMT Akad Kredit BUM.
+   nomorPinjaman : Nomor Piutang BUM.
+   jumlah        : Jumlah Nominal BUM yang pernah dicairkan.
+   jenisPinjaman : "BUM KPR Program Khusus ASABRI" | "BUM KPR TWPAD" |
+                   "BUM KPR Program Reguler YPPSDP"
+   cabang, sisaHutang, dan outstanding ikut data peserta yang tercatat sistem —
+   tidak diinput petugas dan hanya tampil di modal detail.
    --------------------------------------------------------------------------- */
 const DATA_BUM = [
-  { kpa:"TA910123", nrp:"19870512001", nama:"Intan M. Sari",     tmt:"2021-03-01", cabang:"KC Jakarta Utama", nomorPinjaman:"BUM-2021-00114", jenisPinjaman:"Program Reguler", jumlah:120000000, sisaHutang:64500000,  outstanding:3500000 },
-  { kpa:"TB920234", nrp:"19900820002", nama:"Made Wardani",      tmt:"2020-07-15", cabang:"KC Denpasar",      nomorPinjaman:"BUM-2020-00087", jenisPinjaman:"Program Khusus",  jumlah:95000000,  sisaHutang:21000000,  outstanding:1500000 },
-  { kpa:"LA930345", nrp:"19951130003", nama:"Kenedi",            tmt:"2022-01-10", cabang:"KC Surabaya",      nomorPinjaman:"BUM-2022-00203", jenisPinjaman:"Program Reguler", jumlah:150000000, sisaHutang:112000000, outstanding:6000000 },
-  { kpa:"LB940456", nrp:"19880305004", nama:"Firman Dewantoro",  tmt:"2019-11-05", cabang:"KC Medan",         nomorPinjaman:"BUM-2019-00042", jenisPinjaman:"Program Khusus",  jumlah:80000000,  sisaHutang:9500000,   outstanding:500000 },
-  { kpa:"UA950567", nrp:"19921215005", nama:"Aprildo A. R.",     tmt:"2023-04-20", cabang:"KC Makassar",      nomorPinjaman:"BUM-2023-00311", jenisPinjaman:"Program Reguler", jumlah:135000000, sisaHutang:121000000, outstanding:7500000 },
-  { kpa:"UB960678", nrp:"19870910006", nama:"Wati Handayani",    tmt:"2021-09-12", cabang:"KC Semarang",      nomorPinjaman:"BUM-2021-00176", jenisPinjaman:"Program Reguler", jumlah:110000000, sisaHutang:58000000,  outstanding:3200000 },
-  { kpa:"PA970789", nrp:"19930422007", nama:"Yuni Kartika",      tmt:"2020-02-28", cabang:"KC Palembang",     nomorPinjaman:"BUM-2020-00033", jenisPinjaman:"Program Khusus",  jumlah:90000000,  sisaHutang:14000000,  outstanding:800000 },
-  { kpa:"PB980890", nrp:"19850617008", nama:"Sri Wahyuni",       tmt:"2022-08-01", cabang:"KC Denpasar",      nomorPinjaman:"BUM-2022-00265", jenisPinjaman:"Program Reguler", jumlah:125000000, sisaHutang:98000000,  outstanding:5500000 },
-  { kpa:"PC990901", nrp:"19910304009", nama:"Ratna Dewi",        tmt:"2019-05-17", cabang:"KC Balikpapan",    nomorPinjaman:"BUM-2019-00019", jenisPinjaman:"Program Khusus",  jumlah:70000000,  sisaHutang:6200000,   outstanding:400000 },
-  { kpa:"TA911012", nrp:"19890128010", nama:"Hendra Gunawan",    tmt:"2023-01-09", cabang:"KC Manado",        nomorPinjaman:"BUM-2023-00298", jenisPinjaman:"Program Reguler", jumlah:140000000, sisaHutang:133000000, outstanding:8000000 },
-  { kpa:"TB921123", nrp:"19940512011", nama:"Fitri Ramadhani",   tmt:"2021-06-23", cabang:"KC Padang",        nomorPinjaman:"BUM-2021-00152", jenisPinjaman:"Program Khusus",  jumlah:85000000,  sisaHutang:19500000,  outstanding:1200000 },
-  { kpa:"LA931234", nrp:"19860303012", nama:"Andi Saputra",      tmt:"2020-10-30", cabang:"KC Jakarta Utama", nomorPinjaman:"BUM-2020-00121", jenisPinjaman:"Program Reguler", jumlah:118000000, sisaHutang:71000000,  outstanding:4000000 },
-  { kpa:"LB941345", nrp:"19920815013", nama:"Lina Marlina",      tmt:"2022-12-04", cabang:"KC Bandung",       nomorPinjaman:"BUM-2022-00340", jenisPinjaman:"Program Reguler", jumlah:145000000, sisaHutang:139000000, outstanding:8500000 },
-  { kpa:"UA951456", nrp:"19830706014", nama:"Joko Purnomo",      tmt:"2019-08-14", cabang:"KC Surabaya",      nomorPinjaman:"BUM-2019-00027", jenisPinjaman:"Program Khusus",  jumlah:75000000,  sisaHutang:5000000,   outstanding:300000 }
+  { kpa:"TA910123", nrp:"19870512001", nik:"3271051205870001", nama:"Intan M. Sari",     tglLahir:"1987-05-12", tmt:"2009-08-01", tmtAkad:"2021-03-01",
+    cabang:"KC Jakarta Utama", nomorPinjaman:"BUM-2021-00114", jenisPinjaman:"BUM KPR Program Reguler YPPSDP", jumlah:120000000, sisaHutang:64500000,  outstanding:3500000,
+    keterangan:"Pendaftaran ulang data akad dari arsip YPPSDP." },
+  { kpa:"TB920234", nrp:"19900820002", nik:"5171200812900002", nama:"Made Wardani",      tglLahir:"1990-08-20", tmt:"2012-04-01", tmtAkad:"2020-07-15",
+    cabang:"KC Denpasar",      nomorPinjaman:"BUM-2020-00087", jenisPinjaman:"BUM KPR Program Khusus ASABRI",  jumlah:95000000,  sisaHutang:21000000,  outstanding:1500000,
+    keterangan:"Hutang tidak terpotong hak asuransi, dibayar angsur." },
+  { kpa:"LA930345", nrp:"19951130003", nik:"3578301103950003", nama:"Kenedi",            tglLahir:"1995-11-30", tmt:"2017-03-01", tmtAkad:"2022-01-10",
+    cabang:"KC Surabaya",      nomorPinjaman:"BUM-2022-00203", jenisPinjaman:"BUM KPR TWPAD",                  jumlah:150000000, sisaHutang:112000000, outstanding:6000000,
+    keterangan:"Perbaikan nomor piutang hasil rekonsiliasi semester I." },
+  { kpa:"LB940456", nrp:"19880305004", nik:"1271030508880004", nama:"Firman Dewantoro",  tglLahir:"1988-03-05", tmt:"2010-02-15", tmtAkad:"2019-11-05",
+    cabang:"KC Medan",         nomorPinjaman:"BUM-2019-00042", jenisPinjaman:"BUM KPR Program Khusus ASABRI",  jumlah:80000000,  sisaHutang:9500000,   outstanding:500000,
+    keterangan:"Sisa hutang mendekati lunas, menunggu setoran terakhir." },
+  { kpa:"UA950567", nrp:"19921215005", nik:"7371151212920005", nama:"Aprildo A. R.",     tglLahir:"1992-12-15", tmt:"2014-09-01", tmtAkad:"2023-04-20",
+    cabang:"KC Makassar",      nomorPinjaman:"BUM-2023-00311", jenisPinjaman:"BUM KPR Program Reguler YPPSDP", jumlah:135000000, sisaHutang:121000000, outstanding:7500000,
+    keterangan:"Akad terbaru, potongan mulai periode berjalan." },
+  { kpa:"UB960678", nrp:"19870910006", nik:"3374100909870006", nama:"Wati Handayani",    tglLahir:"1987-09-10", tmt:"2009-11-01", tmtAkad:"2021-09-12",
+    cabang:"KC Semarang",      nomorPinjaman:"BUM-2021-00176", jenisPinjaman:"BUM KPR TWPAD",                  jumlah:110000000, sisaHutang:58000000,  outstanding:3200000,
+    keterangan:"Pendaftaran ulang karena nomor piutang lama ganda." },
+  { kpa:"PA970789", nrp:"19930422007", nik:"1671220404930007", nama:"Yuni Kartika",      tglLahir:"1993-04-22", tmt:"2015-05-01", tmtAkad:"2020-02-28",
+    cabang:"KC Palembang",     nomorPinjaman:"BUM-2020-00033", jenisPinjaman:"BUM KPR Program Khusus ASABRI",  jumlah:90000000,  sisaHutang:14000000,  outstanding:800000,
+    keterangan:"Angsuran berjalan lewat Kantor Cabang." },
+  { kpa:"PB980890", nrp:"19850617008", nik:"5171170606850008", nama:"Sri Wahyuni",       tglLahir:"1985-06-17", tmt:"2007-08-01", tmtAkad:"2022-08-01",
+    cabang:"KC Denpasar",      nomorPinjaman:"BUM-2022-00265", jenisPinjaman:"BUM KPR Program Reguler YPPSDP", jumlah:125000000, sisaHutang:98000000,  outstanding:5500000,
+    keterangan:"Imbal jasa Program Reguler dihitung sampai BUP." },
+  { kpa:"PC990901", nrp:"19910304009", nik:"6471030409910009", nama:"Ratna Dewi",        tglLahir:"1991-03-04", tmt:"2013-06-01", tmtAkad:"2019-05-17",
+    cabang:"KC Balikpapan",    nomorPinjaman:"BUM-2019-00019", jenisPinjaman:"BUM KPR TWPAD",                  jumlah:70000000,  sisaHutang:6200000,   outstanding:400000,
+    keterangan:"Tinggal sisa outstanding kecil, siap dilunasi." },
+  { kpa:"TA911012", nrp:"19890128010", nik:"7171280101890010", nama:"Hendra Gunawan",    tglLahir:"1989-01-28", tmt:"2011-02-01", tmtAkad:"2023-01-09",
+    cabang:"KC Manado",        nomorPinjaman:"BUM-2023-00298", jenisPinjaman:"BUM KPR Program Reguler YPPSDP", jumlah:140000000, sisaHutang:133000000, outstanding:8000000,
+    keterangan:"Akad 2023, belum ada pemotongan hak asuransi." },
+  { kpa:"TB921123", nrp:"19940512011", nik:"1371120505940011", nama:"Fitri Ramadhani",   tglLahir:"1994-05-12", tmt:"2016-07-01", tmtAkad:"2021-06-23",
+    cabang:"KC Padang",        nomorPinjaman:"BUM-2021-00152", jenisPinjaman:"BUM KPR Program Khusus ASABRI",  jumlah:85000000,  sisaHutang:19500000,  outstanding:1200000,
+    keterangan:"Dibayar angsur, bukti setor diunggah Kantor Cabang." },
+  { kpa:"LA931234", nrp:"19860303012", nik:"3172030303860012", nama:"Andi Saputra",      tglLahir:"1986-03-03", tmt:"2008-04-01", tmtAkad:"2020-10-30",
+    cabang:"KC Jakarta Utama", nomorPinjaman:"BUM-2020-00121", jenisPinjaman:"BUM KPR TWPAD",                  jumlah:118000000, sisaHutang:71000000,  outstanding:4000000,
+    keterangan:"Pendaftaran ulang setelah pemutakhiran data kesatuan." },
+  { kpa:"LB941345", nrp:"19920815013", nik:"3273150808920013", nama:"Lina Marlina",      tglLahir:"1992-08-15", tmt:"2014-10-01", tmtAkad:"2022-12-04",
+    cabang:"KC Bandung",       nomorPinjaman:"BUM-2022-00340", jenisPinjaman:"BUM KPR Program Reguler YPPSDP", jumlah:145000000, sisaHutang:139000000, outstanding:8500000,
+    keterangan:"Akad terbaru pada Kantor Cabang Bandung." },
+  { kpa:"UA951456", nrp:"19830706014", nik:"3578060707830014", nama:"Joko Purnomo",      tglLahir:"1983-07-06", tmt:"2005-09-01", tmtAkad:"2019-08-14",
+    cabang:"KC Surabaya",      nomorPinjaman:"BUM-2019-00027", jenisPinjaman:"BUM KPR Program Khusus ASABRI",  jumlah:75000000,  sisaHutang:5000000,   outstanding:300000,
+    keterangan:"Mendekati BUP, sisa hutang dipotong saat klaim." },
+  { kpa:"AD900123", nrp:"199105102016121003", nik:"3374012004890130", nama:"Yusuf Maulana",    tglLahir:"1989-04-20", tmt:"2016-12-01", tmtAkad:"2022-06-15",
+    cabang:"KC Semarang",      nomorPinjaman:"BUM-2022-00456", jenisPinjaman:"BUM KPR Program Khusus ASABRI",  jumlah:110000000, sisaHutang:85000000,  outstanding:4500000,
+    keterangan:"Peserta baru terverifikasi memiliki Pinjaman KPR (BUM) aktif — dipakai untuk simulasi validasi Pengajuan Baru KPR (PUM)." }
 ];
 
-/* Lookup KPA → data peserta, dipakai untuk autofill form "+ Pemotongan Manfaat
-   Klaim" di halaman Klaim KPR (BUM) begitu KPA diinput. jk: "L" | "P".
+/* Lookup KPA → data peserta, dipakai untuk autofill form "Pendaftaran Ulang
+   Klaim KPR (BUM)" begitu KPA diinput. jk: "L" | "P".
    nominalPinjaman  : plafon pinjaman BUM yang pernah dicairkan.
    sisaHutang       : pokok pinjaman yang belum terbayar.
    saldoOutstanding : tagihan berjalan yang jatuh tempo saat ini.
@@ -1194,7 +1282,8 @@ const DATA_PENDAFTARAN_PERORANGAN = [
       instansi:"PUSKERSIN", tglSurat:"04 Agustus 2026"
     },
     dataPeserta: {
-      nama:"Rahmat Hidayat", nrp:"199005152012011003", nik:"3271051505900003", npwp:"56.789.012.3-004.000",
+      nama:"Rahmat Hidayat", nrp:"199005152012011003", nik:"3271051505900003",
+      npwp:"567890123004000",
       jk:"Laki-laki", tglLahir:"15 Mei 1990", tmpLahir:"Bandung",
       status:"Prajurit", angkatan:"TNI AD", unor:"Mabes TNI AD", uker:"- KOREM 084/BJ", pangkat:"Kapten",
       tmt:"01 Januari 2021", nomorSkep:"SKEP/210/I/2021", tglSkep:"01 Januari 2021",
@@ -1243,7 +1332,7 @@ const DATA_UPLOAD_BATCH = [
     id: 1,
     tglPengajuan: "6 Agustus 2026",
     kesatuanPengaju: "Mabes TNI",
-    nomorBatch: "B-UPLOAD/2026/08060001",
+    nomorBatch: "B-KOLEKTIF/2026/08060001",
     nomorAgenda: "B/220/VIII/2026/0003/wirata.atmaja",
     status: "Belum Terverifikasi",
     catatanApproval: "",
@@ -1252,7 +1341,7 @@ const DATA_UPLOAD_BATCH = [
       instansi:"Mabes TNI", tglSurat:"5 Agustus 2026"
     },
     peserta: [
-      { nrp:"199203102015031001", nama:"Andika Pratama", sts:"1", unor:"3", angkatan:"3",
+      { nrp:"199203102015031001", nama:"Andika Pratama", suamiIstri:"Ny. Larasati Dewi", sts:"1", unor:"3", angkatan:"3",
         pangkat:"LETDA", kdPangkat:"3760", noSkep:"KEP/2001/VIII/2026", tglSkep:"05/08/2026", tmtSkep:"1/9/2026",
         kesatuan:"MABES TNI", kdKesatuan:"100001", kdKancab:"1000",
         jnsKel:"1", tmpLahir:"Semarang", tglLahir:"10/03/1992",
@@ -1264,7 +1353,7 @@ const DATA_UPLOAD_BATCH = [
           { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-andika.pdf" },
           { label:"Surat Pengantar", file:null }
         ] },
-      { nrp:"199407222016022002", nama:"Yulia Wardhani", sts:"1", unor:"3", angkatan:"3",
+      { nrp:"199407222016022002", nama:"Yulia Wardhani", suamiIstri:"Tn. Bagas Nugroho", sts:"1", unor:"3", angkatan:"3",
         pangkat:"LETDA", kdPangkat:"3760", noSkep:"KEP/2002/VIII/2026", tglSkep:"05/08/2026", tmtSkep:"1/9/2026",
         kesatuan:"MABES TNI", kdKesatuan:"100001", kdKancab:"1000",
         jnsKel:"2", tmpLahir:"Yogyakarta", tglLahir:"22/07/1994",
@@ -1282,7 +1371,7 @@ const DATA_UPLOAD_BATCH = [
     id: 2,
     tglPengajuan: "30 Juli 2026",
     kesatuanPengaju: "Mabes Polri",
-    nomorBatch: "B-UPLOAD/2026/07300002",
+    nomorBatch: "B-KOLEKTIF/2026/07300002",
     nomorAgenda: "B/198/VII/2026/0004/wirata.atmaja",
     status: "Tertunda",
     catatanApproval: "",
@@ -1291,7 +1380,7 @@ const DATA_UPLOAD_BATCH = [
       instansi:"Mabes Polri", tglSurat:"29 Juli 2026"
     },
     peserta: [
-      { nrp:"87056781", nama:"Deni Kurniawan", sts:"1", unor:"3", angkatan:"3",
+      { nrp:"87056781", nama:"Deni Kurniawan", suamiIstri:"Ny. Sari Utami", sts:"1", unor:"3", angkatan:"3",
         pangkat:"IPDA", kdPangkat:"2870", noSkep:"KEP/1870/VII/2026", tglSkep:"28/07/2026", tmtSkep:"1/8/2026",
         kesatuan:"MABES POLRI", kdKesatuan:"200002", kdKancab:"2000",
         jnsKel:"1", tmpLahir:"Medan", tglLahir:"12/11/1987",
@@ -1303,7 +1392,7 @@ const DATA_UPLOAD_BATCH = [
           { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-deni.pdf" },
           { label:"Surat Pengantar", file:"surat-pengantar-deni.pdf" }
         ] },
-      { nrp:"90067892", nama:"Maya Puspita", sts:"1", unor:"3", angkatan:"3",
+      { nrp:"90067892", nama:"Maya Puspita", suamiIstri:"Tn. Rizky Ananda", sts:"1", unor:"3", angkatan:"3",
         pangkat:"IPDA", kdPangkat:"2870", noSkep:"KEP/1871/VII/2026", tglSkep:"28/07/2026", tmtSkep:"1/8/2026",
         kesatuan:"MABES POLRI", kdKesatuan:"200002", kdKancab:"2000",
         jnsKel:"2", tmpLahir:"Palembang", tglLahir:"03/09/1990",
@@ -1321,7 +1410,7 @@ const DATA_UPLOAD_BATCH = [
     id: 3,
     tglPengajuan: "20 Juli 2026",
     kesatuanPengaju: "Kementerian Pertahanan",
-    nomorBatch: "B-UPLOAD/2026/07200003",
+    nomorBatch: "B-KOLEKTIF/2026/07200003",
     nomorAgenda: "B/172/VII/2026/0005/wirata.atmaja",
     status: "Diterima",
     catatanApproval: "Data lengkap dan sesuai, disetujui.",
@@ -1331,7 +1420,7 @@ const DATA_UPLOAD_BATCH = [
       instansi:"Kementerian Pertahanan", tglSurat:"18 Juli 2026"
     },
     peserta: [
-      { nrp:"199501012018121001", nama:"Fajar Ramadhan", sts:"1", unor:"3", angkatan:"3",
+      { nrp:"199501012018121001", nama:"Fajar Ramadhan", suamiIstri:"Ny. Anisa Rahmawati", sts:"1", unor:"3", angkatan:"3",
         pangkat:"LETDA", kdPangkat:"3760", noSkep:"KEP/1500/VII/2026", tglSkep:"18/07/2026", tmtSkep:"1/8/2026",
         kesatuan:"KEMENTERIAN PERTAHANAN", kdKesatuan:"638012", kdKancab:"2000",
         jnsKel:"1", tmpLahir:"Makassar", tglLahir:"01/01/1995",
@@ -3601,15 +3690,19 @@ const DATA_BUP = [
    dari aplikasi Yandu lama. `rekomendasi` adalah data peserta mirip yang
    ditawarkan sistem sebagai bahan verifikasi sebelum data ditambahkan.
    sumber rekomendasi: "Belum Termigrasi" | "Data Terhapus" | "Arsip Yandu Lama"
-   status:   "Menunggu Verifikasi" | "Menunggu Persetujuan" | "Disetujui" | "Ditolak"
-   tindakan: "" (belum diverifikasi) | "Restore Data" | "Input Data Baru"
+   status:   "Tertunda" | "Disetujui" | "Ditolak" — pengajuan masuk sebagai
+   "Tertunda" lalu diputuskan di layar Approval SPP Data Peserta.
+   tindakan: "" | "Restore Data" | "Input Data Baru" (peninggalan data contoh)
+   tmt / noSkep / tglSkep / pangkatAwal : data pengangkatan yang tampil di
+   kolom tabel daftar permohonan; `pangkat` sendiri berisi pangkat terakhir.
    --------------------------------------------------------------------------- */
 const DATA_SPP = [
   { no:"SPP-2026-00117", tgl:"19/06/2026", kpa:"ASB-1993-006845", nama:"Sunarto Wibowo", nrp:"196705121988031003",
     nik:"3578141205670004", tglLahir:"12/05/1967", pangkat:"SERSAN MAYOR", kesatuan:"KODIM 0827/SUMENEP",
+    tmt:"01/03/1988", noSkep:"KEP/1204/III/1988", tglSkep:"12/02/1988", pangkatAwal:"PRAJURIT DUA",
     cabang:"KC Surabaya", pengaju:"Officer KC — D. Ramadhan", noRequest:"REQ-2026-00891",
     dokumen:["Surat Permohonan KC Surabaya.pdf", "Fotokopi KPA.pdf", "SKEP Pensiun.pdf", "KTP & KK.pdf"],
-    status:"Menunggu Verifikasi", tindakan:"", catatan:"",
+    status:"Tertunda", tindakan:"", catatan:"",
     rekomendasi:[
       { nama:"SUNARTO WIBOWO", nrp:"196705121988031003", kpa:"ASB-1993-006845", tglLahir:"12/05/1967",
         satker:"KODIM 0827/SUMENEP",        sumber:"Belum Termigrasi",  skor:96 },
@@ -3621,9 +3714,10 @@ const DATA_SPP = [
 
   { no:"SPP-2026-00116", tgl:"18/06/2026", kpa:"ASB-1989-005219", nama:"Marsudi Hartanto", nrp:"146732",
     nik:"3374110809630002", tglLahir:"08/09/1963", pangkat:"AJUN KOMISARIS POLISI", kesatuan:"POLRES SIDOARJO",
+    tmt:"01/04/1985", noSkep:"KEP/882/IV/1985",   tglSkep:"18/03/1985", pangkatAwal:"BHARADA",
     cabang:"KC Malang", pengaju:"Officer KC — L. Anggraeni", noRequest:"REQ-2026-00877",
     dokumen:["Surat Permohonan KC Malang.pdf", "Fotokopi KPA.pdf", "SKEP Pensiun.pdf"],
-    status:"Menunggu Verifikasi", tindakan:"", catatan:"",
+    status:"Tertunda", tindakan:"", catatan:"",
     rekomendasi:[
       { nama:"MARSUDI HARTANTO", nrp:"146732", kpa:"ASB-1989-005219", tglLahir:"08/09/1963",
         satker:"POLRES SIDOARJO",  sumber:"Data Terhapus",    skor:93 },
@@ -3633,16 +3727,18 @@ const DATA_SPP = [
 
   { no:"SPP-2026-00115", tgl:"17/06/2026", kpa:"ASB-2004-031180", nama:"Yuliana Kusumastuti", nrp:"197907142003122002",
     nik:"3273125407790006", tglLahir:"14/07/1979", pangkat:"PENATA MUDA", kesatuan:"ASN MABES TNI",
+    tmt:"01/12/2003", noSkep:"KEP/2117/XII/2003", tglSkep:"20/11/2003", pangkatAwal:"GOL.III/A",
     cabang:"KC Bandung", pengaju:"Officer KC — F. Kurniawan", noRequest:"REQ-2026-00860",
     dokumen:["Surat Permohonan KC Bandung.pdf", "Fotokopi KPA.pdf", "SK CPNS & PNS.pdf", "KTP & KK.pdf"],
-    status:"Menunggu Verifikasi", tindakan:"", catatan:"",
+    status:"Tertunda", tindakan:"", catatan:"",
     rekomendasi:[] },
 
   { no:"SPP-2026-00114", tgl:"16/06/2026", kpa:"ASB-1997-013522", nama:"Teguh Priyanto", nrp:"197203201995031004",
     nik:"3372012003720003", tglLahir:"20/03/1972", pangkat:"SERSAN KEPALA", kesatuan:"KODIM 0733/SURAKARTA",
+    tmt:"01/03/1995", noSkep:"KEP/1533/III/1995", tglSkep:"14/02/1995", pangkatAwal:"PRAJURIT DUA",
     cabang:"KC Solo", pengaju:"Officer KC — H. Prabowo", noRequest:"REQ-2026-00842",
     dokumen:["Surat Permohonan KC Solo.pdf", "Fotokopi KPA.pdf", "SKEP Pensiun.pdf"],
-    status:"Menunggu Persetujuan", tindakan:"Restore Data",
+    status:"Tertunda", tindakan:"Restore Data",
     catatan:"Data ditemukan pada arsip belum termigrasi, diaktifkan kembali sesuai dokumen persyaratan.",
     rekomendasi:[
       { nama:"TEGUH PRIYANTO", nrp:"197203201995031004", kpa:"ASB-1997-013522", tglLahir:"20/03/1972",
@@ -3651,14 +3747,16 @@ const DATA_SPP = [
 
   { no:"SPP-2026-00113", tgl:"15/06/2026", kpa:"ASB-2011-064882", nama:"Rizal Maulana", nrp:"198806112011011003",
     nik:"3175061106880004", tglLahir:"11/06/1988", pangkat:"LETNAN DUA", kesatuan:"LANUD ISWAHJUDI",
+    tmt:"01/01/2011", noSkep:"KEP/318/I/2011",    tglSkep:"09/12/2010", pangkatAwal:"LETNAN DUA",
     cabang:"KC Madiun", pengaju:"Officer KC — T. Wibisono", noRequest:"REQ-2026-00830",
     dokumen:["Surat Permohonan KC Madiun.pdf", "Fotokopi KPA.pdf", "SKEP Pengangkatan.pdf"],
-    status:"Menunggu Persetujuan", tindakan:"Input Data Baru",
+    status:"Tertunda", tindakan:"Input Data Baru",
     catatan:"Tidak ditemukan pada rekomendasi sistem, data diinput baru sesuai dokumen persyaratan.",
     rekomendasi:[] },
 
   { no:"SPP-2026-00112", tgl:"12/06/2026", kpa:"ASB-1986-004910", nama:"Sri Wahyuni", nrp:"196204251985032001",
     nik:"3374116504620009", tglLahir:"25/04/1962", pangkat:"PENATA MUDA", kesatuan:"ASN KODAM IV/DIPONEGORO",
+    tmt:"01/03/1985", noSkep:"KEP/704/III/1985",  tglSkep:"21/02/1985", pangkatAwal:"GOL.II/A",
     cabang:"KC Semarang", pengaju:"Officer KC — N. Safitri", noRequest:"REQ-2026-00815",
     dokumen:["Surat Permohonan KC Semarang.pdf", "Fotokopi KPA.pdf", "SKEP Pensiun.pdf", "KTP & KK.pdf"],
     status:"Disetujui", tindakan:"Restore Data",
@@ -3670,6 +3768,7 @@ const DATA_SPP = [
 
   { no:"SPP-2026-00111", tgl:"10/06/2026", kpa:"ASB-2013-077304", nama:"Andi Firmansyah", nrp:"199001152013021005",
     nik:"3273121501900002", tglLahir:"15/01/1990", pangkat:"SERSAN MAYOR", kesatuan:"KODIM 0610/SUMEDANG",
+    tmt:"01/02/2013", noSkep:"KEP/995/II/2013",   tglSkep:"15/01/2013", pangkatAwal:"PRAJURIT DUA",
     cabang:"KC Bandung", pengaju:"Officer KC — F. Kurniawan", noRequest:"REQ-2026-00802",
     dokumen:["Surat Permohonan KC Bandung.pdf", "Fotokopi KPA.pdf"],
     status:"Ditolak", tindakan:"",
@@ -3677,34 +3776,81 @@ const DATA_SPP = [
     rekomendasi:[] }
 ];
 
+/* ---------------------------------------------------------------------------
+   24b. REFERENSI FORM TAMBAH SPP DATA PESERTA
+   Pilihan dropdown pada form "+ Tambah SPP Data Peserta". Nilainya contoh yang
+   mengikuti format referensi ASABRI — Pangkat memakai format "KODE - PANGKAT"
+   supaya satu nama pangkat yang dipakai beberapa angkatan tetap bisa dibedakan
+   lewat kodenya (mis. BRIGJEN pada TNI AD, AL, AU, dan Marinir).
+   --------------------------------------------------------------------------- */
+const SPP_ANGKATAN        = ["Semua", "TNI-AD", "TNI-AL", "TNI-AU", "POLRI", "KEMHAN"];
+const SPP_STATUS_PERSONIL = ["Prajurit", "PNS", "PPPK"];
+const SPP_UNOR            = ["TNI AD", "TNI AL", "TNI AU", "POLRI", "MABES TNI", "KEMHAN"];
+
+const SPP_PANGKAT = [
+  "4556 - ABRIP", "4554 - ABRIPDA", "4555 - ABRIPTU", "4665 - AIPDA", "4666 - AIPTU",
+  "4882 - AKBP", "4773 - AKP", "4553 - BARAKA", "4551 - BHARADA", "4552 - BHARATU",
+  "4663 - BRIGADIR", "2991 - BRIGJEN", "1991 - BRIGJEN", "5991 - BRIGJEN", "6991 - BRIGJEN",
+  "2991 - BRIGJEN (MAR)", "4991 - BRIGJEN POL", "4661 - BRIPDA", "4664 - BRIPKA",
+  "4662 - BRIPTU", "1662 - KOPDA", "1663 - KOPKA", "1664 - KOPTU", "1771 - LETDA",
+  "1772 - LETTU", "1773 - KAPTEN", "1881 - MAYOR", "1882 - LETKOL", "1883 - KOLONEL",
+  "1661 - PRADA", "1665 - PRAKA", "1666 - PRATU", "1551 - SERDA", "1552 - SERTU",
+  "1553 - SERKA", "1554 - SERMA", "1555 - PELDA", "1556 - PELTU",
+  "7311 - GOL.II/A", "7312 - GOL.II/B", "7321 - GOL.III/A", "7322 - GOL.III/B",
+  "7331 - GOL.IV/A", "7332 - GOL.IV/B"
+];
+
+const SPP_BINTANG_JASA = [
+  "Bintang Gerilya", "Bintang Sakti", "Bintang Dharma", "Bintang Yudha Dharma",
+  "Bintang Kartika Eka Paksi", "Bintang Jalasena", "Bintang Swa Bhuwana Paksa",
+  "Bintang Bhayangkara", "Satyalancana Kesetiaan VIII Tahun",
+  "Satyalancana Kesetiaan XVI Tahun", "Satyalancana Kesetiaan XXIV Tahun",
+  "Satyalancana Dwidya Sistha", "Tidak Ada"
+];
+
+const SPP_JENIS_KELAMIN = ["Laki-laki", "Perempuan"];
+const SPP_STATUS_KAWIN  = ["BELUM MENIKAH", "MENIKAH", "CERAI HIDUP", "CERAI MATI"];
+const SPP_HUBUNGAN_KELUARGA = ["Istri", "Suami", "Anak", "Ayah", "Ibu", "Wali"];
+
+/* Berkas yang selalu diminta pada form tambah SPP; sisanya dipilih sendiri
+   oleh officer dari DATA_BERKAS_SARAN lewat tombol "+ Tambah Berkas". */
+const SPP_BERKAS_TETAP = [
+  { key:"ktp",          label:"KTP",                       wajib:true,  note:"scan berwarna yang terbaca jelas" },
+  { key:"pengangkatan", label:"Surat Pengangkatan Pertama", wajib:true,  note:"salinan SK pengangkatan pertama" },
+  { key:"pengantar",    label:"Surat Pengantar",            wajib:false, note:"diterbitkan instansi/kesatuan pengirim" }
+];
+
 
 /* ---------------------------------------------------------------------------
    25. PELUNASAN KPR (BUM)
    Satu baris = satu potongan pelunasan pinjaman BUM peserta.
    jenisPotongan : keterangan sumber potongan, mis. "Tabungan Asuransi".
-   jenisHutang   : "Program Reguler" | "Program Khusus"
+   jenisPinjaman : "BUM KPR Program Khusus ASABRI" | "BUM KPR TWPAD"
+                   | "BUM KPR Program Reguler YPPSDP"
    jumlah        : plafon pinjaman BUM yang pernah dicairkan.
    sisaHutang    : pokok pinjaman yang belum terbayar.
    bruto         : nilai bruto manfaat sebelum potongan.
    nominal       : nominal yang dipotong untuk pelunasan.
-   imbalJasa     : imbal jasa yang hanya berlaku untuk jenis hutang Program
-                   Reguler — tidak ada pada Program Khusus.
+   imbalJasa     : imbal jasa yang hanya berlaku untuk jenis pinjaman Program
+                   Reguler YPPSDP — tidak ada pada jenis lain.
+   tglRekon      : tanggal rekonsiliasi data pelunasan dengan mitra.
    tglSp / tglDps / tglPeriode : tanggal Surat Perintah, tanggal DPS, dan
    tanggal periode pembayaran.
+   notes         : catatan bebas dari petugas pengunggah, boleh kosong.
    --------------------------------------------------------------------------- */
 const DATA_BUM_PELUNASAN = [
-  { kpa:"TA910123", nrp:"19870512001", nama:"Intan M. Sari",    tmt:"2021-03-01", nomorPinjaman:"BUM-2021-00114", jenisPotongan:"Tabungan Asuransi", jenisHutang:"Program Reguler", jumlah:120000000, sisaHutang:64500000,  bruto:72400000,  nominal:68000000,  imbalJasa:2400000, cabang:"KC Jakarta Utama", tglSp:"2026-06-18", tglDps:"2026-06-22", tglPeriode:"2026-07-01" },
-  { kpa:"LB940456", nrp:"19880305004", nama:"Firman Dewantoro", tmt:"2019-11-05", nomorPinjaman:"BUM-2019-00042", jenisPotongan:"Tabungan Asuransi", jenisHutang:"Program Khusus",  jumlah:80000000,  sisaHutang:9500000,   bruto:11250000,  nominal:10000000,  cabang:"KC Medan",         tglSp:"2026-06-15", tglDps:"2026-06-19", tglPeriode:"2026-07-01" },
-  { kpa:"PC990901", nrp:"19910304009", nama:"Ratna Dewi",       tmt:"2019-05-17", nomorPinjaman:"BUM-2019-00019", jenisPotongan:"Tabungan Asuransi", jenisHutang:"Program Khusus",  jumlah:70000000,  sisaHutang:6200000,   bruto:7400000,   nominal:6600000,   cabang:"KC Balikpapan",    tglSp:"2026-06-12", tglDps:"2026-06-16", tglPeriode:"2026-07-01" },
-  { kpa:"PA970789", nrp:"19930422007", nama:"Yuni Kartika",     tmt:"2020-02-28", nomorPinjaman:"BUM-2020-00033", jenisPotongan:"Tabungan Asuransi", jenisHutang:"Program Khusus",  jumlah:90000000,  sisaHutang:14000000,  bruto:16200000,  nominal:14800000,  cabang:"KC Palembang",     tglSp:"2026-06-10", tglDps:"2026-06-14", tglPeriode:"2026-07-01" },
-  { kpa:"UB960678", nrp:"19870910006", nama:"Wati Handayani",   tmt:"2021-09-12", nomorPinjaman:"BUM-2021-00176", jenisPotongan:"Tabungan Asuransi", jenisHutang:"Program Reguler", jumlah:110000000, sisaHutang:58000000,  bruto:64750000,  nominal:61200000,  imbalJasa:2200000, cabang:"KC Semarang",      tglSp:"2026-06-08", tglDps:"2026-06-12", tglPeriode:"2026-07-01" },
-  { kpa:"TB920234", nrp:"19900820002", nama:"Made Wardani",     tmt:"2020-07-15", nomorPinjaman:"BUM-2020-00087", jenisPotongan:"Tabungan Asuransi", jenisHutang:"Program Khusus",  jumlah:95000000,  sisaHutang:21000000,  bruto:24100000,  nominal:22500000,  cabang:"KC Denpasar",      tglSp:"2026-06-05", tglDps:"2026-06-09", tglPeriode:"2026-07-01" },
-  { kpa:"UA951456", nrp:"19830706014", nama:"Joko Purnomo",     tmt:"2019-08-14", nomorPinjaman:"BUM-2019-00027", jenisPotongan:"Tabungan Asuransi", jenisHutang:"Program Khusus",  jumlah:75000000,  sisaHutang:5000000,   bruto:5900000,   nominal:5300000,   cabang:"KC Surabaya",      tglSp:"2026-06-02", tglDps:"2026-06-06", tglPeriode:"2026-06-01" },
-  { kpa:"LA931234", nrp:"19860303012", nama:"Andi Saputra",     tmt:"2020-10-30", nomorPinjaman:"BUM-2020-00121", jenisPotongan:"Tabungan Asuransi", jenisHutang:"Program Reguler", jumlah:118000000, sisaHutang:71000000,  bruto:79500000,  nominal:75000000,  imbalJasa:2360000, cabang:"KC Jakarta Utama", tglSp:"2026-05-28", tglDps:"2026-06-01", tglPeriode:"2026-06-01" },
-  { kpa:"TB921123", nrp:"19940512011", nama:"Fitri Ramadhani",  tmt:"2021-06-23", nomorPinjaman:"BUM-2021-00152", jenisPotongan:"Tabungan Asuransi", jenisHutang:"Program Khusus",  jumlah:85000000,  sisaHutang:19500000,  bruto:22300000,  nominal:20700000,  cabang:"KC Padang",        tglSp:"2026-05-25", tglDps:"2026-05-29", tglPeriode:"2026-06-01" },
-  { kpa:"PB980890", nrp:"19850617008", nama:"Sri Wahyuni",      tmt:"2022-08-01", nomorPinjaman:"BUM-2022-00265", jenisPotongan:"Tabungan Asuransi", jenisHutang:"Program Reguler", jumlah:125000000, sisaHutang:98000000,  bruto:108900000, nominal:103500000, imbalJasa:2500000, cabang:"KC Denpasar",      tglSp:"2026-05-20", tglDps:"2026-05-24", tglPeriode:"2026-06-01" },
-  { kpa:"UA950567", nrp:"19921215005", nama:"Aprildo A. R.",    tmt:"2023-04-20", nomorPinjaman:"BUM-2023-00311", jenisPotongan:"Tabungan Asuransi", jenisHutang:"Program Reguler", jumlah:135000000, sisaHutang:121000000, bruto:132750000, nominal:128500000, imbalJasa:2700000, cabang:"KC Makassar",      tglSp:"2026-05-18", tglDps:"2026-05-22", tglPeriode:"2026-06-01" },
-  { kpa:"LB941345", nrp:"19920815013", nama:"Lina Marlina",     tmt:"2022-12-04", nomorPinjaman:"BUM-2022-00340", jenisPotongan:"Tabungan Asuransi", jenisHutang:"Program Reguler", jumlah:145000000, sisaHutang:139000000, bruto:143200000, nominal:139500000, imbalJasa:2900000, cabang:"KC Bandung",       tglSp:"2026-05-14", tglDps:"2026-05-18", tglPeriode:"2026-06-01" }
+  { kpa:"TA910123", nrp:"19870512001", nama:"Intan M. Sari",    tmt:"2021-03-01", nomorPinjaman:"BUM-2021-00114", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR Program Reguler YPPSDP", jumlah:120000000, sisaHutang:64500000,  bruto:72400000,  nominal:68000000,  imbalJasa:2400000, cabang:"KC Jakarta Utama", tglRekon:"2026-06-25", tglSp:"2026-06-18", tglDps:"2026-06-22", tglPeriode:"2026-07-01", notes:"Pelunasan dipercepat atas permintaan peserta." },
+  { kpa:"LB940456", nrp:"19880305004", nama:"Firman Dewantoro", tmt:"2019-11-05", nomorPinjaman:"BUM-2019-00042", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR Program Khusus ASABRI",  jumlah:80000000,  sisaHutang:9500000,   bruto:11250000,  nominal:10000000,  cabang:"KC Medan",         tglRekon:"2026-06-23", tglSp:"2026-06-15", tglDps:"2026-06-19", tglPeriode:"2026-07-01", notes:"" },
+  { kpa:"PC990901", nrp:"19910304009", nama:"Ratna Dewi",       tmt:"2019-05-17", nomorPinjaman:"BUM-2019-00019", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR TWPAD",                  jumlah:70000000,  sisaHutang:6200000,   bruto:7400000,   nominal:6600000,   cabang:"KC Balikpapan",    tglRekon:"2026-06-20", tglSp:"2026-06-12", tglDps:"2026-06-16", tglPeriode:"2026-07-01", notes:"Selisih nihil setelah rekonsiliasi." },
+  { kpa:"PA970789", nrp:"19930422007", nama:"Yuni Kartika",     tmt:"2020-02-28", nomorPinjaman:"BUM-2020-00033", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR Program Khusus ASABRI",  jumlah:90000000,  sisaHutang:14000000,  bruto:16200000,  nominal:14800000,  cabang:"KC Palembang",     tglRekon:"2026-06-18", tglSp:"2026-06-10", tglDps:"2026-06-14", tglPeriode:"2026-07-01", notes:"" },
+  { kpa:"UB960678", nrp:"19870910006", nama:"Wati Handayani",   tmt:"2021-09-12", nomorPinjaman:"BUM-2021-00176", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR TWPAD",                  jumlah:110000000, sisaHutang:58000000,  bruto:64750000,  nominal:61200000,  cabang:"KC Semarang",      tglRekon:"2026-06-17", tglSp:"2026-06-08", tglDps:"2026-06-12", tglPeriode:"2026-07-01", notes:"" },
+  { kpa:"TB920234", nrp:"19900820002", nama:"Made Wardani",     tmt:"2020-07-15", nomorPinjaman:"BUM-2020-00087", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR Program Khusus ASABRI",  jumlah:95000000,  sisaHutang:21000000,  bruto:24100000,  nominal:22500000,  cabang:"KC Denpasar",      tglRekon:"2026-06-15", tglSp:"2026-06-05", tglDps:"2026-06-09", tglPeriode:"2026-07-01", notes:"" },
+  { kpa:"UA951456", nrp:"19830706014", nama:"Joko Purnomo",     tmt:"2019-08-14", nomorPinjaman:"BUM-2019-00027", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR Program Khusus ASABRI",  jumlah:75000000,  sisaHutang:5000000,   bruto:5900000,   nominal:5300000,   cabang:"KC Surabaya",      tglRekon:"2026-06-10", tglSp:"2026-06-02", tglDps:"2026-06-06", tglPeriode:"2026-06-01", notes:"Sisa hutang di bawah Rp 10 juta." },
+  { kpa:"LA931234", nrp:"19860303012", nama:"Andi Saputra",     tmt:"2020-10-30", nomorPinjaman:"BUM-2020-00121", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR TWPAD",                  jumlah:118000000, sisaHutang:71000000,  bruto:79500000,  nominal:75000000,  cabang:"KC Jakarta Utama", tglRekon:"2026-06-05", tglSp:"2026-05-28", tglDps:"2026-06-01", tglPeriode:"2026-06-01", notes:"" },
+  { kpa:"TB921123", nrp:"19940512011", nama:"Fitri Ramadhani",  tmt:"2021-06-23", nomorPinjaman:"BUM-2021-00152", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR Program Khusus ASABRI",  jumlah:85000000,  sisaHutang:19500000,  bruto:22300000,  nominal:20700000,  cabang:"KC Padang",        tglRekon:"2026-06-03", tglSp:"2026-05-25", tglDps:"2026-05-29", tglPeriode:"2026-06-01", notes:"" },
+  { kpa:"PB980890", nrp:"19850617008", nama:"Sri Wahyuni",      tmt:"2022-08-01", nomorPinjaman:"BUM-2022-00265", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR Program Reguler YPPSDP", jumlah:125000000, sisaHutang:98000000,  bruto:108900000, nominal:103500000, imbalJasa:2500000, cabang:"KC Denpasar",      tglRekon:"2026-05-30", tglSp:"2026-05-20", tglDps:"2026-05-24", tglPeriode:"2026-06-01", notes:"Menunggu konfirmasi berkas dari kantor cabang." },
+  { kpa:"UA950567", nrp:"19921215005", nama:"Aprildo A. R.",    tmt:"2023-04-20", nomorPinjaman:"BUM-2023-00311", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR Program Reguler YPPSDP", jumlah:135000000, sisaHutang:121000000, bruto:132750000, nominal:128500000, imbalJasa:2700000, cabang:"KC Makassar",      tglRekon:"2026-05-28", tglSp:"2026-05-18", tglDps:"2026-05-22", tglPeriode:"2026-06-01", notes:"" },
+  { kpa:"LB941345", nrp:"19920815013", nama:"Lina Marlina",     tmt:"2022-12-04", nomorPinjaman:"BUM-2022-00340", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR Program Reguler YPPSDP", jumlah:145000000, sisaHutang:139000000, bruto:143200000, nominal:139500000, imbalJasa:2900000, cabang:"KC Bandung",       tglRekon:"2026-05-25", tglSp:"2026-05-14", tglDps:"2026-05-18", tglPeriode:"2026-06-01", notes:"" }
 ];
 
 
@@ -3726,6 +3872,9 @@ const DATA_BUM_PELUNASAN = [
      dengan menerbitkan SP pembayaran pemotongan, sehingga data tarikannya
      bertambah: Nomor SP pembatalan, Tanggal DPS, dan Nomor DPS.
 
+   jenisPinjaman: "BUM KPR Program Khusus ASABRI" | "BUM KPR TWPAD" |
+                  "BUM KPR Program Reguler YPPSDP"
+
    status: "Tercatat"    → peserta aktif, data pembatalan siap ditarik
            "Menunggu SP" → peserta pensiun, SP pembayaran belum diterbitkan Div. Keuangan
            "Selesai"     → peserta pensiun, SP pembayaran sudah terbit
@@ -3742,15 +3891,6 @@ const BUM_STATUS_PESERTA = {
   "LB941345":"Aktif",   "UA951456":"Pensiun"
 };
 
-/* Pilihan dropdown "Status Keterangan Pembatalan" */
-const BUM_PEMBATALAN_KETERANGAN = [
-  "Pembatalan Seluruhnya",
-  "Pembatalan Sebagian",
-  "Batal Akad Kredit",
-  "Rumah Batal Serah Terima",
-  "Pengunduran Diri Peserta"
-];
-
 /* Dokumen kelengkapan yang dibawa peserta ke Kantor Cabang (khusus jalur B) */
 const BUM_PEMBATALAN_DOKUMEN = [
   "Surat Permohonan Pembatalan BUM KPR",
@@ -3758,30 +3898,71 @@ const BUM_PEMBATALAN_DOKUMEN = [
 ];
 
 const DATA_BUM_PEMBATALAN = [
-  { kpa:"TA910123", nrp:"19870512001", nama:"Intan M. Sari",     cabang:"KC Jakarta Utama", nomorPinjaman:"BUM-2021-00114", jenisPinjaman:"Program Reguler",
+  { kpa:"TA910123", nrp:"19870512001", nama:"Intan M. Sari",     cabang:"KC Jakarta Utama", nomorPinjaman:"BUM-2021-00114", jenisPinjaman:"BUM KPR Program Reguler YPPSDP",
     statusPeserta:"Aktif",     keterangan:"Batal Akad Kredit",        noSurat:"B/412/YPPSDP/VI/2026", tglSurat:"2026-06-04", nominal:38000000,  status:"Tercatat" },
-  { kpa:"LA930345", nrp:"19951130003", nama:"Kenedi",            cabang:"KC Surabaya",      nomorPinjaman:"BUM-2022-00203", jenisPinjaman:"Program Reguler",
+  { kpa:"LA930345", nrp:"19951130003", nama:"Kenedi",            cabang:"KC Surabaya",      nomorPinjaman:"BUM-2022-00203", jenisPinjaman:"BUM KPR TWPAD",
     statusPeserta:"Aktif",     keterangan:"Pembatalan Sebagian",      noSurat:"B/418/YPPSDP/VI/2026", tglSurat:"2026-06-09", nominal:22500000,  status:"Tercatat" },
-  { kpa:"UB960678", nrp:"19870910006", nama:"Wati Handayani",    cabang:"KC Semarang",      nomorPinjaman:"BUM-2021-00176", jenisPinjaman:"Program Reguler",
+  { kpa:"UB960678", nrp:"19870910006", nama:"Wati Handayani",    cabang:"KC Semarang",      nomorPinjaman:"BUM-2021-00176", jenisPinjaman:"BUM KPR TWPAD",
     statusPeserta:"Aktif",     keterangan:"Rumah Batal Serah Terima", noSurat:"B/423/YPPSDP/VI/2026", tglSurat:"2026-06-15", nominal:41000000,  status:"Tercatat" },
-  { kpa:"PB980890", nrp:"19850617008", nama:"Sri Wahyuni",       cabang:"KC Denpasar",      nomorPinjaman:"BUM-2022-00265", jenisPinjaman:"Program Reguler",
+  { kpa:"PB980890", nrp:"19850617008", nama:"Sri Wahyuni",       cabang:"KC Denpasar",      nomorPinjaman:"BUM-2022-00265", jenisPinjaman:"BUM KPR Program Reguler YPPSDP",
     statusPeserta:"Aktif",     keterangan:"Pembatalan Seluruhnya",    noSurat:"B/431/YPPSDP/VII/2026", tglSurat:"2026-07-02", nominal:55000000, status:"Tercatat" },
-  { kpa:"LB941345", nrp:"19920815013", nama:"Lina Marlina",      cabang:"KC Bandung",       nomorPinjaman:"BUM-2022-00340", jenisPinjaman:"Program Reguler",
+  { kpa:"LB941345", nrp:"19920815013", nama:"Lina Marlina",      cabang:"KC Bandung",       nomorPinjaman:"BUM-2022-00340", jenisPinjaman:"BUM KPR Program Reguler YPPSDP",
     statusPeserta:"Aktif",     keterangan:"Pengunduran Diri Peserta", noSurat:"B/436/YPPSDP/VII/2026", tglSurat:"2026-07-10", nominal:30000000, status:"Tercatat" },
 
-  { kpa:"TB920234", nrp:"19900820002", nama:"Made Wardani",      cabang:"KC Denpasar",      nomorPinjaman:"BUM-2020-00087", jenisPinjaman:"Program Khusus",
+  { kpa:"TB920234", nrp:"19900820002", nama:"Made Wardani",      cabang:"KC Denpasar",      nomorPinjaman:"BUM-2020-00087", jenisPinjaman:"BUM KPR Program Khusus ASABRI",
     statusPeserta:"Pensiun",   keterangan:"Pembatalan Seluruhnya",    noSurat:"B/405/YPPSDP/V/2026",  tglSurat:"2026-05-21", nominal:19500000,  status:"Selesai",
     noRequest:"RU-2026-00218", noSp:"SP/1180/KEU/VI/2026", tglDps:"2026-06-11", noDps:"DPS-2026-06-0042", dokumen:["Surat Permohonan Pembatalan BUM KPR","Surat Pembatalan BUM KPR dari YPPSDP"] },
-  { kpa:"LB940456", nrp:"19880305004", nama:"Firman Dewantoro",  cabang:"KC Medan",         nomorPinjaman:"BUM-2019-00042", jenisPinjaman:"Program Khusus",
+  { kpa:"LB940456", nrp:"19880305004", nama:"Firman Dewantoro",  cabang:"KC Medan",         nomorPinjaman:"BUM-2019-00042", jenisPinjaman:"BUM KPR Program Khusus ASABRI",
     statusPeserta:"Pensiun",   keterangan:"Pembatalan Sebagian",      noSurat:"B/409/YPPSDP/V/2026",  tglSurat:"2026-05-28", nominal:8750000,   status:"Selesai",
     noRequest:"RU-2026-00224", noSp:"SP/1194/KEU/VI/2026", tglDps:"2026-06-18", noDps:"DPS-2026-06-0057", dokumen:["Surat Permohonan Pembatalan BUM KPR","Surat Pembatalan BUM KPR dari YPPSDP"] },
-  { kpa:"PA970789", nrp:"19930422007", nama:"Yuni Kartika",      cabang:"KC Palembang",     nomorPinjaman:"BUM-2020-00033", jenisPinjaman:"Program Khusus",
+  { kpa:"PA970789", nrp:"19930422007", nama:"Yuni Kartika",      cabang:"KC Palembang",     nomorPinjaman:"BUM-2020-00033", jenisPinjaman:"BUM KPR Program Khusus ASABRI",
     statusPeserta:"Pensiun",   keterangan:"Batal Akad Kredit",        noSurat:"B/427/YPPSDP/VI/2026", tglSurat:"2026-06-22", nominal:12400000,  status:"Menunggu SP",
     noRequest:"RU-2026-00237", noSp:"", tglDps:"", noDps:"", dokumen:["Surat Permohonan Pembatalan BUM KPR","Surat Pembatalan BUM KPR dari YPPSDP"] },
-  { kpa:"PC990901", nrp:"19910304009", nama:"Ratna Dewi",        cabang:"KC Balikpapan",    nomorPinjaman:"BUM-2019-00019", jenisPinjaman:"Program Khusus",
+  { kpa:"PC990901", nrp:"19910304009", nama:"Ratna Dewi",        cabang:"KC Balikpapan",    nomorPinjaman:"BUM-2019-00019", jenisPinjaman:"BUM KPR TWPAD",
     statusPeserta:"Pensiun",   keterangan:"Pembatalan Seluruhnya",    noSurat:"B/433/YPPSDP/VII/2026", tglSurat:"2026-07-06", nominal:6200000,  status:"Menunggu SP",
     noRequest:"RU-2026-00245", noSp:"", tglDps:"", noDps:"", dokumen:["Surat Permohonan Pembatalan BUM KPR","Surat Pembatalan BUM KPR dari YPPSDP"] },
-  { kpa:"UA951456", nrp:"19830706014", nama:"Joko Purnomo",      cabang:"KC Surabaya",      nomorPinjaman:"BUM-2019-00027", jenisPinjaman:"Program Khusus",
+  { kpa:"UA951456", nrp:"19830706014", nama:"Joko Purnomo",      cabang:"KC Surabaya",      nomorPinjaman:"BUM-2019-00027", jenisPinjaman:"BUM KPR Program Khusus ASABRI",
     statusPeserta:"Pensiun",   keterangan:"Rumah Batal Serah Terima", noSurat:"B/439/YPPSDP/VII/2026", tglSurat:"2026-07-14", nominal:5000000,  status:"Menunggu SP",
     noRequest:"RU-2026-00251", noSp:"", tglDps:"", noDps:"", dokumen:["Surat Permohonan Pembatalan BUM KPR","Surat Pembatalan BUM KPR dari YPPSDP"] }
+];
+
+
+/* ---------------------------------------------------------------------------
+   27. BUKTI ANGSURAN KPR (BUM)
+   Hutang BUM yang tidak terpotong dari hak asuransi dibayar angsur oleh
+   peserta. Kantor Cabang merekam setorannya di layar "Upload Bukti Angsuran",
+   lalu Divisi Kepesertaan memutuskan di layar "Verifikasi Bukti Angsuran".
+   Satu baris = satu setoran angsuran.
+   angsuranKe   : urutan setoran peserta pada pinjaman tersebut.
+   nominal      : nilai yang disetor peserta.
+   sisaHutang   : pokok yang belum terbayar sebelum setoran ini diperhitungkan.
+   buktiSetor   : nama berkas yang diunggah Kantor Cabang.
+   status       : "Menunggu Verifikasi" | "Terverifikasi" | "Ditolak"
+   catatan      : keterangan pemeriksa; wajib saat setoran ditolak.
+   --------------------------------------------------------------------------- */
+const BUM_ANGSURAN_STATUS = ["Menunggu Verifikasi", "Terverifikasi", "Ditolak"];
+
+const DATA_BUM_ANGSURAN = [
+  { noBukti:"ANG-2026-0001", kpa:"TB920234", nrp:"19900820002", nama:"Made Wardani",     cabang:"KC Denpasar",      nomorPinjaman:"BUM-2020-00087", jenisPinjaman:"BUM KPR Program Khusus ASABRI",
+    angsuranKe:5,  tglBayar:"2026-07-05", nominal:2500000, sisaHutang:21000000,  buktiSetor:"bukti-setor-juli-2026.pdf",   tglUnggah:"2026-07-07", status:"Terverifikasi",       tglVerifikasi:"2026-07-09", catatan:"" },
+  { noBukti:"ANG-2026-0002", kpa:"LB940456", nrp:"19880305004", nama:"Firman Dewantoro", cabang:"KC Medan",         nomorPinjaman:"BUM-2019-00042", jenisPinjaman:"BUM KPR Program Khusus ASABRI",
+    angsuranKe:9,  tglBayar:"2026-07-08", nominal:1500000, sisaHutang:9500000,   buktiSetor:"setoran-bri-08072026.jpg",    tglUnggah:"2026-07-08", status:"Terverifikasi",       tglVerifikasi:"2026-07-10", catatan:"" },
+  { noBukti:"ANG-2026-0003", kpa:"PA970789", nrp:"19930422007", nama:"Yuni Kartika",     cabang:"KC Palembang",     nomorPinjaman:"BUM-2020-00033", jenisPinjaman:"BUM KPR Program Khusus ASABRI",
+    angsuranKe:7,  tglBayar:"2026-07-12", nominal:2000000, sisaHutang:14000000,  buktiSetor:"bukti-transfer-yuni.pdf",     tglUnggah:"2026-07-13", status:"Menunggu Verifikasi", tglVerifikasi:"",           catatan:"" },
+  { noBukti:"ANG-2026-0004", kpa:"TB921123", nrp:"19940512011", nama:"Fitri Ramadhani",  cabang:"KC Padang",        nomorPinjaman:"BUM-2021-00152", jenisPinjaman:"BUM KPR Program Khusus ASABRI",
+    angsuranKe:4,  tglBayar:"2026-07-15", nominal:1750000, sisaHutang:19500000,  buktiSetor:"angsuran-ke-4.pdf",           tglUnggah:"2026-07-16", status:"Menunggu Verifikasi", tglVerifikasi:"",           catatan:"" },
+  { noBukti:"ANG-2026-0005", kpa:"UA951456", nrp:"19830706014", nama:"Joko Purnomo",     cabang:"KC Surabaya",      nomorPinjaman:"BUM-2019-00027", jenisPinjaman:"BUM KPR Program Khusus ASABRI",
+    angsuranKe:12, tglBayar:"2026-07-18", nominal:1000000, sisaHutang:5000000,   buktiSetor:"wa-bukti-bayar.jpg",          tglUnggah:"2026-07-19", status:"Ditolak",             tglVerifikasi:"2026-07-21", catatan:"Nominal pada bukti setor tidak sama dengan yang diinput Kantor Cabang." },
+  { noBukti:"ANG-2026-0006", kpa:"LA930345", nrp:"19951130003", nama:"Kenedi",           cabang:"KC Surabaya",      nomorPinjaman:"BUM-2022-00203", jenisPinjaman:"BUM KPR TWPAD",
+    angsuranKe:3,  tglBayar:"2026-07-20", nominal:5000000, sisaHutang:112000000, buktiSetor:"setoran-twpad-kenedi.pdf",    tglUnggah:"2026-07-21", status:"Menunggu Verifikasi", tglVerifikasi:"",           catatan:"" },
+  { noBukti:"ANG-2026-0007", kpa:"UB960678", nrp:"19870910006", nama:"Wati Handayani",   cabang:"KC Semarang",      nomorPinjaman:"BUM-2021-00176", jenisPinjaman:"BUM KPR TWPAD",
+    angsuranKe:6,  tglBayar:"2026-07-22", nominal:3000000, sisaHutang:58000000,  buktiSetor:"bukti-setor-mandiri.pdf",     tglUnggah:"2026-07-23", status:"Terverifikasi",       tglVerifikasi:"2026-07-24", catatan:"" },
+  { noBukti:"ANG-2026-0008", kpa:"PC990901", nrp:"19910304009", nama:"Ratna Dewi",       cabang:"KC Balikpapan",    nomorPinjaman:"BUM-2019-00019", jenisPinjaman:"BUM KPR TWPAD",
+    angsuranKe:14, tglBayar:"2026-07-25", nominal:800000,  sisaHutang:6200000,   buktiSetor:"angsuran-ratna-juli.jpg",     tglUnggah:"2026-07-26", status:"Menunggu Verifikasi", tglVerifikasi:"",           catatan:"" },
+  { noBukti:"ANG-2026-0009", kpa:"LA931234", nrp:"19860303012", nama:"Andi Saputra",     cabang:"KC Jakarta Utama", nomorPinjaman:"BUM-2020-00121", jenisPinjaman:"BUM KPR TWPAD",
+    angsuranKe:8,  tglBayar:"2026-07-28", nominal:4000000, sisaHutang:71000000,  buktiSetor:"bukti-setor-andi-08.pdf",     tglUnggah:"2026-07-29", status:"Menunggu Verifikasi", tglVerifikasi:"",           catatan:"" },
+  { noBukti:"ANG-2026-0010", kpa:"TB920234", nrp:"19900820002", nama:"Made Wardani",     cabang:"KC Denpasar",      nomorPinjaman:"BUM-2020-00087", jenisPinjaman:"BUM KPR Program Khusus ASABRI",
+    angsuranKe:6,  tglBayar:"2026-08-05", nominal:2500000, sisaHutang:18500000,  buktiSetor:"bukti-setor-agustus-2026.pdf", tglUnggah:"2026-08-06", status:"Menunggu Verifikasi", tglVerifikasi:"",          catatan:"" },
+  { noBukti:"ANG-2026-0011", kpa:"LB940456", nrp:"19880305004", nama:"Firman Dewantoro", cabang:"KC Medan",         nomorPinjaman:"BUM-2019-00042", jenisPinjaman:"BUM KPR Program Khusus ASABRI",
+    angsuranKe:10, tglBayar:"2026-08-08", nominal:1500000, sisaHutang:8000000,   buktiSetor:"setoran-bri-08082026.jpg",    tglUnggah:"2026-08-09", status:"Ditolak",             tglVerifikasi:"2026-08-11", catatan:"Berkas buram dan tanggal setor tidak terbaca; mohon unggah ulang." }
 ];

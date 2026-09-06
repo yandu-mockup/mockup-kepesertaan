@@ -69,6 +69,15 @@ function nomorAgendaBaru(nomorSurat) {
 
 /* ------------------------------------------------------------------ router */
 function go(id) {
+  const layarLama = $(".screen.active");
+  /* Meninggalkan wizard Pendaftaran Peserta Baru dengan isian yang belum
+     disimpan: isinya sengaja dibiarkan utuh, cukup diberi tahu sekali. */
+  if (layarLama && id !== "pendaftaran-perorangan" && id !== "pendaftaran-kolektif") {
+    if (layarLama.id === "s-pendaftaran-perorangan" && ppDraftAda)
+      toast(`Draft Pendaftaran ${ppDraftJenis()} masih tersimpan — lanjutkan dari menu Perorangan.`);
+    if (layarLama.id === "s-pendaftaran-kolektif" && kolDraftAda)
+      toast("Draft Pendaftaran Kolektif masih tersimpan — lanjutkan dari menu Kolektif.");
+  }
   $$(".screen").forEach(s => s.classList.remove("active"));
   const el = $("#s-" + id);
   if (el) el.classList.add("active");
@@ -90,6 +99,9 @@ function go(id) {
   window.scrollTo({ top: 0, behavior: "instant" });
   if (id === "pelunasan") { renderPel(); cekJatuhTempoPelunasan(); }
   if (id === "alih-status") alihStatusGotoView("list");
+  if (id === "spp-pengajuan") sppPengajuanIntro();
+  if (id === "spp-approval") sppaTampilkanDaftar();
+  if (id === "spp-bersih")   renderSppBersih();
   if (id === "ref-kolektif") refKolektifGotoView("list");
   if (id === "pendaftaran-nominatif") nominatifGotoView("list");
   if (id === "dapem")        { renderDapemMetrics(); renderDapemList(); }
@@ -170,6 +182,7 @@ function gotoStep(n) {
     b.classList.toggle("done",   i <  n);
   });
   if (n === 2) dirtyGotoView("rekap");
+  kolDraftStep = n;                   /* diingat supaya draft bisa dilanjutkan di langkah yang sama */
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 $$("[data-step-go]").forEach(b => b.onclick = () => gotoStep(+b.dataset.stepGo));
@@ -827,7 +840,7 @@ $("#btn-submit-batch").onclick = () => {
   const pad = v => String(v).padStart(2, "0");
   const iso = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
   const seq = String(uploadBatchRows.length + 1).padStart(4, "0");
-  const noBatch  = `B-UPLOAD/${now.getFullYear()}/${pad(now.getMonth() + 1)}${pad(now.getDate())}${seq}`;
+  const noBatch  = `B-KOLEKTIF/${now.getFullYear()}/${pad(now.getMonth() + 1)}${pad(now.getDate())}${seq}`;
   const noSurat  = $("#k-surat").value.trim();
   const noAgenda = nomorAgendaBaru(noSurat);
   const kesatuanSel = $("#k-kesatuan");
@@ -869,7 +882,7 @@ $("#btn-submit-batch").onclick = () => {
       <button class="btn btn-primary" id="sb-close">Tutup</button>
     </div>`;
   openModal();
-  $("#sb-close").onclick = () => { closeModal(); uploadGotoView("riwayat"); };
+  $("#sb-close").onclick = () => { closeModal(); kolResetAll(); uploadGotoView("riwayat"); };
 };
 
 /* ============================== PENDAFTARAN PESERTA BARU » PERORANGAN (wizard) */
@@ -880,25 +893,48 @@ $("#pp2-kancab").innerHTML += DATA_KANTOR_CABANG.map(k => `<option>${esc(k)}</op
 
 /* Validasi NRP/NIP sudah terdaftar di sistem — berlaku generik untuk field
    manapun berclass "pp-nrp-field" (form Perorangan tunggal maupun tiap blok
-   Data Peserta Kolektif), pesan error tampil di ".pp-nrp-err" terdekat. */
+   Data Peserta Kolektif), pesan error tampil di ".pp-nrp-err" terdekat.
+   Nomor uji coba yang pasti kena validasi ada di DATA_NRP_TERDAFTAR_DEMO dan
+   ikut ditulis sebagai catatan di bawah field lewat PP_NRP_DEMO_HINT. */
+const PP_NRP_DEMO_HINT =
+  `Untuk uji coba, NRP/NIP ini sudah terdaftar: ${DATA_NRP_TERDAFTAR_DEMO.map(p => p.nrp).join(" · ")}`;
+$("#pp2-nrp").closest(".field").querySelector(".pp-nrp-hint").textContent = PP_NRP_DEMO_HINT;
+
 function ppValidateNrp(input) {
   const nrp = input.value.trim();
   const err = input.closest(".field").querySelector(".pp-nrp-err");
-  const sudahAda = nrp && DATA_MASTER_PESERTA.some(p => p.nrp === nrp);
+  const peserta = nrp && DATA_MASTER_PESERTA.find(p => p.nrp === nrp);
   if (err) {
-    err.style.display = sudahAda ? "" : "none";
-    err.textContent   = sudahAda ? "NRP/NIP ini sudah terdaftar dalam sistem." : "";
+    err.style.display = peserta ? "" : "none";
+    err.textContent   = peserta
+      ? `NRP/NIP ini sudah terdaftar dalam sistem atas nama ${peserta.nama}.`
+      : "";
   }
-  input.closest(".field").classList.toggle("err", sudahAda);
-  return sudahAda;
+  input.closest(".field").classList.toggle("err", !!peserta);
+  return !!peserta;
+}
+
+/* NPWP — angka polos tanpa titik/strip: 15 digit (NPWP lama) atau 16 digit
+   (NPWP baru), jadi panjangnya dibatasi 16. Generik untuk field berclass
+   "pp-npwp-field". */
+function ppNpwpFormatInput(input) {
+  input.value = input.value.replace(/\D/g, "").slice(0, 16);
 }
 
 /* Autocomplete Desa/Kelurahan — generik untuk field berclass "pp-kelurahan-field",
    hasil gabungan kelurahan/kecamatan/kabupaten/provinsi langsung ditampilkan
-   begitu satu opsi dipilih. Memilih kelurahan juga otomatis menyarankan Kantor
-   Cabang terdekat (dicari dalam scope ".pp-scope" yang sama). */
+   begitu satu opsi dipilih. Memilih kelurahan juga otomatis mengisi Kode Pos
+   dan menyarankan Kantor Cabang terdekat (dicari dalam scope ".pp-scope" yang
+   sama). */
 document.addEventListener("input", e => {
   if (e.target.matches(".pp-nrp-field")) { ppValidateNrp(e.target); return; }
+  if (e.target.matches(".pp-npwp-field")) { ppNpwpFormatInput(e.target); return; }
+  if (e.target.matches(".pp-kodepos-field")) {
+    /* diketik manual → catatan "terisi otomatis" tidak berlaku lagi */
+    const hint = e.target.closest(".field").querySelector(".pp-kodepos-saran");
+    if (hint) hint.style.display = "none";
+    return;
+  }
   if (e.target.matches(".pp-kelurahan-field")) {
     const input = e.target;
     const list  = input.closest(".field").querySelector(".pp-kelurahan-list");
@@ -922,6 +958,13 @@ document.addEventListener("click", e => {
     const w = DATA_WILAYAH.find(x => x.kelurahan === item.dataset.kel);
     if (w) {
       input.value = `${w.kelurahan}, ${w.kecamatan}, ${w.kabupaten}, ${w.provinsi}`;
+      const kodeposInp  = scope.querySelector(".pp-kodepos-field");
+      const kodeposHint = scope.querySelector(".pp-kodepos-saran");
+      if (kodeposInp && w.kodepos) {
+        kodeposInp.value = w.kodepos;
+        kodeposHint.style.display = "";
+        kodeposHint.textContent = "💡 Terisi otomatis dari kelurahan — bisa diubah jika perlu.";
+      }
       const saran     = DATA_KANTOR_CABANG_MAP[w.kabupaten];
       const kancabSel = scope.querySelector(".pp-kancab-select");
       const kancabHint = scope.querySelector(".pp-kancab-saran");
@@ -961,6 +1004,7 @@ function ppKolektifBlock(id, idx) {
             <label class="fl caps">NRP / NIP <span class="req">*</span></label>
             <input class="inp pp-nrp-field" id="${fid("nrp")}" placeholder="199204051234">
             <div class="err-msg pp-nrp-err" style="display:none"></div>
+            <div class="hint pp-nrp-hint">${esc(PP_NRP_DEMO_HINT)}</div>
           </div>
           <div class="field">
             <label class="fl caps">NIK <span class="req">*</span></label>
@@ -968,7 +1012,8 @@ function ppKolektifBlock(id, idx) {
           </div>
           <div class="field">
             <label class="fl caps">NPWP</label>
-            <input class="inp" id="${fid("npwp")}" placeholder="00.000.000.0-000.000">
+            <input class="inp pp-npwp-field" id="${fid("npwp")}" placeholder="15 atau 16 digit angka" maxlength="16">
+            <div class="hint">Untuk NPWP terdiri dari 15 Digit (NPWP Lama) dan 16 Digit (NPWP Baru).</div>
           </div>
           <div class="grid2">
             <div class="field">
@@ -992,22 +1037,23 @@ function ppKolektifBlock(id, idx) {
             <label class="fl caps">Status Personil <span class="req">*</span></label>
             <select class="inp" id="${fid("status")}">
               <option value="">— Pilih —</option>
-              <option>Prajurit</option><option>PNS</option><option>Purnawirawan</option><option>Pensiunan</option>
+              <option>Prajurit</option><option>PNS</option><option>PPPK</option>
             </select>
           </div>
           <div class="field">
             <label class="fl caps">Angkatan <span class="req">*</span></label>
             <select class="inp" id="${fid("angkatan")}">
               <option value="">— Pilih —</option>
-              <option>TNI AD</option><option>TNI AL</option><option>TNI AU</option><option>Polri</option><option>PNS Kemhan</option>
+              <option>TNI AD</option><option>TNI AL</option><option>TNI AU</option>
+              <option>POLRI</option><option>MABES TNI</option><option>KEMHAN</option>
             </select>
           </div>
           <div class="field">
             <label class="fl caps">Unit Organisasi (UNOR) <span class="req">*</span></label>
             <select class="inp" id="${fid("unor")}">
               <option value="">— Pilih —</option>
-              <option>Mabes TNI</option><option>Mabes TNI AD</option><option>Mabes TNI AL</option>
-              <option>Mabes TNI AU</option><option>Mabes Polri</option><option>Kementerian Pertahanan</option>
+              <option>TNI AD</option><option>TNI AL</option><option>TNI AU</option>
+              <option>POLRI</option><option>MABES TNI</option><option>KEMHAN</option>
             </select>
           </div>
           <div class="field">
@@ -1050,7 +1096,11 @@ function ppKolektifBlock(id, idx) {
             <div class="hint">Hasil menampilkan kelurahan, kecamatan, kota/kabupaten, dan provinsi — pilih satu, sisanya terisi otomatis.</div>
           </div>
           <div class="grid2">
-            <div class="field"><label class="fl caps">Kode Pos</label><input class="inp" id="${fid("kodepos")}" placeholder="10410"></div>
+            <div class="field">
+              <label class="fl caps">Kode Pos</label>
+              <input class="inp pp-kodepos-field" id="${fid("kodepos")}" placeholder="10410">
+              <div class="hint pp-kodepos-saran" style="display:none"></div>
+            </div>
             <div class="field"><label class="fl caps">Nomor Telepon</label><input class="inp" id="${fid("telp")}" placeholder="081234567890"></div>
           </div>
           <div class="field">
@@ -1090,6 +1140,7 @@ $("#pp2k-tambah").onclick = () => {
   ppKolektifItems.push(id);
   $("#pp2k-list").insertAdjacentHTML("beforeend", ppKolektifBlock(id, ppKolektifItems.length - 1));
   $("#pp2k-empty").style.display = "none";
+  ppTandaiDraft();
 };
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-pp2k-hapus]");
@@ -1110,10 +1161,93 @@ function ppGotoStep(n) {
     b.classList.toggle("done",   i <  n);
   });
   if (n === 4) renderPp4Review();
+  ppDraftStep = n;                    /* diingat supaya draft bisa dilanjutkan di langkah yang sama */
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 $$(".step[data-pp-step]").forEach(b => {
   b.onclick = () => { if (!b.disabled) ppGotoStep(+b.dataset.ppStep); };
+});
+
+/* ------------------------------------------------ draft pendaftaran berjalan
+   Isi wizard hidup di DOM, jadi berpindah sub modul lewat sidebar tidak
+   menghapus apa pun — cukup kembali ke menu ini untuk melanjutkan. Yang perlu
+   dijaga cuma dua hal: (1) tombol "+ Pendaftaran Peserta Baru" jangan diam-diam
+   menimpa isian yang belum disimpan, dan (2) browser memperingatkan sebelum
+   tab/jendela ditutup. `ppDraftAda` menandai ada isian yang belum disimpan,
+   `ppDraftStep` mengingat langkah terakhir supaya draft dilanjutkan di tempat
+   yang sama. Sesuai batasan prototipe, draft hanya ada di memori — refresh
+   tetap mengembalikan kondisi awal. */
+let ppDraftAda  = false;
+let ppDraftStep = 1;
+
+function ppDraftJenis() { return ppKolektifItems.length > 0 ? "Kolektif" : "Perorangan"; }
+
+function ppTandaiDraft() {
+  ppDraftAda = true;
+  ppRenderDraftBanner();
+}
+
+function ppRenderDraftBanner() {
+  $("#pp-draft-banner").style.display = ppDraftAda ? "" : "none";
+  if (!ppDraftAda) return;
+  const jml = ppKolektifItems.length + 1;
+  $("#pp-draft-banner-teks").textContent =
+    `Ada draft Pendaftaran ${ppDraftJenis()}${ppDraftJenis() === "Kolektif" ? ` (${jml} peserta)` : ""} `
+    + `yang belum disimpan — isiannya masih tersimpan sementara selama halaman ini belum ditutup.`;
+}
+
+/* Perubahan apa pun di dalam wizard menandai draft sedang berjalan. */
+["input", "change"].forEach(ev =>
+  $("#pp-wizard-view").addEventListener(ev, ppTandaiDraft));
+
+/* Tawarkan pilihan saat pengguna menekan "+ Pendaftaran Peserta Baru"
+   sementara draft sebelumnya belum disimpan. */
+function ppTanyaDraft() {
+  $("#modal-title").textContent = "Draft Belum Disimpan";
+  $("#modal-sub").textContent   = `Pendaftaran ${ppDraftJenis()}`;
+  $("#modal-ico").style.display = "";
+  $("#modal-ico").textContent   = "✎";
+  $("#modal-body").innerHTML = `
+    <div style="font-size:13px;color:var(--body);line-height:1.5;margin-bottom:18px">
+      Isian pendaftaran sebelumnya belum disimpan. Lanjutkan draft tersebut,
+      atau mulai pendaftaran baru dan buang isiannya?
+    </div>
+    <div class="form-actions" style="justify-content:flex-end">
+      <button class="btn btn-danger" id="pp-draft-modal-baru">Mulai Baru</button>
+      <button class="btn btn-primary" id="pp-draft-modal-lanjut">Lanjutkan Draft</button>
+    </div>`;
+  openModal();
+  $("#pp-draft-modal-lanjut").onclick = () => { closeModal(); ppLanjutkanDraft(); };
+  $("#pp-draft-modal-baru").onclick   = () => { closeModal(); ppMulaiBaru(); };
+}
+
+function ppLanjutkanDraft() {
+  ppGotoStep(ppDraftStep);
+  peroranganGotoView("wizard");
+}
+
+function ppMulaiBaru() {
+  ppResetAll();
+  ppGotoStep(1);
+  peroranganGotoView("wizard");
+}
+
+/* Peringatan sebelum tab/jendela ditutup atau di-refresh, selama salah satu
+   wizard Pendaftaran Peserta Baru masih punya isian yang belum disimpan.
+   Catatan: teks dialognya ditentukan browser (pesan khusus tidak lagi
+   ditampilkan sejak Chrome 51 / Firefox 44) — kalimat di bawah tetap diisi
+   sebagai keterangan maksudnya. */
+function draftPendaftaranBerjalan() {
+  if (ppDraftAda)  return `Pendaftaran ${ppDraftJenis()}`;
+  if (kolDraftAda) return "Pendaftaran Kolektif";
+  return null;
+}
+window.addEventListener("beforeunload", e => {
+  const draft = draftPendaftaranBerjalan();
+  if (!draft) return;
+  e.preventDefault();
+  e.returnValue = `Apa anda ingin menyimpan pengajuan ${draft} ini?`;
+  return e.returnValue;
 });
 
 /* Field wajib di step "Data Peserta" — [id, label untuk pesan validasi] */
@@ -1356,14 +1490,28 @@ function renderPp4Review() {
     ppReviewRow("Tanggal Surat Pengantar", ppDateID("pp-tgl-surat"))
   ].join("");
 
-  const pesertaCard = (title, fid) => `
+  /* Kartu "Data Peserta 1" selalu terbuka; peserta ke-2 dan seterusnya bisa
+     diminimize lewat kepala kartunya supaya pratinjau tidak terlalu panjang.
+     Nama peserta ikut ditampilkan di kepala kartu sebagai penanda saat
+     kartunya sedang tertutup. */
+  const pesertaCard = (title, fid, bisaTutup) => {
+    const nama = ppVal(fid("nama"));
+    const head = bisaTutup
+      ? `<div class="review-card-head is-toggle" data-pp4-toggle>
+           <span>${esc(title)}${nama ? ` — ${esc(nama)}` : ""}</span>
+           <span class="review-card-caret">⌄</span>
+         </div>`
+      : `<div class="review-card-head">${esc(title)}</div>`;
+    return `
     <div class="review-card" style="margin-top:16px">
-      <div class="review-card-head">${esc(title)}</div>
+      ${head}
       <div class="review-card-body">${ppPesertaFieldRows(fid)}</div>
     </div>`;
+  };
   $("#pp4-review-peserta").innerHTML =
     pesertaCard("Data Peserta 1", k => `pp2-${k}`) +
-    ppKolektifItems.map((id, idx) => pesertaCard(`Data Peserta ${idx + 2}`, k => `pp2k-${k}-${id}`)).join("");
+    ppKolektifItems.map((id, idx) =>
+      pesertaCard(`Data Peserta ${idx + 2}`, k => `pp2k-${k}-${id}`, true)).join("");
 
   const berkasRows = [
     ...PP3_FIXED.map(d => ppReviewRow(d.label, pp3Fixed[d.key] || "Belum diunggah")),
@@ -1371,6 +1519,13 @@ function renderPp4Review() {
   ];
   $("#pp4-review-berkas").innerHTML = berkasRows.join("");
 }
+
+/* Klik kepala kartu "Data Peserta 2" dst di Pratinjau dan Simpan → minimize /
+   buka lagi isinya. */
+document.addEventListener("click", e => {
+  const head = e.target.closest("[data-pp4-toggle]");
+  if (head) head.closest(".review-card").classList.toggle("collapsed");
+});
 
 $("#pp3-tambah").onclick = () => {
   pp3Dynamic.push({ id: pp3NextId++, nama: "", file: null });
@@ -1429,6 +1584,7 @@ function ppResetAll() {
   PP2_ALL_IDS.forEach(id => $(`#${id}`).value = "");
   $("#pp2-nrp-err").style.display = "none";
   $("#pp2-nrp").closest(".field").classList.remove("err");
+  $("#pp2-kodepos-saran").style.display = "none";
   $("#pp2-kancab-saran").style.display = "none";
   ppKolektifItems = [];
   renderPpKolektif();
@@ -1437,6 +1593,9 @@ function ppResetAll() {
   renderPp3Fixed();
   renderPp3Dynamic();
   [2, 3, 4].forEach(n => $(`.step[data-pp-step="${n}"]`).disabled = true);
+  ppDraftAda  = false;                /* draft dianggap habis: disimpan atau dibuang */
+  ppDraftStep = 1;
+  ppRenderDraftBanner();
 }
 
 $("#pp-1-lanjut").onclick = () => {
@@ -1510,7 +1669,8 @@ $("#pp-4-simpan").onclick = () => {
     const nomorBatch = `B-PERO/${now.getFullYear()}/${pad(now.getMonth() + 1)}${pad(now.getDate())}${seq}`;
     const buildPeserta = fid => ({
       nama: $(`#${fid("nama")}`).value.trim(), nrp: $(`#${fid("nrp")}`).value.trim(), nik: $(`#${fid("nik")}`).value.trim(),
-      npwp: $(`#${fid("npwp")}`).value.trim(), jk: $(`#${fid("jk")}`).value, tglLahir: tglOrDash(fid("tgl-lahir")),
+      npwp: $(`#${fid("npwp")}`).value.trim(),
+      jk: $(`#${fid("jk")}`).value, tglLahir: tglOrDash(fid("tgl-lahir")),
       tmpLahir: $(`#${fid("tmp-lahir")}`).value.trim(), status: $(`#${fid("status")}`).value, angkatan: $(`#${fid("angkatan")}`).value,
       unor: $(`#${fid("unor")}`).value, uker: $(`#${fid("uker")}`).value, pangkat: $(`#${fid("pangkat")}`).value,
       tmt: tglOrDash(fid("tmt")), nomorSkep: $(`#${fid("nomor-skep")}`).value.trim(),
@@ -1554,7 +1714,8 @@ $("#pp-4-simpan").onclick = () => {
       dataPengajuan,
       dataPeserta: {
         nama: $("#pp2-nama").value.trim(), nrp: $("#pp2-nrp").value.trim(), nik: $("#pp2-nik").value.trim(),
-        npwp: $("#pp2-npwp").value.trim(), jk: $("#pp2-jk").value, tglLahir: tglOrDash("pp2-tgl-lahir"),
+        npwp: $("#pp2-npwp").value.trim(),
+        jk: $("#pp2-jk").value, tglLahir: tglOrDash("pp2-tgl-lahir"),
         tmpLahir: $("#pp2-tmp-lahir").value.trim(), status: $("#pp2-status").value, angkatan: $("#pp2-angkatan").value,
         unor: $("#pp2-unor").value, uker: $("#pp2-uker").value, pangkat: $("#pp2-pangkat").value,
         tmt: tglOrDash("pp2-tmt"), nomorSkep: $("#pp2-nomor-skep").value.trim(),
@@ -1582,22 +1743,42 @@ function peroranganGotoView(view) {
   $("#pp-riwayat-view").style.display        = view === "riwayat"        ? "" : "none";
   $("#pp-riwayat-detail-view").style.display = view === "riwayat-detail" ? "" : "none";
   $("#pp-wizard-view").style.display         = view === "wizard"         ? "" : "none";
+  ppRenderDraftBanner();               /* banner draft hanya relevan di daftar riwayat */
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function renderPeroranganRiwayat() {
-  const fBatch    = ($("#pp-riwayat-f-batch").value    || "").toLowerCase();
-  const fAgenda   = ($("#pp-riwayat-f-agenda").value   || "").toLowerCase();
-  const fKesatuan = ($("#pp-riwayat-f-kesatuan").value || "").toLowerCase();
-  const fStatus   = $("#pp-riwayat-f-status").value;
-  const fTanggal  = $("#pp-riwayat-f-tanggal").value;
+/* Saringan daftar riwayat Perorangan — dipakai bersama oleh tabel dan tombol
+   Export Excel supaya isi ekspor persis sama dengan yang sedang tampil.
+   `aktif` berisi keterangan filter yang sedang dipakai; kosong berarti seluruh
+   data ikut terekspor. */
+function ppRiwayatFilter() {
+  const vBatch    = $("#pp-riwayat-f-batch").value.trim();
+  const vAgenda   = $("#pp-riwayat-f-agenda").value.trim();
+  const vKesatuan = $("#pp-riwayat-f-kesatuan").value.trim();
+  const vStatus   = $("#pp-riwayat-f-status").value;
+  const vTanggal  = $("#pp-riwayat-f-tanggal").value;
 
+  const aktif = [];
+  if (vBatch)            aktif.push(`Nomor Batch "${vBatch}"`);
+  if (vAgenda)           aktif.push(`Nomor Agenda "${vAgenda}"`);
+  if (vKesatuan)         aktif.push(`Kesatuan Pengaju "${vKesatuan}"`);
+  if (vStatus !== "all") aktif.push(`Status ${vStatus}`);
+  if (vTanggal)          aktif.push(`Tanggal ${fmtTgl(vTanggal)}`);
+
+  const fBatch = vBatch.toLowerCase(), fAgenda = vAgenda.toLowerCase(),
+        fKesatuan = vKesatuan.toLowerCase();
   const rows = peroranganRows.filter(r =>
-    (fStatus === "all" || r.approvalStatus === fStatus) &&
+    (vStatus === "all" || r.approvalStatus === vStatus) &&
     (!fBatch    || r.nomorBatch.toLowerCase().includes(fBatch)) &&
     (!fAgenda   || r.nomorAgenda.toLowerCase().includes(fAgenda)) &&
     (!fKesatuan || r.kesatuanPengaju.toLowerCase().includes(fKesatuan)) &&
-    (!fTanggal  || fmtTgl(fTanggal) === r.tglPengajuan));
+    (!vTanggal  || fmtTgl(vTanggal) === r.tglPengajuan));
+
+  return { rows, aktif };
+}
+
+function renderPeroranganRiwayat() {
+  const { rows } = ppRiwayatFilter();
 
   const pageSize   = +$("#pp-riwayat-page-size").value;
   const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
@@ -1627,14 +1808,31 @@ function renderPeroranganRiwayat() {
 }
 $("#pp-riwayat-cari").onclick        = () => { ppRiwayatPage = 1; renderPeroranganRiwayat(); };
 $("#pp-riwayat-page-size").onchange  = () => { ppRiwayatPage = 1; renderPeroranganRiwayat(); };
-$("#btn-export-pp-riwayat").onclick  = () => toast("Riwayat pendaftaran peserta baru diekspor ke Excel.");
-$("#btn-pp-baru").onclick = () => {
-  ppResetAll();
-  ppGotoStep(1);
-  peroranganGotoView("wizard");
+/* Export mengikuti filter yang sedang dipakai; tanpa filter berarti seluruh
+   riwayat perorangan ikut terekspor. */
+$("#btn-export-pp-riwayat").onclick  = () => {
+  const { rows, aktif } = ppRiwayatFilter();
+  if (!rows.length) {
+    toast("Tidak ada data yang cocok dengan filter — tidak ada yang diekspor.", "bad");
+    return;
+  }
+  toast(aktif.length
+    ? `${rows.length} data riwayat perorangan diekspor ke Excel — filter: ${aktif.join(", ")}.`
+    : `Semua ${rows.length} data riwayat perorangan diekspor ke Excel (tanpa filter).`, "ok");
 };
+/* Draft yang belum disimpan tidak langsung ditimpa — pengguna dimintai
+   keputusan dulu (lihat ppTanyaDraft). */
+$("#btn-pp-baru").onclick   = () => { if (ppDraftAda) ppTanyaDraft(); else ppMulaiBaru(); };
+$("#pp-draft-lanjut").onclick = ppLanjutkanDraft;
+$("#pp-draft-buang").onclick  = () => confirmModal(
+  "Buang draft pendaftaran yang belum disimpan? Semua isian pada wizard akan dikosongkan.",
+  () => { ppResetAll(); ppGotoStep(1); toast("Draft pendaftaran dibuang.", "ok"); },
+  { title: "Buang Draft", okLabel: "Buang Draft" });
 $("#pp-riwayat-detail-kembali").onclick = () => peroranganGotoView("riwayat");
-$("#pp-1-batal").onclick = () => peroranganGotoView("riwayat");
+$("#pp-1-batal").onclick = () => {
+  peroranganGotoView("riwayat");
+  if (ppDraftAda) toast("Isian disimpan sementara sebagai draft — bisa dilanjutkan lagi dari daftar riwayat.");
+};
 
 function renderPeroranganRiwayatDetail(r) {
   const kolektif = r.jenis === "Kolektif";
@@ -1759,10 +1957,8 @@ function renderPlafon() {
 }
 
 /* Pilihan Pangkat mengikuti kombinasi Status Personil + Angkatan + Golongan
-   yang sedang dipilih (lihat PLAFON_PANGKAT di data.js) — PPPK punya daftar
-   sendiri (GOL.I–GOL.XVII) yang tidak bergantung pada Angkatan/Golongan. */
+   yang sedang dipilih (lihat PLAFON_PANGKAT di data.js). */
 function plafonPangkatOptions(statusPersonil, angkatan, golongan) {
-  if (statusPersonil === "PPPK") return PLAFON_PANGKAT_PPPK;
   if (!statusPersonil || !angkatan || !golongan) return [];
   return PLAFON_PANGKAT[`${statusPersonil}|${angkatan}|${golongan}`] || [];
 }
@@ -1884,13 +2080,83 @@ document.addEventListener("click", e => {
 });
 renderPlafon();
 
+/* ================================== PARAMETER PERNYATAAN TANGGUNG JAWAB
+   Isi poin-poin popup "Pernyataan Atas Tanggung Jawab dan Keabsahan Data
+   Pengajuan KPR (PUM)" (lihat pf6BukaPernyataan()) — hanya Lihat/Ubah/Hapus,
+   tanpa Tambah, karena poin pernyataan sudah lengkap dan bakunya dari sisi
+   kebijakan; menghapus semua poin akan membuat popup itu kosong. */
+let pernyataanRows = DATA_PERNYATAAN_TANGGUNG_JAWAB.map((r, i) => ({ ...r, _id: i }));
+
+function renderPernyataan() {
+  $("#pernyataan-body").innerHTML = pernyataanRows.length ? pernyataanRows.map((r, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td class="t-strong">${esc(r.judul)}</td>
+      <td class="truncate-cell" style="max-width:420px">${esc(r.isi)}</td>
+      <td style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm"        data-pernyataan-ubah="${r._id}">✎ Ubah</button>
+        <button class="btn btn-danger-solid btn-sm" data-pernyataan-hapus="${r._id}">Hapus</button>
+      </td>
+    </tr>`).join("") : `<tr><td colspan="4"><div class="empty"><h4>Belum ada poin pernyataan</h4><p>Semua poin pernyataan sudah dihapus.</p></div></td></tr>`;
+}
+
+function pernyataanForm(r) {
+  $("#modal-title").textContent = "Ubah Pernyataan Tanggung Jawab";
+  $("#modal-sub").textContent   = "Parameter Pernyataan Tanggung Jawab";
+  $("#modal-body").innerHTML = `
+    <div class="field">
+      <label class="fl">Judul Pernyataan <span class="req">*</span></label>
+      <input class="inp" id="pernyataan-judul" value="${esc(r.judul)}">
+    </div>
+    <div class="field">
+      <label class="fl">Isi Pernyataan <span class="req">*</span></label>
+      <textarea class="inp" id="pernyataan-isi" style="height:120px;padding:9px 10px;resize:vertical">${esc(r.isi)}</textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" id="pernyataan-batal">Batal</button>
+      <button class="btn btn-primary" id="pernyataan-simpan">Simpan</button>
+    </div>`;
+  openModal();
+  $("#pernyataan-batal").onclick = closeModal;
+  $("#pernyataan-simpan").onclick = () => {
+    const judul = $("#pernyataan-judul").value.trim();
+    const isi   = $("#pernyataan-isi").value.trim();
+    if (!judul) { toast("Judul Pernyataan belum diisi.", "bad"); return; }
+    if (!isi)   { toast("Isi Pernyataan belum diisi.", "bad"); return; }
+    r.judul = judul; r.isi = isi;
+    toast(`Pernyataan "${judul}" berhasil diubah.`, "ok");
+    closeModal();
+    renderPernyataan();
+  };
+}
+
+document.addEventListener("click", e => {
+  const bUbah = e.target.closest("[data-pernyataan-ubah]");
+  if (bUbah) { pernyataanForm(pernyataanRows.find(r => r._id === +bUbah.dataset.pernyataanUbah)); return; }
+  const bHapus = e.target.closest("[data-pernyataan-hapus]");
+  if (bHapus) {
+    const r = pernyataanRows.find(x => x._id === +bHapus.dataset.pernyataanHapus);
+    if (!r) return;
+    confirmModal(
+      `Hapus poin pernyataan "${r.judul}"? Poin ini akan hilang dari popup Pernyataan Atas Tanggung Jawab saat Pengajuan KPR (PUM) disimpan.`,
+      () => {
+        pernyataanRows = pernyataanRows.filter(x => x._id !== r._id);
+        renderPernyataan();
+        toast(`Pernyataan "${r.judul}" dihapus.`, "ok");
+      },
+      { title: "Hapus Pernyataan" }
+    );
+  }
+});
+renderPernyataan();
+
 /* ================================================================= PUM KPR */
 const pillPum = s => s === "Disetujui" ? "pill-ok" : s === "Ditolak" || s === "Revisi" ? "pill-bad" : s === "Submitted" ? "pill-info" : "pill-warn";
 
 /* Label tampilan status di Daftar Pengajuan KPR (PUM) — "Submitted" tampil
-   sebagai "Pending" supaya konsisten dengan istilah yang dipahami PIC UNOR/
+   sebagai "Tertunda" supaya konsisten dengan istilah yang dipahami PIC UNOR/
    Kesatuan; status internal (dipakai untuk logika & filter) tidak berubah. */
-const pumStatusLabel = s => s === "Submitted" ? "Pending" : s;
+const pumStatusLabel = s => s === "Submitted" ? "Tertunda" : s;
 
 function renderPum() {
   const fKpa  = ($("#pum-f-kpa").value  || "").toLowerCase();
@@ -1910,7 +2176,7 @@ function renderPum() {
     <tr id="pum-row-${r._id}"${r.status === "Revisi" ? ` style="background:var(--red-soft)"` : ""}>
       <td class="t-strong">${esc(r.kpa)}</td><td>${esc(r.nrp)}</td><td>${esc(r.npwp)}</td>
       <td class="t-name">${esc(r.nama)}</td><td>${esc(r.angkatan)}</td><td>${esc(r.tglAmbil)}</td>
-      <td>${esc(r.tipePum)}</td><td>${esc(r.tipeRumah)}</td>
+      <td>${esc(r.tipePum)}</td>
       <td><span class="pill ${pillPum(r.status)}">${esc(pumStatusLabel(r.status))}</span></td>
       <td>${rp(r.jumlah)}</td>
       <td style="display:flex;gap:6px">
@@ -1920,7 +2186,7 @@ function renderPum() {
         <button class="btn btn-success btn-sm"       data-pum-submit="${r._id}">Submit</button>
       </td>
     </tr>`).join("")
-  : `<tr><td colspan="11"><div class="empty"><h4>Tidak ada pengajuan</h4><p>Coba ubah filter atau kata kunci pencarian.</p></div></td></tr>`;
+  : `<tr><td colspan="10"><div class="empty"><h4>Tidak ada pengajuan</h4><p>Coba ubah filter atau kata kunci pencarian.</p></div></td></tr>`;
 
   $("#pum-count").textContent = `menampilkan ${rows.length} dari ${pumRows.length} pengajuan`;
 }
@@ -1962,6 +2228,14 @@ function showAlertPopup(title, msg, sub = "", type = "bad") {
 }
 const pumValidasiPopup = msg => showAlertPopup("Validasi Nomor KPA", msg, "Pengajuan Baru PUM KPR");
 
+/* Cocokkan satu baris pengajuan/klaim terhadap data peserta lewat KPA, NIK,
+   atau NRP — salah satu cocok sudah dianggap peserta yang sama. */
+function samaDenganPeserta(r, found) {
+  return (r.kpa && found.kpa && r.kpa.toLowerCase() === found.kpa.toLowerCase()) ||
+         (r.nik && found.nik && r.nik === found.nik) ||
+         (r.nrp && found.nrp && r.nrp === found.nrp);
+}
+
 $("#pum-baru-cari").onclick = () => {
   const kpa = $("#pum-baru-kpa").value.trim();
   if (!kpa) { toast("Nomor KPA belum diisi.", "bad"); return; }
@@ -1969,25 +2243,24 @@ $("#pum-baru-cari").onclick = () => {
   $("#pum-baru-hasil").style.display = "none";
   $("#pum-baru-hasil").innerHTML = "";
 
-  /* Nomor KPA yang sudah ada di daftar pengajuan tidak boleh diajukan ulang */
-  const existing = pumRows.find(x => x.kpa.toLowerCase() === kpa.toLowerCase());
-  if (existing) {
-    pumValidasiPopup(existing.status === "Draft" || existing.status === "Revisi"
-      ? `Nomor KPA ${existing.kpa} tidak dapat melanjutkan Pengajuan KPR (PUM) karena data masih dalam proses Pengajuan KPR (PUM).`
-      : `Nomor KPA ${existing.kpa} tidak dapat melanjutkan Pengajuan KPR (PUM) karena data sudah pernah diinput.`);
-    return;
-  }
-
   const found = DATA_MASTER_PESERTA.find(x => x.kpa.toLowerCase() === kpa.toLowerCase());
   if (!found) {
     toast(`Nomor KPA "${kpa}" tidak ditemukan pada sistem ASABRI.`, "bad");
     return;
   }
 
-  /* Anggota TNI dengan Masa Kerja Dinas < 2 Tahun belum memenuhi syarat
-     Pengajuan KPR (PUM) — tampilkan data seperti biasa tapi kunci "Lanjutkan". */
+  /* Peserta yang sudah memiliki Pinjaman KPR (PUM) atau KPR (BUM) — dicocokkan
+     lewat KPA, NIK, atau NRP — tidak dapat melanjutkan Pengajuan KPR (PUM)
+     baru. Data peserta tetap ditampilkan seperti biasa, hanya "Lanjutkan"
+     yang dikunci. */
+  const pumMatch = pumRows.find(r => samaDenganPeserta(r, found));
+  const bumMatch = !pumMatch && bumRows.find(r => samaDenganPeserta(r, found));
+
+  /* Anggota TNI dengan Masa Kerja Dinas < 2 Tahun juga belum memenuhi syarat. */
   const masaKerjaAwal = /^tni/i.test(found.angkatan || "") ? masaKerjaKpaAwal(found.kpa) : null;
-  const belumMemenuhiSyarat = masaKerjaAwal !== null && masaKerjaAwal < 2;
+  const masaKerjaKurang = masaKerjaAwal !== null && masaKerjaAwal < 2;
+
+  const belumMemenuhiSyarat = !!pumMatch || !!bumMatch || masaKerjaKurang;
 
   $("#pum-baru-hasil").style.display = "";
   $("#pum-baru-hasil").innerHTML = `
@@ -1996,13 +2269,18 @@ $("#pum-baru-cari").onclick = () => {
       <div class="field"><label class="fl">Nama</label><div class="t-strong">${esc(found.nama)}</div></div>
       <div class="field"><label class="fl">NRP/NIP</label><div>${esc(found.nrp)}</div></div>
       <div class="field"><label class="fl">NPWP</label><div>${esc(found.npwp)}</div></div>
+      <div class="field"><label class="fl">NIK</label><div>${esc(found.nik || "-")}</div></div>
       <div class="field"><label class="fl">Angkatan</label><div>${esc(found.angkatan)}</div></div>
     </div>
     <div class="form-actions">
       <button class="btn btn-primary" id="pum-baru-lanjut" ${belumMemenuhiSyarat ? "disabled" : ""}>Lanjutkan →</button>
     </div>`;
 
-  if (belumMemenuhiSyarat) {
+  if (pumMatch) {
+    pumValidasiPopup(`Nomor KPA ${found.kpa} tidak dapat melanjutkan Pengajuan KPR (PUM) karena sudah memiliki Pinjaman KPR (PUM) dan tidak dapat melanjutkan pengajuan Pinjaman KPR (PUM)`);
+  } else if (bumMatch) {
+    pumValidasiPopup(`Nomor KPA ${found.kpa} tidak dapat melanjutkan Pengajuan KPR (PUM) karena sudah memiliki Pinjaman KPR (BUM) dan tidak dapat melanjutkan pengajuan Pinjaman KPR (PUM)`);
+  } else if (masaKerjaKurang) {
     showAlertPopup("Validasi Masa Kerja Dinas", `Masa Kerja Dinas KPA ${found.kpa} kurang dari 2 Tahun.`);
   } else {
     toast(`Data peserta ${found.nama} berhasil diambil dari sistem.`, "ok");
@@ -2051,14 +2329,14 @@ const PF_TEXT_FIELD_IDS = [
   "pf4-nama-perumahan", "pf4-nama-developer", "pf4-alamat-perumahan", "pf4-tipe-rumah",
   "pf4-blok-rumah", "pf4-kelurahan", "pf4-kecamatan", "pf4-kabupaten", "pf4-provinsi",
   "pf4-jenis-kredit", "pf4-bank-kredit", "pf4-nomor-akad", "pf4-tgl-akad",
-  "pf4-nama-rekening", "pf4-nomor-rekening", "pf4-mitra-bayar", "pf4-cabang-mitra", "pf4-catatan",
+  "pf4-nama-rekening", "pf4-nomor-rekening", "pf4-mitra-bayar", "pf4-cabang-mitra",
   "pf4pm-jenis-hak", "pf4pm-atas-nama", "pf4pm-nomor-hak", "pf4pm-tgl-hak",
   "pf4pm-nama-perumahan", "pf4pm-nama-developer", "pf4pm-alamat-perumahan", "pf4pm-tipe-rumah",
   "pf4pm-blok-rumah", "pf4pm-kelurahan", "pf4pm-kecamatan", "pf4pm-kabupaten", "pf4pm-provinsi",
-  "pf4pm-nama-rekening", "pf4pm-nomor-rekening", "pf4pm-mitra-bayar", "pf4pm-cabang-mitra", "pf4pm-catatan",
+  "pf4pm-nama-rekening", "pf4pm-nomor-rekening", "pf4pm-mitra-bayar", "pf4pm-cabang-mitra",
   "pf4mr-jenis-hak", "pf4mr-atas-nama", "pf4mr-nomor-hak", "pf4mr-tgl-hak",
   "pf4mr-alamat-baru", "pf4mr-rt", "pf4mr-rw", "pf4mr-kelurahan", "pf4mr-kecamatan", "pf4mr-kabupaten", "pf4mr-provinsi",
-  "pf4mr-nama-rekening", "pf4mr-nomor-rekening", "pf4mr-mitra-bayar", "pf4mr-cabang-mitra", "pf4mr-catatan"
+  "pf4mr-nama-rekening", "pf4mr-nomor-rekening", "pf4mr-mitra-bayar", "pf4mr-cabang-mitra"
 ];
 const PF_FILE_FIELD_IDS = [
   "pf4-file-akad", "pf4-file-buku", "pf4pm-file-hak", "pf4pm-file-buku",
@@ -2109,6 +2387,7 @@ function bukaFormPeserta(found) {
   $("#pf-hp").value          = "";
   $("#pf-pangkat").value     = "";
   resetFields(["pf-alamat", "pf-rt", "pf-rw", "pf-kelurahan", "pf-kecamatan", "pf-kabupaten", "pf-provinsi", "pf-kodepos"]);
+  $("#pf-kodepos-saran").style.display = "none";
 
   riwayatItems = [];
   renderRiwayat();
@@ -2118,18 +2397,16 @@ function bukaFormPeserta(found) {
     "pf4-nama-perumahan", "pf4-nama-developer", "pf4-alamat-perumahan", "pf4-tipe-rumah",
     "pf4-blok-rumah", "pf4-kelurahan", "pf4-kecamatan", "pf4-kabupaten", "pf4-provinsi",
     "pf4-jenis-kredit", "pf4-bank-kredit",
-    "pf4-nomor-akad", "pf4-tgl-akad", "pf4-file-akad", "pf4-catatan",
+    "pf4-nomor-akad", "pf4-tgl-akad", "pf4-file-akad",
     "pf4-nama-rekening", "pf4-nomor-rekening", "pf4-mitra-bayar", "pf4-cabang-mitra", "pf4-file-buku",
 
     "pf4pm-jenis-hak", "pf4pm-atas-nama", "pf4pm-nomor-hak", "pf4pm-tgl-hak", "pf4pm-file-hak",
     "pf4pm-nama-perumahan", "pf4pm-nama-developer", "pf4pm-alamat-perumahan", "pf4pm-tipe-rumah",
     "pf4pm-blok-rumah", "pf4pm-kelurahan", "pf4pm-kecamatan", "pf4pm-kabupaten", "pf4pm-provinsi",
-    "pf4pm-catatan",
     "pf4pm-nama-rekening", "pf4pm-nomor-rekening", "pf4pm-mitra-bayar", "pf4pm-cabang-mitra", "pf4pm-file-buku",
 
     "pf4mr-jenis-hak", "pf4mr-atas-nama", "pf4mr-nomor-hak", "pf4mr-tgl-hak",
     "pf4mr-alamat-baru", "pf4mr-rt", "pf4mr-rw", "pf4mr-kelurahan", "pf4mr-kecamatan", "pf4mr-kabupaten", "pf4mr-provinsi",
-    "pf4mr-catatan",
     "pf4mr-nama-rekening", "pf4mr-nomor-rekening", "pf4mr-mitra-bayar", "pf4mr-cabang-mitra", "pf4mr-file-buku"
   ]);
 
@@ -2230,8 +2507,26 @@ $("#pf-lanjut").onclick = () => {
   if (!$("#pf-nik").value.trim()) { toast("NIK wajib diisi.", "bad"); return; }
   if (!$("#pf-pangkat").value) { toast("Pangkat belum dipilih.", "bad"); return; }
 
+  /* Peserta yang sudah memiliki Pinjaman KPR (PUM) atau KPR (BUM) — dicocokkan
+     lewat KPA, NRP/NIP, atau NIK yang sedang diisi di form ini — tidak dapat
+     melanjutkan. Baris yang sedang diedit sendiri (mode "Ubah") dikecualikan
+     supaya tidak menabrak datanya sendiri. */
+  const dataPeserta = { kpa: $("#pf-ktpa").value.trim(), nrp: $("#pf-nrp").value.trim(), nik: $("#pf-nik").value.trim() };
+  const pumMatch = pumRows.find(r => r !== pumEditingRow && samaDenganPeserta(r, dataPeserta));
+  const bumMatch = !pumMatch && bumRows.find(r => samaDenganPeserta(r, dataPeserta));
+  if (pumMatch || bumMatch) {
+    $("#pf-lanjut").disabled = true;
+    pumValidasiPopup(pumMatch
+      ? `Nomor KPA ${dataPeserta.kpa} tidak dapat melanjutkan Pengajuan KPR (PUM) karena sudah memiliki Pinjaman KPR (PUM) dan tidak dapat melanjutkan pengajuan Pinjaman KPR (PUM)`
+      : `Nomor KPA ${dataPeserta.kpa} tidak dapat melanjutkan Pengajuan KPR (PUM) karena sudah memiliki Pinjaman KPR (BUM) dan tidak dapat melanjutkan pengajuan Pinjaman KPR (PUM)`);
+    return;
+  }
+
   pfGoStep(2);
 };
+/* Begitu KPA/NRP/NIK diubah lagi, buka kunci tombol Selanjutnya supaya
+   validasi di atas dicek ulang saat diklik. */
+["#pf-ktpa", "#pf-nrp", "#pf-nik"].forEach(sel => $(sel).addEventListener("input", () => { $("#pf-lanjut").disabled = false; }));
 
 
 /* ---------------------------------------------------- wizard: kepangkatan */
@@ -2426,8 +2721,9 @@ isiMitraBayar("pf4-mitra-bayar");
 isiMitraBayar("pf4pm-mitra-bayar");
 isiMitraBayar("pf4mr-mitra-bayar");
 
-/* Autocomplete Kelurahan → otomatis isi Kecamatan/Kabupaten/Provinsi.
-   Dipakai berulang untuk tiap tipe PUM lewat prefix id field-nya. */
+/* Autocomplete Kelurahan → otomatis isi Kecamatan/Kabupaten/Provinsi, dan Kode
+   Pos bila field-nya ada. Dipakai berulang untuk tiap tipe PUM lewat prefix id
+   field-nya. */
 function bindKelurahanAutocomplete(prefix) {
   $(`#${prefix}-kelurahan`).oninput = () => {
     const q = $(`#${prefix}-kelurahan`).value.trim().toLowerCase();
@@ -2454,6 +2750,18 @@ function bindKelurahanAutocomplete(prefix) {
         $(`#${prefix}-kecamatan`).value  = w.kecamatan;
         $(`#${prefix}-kabupaten`).value  = w.kabupaten;
         $(`#${prefix}-provinsi`).value   = w.provinsi;
+        /* Kode Pos ikut terisi kalau layarnya punya field itu — tetap bisa
+           diubah manual, catatannya hilang begitu diketik ulang. */
+        const kodeposInp  = $(`#${prefix}-kodepos`);
+        const kodeposHint = $(`#${prefix}-kodepos-saran`);
+        if (kodeposInp && w.kodepos) {
+          kodeposInp.value = w.kodepos;
+          if (kodeposHint) {
+            kodeposHint.style.display = "";
+            kodeposHint.textContent = "💡 Terisi otomatis dari kelurahan — bisa diubah jika perlu.";
+            kodeposInp.oninput = () => { kodeposHint.style.display = "none"; };
+          }
+        }
       }
       $(`#${prefix}-kelurahan-list`).classList.remove("open");
       return;
@@ -2801,7 +3109,7 @@ function masaKerjaKpaAwal(kpa) {
    Detail nanti bisa menampilkan rincian yang sama persis. */
 function buildStep6Snapshot() {
   const dataPeserta = [
-    { label:"KTPA", value: fv("pf-ktpa") },
+    { label:"KPA", value: fv("pf-ktpa") },
     { label:"NRP/NIP", value: fv("pf-nrp") },
     { label:"Nama Lengkap", value: fv("pf-nama") },
     { label:"Tempat Lahir", value: fv("pf-tempat-lahir") },
@@ -2828,7 +3136,7 @@ function buildStep6Snapshot() {
   if (pfTipePum === "Kredit Rumah") {
     detailGroups = [
       { title:"Data Peserta (Terisi Otomatis)", fields:[
-        { label:"KTPA", value: fv("pf4-ktpa") },
+        { label:"KPA", value: fv("pf4-ktpa") },
         { label:"Nama Peserta", value: fv("pf4-nama-peserta") },
         { label:"Pangkat", value: fv("pf4-pangkat") },
         { label:"UKER", value: fv("pf4-uker") },
@@ -2864,14 +3172,13 @@ function buildStep6Snapshot() {
         { label:"Nomor Rekening Tujuan", value: fv("pf4-nomor-rekening") },
         { label:"Mitra Bayar", value: fv("pf4-mitra-bayar") },
         { label:"Cabang Mitra Bayar", value: fv("pf4-cabang-mitra") },
-        fileField("Upload Buku Tabungan", "pf4-file-buku"),
-        { label:"Catatan", value: fv("pf4-catatan"), wide:true }
+        fileField("Upload Buku Tabungan", "pf4-file-buku")
       ]}
     ];
   } else if (pfTipePum === "Pembelian Rumah Secara Mandiri") {
     detailGroups = [
       { title:"Data Peserta (Terisi Otomatis)", fields:[
-        { label:"KTPA", value: fv("pf4pm-ktpa") },
+        { label:"KPA", value: fv("pf4pm-ktpa") },
         { label:"Nama Peserta", value: fv("pf4pm-nama-peserta") },
         { label:"Pangkat", value: fv("pf4pm-pangkat") },
         { label:"UKER", value: fv("pf4pm-uker") },
@@ -2907,14 +3214,13 @@ function buildStep6Snapshot() {
         { label:"Nomor Rekening Tujuan", value: fv("pf4pm-nomor-rekening") },
         { label:"Mitra Bayar", value: fv("pf4pm-mitra-bayar") },
         { label:"Cabang Mitra Bayar", value: fv("pf4pm-cabang-mitra") },
-        fileField("Upload Buku Tabungan", "pf4pm-file-buku"),
-        { label:"Catatan", value: fv("pf4pm-catatan"), wide:true }
+        fileField("Upload Buku Tabungan", "pf4pm-file-buku")
       ]}
     ];
   } else if (pfTipePum === "Membangun Rumah") {
     detailGroups = [
       { title:"Data Peserta (Terisi Otomatis)", fields:[
-        { label:"KTPA", value: fv("pf4mr-ktpa") },
+        { label:"KPA", value: fv("pf4mr-ktpa") },
         { label:"Nama Peserta", value: fv("pf4mr-nama-peserta") },
         { label:"Pangkat", value: fv("pf4mr-pangkat") },
         { label:"UKER", value: fv("pf4mr-uker") },
@@ -2949,8 +3255,7 @@ function buildStep6Snapshot() {
         { label:"Nomor Rekening Tujuan", value: fv("pf4mr-nomor-rekening") },
         { label:"Mitra Bayar", value: fv("pf4mr-mitra-bayar") },
         { label:"Cabang Mitra Bayar", value: fv("pf4mr-cabang-mitra") },
-        fileField("Upload Buku Tabungan", "pf4mr-file-buku"),
-        { label:"Catatan", value: fv("pf4mr-catatan"), wide:true }
+        fileField("Upload Buku Tabungan", "pf4mr-file-buku")
       ]}
     ];
   }
@@ -3046,29 +3351,21 @@ function renderStep6() {
 $("#pf6-kembali").onclick = () => pfGoStep(4);
 
 /* Pernyataan Atas Tanggung Jawab dan Keabsahan Data — wajib disetujui
-   (seluruh poin dicentang) sebelum Simpan Draft Pengajuan diproses. */
-const PF6_PERNYATAAN = [
-  { title:"Keabsahan Data & Dokumen:",
-    body:"Seluruh data, dokumen, dan informasi prajurit/anggota/peserta yang diunggah dan diinput ke dalam sistem ini adalah benar, sah, akurat, dan sesuai dengan dokumen aslinya." },
-  { title:"Verifikasi Internal:",
-    body:"Saya telah melakukan proses pemeriksaan dan verifikasi secara mandiri di tingkat UNOR/Kesatuan atas pemenuhan syarat kelayakan Pengajuan KPR (PUM) ASABRI bagi peserta yang bersangkutan." },
-  { title:"Pernyataan Tanggung Jawab & Risiko Legal:",
-    body:"Apabila di kemudian hari ditemukan ketidaksesuaian, pemalsuan data/dokumen, atau timbul permasalahan hukum maupun administratif terkait pengajuan ini, maka tanggung jawab penuh (baik administratif, perdata, maupun pidana) berada pada pihak PIC UNOR/Kesatuan, serta membebaskan pihak PT ASABRI (Persero) dari segala tuntutan hukum yang timbul akibat kesalahan penginputan data tersebut." },
-  { title:"Persetujuan Ketentuan:",
-    body:"Saya telah membaca, memahami, dan menyetujui seluruh syarat, ketentuan, serta prosedur pengajuan PUM KPR yang berlaku di PT ASABRI (Persero)." }
-];
-
+   (seluruh poin dicentang) sebelum Simpan Draft Pengajuan diproses. Isi
+   poin-poinnya dikelola lewat Sub Modul Parameter Pernyataan Tanggung Jawab
+   (lihat pernyataanRows di bawah), jadi popup ini selalu mengikuti data
+   terkini — bukan daftar statis. */
 function pf6BukaPernyataan() {
   $("#modal-title").textContent = "Pernyataan Atas Tanggung Jawab dan Keabsahan Data Pengajuan KPR (PUM)";
   $("#modal-sub").textContent   = "Wajib disetujui sebelum pengajuan dapat disimpan sebagai draft.";
   $("#modal-body").innerHTML = `
     <div style="display:flex;flex-direction:column;gap:14px">
-      ${PF6_PERNYATAAN.map((p, i) => `
+      ${pernyataanRows.map((p, i) => `
         <div style="display:flex;gap:10px;align-items:flex-start">
           <input type="checkbox" id="pf6-pernyataan-${i}" class="pf6-pernyataan-chk" style="margin-top:3px;flex-shrink:0">
           <label for="pf6-pernyataan-${i}" style="font-size:12.5px;line-height:1.55;color:var(--body)">
-            <span class="t-strong" style="display:block;color:var(--ink)">${i + 1}. ${esc(p.title)}</span>
-            ${esc(p.body)}
+            <span class="t-strong" style="display:block;color:var(--ink)">${i + 1}. ${esc(p.judul)}:</span>
+            ${esc(p.isi)}
           </label>
         </div>`).join("")}
     </div>
@@ -3187,14 +3484,14 @@ function renderApproval() {
       <td class="t-strong">${esc(r.kpa)}</td><td>${esc(r.nrp)}</td><td>${esc(r.npwp)}</td>
       <td class="t-name">${esc(r.nama)}</td><td>${esc(r.angkatan)}</td><td>${esc(r.tglAmbil)}</td>
       <td><span class="pill ${tipePumPillClass(r.tipePum)}">${esc(r.tipePum)}</span></td>
-      <td>${esc(r.tipeRumah)}</td><td>${rp(r.jumlah)}</td>
+      <td>${rp(r.jumlah)}</td>
       <td><span class="pill ${pillPum(r.status)}">${esc(statusApprovalLabel(r.status))}</span></td>
       <td style="display:flex;gap:6px">
         <button class="btn btn-info btn-sm"         data-ap-detail="${r._id}">Detail</button>
         <button class="btn btn-danger-solid btn-sm" data-ap-hapus="${r._id}">Hapus</button>
       </td>
     </tr>`).join("")
-    : `<tr><td colspan="11"><div class="empty"><h4>Tidak ada pengajuan</h4><p>Coba ubah filter atau kata kunci pencarian.</p></div></td></tr>`;
+    : `<tr><td colspan="10"><div class="empty"><h4>Tidak ada pengajuan</h4><p>Coba ubah filter atau kata kunci pencarian.</p></div></td></tr>`;
 
   const shownFrom = rows.length ? start + 1 : 0;
   const shownTo   = Math.min(start + pageSize, rows.length);
@@ -3345,11 +3642,6 @@ document.addEventListener("click", e => {
     $("#modal-sub").textContent   = `${pumDetailRow.kpa} — ${pumDetailRow.nama}`;
     $("#modal-body").innerHTML = `
       <div class="field">
-        <label class="fl">Tanggal Akhir Kredit (Jatuh Tempo Pelunasan) <span class="req">*</span></label>
-        <input class="inp" type="date" id="pd-tgl-akhir-kredit">
-        <div class="hint">Pengajuan otomatis masuk ke Pelunasan KPR (PUM) begitu tanggal ini tercapai.</div>
-      </div>
-      <div class="field">
         <label class="fl">Alasan Menyetujui (Opsional)</label>
         <textarea class="inp" id="pd-alasan-setuju" style="height:90px;padding:9px 10px;resize:vertical" placeholder="Tuliskan catatan persetujuan (opsional)"></textarea>
       </div>
@@ -3360,17 +3652,12 @@ document.addEventListener("click", e => {
     openModal();
     $("#pd-setuju-batal").onclick = closeModal;
     $("#pd-setuju-konfirmasi").onclick = () => {
-      const tglAkhirKredit = $("#pd-tgl-akhir-kredit").value;
-      if (!tglAkhirKredit) { toast("Tanggal Akhir Kredit belum diisi.", "bad"); return; }
       pumDetailRow.status = "Disetujui";
       pumDetailRow.catatanApproval = $("#pd-alasan-setuju").value.trim();
-      pumDetailRow.tglAkhirKredit  = tglAkhirKredit;
-      pumDetailRow.masukPelunasan  = false;
       closeModal();
       renderApproval(); renderPum();
       toast(`Pengajuan ${pumDetailRow.nama} disetujui.`, "ok");
       go(pumDetailBackTarget);
-      cekJatuhTempoPelunasan();
     };
     return;
   }
@@ -3419,6 +3706,7 @@ document.addEventListener("click", e => {
       if (!detailRevisi) { toast("Detail Revisi wajib diisi.", "bad"); return; }
       pumDetailRow.status = "Revisi";
       pumDetailRow.catatanApproval = detailRevisi;
+      pumDetailRow.tglRevisi = new Date().toISOString();
       closeModal();
       renderApproval(); renderPum();
       toast(`Pengajuan ${pumDetailRow.nama} dikembalikan ke PIC UNOR/Kesatuan untuk direvisi.`, "bad");
@@ -3495,18 +3783,7 @@ function cekJatuhTempoPelunasan() {
 }
 
 function renderPel() {
-  const fKpa  = ($("#pel-f-kpa").value  || "").toLowerCase();
-  const fNpwp = ($("#pel-f-npwp").value || "").toLowerCase();
-  const fNama = ($("#pel-f-nama").value || "").toLowerCase();
-  const fNrp  = ($("#pel-f-nrp").value  || "").toLowerCase();
-  const fSt   = $("#pel-filter").value;
-
-  const rows = pelRows.filter(r =>
-    (fSt === "all" || r.status === fSt) &&
-    (!fKpa  || r.kpa.toLowerCase().includes(fKpa))   &&
-    (!fNpwp || r.npwp.toLowerCase().includes(fNpwp)) &&
-    (!fNama || r.nama.toLowerCase().includes(fNama)) &&
-    (!fNrp  || r.nrp.toLowerCase().includes(fNrp)));
+  const rows = pelRows;
 
   const pageSize   = +$("#pel-page-size").value;
   const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
@@ -3519,13 +3796,13 @@ function renderPel() {
       <td class="t-strong">${esc(r.kpa)}</td><td>${esc(r.nrp)}</td><td>${esc(r.npwp)}</td>
       <td class="t-name">${esc(r.nama)}</td><td>${esc(r.angkatan)}</td><td>${esc(r.tglAmbil)}</td>
       <td><span class="pill ${tipePumPillClass(r.tipePum)}">${esc(r.tipePum)}</span></td>
-      <td>${esc(r.tipeRumah)}</td><td>${rp(r.jumlah)}</td>
+      <td>${rp(r.jumlah)}</td>
       <td style="display:flex;gap:6px">
         <button class="btn btn-info btn-sm"         data-pel-detail="${r._id}">Detail</button>
         <button class="btn btn-danger-solid btn-sm" data-pel-hapus="${r._id}">Hapus</button>
       </td>
     </tr>`).join("")
-    : `<tr><td colspan="10"><div class="empty"><h4>Tidak ada data pelunasan</h4><p>Coba ubah filter atau kata kunci pencarian.</p></div></td></tr>`;
+    : `<tr><td colspan="9"><div class="empty"><h4>Tidak ada data pelunasan</h4></div></td></tr>`;
 
   const shownFrom = rows.length ? start + 1 : 0;
   const shownTo   = Math.min(start + pageSize, rows.length);
@@ -3536,8 +3813,6 @@ function renderPel() {
   `).join("");
 }
 
-["#pel-f-kpa", "#pel-f-npwp", "#pel-f-nama", "#pel-f-nrp"].forEach(sel => $(sel).oninput = () => { pelPage = 1; renderPel(); });
-$("#pel-filter").onchange    = () => { pelPage = 1; renderPel(); };
 $("#pel-page-size").onchange = () => { pelPage = 1; renderPel(); };
 $("#btn-export-pel").onclick = () => toast("Laporan pelunasan KPR (PUM) diekspor ke Excel.");
 
@@ -3549,15 +3824,11 @@ function renderPelDetailPage() {
   if (!r) return;
 
   $("#peld-title").textContent  = r.nama;
-  $("#peld-sub").textContent    = `${r.kpa} · ${r.nrp} · jatuh tempo ${r.tglAkhirKredit}`;
-  $("#peld-status").className   = "pill " + pillPel(r.status);
-  $("#peld-status").textContent = r.status;
+  $("#peld-sub").textContent    = `${r.kpa} · ${r.nrp}`;
 
   $("#peld-body").innerHTML = `
-    <div class="metrics m3">
-      <div class="metric"><div class="metric-lbl">Sisa piutang</div><div class="metric-val">${rp(r.sisaPiutang)}</div></div>
+    <div class="metrics" style="grid-template-columns:1fr">
       <div class="metric"><div class="metric-lbl">Jumlah dilunasi</div><div class="metric-val">${rp(r.jumlahDilunasi)}</div></div>
-      <div class="metric"><div class="metric-lbl">Periode jatuh tempo</div><div class="metric-val">${esc(r.periode)}</div></div>
     </div>
 
     <div class="subsection-title">Data Peserta</div>
@@ -3572,41 +3843,14 @@ function renderPelDetailPage() {
     <div class="grid3" style="grid-template-columns:1fr 1fr">${fieldsToHtml([
       { label: "Tipe PUM", value: r.tipePum }, { label: "Tipe Rumah", value: r.tipeRumah },
       { label: "Tanggal Ambil PUM", value: r.tglAmbil },
-      { label: "Jumlah Ambil PUM", value: rp(r.jumlah) },
-      { label: "Tanggal Akhir Kredit", value: r.tglAkhirKredit }
+      { label: "Jumlah Ambil PUM", value: rp(r.jumlah) }
     ])}</div>
 
     <div class="subsection-title">Rincian Pelunasan</div>
     <div class="grid3" style="grid-template-columns:1fr 1fr">${fieldsToHtml([
-      { label: "Periode Jatuh Tempo", value: r.periode },
       { label: "Tanggal Pelunasan", value: r.tglPelunasan },
-      { label: "Sisa Piutang", value: rp(r.sisaPiutang) },
-      { label: "Jumlah Dilunasi", value: rp(r.jumlahDilunasi) },
-      { label: "Cara Pelunasan", value: r.caraPelunasan },
-      { label: "Status Pelunasan", value: r.status },
-      { label: "Catatan Approval", value: r.catatan || "-", wide: true }
-    ])}</div>
-
-    ${r.status === "Pending"
-      ? `<div class="alert alert-info" style="margin-top:18px"><span>ⓘ</span><span>Setelah disetujui: data pelunasan terkirim ke Dynamics 365 dan Berita Acara Rekon Piutang ter-generate.</span></div>`
-      : r.status === "Disetujui"
-        ? `<div class="alert alert-ok" style="margin-top:18px"><span>✓</span><span>Pelunasan disetujui — data terkirim ke Dynamics 365 dan Berita Acara Rekon Piutang sudah ter-generate.</span></div>`
-        : `<div class="alert alert-bad" style="margin-top:18px"><span>⚠</span><span>Pelunasan ditolak — data dikembalikan untuk verifikasi ulang.</span></div>`}`;
-
-  $("#peld-actions").innerHTML = r.status === "Pending"
-    ? `<button class="btn btn-danger-solid" id="peld-tolak">✕ Tolak</button>
-       <button class="btn btn-success" id="peld-setuju">✓ Setujui Pelunasan</button>`
-    : `<span class="pill ${pillPel(r.status)}">${esc(r.status.toUpperCase())}</span>`;
-}
-
-function putusanPelunasan(status, catatan, pesan, kind) {
-  pelDetailRow.status  = status;
-  pelDetailRow.catatan = catatan;
-  if (status === "Ditolak") pelDetailRow.jumlahDilunasi = 0;
-  renderPel();
-  renderPelDetailPage();
-  toast(pesan, kind);
-  go("pelunasan");
+      { label: "Jumlah Dilunasi", value: rp(r.jumlahDilunasi) }
+    ])}</div>`;
 }
 
 document.addEventListener("click", e => {
@@ -3632,53 +3876,6 @@ document.addEventListener("click", e => {
     return;
   }
 
-  if (e.target.closest("#peld-setuju")) {
-    $("#modal-title").textContent = "Konfirmasi Persetujuan Pelunasan";
-    $("#modal-sub").textContent   = `${pelDetailRow.kpa} — ${pelDetailRow.nama}`;
-    $("#modal-body").innerHTML = `
-      <div class="field">
-        <label class="fl">Catatan Persetujuan</label>
-        <textarea class="inp" id="peld-catatan-setuju" style="height:90px;padding:9px 10px;resize:vertical" placeholder="Opsional"></textarea>
-        <div class="hint">Data terkirim ke Dynamics 365 dan Berita Acara Rekon Piutang ter-generate setelah disetujui.</div>
-      </div>
-      <div class="form-actions">
-        <button class="btn btn-ghost" id="peld-setuju-batal">Batal</button>
-        <button class="btn btn-success" id="peld-setuju-konfirmasi">✓ Setujui Pelunasan</button>
-      </div>`;
-    openModal();
-    $("#peld-setuju-batal").onclick = closeModal;
-    $("#peld-setuju-konfirmasi").onclick = () => {
-      const catatan = $("#peld-catatan-setuju").value.trim();
-      closeModal();
-      putusanPelunasan("Disetujui",
-        catatan || "Data terkirim ke Dynamics 365, Berita Acara Rekon Piutang ter-generate.",
-        `Pelunasan ${pelDetailRow.nama} disetujui. Data terkirim ke Dynamics 365, BA Rekon Piutang ter-generate.`, "ok");
-    };
-    return;
-  }
-
-  if (e.target.closest("#peld-tolak")) {
-    $("#modal-title").textContent = "Konfirmasi Penolakan Pelunasan";
-    $("#modal-sub").textContent   = `${pelDetailRow.kpa} — ${pelDetailRow.nama}`;
-    $("#modal-body").innerHTML = `
-      <div class="field">
-        <label class="fl">Alasan Menolak <span class="req">*</span></label>
-        <textarea class="inp" id="peld-alasan-tolak" style="height:90px;padding:9px 10px;resize:vertical" placeholder="Tuliskan alasan penolakan"></textarea>
-      </div>
-      <div class="form-actions">
-        <button class="btn btn-ghost" id="peld-tolak-batal">Batal</button>
-        <button class="btn btn-danger-solid" id="peld-tolak-konfirmasi">✕ Tolak Pelunasan</button>
-      </div>`;
-    openModal();
-    $("#peld-tolak-batal").onclick = closeModal;
-    $("#peld-tolak-konfirmasi").onclick = () => {
-      const alasan = $("#peld-alasan-tolak").value.trim();
-      if (!alasan) { toast("Alasan penolakan wajib diisi.", "bad"); return; }
-      closeModal();
-      putusanPelunasan("Ditolak", alasan,
-        `Pelunasan ${pelDetailRow.nama} ditolak dan dikembalikan untuk verifikasi ulang.`, "bad");
-    };
-  }
 });
 
 $("#peld-kembali").onclick      = () => go("pelunasan");
@@ -3686,6 +3883,17 @@ $("#peld-kembali-atas").onclick = () => go("pelunasan");
 
 /* ================================================================= BUM KPR */
 let bumPage = 1;
+
+/* Tiga jenis pinjaman BUM, masing-masing punya warna badge sendiri. */
+const BUM_JENIS = [
+  { nama:"BUM KPR Program Khusus ASABRI",  tone:"pill-warn" },
+  { nama:"BUM KPR TWPAD",                  tone:"pill-info" },
+  { nama:"BUM KPR Program Reguler YPPSDP", tone:"pill-ok"   }
+];
+const bumJenisTone = nama => (BUM_JENIS.find(j => j.nama === nama) || {}).tone || "pill-info";
+const bumJenisOptions = dipilih => BUM_JENIS.map(j =>
+
+  `<option value="${j.nama}" ${j.nama === dipilih ? "selected" : ""}>${j.nama}</option>`).join("");
 function renderBum() {
   const fDari     = $("#bum-f-dari").value;
   const fSampai   = $("#bum-f-sampai").value;
@@ -3712,19 +3920,20 @@ function renderBum() {
 
   $("#bum-body").innerHTML = pageRows.length ? pageRows.map(r => `
     <tr>
-      <td class="t-strong">${esc(r.kpa)}</td>
+      <td class="stick-l t-strong">${esc(r.kpa)}</td>
       <td>${esc(r.nrp)}</td>
+      <td>${esc(r.nik)}</td>
       <td>${esc(r.nama)}</td>
+      <td>${esc(fmtTgl(r.tglLahir))}</td>
       <td>${esc(fmtTgl(r.tmt))}</td>
-      <td>${esc(r.cabang)}</td>
+      <td>${esc(fmtTgl(r.tmtAkad))}</td>
       <td>${esc(r.nomorPinjaman)}</td>
-      <td><span class="pill ${r.jenisPinjaman === "Program Khusus" ? "pill-warn" : "pill-ok"}">${esc(r.jenisPinjaman)}</span></td>
+      <td>${r.jenisPinjaman ? `<span class="pill ${bumJenisTone(r.jenisPinjaman)}">${esc(r.jenisPinjaman)}</span>` : "—"}</td>
       <td>${rp(r.jumlah)}</td>
-      <td>${rp(r.sisaHutang)}</td>
-      <td>${rp(r.outstanding)}</td>
-      <td><button class="btn btn-ghost btn-sm" data-bum-detail="${r.kpa}">👁 Detail</button></td>
+      <td>${esc(r.keterangan || "—")}</td>
+      <td class="stick-r"><button class="btn btn-ghost btn-sm" data-bum-detail="${r.kpa}">👁 Detail</button></td>
     </tr>`).join("")
-    : `<tr><td colspan="11"><div class="empty"><h4>Tidak ada data</h4><p>Coba ubah filter atau kata kunci pencarian.</p></div></td></tr>`;
+    : `<tr><td colspan="12"><div class="empty"><h4>Tidak ada data</h4><p>Coba ubah filter atau kata kunci pencarian.</p></div></td></tr>`;
 
   const shownFrom = rows.length ? start + 1 : 0;
   const shownTo   = Math.min(start + pageSize, rows.length);
@@ -3738,122 +3947,124 @@ $("#bum-cari").onclick         = () => { bumPage = 1; renderBum(); };
 $("#bum-page-size").onchange   = () => { bumPage = 1; renderBum(); };
 $("#bum-export-excel").onclick = () => toast("Daftar klaim KPR (BUM) diekspor ke Excel.");
 
-function bumShowDetail(r) {
-  $("#modal-title").textContent = "Detail Klaim KPR (BUM)";
-  $("#modal-sub").textContent   = r.nomorPinjaman;
-  $("#modal-body").innerHTML = `
+/* Detail klaim tampil sebagai layar sendiri (bukan modal) supaya sebelas
+   datanya muat tanpa perlu digulir di dalam kotak kecil. */
+let bumDetailRow = null;
+
+function renderBumDetailPage() {
+  const r = bumDetailRow;
+  if (!r) return;
+
+  $("#bumd-title").textContent = r.nama;
+  $("#bumd-sub").textContent   = `${r.kpa} · ${r.nrp} · ${r.nomorPinjaman || "tanpa nomor piutang"}`;
+  $("#bumd-jenis").className   = "pill " + (r.jenisPinjaman ? bumJenisTone(r.jenisPinjaman) : "pill-info");
+  $("#bumd-jenis").textContent = r.jenisPinjaman || "Jenis pinjaman belum diisi";
+
+  $("#bumd-body").innerHTML = `
+    <div class="subsection-title">Data Peserta</div>
     <div class="grid2">
-      ${reviewField("Nomor Permohonan", r.nomorPermohonan)}
       ${reviewField("KPA", r.kpa)}
       ${reviewField("NRP/NIP", r.nrp)}
       ${reviewField("NIK", r.nik)}
       ${reviewField("Nama", r.nama)}
-      ${reviewField("Jenis Kelamin", r.jk === "L" ? "Laki-laki" : r.jk === "P" ? "Perempuan" : "-")}
-      ${reviewField("TMT", fmtTgl(r.tmt))}
-      ${reviewField("Kantor Cabang", r.cabang)}
-      ${reviewField("Nomor Pinjaman", r.nomorPinjaman)}
-      ${reviewField("Jenis Pinjaman", r.jenisPinjaman)}
-      ${reviewField("Nominal Pinjaman", rp(r.jumlah))}
-      ${reviewField("Sisa Hutang", rp(r.sisaHutang))}
-      ${reviewField("Saldo Outstanding", rp(r.outstanding))}
-      ${r.nilaiPemotongan ? reviewField("Nilai Pemotongan", rp(r.nilaiPemotongan)) : ""}
-      ${reviewField("Keterangan", r.keterangan, true)}
+      ${reviewField("Tanggal Lahir", r.tglLahir ? fmtTgl(r.tglLahir) : "")}
+      ${reviewField("TMT Pengangkatan Awal", r.tmt ? fmtTgl(r.tmt) : "")}
     </div>
-    <div class="form-actions" style="justify-content:flex-end">
-      <button class="btn btn-ghost" id="bum-detail-tutup">Tutup</button>
+
+    <div class="subsection-title">Data Akad BUM</div>
+    <div class="grid2">
+      ${reviewField("TMT Akad Kredit", r.tmtAkad ? fmtTgl(r.tmtAkad) : "")}
+      ${reviewField("Nomor Piutang", r.nomorPinjaman)}
+      ${reviewField("Jenis Pinjaman", r.jenisPinjaman)}
+      ${reviewField("Jumlah Nominal BUM", rp(r.jumlah))}
+      ${reviewField("Keterangan", r.keterangan, true)}
     </div>`;
-  openModal();
-  $("#bum-detail-tutup").onclick = closeModal;
 }
 
-/* -------------------------------------------------- + Pemotongan Manfaat Klaim
-   KPA wajib diisi terlebih dahulu — NRP, NIK, Nama, Tanggal Lahir, TMT Masuk,
-   dan Jenis Kelamin otomatis terisi (read-only) dari BUM_KPA_LOOKUP begitu
-   KPA valid. Simpan menambahkan baris baru langsung ke tabel Klaim KPR (BUM). */
+function bumShowDetail(r) {
+  if (!r) return;
+  bumDetailRow = r;
+  renderBumDetailPage();
+  go("bum-detail");
+}
+$("#bumd-kembali").onclick      = () => go("bum");
+$("#bumd-kembali-atas").onclick = () => go("bum");
+
+/* ----------------------------------------- + Pendaftaran Ulang Klaim KPR (BUM)
+   KPA wajib diisi terlebih dahulu — NRP, NIK, Nama, Tanggal Lahir, dan TMT
+   Pengangkatan Awal otomatis terisi (terkunci) dari BUM_KPA_LOOKUP begitu KPA
+   valid. Data akadnya — TMT Akad Kredit, Nomor Piutang, Jenis Pinjaman, Jumlah
+   Nominal BUM, dan Keterangan — diisi petugas. Sisa Hutang dan Saldo
+   Outstanding tidak diinput karena ikut data peserta yang tercatat sistem.
+   Simpan menambahkan baris baru langsung ke tabel Klaim KPR (BUM). */
+const BPK_AUTOFILL = ["#bpk-nrp", "#bpk-nik", "#bpk-nama", "#bpk-tgl-lahir", "#bpk-tmt-awal"];
+
 function bumClearAutofill() {
-  ["#bpk-nrp", "#bpk-nik", "#bpk-nama", "#bpk-tgl-lahir", "#bpk-tmt-masuk", "#bpk-jk",
-   "#bpk-nominal-pinjaman", "#bpk-sisa-hutang", "#bpk-saldo-outstanding"].forEach(sel => $(sel).value = "");
+  BPK_AUTOFILL.forEach(sel => $(sel).value = "");
 }
 function bumAutofillFromKpa() {
   const kpa   = $("#bpk-kpa").value.trim().toUpperCase();
   const found = BUM_KPA_LOOKUP[kpa];
   if (!found) { bumClearAutofill(); if (kpa) toast("KPA tidak ditemukan pada data peserta.", "bad"); return; }
-  $("#bpk-nrp").value         = found.nrp;
-  $("#bpk-nik").value         = found.nik;
-  $("#bpk-nama").value        = found.nama;
-  $("#bpk-tgl-lahir").value   = found.tglLahir;
-  $("#bpk-tmt-masuk").value   = found.tmtMasuk;
-  $("#bpk-jk").value                 = found.jk === "L" ? "Laki-laki" : "Perempuan";
-  $("#bpk-nominal-pinjaman").value   = rp(found.nominalPinjaman);
-  $("#bpk-sisa-hutang").value        = rp(found.sisaHutang);
-  $("#bpk-saldo-outstanding").value  = rp(found.saldoOutstanding);
+  $("#bpk-nrp").value       = found.nrp;
+  $("#bpk-nik").value       = found.nik;
+  $("#bpk-nama").value      = found.nama;
+  $("#bpk-tgl-lahir").value = found.tglLahir;
+  $("#bpk-tmt-awal").value  = found.tmtMasuk;
 }
 
 function bumShowPemotongan() {
-  $("#modal-title").textContent = "Pemotongan Manfaat Klaim";
-  $("#modal-sub").textContent   = "";
+  $("#modal-title").textContent = "Pendaftaran Ulang Klaim KPR (BUM)";
+  $("#modal-sub").textContent   = "KPA diisi lebih dahulu — data peserta terisi otomatis dan terkunci.";
   $("#modal-body").innerHTML = `
     <div class="grid2">
-      <div class="field">
-        <label class="fl">Nomor Permohonan <span class="req">*</span></label>
-        <input class="inp" id="bpk-nomor-permohonan">
-      </div>
-      <div class="field">
-        <label class="fl">Jenis Pinjaman <span class="req">*</span></label>
-        <select class="inp" id="bpk-jenis-pinjaman">
-          <option value="">-- Pilih Jenis Pinjaman --</option>
-          <option value="Program Reguler">Program Reguler</option>
-          <option value="Program Khusus">Program Khusus</option>
-        </select>
-      </div>
       <div class="field">
         <label class="fl">KPA <span class="req">*</span></label>
         <input class="inp" id="bpk-kpa" placeholder="-- Masukkan KPA --">
       </div>
       <div class="field">
-        <label class="fl">NRP <span class="req">*</span></label>
-        <input class="inp" id="bpk-nrp" readonly placeholder="Otomatis terisi dari KPA">
+        <label class="fl">NRP/NIP <span class="req">*</span></label>
+        <input class="inp" id="bpk-nrp" disabled placeholder="Otomatis terisi dari Nomor KTPA">
       </div>
       <div class="field">
         <label class="fl">NIK <span class="req">*</span></label>
-        <input class="inp" id="bpk-nik" readonly placeholder="Otomatis terisi dari KPA">
+        <input class="inp" id="bpk-nik" disabled placeholder="Otomatis terisi dari Nomor KTPA">
       </div>
       <div class="field">
         <label class="fl">Nama <span class="req">*</span></label>
-        <input class="inp" id="bpk-nama" readonly placeholder="Otomatis terisi dari KPA">
+        <input class="inp" id="bpk-nama" disabled placeholder="Otomatis terisi dari Nomor KTPA">
       </div>
       <div class="field">
         <label class="fl">Tanggal Lahir <span class="req">*</span></label>
         <input class="inp" type="date" id="bpk-tgl-lahir" disabled>
       </div>
       <div class="field">
-        <label class="fl">TMT Masuk <span class="req">*</span></label>
-        <input class="inp" type="date" id="bpk-tmt-masuk" disabled>
+        <label class="fl">TMT Pengangkatan Awal <span class="req">*</span></label>
+        <input class="inp" type="date" id="bpk-tmt-awal" disabled>
       </div>
       <div class="field">
-        <label class="fl">Jenis Kelamin <span class="req">*</span></label>
-        <input class="inp" id="bpk-jk" readonly placeholder="Otomatis terisi dari KPA">
+        <label class="fl">TMT Akad Kredit <span class="req">*</span></label>
+        <input class="inp" type="date" id="bpk-tmt-akad">
       </div>
       <div class="field">
-        <label class="fl">Nominal Pinjaman <span class="req">*</span></label>
-        <input class="inp" id="bpk-nominal-pinjaman" readonly placeholder="Otomatis terisi dari KPA">
+        <label class="fl">Nomor Piutang <span class="req">*</span></label>
+        <input class="inp" id="bpk-nomor-piutang" placeholder="Contoh: BUM-2026-00412">
       </div>
       <div class="field">
-        <label class="fl">Sisa Hutang <span class="req">*</span></label>
-        <input class="inp" id="bpk-sisa-hutang" readonly placeholder="Otomatis terisi dari KPA">
+        <label class="fl">Jenis Pinjaman <span class="req">*</span></label>
+        <select class="inp" id="bpk-jenis-pinjaman">
+          <option value="">-- Pilih Jenis Pinjaman --</option>
+          ${bumJenisOptions()}
+        </select>
       </div>
       <div class="field">
-        <label class="fl">Saldo Outstanding <span class="req">*</span></label>
-        <input class="inp" id="bpk-saldo-outstanding" readonly placeholder="Otomatis terisi dari KPA">
+        <label class="fl">Jumlah Nominal BUM <span class="req">*</span></label>
+        <div class="money"><span>Rp</span><input id="bpk-jumlah" inputmode="numeric" placeholder="0" aria-label="Jumlah nominal BUM"></div>
       </div>
-      <div class="field">
-        <label class="fl">Nilai Pemotongan <span class="req">*</span></label>
-        <input class="inp" type="number" min="0" id="bpk-jumlah" placeholder="0">
+      <div class="field span2" style="margin-bottom:0">
+        <label class="fl">Keterangan</label>
+        <input class="inp" id="bpk-keterangan" placeholder="Keterangan pendaftaran ulang">
       </div>
-    </div>
-    <div class="field" style="margin-bottom:0">
-      <label class="fl">Keterangan <span class="req">*</span></label>
-      <textarea class="inp" id="bpk-keterangan" style="height:70px;padding:9px 10px;resize:vertical"></textarea>
     </div>
     <div class="form-actions" style="justify-content:flex-end">
       <button class="btn btn-ghost" id="bpk-tutup">Tutup</button>
@@ -3861,43 +4072,45 @@ function bumShowPemotongan() {
     </div>`;
   openModal();
 
-  $("#bpk-tutup").onclick   = closeModal;
-  $("#bpk-kpa").onblur      = bumAutofillFromKpa;
-  $("#bpk-kpa").onchange    = bumAutofillFromKpa;
+  $("#bpk-tutup").onclick  = closeModal;
+  $("#bpk-kpa").onblur     = bumAutofillFromKpa;
+  $("#bpk-kpa").onchange   = bumAutofillFromKpa;
+  $("#bpk-jumlah").oninput = e => {
+    const n = angkaSaja(e.target.value);
+    e.target.value = n ? Number(n).toLocaleString("id-ID") : "";
+  };
 
   $("#bpk-simpan").onclick = () => {
-    const nomorPermohonan = $("#bpk-nomor-permohonan").value.trim();
-    const jenisPinjaman   = $("#bpk-jenis-pinjaman").value;
-    const kpa             = $("#bpk-kpa").value.trim().toUpperCase();
-    const keterangan      = $("#bpk-keterangan").value.trim();
-    const nilaiPemotongan = +$("#bpk-jumlah").value;
-    const nrp = $("#bpk-nrp").value, nik = $("#bpk-nik").value, nama = $("#bpk-nama").value,
-          tglLahir = $("#bpk-tgl-lahir").value, tmtMasuk = $("#bpk-tmt-masuk").value, jkText = $("#bpk-jk").value;
+    const kpa           = $("#bpk-kpa").value.trim().toUpperCase();
+    const found         = BUM_KPA_LOOKUP[kpa];
+    const tmtAkad       = $("#bpk-tmt-akad").value;
+    const nomorPiutang  = $("#bpk-nomor-piutang").value.trim();
+    const jenisPinjaman = $("#bpk-jenis-pinjaman").value;
+    const jumlah        = parseNum($("#bpk-jumlah").value);
 
-    if (!nomorPermohonan || !jenisPinjaman || !kpa || !keterangan || !nilaiPemotongan) {
-      toast("Seluruh field wajib diisi sebelum menyimpan.", "bad");
+    if (!kpa || !found) {
+      toast("KPA wajib diisi dan harus terdaftar pada data peserta.", "bad");
       return;
     }
-    const found = BUM_KPA_LOOKUP[kpa];
-    if (!found || !nrp || !nik || !nama || !tglLahir || !tmtMasuk) {
-      toast("KPA tidak ditemukan pada data peserta.", "bad");
+    if (!tmtAkad || !nomorPiutang || !jenisPinjaman || !jumlah) {
+      toast("TMT Akad Kredit, Nomor Piutang, Jenis Pinjaman, dan Jumlah Nominal BUM wajib diisi.", "bad");
       return;
     }
 
     bumRows.unshift({
-      kpa, nrp, nik, nama, jk: jkText === "Laki-laki" ? "L" : "P",
-      tmt: tmtMasuk, cabang: found.cabang,
-      nomorPinjaman: nomorPermohonan, nomorPermohonan,
-      jenisPinjaman,
-      jumlah: found.nominalPinjaman, sisaHutang: found.sisaHutang, outstanding: found.saldoOutstanding,
-      nilaiPemotongan, keterangan
+      kpa, nrp: found.nrp, nik: found.nik, nama: found.nama,
+      tglLahir: found.tglLahir, tmt: found.tmtMasuk, cabang: found.cabang,
+      tmtAkad, nomorPinjaman: nomorPiutang, jenisPinjaman, jumlah,
+      sisaHutang: found.sisaHutang, outstanding: found.saldoOutstanding,
+      keterangan: $("#bpk-keterangan").value.trim()
     });
     bumPage = 1;
     renderBum();
     closeModal();
-    toast(`Pemotongan manfaat klaim untuk ${nama} berhasil disimpan.`, "ok");
+    toast(`Pendaftaran ulang klaim KPR (BUM) untuk ${found.nama} berhasil disimpan.`, "ok");
   };
 }
+
 $("#bum-pemotongan-btn").onclick = bumShowPemotongan;
 
 document.addEventListener("click", e => {
@@ -3910,6 +4123,14 @@ document.addEventListener("click", e => {
 
 /* ==================================================== PELUNASAN KPR (BUM) */
 let bplPage = 1;
+
+/* Warna badge per jenis pinjaman BUM. */
+function bplPillJenis(jenis = "") {
+  if (jenis.includes("Khusus"))  return "pill-warn";
+  if (jenis.includes("Reguler")) return "pill-ok";
+  return "pill-info";
+}
+
 function renderBumPelunasan() {
   const fDari     = $("#bpl-f-dari").value;
   const fSampai   = $("#bpl-f-sampai").value;
@@ -3921,7 +4142,7 @@ function renderBumPelunasan() {
 
   const rows = bumPelunasanRows.filter(r =>
     (fPotongan === "all" || r.jenisPotongan === fPotongan) &&
-    (fJenis    === "all" || r.jenisHutang   === fJenis) &&
+    (fJenis    === "all" || r.jenisPinjaman === fJenis) &&
     (!fCabang || r.cabang.toLowerCase().includes(fCabang)) &&
     (!fNrp    || r.nrp.includes(fNrp)) &&
     (!fNama   || r.nama.toLowerCase().includes(fNama)) &&
@@ -3937,27 +4158,24 @@ function renderBumPelunasan() {
   $("#bpl-body").innerHTML = pageRows.length ? pageRows.map((r, i) => `
     <tr>
       <td class="stick-l">${start + i + 1}</td>
+      <td><span class="pill ${bplPillJenis(r.jenisPinjaman)}">${esc(r.jenisPinjaman)}</span></td>
+      <td>${esc(fmtTgl(r.tglRekon)) || "—"}</td>
       <td class="t-strong">${esc(r.kpa)}</td>
       <td>${esc(r.nrp)}</td>
       <td>${esc(r.nama)}</td>
-      <td>${esc(fmtTgl(r.tmt))}</td>
-      <td>${esc(r.nomorPinjaman)}</td>
       <td>${esc(r.jenisPotongan)}</td>
-      <td><span class="pill ${r.jenisHutang === "Program Khusus" ? "pill-warn" : "pill-ok"}">${esc(r.jenisHutang)}</span></td>
-      <td>${rp(r.jumlah)}</td>
-      <td>${rp(r.sisaHutang)}</td>
       <td>${rp(r.bruto)}</td>
       <td>${rp(r.nominal)}</td>
       <td>${esc(r.cabang)}</td>
-      <td>${esc(fmtTgl(r.tglSp))}</td>
-      <td>${esc(fmtTgl(r.tglDps))}</td>
-      <td>${esc(fmtTgl(r.tglPeriode))}</td>
+      <td>${esc(fmtTgl(r.tglSp))       || "—"}</td>
+      <td>${esc(fmtTgl(r.tglDps))      || "—"}</td>
+      <td>${esc(fmtTgl(r.tglPeriode))  || "—"}</td>
+      <td>${esc(r.notes)               || "—"}</td>
       <td class="stick-r" style="white-space:nowrap">
         <button class="btn btn-ghost btn-sm" data-bpl-detail="${r.nomorPinjaman}">👁 Detail</button>
-        <button class="btn btn-info btn-sm" data-bpl-upload="${r.nomorPinjaman}">⬆ Upload Bukti Angsuran</button>
       </td>
     </tr>`).join("")
-    : `<tr><td colspan="17"><div class="empty"><h4>Tidak ada data</h4><p>Coba ubah filter atau kata kunci pencarian.</p></div></td></tr>`;
+    : `<tr><td colspan="15"><div class="empty"><h4>Tidak ada data</h4><p>Coba ubah filter atau kata kunci pencarian.</p></div></td></tr>`;
 
   const shownFrom = rows.length ? start + 1 : 0;
   const shownTo   = Math.min(start + pageSize, rows.length);
@@ -3974,8 +4192,8 @@ $("#bpl-export-excel").onclick = () => toast("Daftar pelunasan KPR (BUM) diekspo
 /* --------------------------------------------------------- Halaman Detail
    Field-nya sama persis dengan kolom tabel, terisi otomatis dari baris yang
    dipilih dan dikunci (readonly) — halaman ini hanya untuk melihat. Khusus
-   jenis hutang Program Reguler muncul satu field tambahan, Imbal Jasa
-   Program Reguler, yang ikut terisi otomatis. */
+   jenis pinjaman Program Reguler YPPSDP muncul satu field tambahan, Imbal
+   Jasa Program Reguler, yang ikut terisi otomatis. */
 let bplDetailRow = null;
 
 function bplDetailField(label, value, span2 = false) {
@@ -3990,8 +4208,8 @@ function renderBumPelunasanDetail() {
 
   $("#bpld-title").textContent  = r.nama;
   $("#bpld-sub").textContent    = `${r.kpa} · ${r.nrp} · ${r.nomorPinjaman}`;
-  $("#bpld-jenis").className    = "pill " + (r.jenisHutang === "Program Khusus" ? "pill-warn" : "pill-ok");
-  $("#bpld-jenis").textContent  = r.jenisHutang;
+  $("#bpld-jenis").className    = "pill " + bplPillJenis(r.jenisPinjaman);
+  $("#bpld-jenis").textContent  = r.jenisPinjaman;
 
   $("#bpld-body").innerHTML = `
     <div class="subsection-title">Data Peserta</div>
@@ -4006,7 +4224,7 @@ function renderBumPelunasanDetail() {
     <div class="subsection-title">Data Pinjaman</div>
     <div class="grid2">
       ${bplDetailField("No Pinjaman", r.nomorPinjaman)}
-      ${bplDetailField("Jenis Hutang", r.jenisHutang)}
+      ${bplDetailField("Jenis Pinjaman", r.jenisPinjaman)}
       ${bplDetailField("Jumlah", rp(r.jumlah))}
       ${bplDetailField("Sisa Hutang", rp(r.sisaHutang))}
     </div>
@@ -4016,11 +4234,13 @@ function renderBumPelunasanDetail() {
       ${bplDetailField("Jenis Potongan/Keterangan", r.jenisPotongan, true)}
       ${bplDetailField("Bruto", rp(r.bruto))}
       ${bplDetailField("Nominal", rp(r.nominal))}
-      ${r.jenisHutang === "Program Reguler"
+      ${r.jenisPinjaman.includes("Reguler")
           ? bplDetailField("Imbal Jasa Program Reguler", rp(r.imbalJasa), true) : ""}
+      ${bplDetailField("Tanggal Rekonsiliasi", fmtTgl(r.tglRekon))}
       ${bplDetailField("Tanggal SP", fmtTgl(r.tglSp))}
       ${bplDetailField("Tanggal DPS", fmtTgl(r.tglDps))}
-      ${bplDetailField("Tanggal Periode", fmtTgl(r.tglPeriode), true)}
+      ${bplDetailField("Tanggal Periode", fmtTgl(r.tglPeriode))}
+      ${bplDetailField("Notes", r.notes, true)}
     </div>`;
 }
 function bplShowDetail(r) {
@@ -4031,133 +4251,42 @@ function bplShowDetail(r) {
 }
 $("#bpld-kembali").onclick      = () => go("bum-pelunasan");
 $("#bpld-kembali-atas").onclick = () => go("bum-pelunasan");
-$("#bpld-upload").onclick       = () => bplShowUpload(bplDetailRow);
-
-/* ---------------------- Upload Bukti Angsuran Pembayaran Hutang KPR (BUM)
-   Dibuka dari tombol "Upload Bukti Angsuran" pada kolom Aksi, jadi data
-   peserta (KPA, NRP/NIP, Nama, Jenis Program, Nominal Hutang) langsung
-   terisi dari baris yang diklik dan dikunci. Sisanya — Tanggal Bayar,
-   Angsuran Ke, Status, dan Bukti Setor — wajib diisi petugas. */
-function bplShowUpload(r) {
-  if (!r) return;
-  $("#modal-title").textContent = "Upload Bukti Angsuran Pembayaran Hutang KPR (BUM)";
-  $("#modal-sub").textContent   = `${r.nama} · ${r.nomorPinjaman}`;
-  $("#modal-body").innerHTML = `
-    <div class="grid2">
-      <div class="field">
-        <label class="fl">Tanggal Bayar <span class="req">*</span></label>
-        <input class="inp" type="date" id="bpu-tgl-bayar">
-      </div>
-      <div class="field">
-        <label class="fl">Angsuran Ke <span class="req">*</span></label>
-        <input class="inp" type="number" min="1" id="bpu-angsuran" placeholder="Contoh: 12">
-      </div>
-      <div class="field">
-        <label class="fl">KPA <span class="req">*</span></label>
-        <input class="inp" id="bpu-kpa" readonly value="${esc(r.kpa)}">
-      </div>
-      <div class="field">
-        <label class="fl">NRP/NIP <span class="req">*</span></label>
-        <input class="inp" id="bpu-nrp" disabled value="${esc(r.nrp)}">
-      </div>
-      <div class="field">
-        <label class="fl">Nama <span class="req">*</span></label>
-        <input class="inp" id="bpu-nama" disabled value="${esc(r.nama)}">
-      </div>
-      <div class="field">
-        <label class="fl">Jenis Program <span class="req">*</span></label>
-        <select class="inp" id="bpu-program" disabled>
-          <option value="Program Khusus" ${r.jenisHutang === "Program Khusus" ? "selected" : ""}>Program Khusus</option>
-          <option value="Program Reguler" ${r.jenisHutang === "Program Reguler" ? "selected" : ""}>Program Reguler</option>
-        </select>
-      </div>
-      <div class="field">
-        <label class="fl">Nominal Hutang <span class="req">*</span></label>
-        <input class="inp" id="bpu-nominal" disabled value="${esc(rp(r.sisaHutang))}">
-      </div>
-      <div class="field">
-        <label class="fl">Status <span class="req">*</span></label>
-        <input class="inp" id="bpu-status" placeholder="Contoh: Lunas Sebagian">
-      </div>
-      <div class="field span2" style="margin-bottom:0">
-        <label class="fl">Upload Bukti Setor <span class="req">*</span></label>
-        <input class="inp" type="file" id="bpu-bukti" accept=".pdf,.jpg,.jpeg,.png">
-        <div class="hint" id="bpu-bukti-nama">Belum ada berkas terunggah.</div>
-      </div>
-    </div>
-    <div class="form-actions" style="justify-content:flex-end">
-      <button class="btn btn-ghost" id="bpu-tutup">Tutup</button>
-      <button class="btn btn-primary" id="bpu-simpan">💾 Simpan</button>
-    </div>`;
-  openModal();
-
-  $("#bpu-tutup").onclick  = closeModal;
-  $("#bpu-bukti").onchange = e => {
-    const f = e.target.files[0];
-    $("#bpu-bukti-nama").textContent = f ? `${f.name} · ${ukuranBerkas(f.size)}` : "Belum ada berkas terunggah.";
-  };
-
-  $("#bpu-simpan").onclick = () => {
-    const tglBayar = $("#bpu-tgl-bayar").value;
-    const angsuran = $("#bpu-angsuran").value.trim();
-    const status   = $("#bpu-status").value.trim();
-    const bukti    = $("#bpu-bukti").files[0];
-
-    if (!tglBayar || !angsuran || !status || !bukti) {
-      toast("Seluruh field wajib diisi sebelum menyimpan.", "bad");
-      return;
-    }
-    closeModal();
-    toast(`Bukti angsuran ke-${angsuran} untuk ${r.nama} berhasil diunggah.`, "ok");
-  };
-}
 
 /* -------------------------- Unggah Data Pelunasan Pinjaman KPR (BUM)
-   Unggah kolektif: petugas memilih Jenis Hutang, Kantor Cabang, dan ketiga
-   tanggal, lalu melampirkan berkas data pelunasan. Submit menambahkan satu
-   baris per peserta yang punya pinjaman BUM pada kombinasi tersebut. */
-function bplUnggahPeserta(jenisHutang, cabang) {
+   Unggah kolektif: petugas memilih Jenis Pinjaman dan Tanggal Rekonsiliasi,
+   lalu melampirkan berkas data pelunasan beserta catatan opsional. Submit
+   menambahkan satu baris per peserta yang punya pinjaman BUM jenis tersebut. */
+function bplUnggahPeserta(jenisPinjaman) {
   const sudahAda = new Set(bumPelunasanRows.map(r => r.nomorPinjaman));
   return DATA_BUM.filter(r =>
-    r.jenisPinjaman === jenisHutang && r.cabang === cabang && !sudahAda.has(r.nomorPinjaman));
+    r.jenisPinjaman === jenisPinjaman && !sudahAda.has(r.nomorPinjaman));
 }
 function bplShowUnggahData() {
-  const daftarCabang = [...new Set(DATA_BUM.map(r => r.cabang))].sort();
   $("#modal-title").textContent = "Unggah Data Pelunasan Pinjaman KPR (BUM)";
-  $("#modal-sub").textContent   = "Seluruh field wajib diisi.";
+  $("#modal-sub").textContent   = "Field bertanda * wajib diisi.";
   $("#modal-body").innerHTML = `
     <div class="grid2">
-      <div class="field">
-        <label class="fl">Jenis Hutang <span class="req">*</span></label>
+      <div class="field span2">
+        <label class="fl">Jenis Pinjaman <span class="req">*</span></label>
         <select class="inp" id="bpd-jenis">
-          <option value="">-- Pilih Jenis Hutang --</option>
-          <option value="Program Khusus">Program Khusus</option>
-          <option value="Program Reguler">Program Reguler</option>
+          <option value="">-- Pilih Jenis Pinjaman --</option>
+          <option value="BUM KPR Program Khusus ASABRI">BUM KPR Program Khusus ASABRI</option>
+          <option value="BUM KPR TWPAD">BUM KPR TWPAD</option>
+          <option value="BUM KPR Program Reguler YPPSDP">BUM KPR Program Reguler YPPSDP</option>
         </select>
       </div>
-      <div class="field">
-        <label class="fl">Kantor Cabang <span class="req">*</span></label>
-        <select class="inp" id="bpd-cabang">
-          <option value="">-- Pilih Kantor Cabang --</option>
-          ${daftarCabang.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join("")}
-        </select>
+      <div class="field span2">
+        <label class="fl">Tanggal Rekonsiliasi <span class="req">*</span></label>
+        <input class="inp" type="date" id="bpd-tgl-rekon">
       </div>
-      <div class="field">
-        <label class="fl">Tanggal SP <span class="req">*</span></label>
-        <input class="inp" type="date" id="bpd-tgl-sp">
-      </div>
-      <div class="field">
-        <label class="fl">Tanggal DPS <span class="req">*</span></label>
-        <input class="inp" type="date" id="bpd-tgl-dps">
-      </div>
-      <div class="field">
-        <label class="fl">Tanggal Periode <span class="req">*</span></label>
-        <input class="inp" type="date" id="bpd-tgl-periode">
-      </div>
-      <div class="field span2" style="margin-bottom:0">
+      <div class="field span2">
         <label class="fl">Unggah Data Pelunasan <span class="req">*</span></label>
         <input class="inp" type="file" id="bpd-berkas" accept=".xls,.xlsx,.csv">
         <div class="hint" id="bpd-berkas-nama">Belum ada berkas terunggah.</div>
+      </div>
+      <div class="field span2" style="margin-bottom:0">
+        <label class="fl">Notes</label>
+        <input class="inp" id="bpd-notes" placeholder="Catatan tambahan (opsional)">
       </div>
     </div>
     <div class="form-actions" style="justify-content:flex-end">
@@ -4173,20 +4302,18 @@ function bplShowUnggahData() {
   };
 
   $("#bpd-submit").onclick = () => {
-    const jenisHutang = $("#bpd-jenis").value;
-    const cabang      = $("#bpd-cabang").value;
-    const tglSp       = $("#bpd-tgl-sp").value;
-    const tglDps      = $("#bpd-tgl-dps").value;
-    const tglPeriode  = $("#bpd-tgl-periode").value;
-    const berkas      = $("#bpd-berkas").files[0];
+    const jenisPinjaman = $("#bpd-jenis").value;
+    const tglRekon      = $("#bpd-tgl-rekon").value;
+    const notes         = $("#bpd-notes").value.trim();
+    const berkas        = $("#bpd-berkas").files[0];
 
-    if (!jenisHutang || !cabang || !tglSp || !tglDps || !tglPeriode || !berkas) {
-      toast("Seluruh field wajib diisi sebelum submit.", "bad");
+    if (!jenisPinjaman || !tglRekon || !berkas) {
+      toast("Jenis Pinjaman, Tanggal Rekonsiliasi, dan berkas wajib diisi sebelum submit.", "bad");
       return;
     }
-    const peserta = bplUnggahPeserta(jenisHutang, cabang);
+    const peserta = bplUnggahPeserta(jenisPinjaman);
     if (!peserta.length) {
-      toast(`Tidak ada peserta ${jenisHutang} di ${cabang} yang belum masuk daftar pelunasan.`, "bad");
+      toast(`Tidak ada peserta ${jenisPinjaman} yang belum masuk daftar pelunasan.`, "bad");
       return;
     }
 
@@ -4196,17 +4323,17 @@ function bplShowUnggahData() {
         kpa: p.kpa, nrp: p.nrp, nama: p.nama, tmt: p.tmt,
         nomorPinjaman: p.nomorPinjaman,
         jenisPotongan: "Tabungan Asuransi",
-        jenisHutang,
+        jenisPinjaman,
         jumlah: p.jumlah, sisaHutang: p.sisaHutang,
         bruto: Math.round(nominal * 1.05), nominal,
-        ...(jenisHutang === "Program Reguler" ? { imbalJasa: Math.round(p.jumlah * 0.02) } : {}),
-        cabang, tglSp, tglDps, tglPeriode
+        ...(jenisPinjaman.includes("Reguler") ? { imbalJasa: Math.round(p.jumlah * 0.02) } : {}),
+        cabang: p.cabang, tglRekon, notes
       });
     });
     bplPage = 1;
     renderBumPelunasan();
     closeModal();
-    toast(`${peserta.length} data pelunasan ${jenisHutang} — ${cabang} berhasil ditambahkan.`, "ok");
+    toast(`${peserta.length} data pelunasan ${jenisPinjaman} berhasil ditambahkan.`, "ok");
   };
 }
 $("#bpl-unggah-btn").onclick = bplShowUnggahData;
@@ -4215,11 +4342,6 @@ document.addEventListener("click", e => {
   const bDetail = e.target.closest("[data-bpl-detail]");
   if (bDetail) {
     bplShowDetail(bumPelunasanRows.find(x => x.nomorPinjaman === bDetail.dataset.bplDetail));
-    return;
-  }
-  const bUpload = e.target.closest("[data-bpl-upload]");
-  if (bUpload) {
-    bplShowUpload(bumPelunasanRows.find(x => x.nomorPinjaman === bUpload.dataset.bplUpload));
     return;
   }
   const bPage = e.target.closest("[data-bpl-page]");
@@ -4355,22 +4477,112 @@ function uploadGotoView(view) {
   $("#upload-riwayat-view").style.display        = view === "riwayat"        ? "" : "none";
   $("#upload-riwayat-detail-view").style.display  = view === "riwayat-detail" ? "" : "none";
   $("#upload-wizard-view").style.display          = view === "wizard"        ? "" : "none";
+  kolRenderDraftBanner();              /* banner draft hanya relevan di daftar riwayat */
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function renderUploadRiwayat() {
-  const fBatch    = ($("#upload-riwayat-f-batch").value    || "").toLowerCase();
-  const fAgenda   = ($("#upload-riwayat-f-agenda").value   || "").toLowerCase();
-  const fKesatuan = ($("#upload-riwayat-f-kesatuan").value || "").toLowerCase();
-  const fStatus   = $("#upload-riwayat-f-status").value;
-  const fTanggal  = $("#upload-riwayat-f-tanggal").value;
+/* ------------------------------------------- draft unggah kolektif berjalan
+   Pola dan alasannya sama dengan draft Perorangan (lihat catatan di sana):
+   isi wizard hidup di DOM sehingga pindah sub modul tidak menghapusnya, flag
+   ini cuma menandai ada isian yang belum disubmit supaya tidak tertimpa
+   tombol "+ Upload Pendaftaran Peserta Baru" dan supaya browser mengingatkan
+   sebelum tab ditutup. */
+let kolDraftAda  = false;
+let kolDraftStep = 1;
 
+function kolTandaiDraft() {
+  kolDraftAda = true;
+  kolRenderDraftBanner();
+}
+
+function kolRenderDraftBanner() {
+  $("#kol-draft-banner").style.display = kolDraftAda ? "" : "none";
+  if (!kolDraftAda) return;
+  const siap = cleanRows.length ? ` (${cleanRows.length} baris siap submit)` : "";
+  $("#kol-draft-banner-teks").textContent =
+    `Ada draft Pendaftaran Kolektif${siap} yang belum disubmit — isiannya masih `
+    + "tersimpan sementara selama halaman ini belum ditutup.";
+}
+
+["input", "change"].forEach(ev =>
+  $("#upload-wizard-view").addEventListener(ev, kolTandaiDraft));
+
+function kolResetAll() {
+  dirtyRows = DATA_LIST_KOTOR.map(r => ({ ...r, _err: { ...r._err } }));
+  cleanRows = [];
+  $("#k-nomor-agenda").value = "";
+  $("#k-surat").value = "";
+  $("#k-tgl-surat").value = "";
+  $("#k-file-batch").value = "";
+  $("#up-title").textContent = "Unggah file batch peserta";
+  $("#up-sub").textContent   = "Format .xls / .csv sesuai template — maksimal 5.000 baris per batch";
+  $("#to-step2").disabled = true;
+  [2, 3].forEach(n => $(`.step[data-step="${n}"]`).disabled = true);
+  kolDraftAda  = false;
+  kolDraftStep = 1;
+  kolRenderDraftBanner();
+}
+
+function kolLanjutkanDraft() {
+  gotoStep(kolDraftStep);
+  uploadGotoView("wizard");
+}
+
+function kolMulaiBaru() {
+  kolResetAll();
+  gotoStep(1);
+  uploadGotoView("wizard");
+}
+
+function kolTanyaDraft() {
+  $("#modal-title").textContent = "Draft Belum Disimpan";
+  $("#modal-sub").textContent   = "Pendaftaran Kolektif";
+  $("#modal-ico").style.display = "";
+  $("#modal-ico").textContent   = "✎";
+  $("#modal-body").innerHTML = `
+    <div style="font-size:13px;color:var(--body);line-height:1.5;margin-bottom:18px">
+      Unggahan sebelumnya belum disubmit. Lanjutkan draft tersebut, atau mulai
+      unggahan baru dan buang isiannya?
+    </div>
+    <div class="form-actions" style="justify-content:flex-end">
+      <button class="btn btn-danger" id="kol-draft-modal-baru">Mulai Baru</button>
+      <button class="btn btn-primary" id="kol-draft-modal-lanjut">Lanjutkan Draft</button>
+    </div>`;
+  openModal();
+  $("#kol-draft-modal-lanjut").onclick = () => { closeModal(); kolLanjutkanDraft(); };
+  $("#kol-draft-modal-baru").onclick   = () => { closeModal(); kolMulaiBaru(); };
+}
+
+/* Saringan daftar riwayat Kolektif — sama seperti ppRiwayatFilter, dipakai
+   bersama oleh tabel dan tombol Export Excel. */
+function uploadRiwayatFilter() {
+  const vBatch    = $("#upload-riwayat-f-batch").value.trim();
+  const vAgenda   = $("#upload-riwayat-f-agenda").value.trim();
+  const vKesatuan = $("#upload-riwayat-f-kesatuan").value.trim();
+  const vStatus   = $("#upload-riwayat-f-status").value;
+  const vTanggal  = $("#upload-riwayat-f-tanggal").value;
+
+  const aktif = [];
+  if (vBatch)            aktif.push(`Nomor Batch "${vBatch}"`);
+  if (vAgenda)           aktif.push(`Nomor Agenda "${vAgenda}"`);
+  if (vKesatuan)         aktif.push(`Kesatuan Pengaju "${vKesatuan}"`);
+  if (vStatus !== "all") aktif.push(`Status ${vStatus}`);
+  if (vTanggal)          aktif.push(`Tanggal ${fmtTgl(vTanggal)}`);
+
+  const fBatch = vBatch.toLowerCase(), fAgenda = vAgenda.toLowerCase(),
+        fKesatuan = vKesatuan.toLowerCase();
   const rows = uploadBatchRows.filter(r =>
-    (fStatus === "all" || r.status === fStatus) &&
+    (vStatus === "all" || r.status === vStatus) &&
     (!fBatch    || r.nomorBatch.toLowerCase().includes(fBatch)) &&
     (!fAgenda   || r.nomorAgenda.toLowerCase().includes(fAgenda)) &&
     (!fKesatuan || r.kesatuanPengaju.toLowerCase().includes(fKesatuan)) &&
-    (!fTanggal  || fmtTgl(fTanggal) === r.tglPengajuan));
+    (!vTanggal  || fmtTgl(vTanggal) === r.tglPengajuan));
+
+  return { rows, aktif };
+}
+
+function renderUploadRiwayat() {
+  const { rows } = uploadRiwayatFilter();
   const pageSize   = +$("#upload-riwayat-page-size").value;
   const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
   if (uploadRiwayatPage > totalPages) uploadRiwayatPage = totalPages;
@@ -4399,7 +4611,19 @@ function renderUploadRiwayat() {
 }
 $("#upload-riwayat-page-size").onchange = () => { uploadRiwayatPage = 1; renderUploadRiwayat(); };
 $("#upload-riwayat-cari").onclick = () => { uploadRiwayatPage = 1; renderUploadRiwayat(); };
-$("#btn-export-upload-riwayat").onclick = () => toast("Riwayat upload diekspor ke Excel.");
+/* Export mengikuti filter yang sedang dipakai; tanpa filter berarti seluruh
+   riwayat kolektif ikut terekspor. */
+$("#btn-export-upload-riwayat").onclick = () => {
+  const { rows, aktif } = uploadRiwayatFilter();
+  if (!rows.length) {
+    toast("Tidak ada data yang cocok dengan filter — tidak ada yang diekspor.", "bad");
+    return;
+  }
+  const peserta = rows.reduce((n, r) => n + r.peserta.length, 0);
+  toast(aktif.length
+    ? `${rows.length} batch (${peserta} peserta) diekspor ke Excel — filter: ${aktif.join(", ")}.`
+    : `Semua ${rows.length} batch (${peserta} peserta) diekspor ke Excel (tanpa filter).`, "ok");
+};
 
 function renderUploadRiwayatDetail(batch) {
   $("#upload-riwayat-detail-sub").textContent = `${batch.nomorBatch} — ${batch.peserta.length} peserta`;
@@ -4413,21 +4637,17 @@ function renderUploadRiwayatDetail(batch) {
     : `<tr><td colspan="${FIELDS.length}"><div class="empty"><h4>Tidak ada berkas</h4></div></td></tr>`;
 }
 
-$("#btn-upload-baru").onclick = () => {
-  dirtyRows = DATA_LIST_KOTOR.map(r => ({ ...r, _err: { ...r._err } }));
-  cleanRows = [];
-  $("#k-nomor-agenda").value = "";
-  $("#k-surat").value = "";
-  $("#k-tgl-surat").value = "";
-  $("#k-file-batch").value = "";
-  $("#up-title").textContent = "Unggah file batch peserta";
-  $("#up-sub").textContent   = "Format .xls / .csv sesuai template — maksimal 5.000 baris per batch";
-  $("#to-step2").disabled = true;
-  [2, 3].forEach(n => $(`.step[data-step="${n}"]`).disabled = true);
-  gotoStep(1);
-  uploadGotoView("wizard");
+/* Draft yang belum disubmit tidak langsung ditimpa — lihat kolTanyaDraft. */
+$("#btn-upload-baru").onclick  = () => { if (kolDraftAda) kolTanyaDraft(); else kolMulaiBaru(); };
+$("#kol-draft-lanjut").onclick = kolLanjutkanDraft;
+$("#kol-draft-buang").onclick  = () => confirmModal(
+  "Buang draft unggahan yang belum disubmit? Semua isian pada wizard akan dikosongkan.",
+  () => { kolResetAll(); gotoStep(1); toast("Draft unggahan kolektif dibuang.", "ok"); },
+  { title: "Buang Draft", okLabel: "Buang Draft" });
+$("#k-batal").onclick = () => {
+  uploadGotoView("riwayat");
+  if (kolDraftAda) toast("Isian disimpan sementara sebagai draft — bisa dilanjutkan lagi dari daftar riwayat.");
 };
-$("#k-batal").onclick = () => uploadGotoView("riwayat");
 $("#upload-riwayat-detail-kembali").onclick = () => uploadGotoView("riwayat");
 
 document.addEventListener("click", e => {
@@ -4582,20 +4802,91 @@ const VERIF_EDITABLE = [
   ["sts", "STS PERSONIL"], ["unor", "UNOR"], ["angkatan", "ANGKATAN"],
   ["kdPangkat", "KODE PANGKAT"], ["kdKesatuan", "KODE_KESATUAN"], ["kdKancab", "KODE_KANCAB"]
 ];
-function renderVerifRevisi(batch) {
-  $("#verif-revisi-sub").textContent = `${batch.nomorBatch} — ${batch.peserta.length} peserta`;
-  $("#verif-revisi-head").innerHTML =
-    FIELDS.map((f, i) => `<th class="${i === 0 ? "stick-l" : ""}">${esc(f[1])}</th>`).join("");
-  $("#verif-revisi-body").innerHTML = batch.peserta.map((p, idx) => `
+/* Urutan & pencarian per kolom pada tabel revisi. `col` menyimpan kunci FIELDS
+   yang sedang diurutkan, `cari` menyimpan kata kunci tiap kolom. */
+let verifRevisiSort = { col: null, dir: 1 };
+let verifRevisiCari = {};
+
+/* Nilai input yang sedang diketik disimpan dulu ke data sebelum tabel
+   digambar ulang (urut/cari), supaya revisi yang belum disimpan tidak hilang. */
+function verifRevisiSerap() {
+  const batch = uploadBatchRows.find(x => x._id === verifCurrentBatchId);
+  if (!batch) return;
+  $$("#verif-revisi-body [data-verif-edit-idx]").forEach(inp => {
+    batch.peserta[+inp.dataset.verifEditIdx][inp.dataset.verifEditKey] = inp.value.trim();
+  });
+}
+
+function renderVerifRevisiHead() {
+  $("#verif-revisi-head").innerHTML = FIELDS.map((f, i) => `
+    <th class="th-sort ${i === 0 ? "stick-l" : ""}" data-verif-revisi-sort="${f[0]}">${esc(f[1])}
+      <span class="sort-ind">${verifRevisiSort.col === f[0] ? (verifRevisiSort.dir === 1 ? "▲" : "▼") : "⇅"}</span>
+    </th>`).join("");
+  $("#verif-revisi-filter").innerHTML = FIELDS.map((f, i) => `
+    <th class="${i === 0 ? "stick-l" : ""}">
+      <input class="inp-col" data-verif-revisi-cari="${f[0]}" value="${esc(verifRevisiCari[f[0]] || "")}" placeholder="⌕ Cari">
+    </th>`).join("");
+}
+
+function renderVerifRevisiBody() {
+  const batch = uploadBatchRows.find(x => x._id === verifCurrentBatchId);
+  if (!batch) return;
+
+  /* idx = posisi asli di batch.peserta, tetap dipakai walau baris diurut/disaring */
+  let rows = batch.peserta.map((p, idx) => ({ p, idx })).filter(({ p }) =>
+    FIELDS.every(f => {
+      const q = (verifRevisiCari[f[0]] || "").trim().toLowerCase();
+      return !q || String(p[f[0]] ?? "").toLowerCase().includes(q);
+    }));
+
+  if (verifRevisiSort.col) rows.sort((a, b) =>
+    String(a.p[verifRevisiSort.col] ?? "").localeCompare(
+      String(b.p[verifRevisiSort.col] ?? ""), "id", { numeric: true }) * verifRevisiSort.dir);
+
+  $("#verif-revisi-sub").textContent = rows.length === batch.peserta.length
+    ? `${batch.nomorBatch} — ${batch.peserta.length} peserta`
+    : `${batch.nomorBatch} — menampilkan ${rows.length} dari ${batch.peserta.length} peserta`;
+
+  $("#verif-revisi-body").innerHTML = rows.length ? rows.map(({ p, idx }) => `
     <tr>${FIELDS.map((f, i) => {
       const editable = VERIF_EDITABLE.some(([k]) => k === f[0]);
       const cls = (i === 0 ? "stick-l " : "") + (i < 2 ? "t-strong" : "");
       return editable
         ? `<td class="${cls}"><input class="inp" style="min-width:120px" data-verif-edit-idx="${idx}" data-verif-edit-key="${f[0]}" value="${esc(p[f[0]])}"></td>`
         : `<td class="${cls}">${esc(p[f[0]])}</td>`;
-    }).join("")}</tr>`
-  ).join("");
+    }).join("")}</tr>`).join("")
+    : `<tr><td colspan="${FIELDS.length}"><div class="empty"><h4>Tidak ada data</h4><p>Coba ubah kata kunci pencarian kolom.</p></div></td></tr>`;
 }
+
+function renderVerifRevisi(batch) {
+  verifCurrentBatchId = batch._id;
+  verifRevisiSort = { col: null, dir: 1 };
+  verifRevisiCari = {};
+  renderVerifRevisiHead();
+  renderVerifRevisiBody();
+}
+
+/* Klik judul kolom → A→Z, klik lagi → Z→A */
+document.addEventListener("click", e => {
+  const th = e.target.closest("[data-verif-revisi-sort]");
+  if (!th) return;
+  const col = th.dataset.verifRevisiSort;
+  if (verifRevisiSort.col === col) verifRevisiSort.dir *= -1;
+  else verifRevisiSort = { col, dir: 1 };
+  verifRevisiSerap();
+  renderVerifRevisiHead();
+  renderVerifRevisiBody();
+});
+
+/* Ketik di kotak pencarian kolom → hanya <tbody> yang digambar ulang,
+   supaya kursor tetap berada di kotak yang sedang diketik. */
+$("#verif-revisi-filter").addEventListener("input", e => {
+  const inp = e.target.closest("[data-verif-revisi-cari]");
+  if (!inp) return;
+  verifRevisiSerap();
+  verifRevisiCari[inp.dataset.verifRevisiCari] = inp.value;
+  renderVerifRevisiBody();
+});
 
 document.addEventListener("click", e => {
   const bDetail = e.target.closest("[data-verif-detail]");
@@ -4654,10 +4945,8 @@ $("#verif-revisi-kembali").onclick = () => {
   verifGotoView("detail");
 };
 $("#verif-simpan-revisi").onclick = () => {
+  verifRevisiSerap();
   const batch = uploadBatchRows.find(x => x._id === verifCurrentBatchId);
-  $$("#verif-revisi-body [data-verif-edit-idx]").forEach(inp => {
-    batch.peserta[+inp.dataset.verifEditIdx][inp.dataset.verifEditKey] = inp.value.trim();
-  });
   toast(`Perubahan data peserta batch ${batch.nomorBatch} tersimpan.`, "ok");
   renderVerifDetail(batch);
   verifGotoView("detail");
@@ -4999,7 +5288,6 @@ function nominatifGotoView(view) {
   $("#nominatif-list-view").style.display   = view === "list"   ? "" : "none";
   $("#nominatif-detail-view").style.display = view === "detail" ? "" : "none";
   $("#nominatif-kpa-view").style.display    = view === "kpa"    ? "" : "none";
-  cetakMenuTutup();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -5043,7 +5331,7 @@ function renderNominatif() {
       <td>${esc(r.tglPengajuan)}</td>
       <td>
         <button class="btn btn-ghost btn-sm" data-nominatif-detail="${r._id}">👤 Peserta ›</button>
-        <button class="btn btn-primary btn-sm" data-nominatif-cetak="${r._id}">🖶 Cetak ⌄</button>
+        <button class="btn btn-primary btn-sm" data-nominatif-surat="${r._id}">🖶 Cetak Surat Pengantar</button>
       </td>
     </tr>`;
   }).join("")
@@ -5060,74 +5348,39 @@ $("#nominatif-cari").onclick       = () => { nominatifPage = 1; renderNominatif(
 $("#nominatif-page-size").onchange = () => { nominatifPage = 1; renderNominatif(); };
 $("#nominatif-export").onclick     = () => toast("Buku daftar nominatif diekspor ke Excel.");
 
+let nominatifDetailBatch = null;
+
 function renderNominatifDetail(batch) {
+  nominatifDetailBatch = batch;
   $("#nominatif-detail-sub").textContent = `${batch.nomorBatch} — ${batch.peserta.length} peserta`;
   $("#nominatif-detail-head").innerHTML =
-    FIELDS.map((f, i) => `<th class="${i === 0 ? "stick-l" : ""}">${esc(f[1])}</th>`).join("");
+    FIELDS.map((f, i) => `<th class="${i === 0 ? "stick-l" : ""}">${esc(f[1])}</th>`).join("")
+    + `<th class="stick-r">Aksi</th>`;
   $("#nominatif-detail-body").innerHTML = batch.peserta.length
-    ? batch.peserta.map(p => `<tr>${FIELDS.map((f, i) =>
+    ? batch.peserta.map((p, idx) => `<tr>${FIELDS.map((f, i) =>
         `<td class="${i === 0 ? "stick-l " : ""}${i < 2 ? "t-strong" : ""}">${esc(p[f[0]])}</td>`
-      ).join("")}</tr>`).join("")
-    : `<tr><td colspan="${FIELDS.length}"><div class="empty"><h4>Tidak ada peserta</h4></div></td></tr>`;
+      ).join("")}<td class="stick-r">
+        <button class="btn btn-info btn-sm" data-nominatif-kpa-peserta="${idx}">▤ Cetak KPA</button>
+      </td></tr>`).join("")
+    : `<tr><td colspan="${FIELDS.length + 1}"><div class="empty"><h4>Tidak ada peserta</h4></div></td></tr>`;
 }
 $("#nominatif-detail-kembali").onclick = () => nominatifGotoView("list");
 
-/* -------- Menu "Cetak" (KPA / Surat Pengantar)
-   Menunya melayang di atas halaman (position:fixed) supaya tidak terpotong
-   oleh scroll horizontal .tbl-wrap; posisinya dihitung dari tombol pemicu. */
-let cetakMenuBatch = null;
-
-function cetakMenuTutup() {
-  $("#cetak-menu").classList.remove("open");
-  cetakMenuBatch = null;
-}
-function cetakMenuBuka(btn, batch) {
-  const menu = $("#cetak-menu");
-  cetakMenuBatch = batch;
-  menu.classList.add("open");                     /* dibuka dulu agar lebarnya terbaca */
-  const r = btn.getBoundingClientRect();
-  const w = menu.offsetWidth, h = menu.offsetHeight;
-  const kiri = Math.max(12, Math.min(r.right - w, window.innerWidth - w - 12));
-  const atas = r.bottom + 6 + h > window.innerHeight ? r.top - h - 6 : r.bottom + 6;
-  menu.style.left = `${kiri}px`;
-  menu.style.top  = `${Math.max(12, atas)}px`;
-}
-document.addEventListener("click", e => {
-  if (!$("#cetak-menu").classList.contains("open")) return;
-  if (e.target.closest("#cetak-menu") || e.target.closest("[data-nominatif-cetak]")) return;
-  cetakMenuTutup();
-});
-window.addEventListener("scroll", cetakMenuTutup, true);
-window.addEventListener("resize", cetakMenuTutup);
-document.addEventListener("keydown", e => { if (e.key === "Escape") cetakMenuTutup(); });
-
-$("#cetak-menu-kpa").onclick = () => {
-  const batch = cetakMenuBatch; cetakMenuTutup();
-  if (batch) { renderNominatifKpa(batch); nominatifGotoView("kpa"); }
-};
-$("#cetak-menu-surat").onclick = () => {
-  const batch = cetakMenuBatch; cetakMenuTutup();
-  if (batch) nominatifSuratPengantar(batch);
-};
-
 /* -------- Pratinjau Cetak KPA
    Peserta hasil upload belum punya nomor KTPA, jadi nomor kartu dan pola
-   barcode-nya dibangkitkan secara tetap (deterministik) dari NRP + nama —
-   supaya kartu yang sama selalu tampil dengan nomor yang sama. */
-const KPA_ANGKATAN = { "1":"TNI AD", "2":"TNI AL", "3":"TNI AU", "4":"POLRI", "5":"PNS KEMHAN" };
-
+   QR-nya dibangkitkan secara tetap (deterministik) dari NRP + nama — supaya
+   kartu yang sama selalu tampil dengan nomor yang sama. */
 function kpaHash(teks, awal) {
   let h = awal;
   for (const c of String(teks)) h = (h * 33 + c.charCodeAt(0)) % 233280;
   return h;
 }
-function kpaAngkatan(p) {
-  const t = `${p.angkatan || ""} ${p.kesatuan || ""}`.toUpperCase();
-  if (t.includes("POLRI"))  return "POLRI";
-  if (t.includes("TNI AL")) return "TNI AL";
-  if (t.includes("TNI AU")) return "TNI AU";
-  if (t.includes("TNI AD")) return "TNI AD";
-  return KPA_ANGKATAN[String(p.angkatan)] || (p.angkatan || "-");
+/* Kolom UNOR pada berkas upload berisi kode; kartu mencetak namanya.
+   Urutannya sama dengan pilihan UNOR di form Pendaftaran Perorangan. */
+const KPA_UNOR = { "1":"TNI AD", "2":"TNI AL", "3":"TNI AU", "4":"POLRI", "5":"MABES TNI", "6":"KEMHAN" };
+
+function kpaUnor(p) {
+  return KPA_UNOR[String(p.unor)] || p.unor || p.kesatuan || "";
 }
 function kpaNomor(p) {
   if (p.ktpa) return p.ktpa;
@@ -5135,57 +5388,136 @@ function kpaNomor(p) {
   const h = kpaHash(`${p.nrp || ""}${p.nama || ""}`, 7);
   return HURUF[h % 24] + HURUF[(h >> 4) % 24] + String(h % 1000000).padStart(6, "0");
 }
-function kpaBarcode(kode) {
-  const KELAS = ["kpa-bar", "kpa-bar w2", "kpa-bar w3", "kpa-bar sp"];
+
+/* QR hiasan: 21×21 modul dengan tiga pola pencari di sudut seperti QR asli,
+   sisanya diisi pola tetap dari kode kartu. Digambar sebagai SVG inline —
+   modul yang bersebelahan digabung jadi satu <rect> agar markupnya ringan. */
+function kpaQr(kode) {
+  const N = 21, SISI = 4, PAD = 2;
+  const on = Array.from({ length: N }, () => new Array(N).fill(false));
+  const pencari = (r0, c0) => {
+    for (let r = 0; r < 7; r++) for (let c = 0; c < 7; c++) {
+      const tepi = r === 0 || r === 6 || c === 0 || c === 6;
+      const inti = r >= 2 && r <= 4 && c >= 2 && c <= 4;
+      on[r0 + r][c0 + c] = tepi || inti;
+    }
+  };
+  pencari(0, 0); pencari(0, N - 7); pencari(N - 7, 0);
+  const bebas = (r, c) =>
+    !((r < 8 && c < 8) || (r < 8 && c >= N - 8) || (r >= N - 8 && c < 8));
+
   let h = kpaHash(kode, 11);
-  return Array.from({ length: 30 }, () => {
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
     h = (h * 9301 + 49297) % 233280;
-    return `<i class="${KELAS[h % 4]}"></i>`;
-  }).join("");
-}
-function kpaTglHariIni() {
-  const d = new Date(), p2 = n => String(n).padStart(2, "0");
-  return `${p2(d.getDate())}/${p2(d.getMonth() + 1)}/${d.getFullYear()}`;
-}
-function kpaBaris(label, nilai) {
-  return `<div class="kpa-row"><div class="kpa-k">${esc(label)}</div><span>:</span>
-            <div class="kpa-v">${esc(nilai || "–")}</div></div>`;
+    if (bebas(r, c)) on[r][c] = h > 116640;
+  }
+
+  let kotak = "";
+  for (let r = 0; r < N; r++) {
+    let c = 0;
+    while (c < N) {
+      if (!on[r][c]) { c++; continue; }
+      let w = 1;
+      while (c + w < N && on[r][c + w]) w++;
+      kotak += `<rect x="${(PAD + c) * SISI}" y="${(PAD + r) * SISI}" width="${w * SISI}" height="${SISI}"/>`;
+      c += w;
+    }
+  }
+  const sisi = (N + PAD * 2) * SISI;
+  return `<svg viewBox="0 0 ${sisi} ${sisi}" role="img" aria-label="QR ${esc(kode)}">
+      <rect width="${sisi}" height="${sisi}" fill="#fff"/><g fill="#0f172a">${kotak}</g></svg>`;
 }
 
-function renderNominatifKpa(batch) {
-  const n = batch.peserta.length;
-  $("#nominatif-kpa-sub").textContent =
-    `KPA Batch ${batch.nomorBatch} · ${n} kartu. Periksa pratinjau, lalu tekan Cetak untuk menyimpan sebagai PDF.`;
-  $("#nominatif-kpa-grid").innerHTML = n ? batch.peserta.map(p => {
+function kpaBaris(ikon, label, nilai) {
+  return `<div class="kpa-row">
+      <span class="kpa-ico" aria-hidden="true">${ikon}</span>
+      <div class="kpa-rt">
+        <div class="kpa-k">${esc(label)}</div>
+        <div class="kpa-v">${esc(nilai || "–")}</div>
+      </div>
+    </div>`;
+}
+
+/* Dipanggil dengan `peserta` untuk mencetak satu kartu saja; tanpa argumen itu
+   seluruh peserta batch ikut tercetak. */
+function renderNominatifKpa(batch, peserta) {
+  const daftar = peserta ? [peserta] : batch.peserta;
+  const n = daftar.length;
+  $("#nominatif-kpa-sub").textContent = peserta
+    ? `KPA ${peserta.nama} · ${peserta.nrp} — Batch ${batch.nomorBatch}. Periksa pratinjau, lalu tekan Cetak untuk menyimpan sebagai PDF.`
+    : `KPA Batch ${batch.nomorBatch} · ${n} kartu. Periksa pratinjau, lalu tekan Cetak untuk menyimpan sebagai PDF.`;
+  $("#nominatif-kpa-grid").innerHTML = n ? daftar.map(p => {
     const no = kpaNomor(p);
     return `
     <div class="kpa-card">
       <div class="kpa-head">
-        <div class="kpa-org"><b>PT. ASABRI (PERSERO)</b><div>JAKARTA</div></div>
-        <div>
-          <div class="kpa-jenis">Kartu Tanda Peserta Asabri (KTPA)</div>
-          <div class="kpa-no"><span>NO</span><b>${esc(no)}</b></div>
+        <div class="kpa-title">Kartu Peserta <b>ASABRI</b></div>
+        <div class="kpa-brand">
+          <img class="kpa-logo" src="logo-asabri-white.png" alt="ASABRI">
+          <div class="kpa-tagline">Sahabat Perjuangan Anda<br>Sepanjang Masa</div>
         </div>
       </div>
-      ${kpaBaris("Nama", (p.nama || "").toUpperCase())}
-      ${kpaBaris("NRP/NIP", p.nrp)}
-      ${kpaBaris("Tanggal Lahir", p.tglLahir)}
-      ${kpaBaris("Tanggal jadi Peserta", p.tmtSkep)}
-      <div class="kpa-sts">Anggota / ${esc(kpaAngkatan(p))}</div>
-      <div class="kpa-place">Jakarta, ${kpaTglHariIni()}</div>
+      <div class="kpa-body">
+        <div class="kpa-info">
+          <div class="kpa-nama">${esc((p.nama || "").toUpperCase())}</div>
+          ${kpaBaris("☻", "NRP/NIP", p.nrp)}
+          ${kpaBaris("★", "Pangkat", p.pangkat)}
+          ${kpaBaris("⚑", "Unor", kpaUnor(p))}
+          ${kpaBaris("♥", "Suami/Istri", p.suamiIstri)}
+        </div>
+        <div class="kpa-qr-wrap">
+          <div class="kpa-qr">${kpaQr(no)}</div>
+          <div class="kpa-kode">${esc(no)}</div>
+        </div>
+      </div>
       <div class="kpa-foot">
-        <div class="kpa-barcode">${kpaBarcode(no)}</div>
-        <div class="kpa-sign"><b>SONNY WIDJAJA</b>LETJEN TNI (PURN)</div>
+        <span>📞 1500 043</span><i></i><span>🌐 www.asabri.co.id</span>
       </div>
     </div>`;
   }).join("")
     : `<div class="empty"><h4>Tidak ada peserta</h4><p>Batch ini belum memiliki data peserta.</p></div>`;
 }
-$("#nominatif-kpa-kembali").onclick = () => nominatifGotoView("list");
+$("#nominatif-kpa-kembali").onclick = () => nominatifGotoView("detail");
 $("#nominatif-kpa-cetak").onclick   = () => window.print();
 
 /* -------- Cetak Surat Pengantar (modal isian nomor & pejabat) */
 const BULAN_ROMAWI = ["I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"];
+
+/* Field yang muncul di bawah "Tujuan Kirim", menyesuaikan pilihannya:
+   dua tujuan pertama dicari dari daftar referensi, "Pengirim" diketik bebas. */
+const SP_TUJUAN = {
+  "Kantor Cabang": { label:"Nama Kantor Cabang", ph:"Cari nama kantor cabang…", daftar:() => DATA_KANTOR_CABANG },
+  "Kesatuan":      { label:"Nama Kesatuan",      ph:"Cari nama kesatuan…",      daftar:() => DATA_KESATUAN      },
+  "Pengirim":      { label:"Nama Pengirim",      ph:"Nama pengirim surat"       }
+};
+
+function spRenderTujuan() {
+  const t = SP_TUJUAN[$("#sp-tujuan").value];
+  $("#sp-tujuan-field").innerHTML = `
+    <label class="fl caps" for="sp-tujuan-nama">${esc(t.label)}</label>
+    <input class="inp" id="sp-tujuan-nama" placeholder="${esc(t.ph)}" autocomplete="off">
+    ${t.daftar ? `<div class="autocomplete-list" id="sp-tujuan-list"></div>` : ""}`;
+  if (!t.daftar) return;
+
+  const inp = $("#sp-tujuan-nama"), list = $("#sp-tujuan-list");
+  const cari = () => {
+    const q = inp.value.trim().toLowerCase();
+    const hits = t.daftar().filter(n => n.toLowerCase().includes(q)).slice(0, 8);
+    list.innerHTML = hits.map(n => `<div class="autocomplete-item">${esc(n)}</div>`).join("");
+    list.classList.toggle("open", hits.length > 0);
+  };
+  inp.oninput = cari;
+  inp.onfocus = cari;
+  inp.onblur  = () => list.classList.remove("open");
+  /* mousedown + preventDefault: input tidak kehilangan fokus sebelum item terpilih */
+  list.onmousedown = e => {
+    const item = e.target.closest(".autocomplete-item");
+    if (!item) return;
+    e.preventDefault();
+    inp.value = item.textContent;
+    list.classList.remove("open");
+  };
+}
 
 function nominatifSuratPengantar(batch) {
   const d = new Date();
@@ -5204,10 +5536,11 @@ function nominatifSuratPengantar(batch) {
       <label class="fl caps" for="sp-tujuan">Tujuan Kirim</label>
       <select class="inp" id="sp-tujuan">
         <option>Kantor Cabang</option>
-        <option>Kantor Pusat</option>
-        <option>Kesatuan Pengaju</option>
+        <option>Kesatuan</option>
+        <option>Pengirim</option>
       </select>
     </div>
+    <div class="field" id="sp-tujuan-field" style="position:relative"></div>
     <div class="field">
       <label class="fl caps" for="sp-atas-nama">Atas Nama</label>
       <input class="inp" id="sp-atas-nama" value="Kadiv Kepesertaan">
@@ -5225,10 +5558,15 @@ function nominatifSuratPengantar(batch) {
       <button class="btn btn-primary" id="sp-cetak">🖶 Cetak Surat Pengantar</button>
     </div>`;
   openModal();
+  spRenderTujuan();
+  $("#sp-tujuan").onchange = spRenderTujuan;
   $("#sp-tutup").onclick = closeModal;
   $("#sp-cetak").onclick = () => {
     const nomor = $("#sp-nomor").value.trim();
     if (!nomor || nomor.includes("…")) { toast("Lengkapi nomor urut surat pengantar.", "bad"); return; }
+    if (!$("#sp-tujuan-nama").value.trim()) {
+      toast(`${SP_TUJUAN[$("#sp-tujuan").value].label} wajib diisi.`, "bad"); return;
+    }
     if (!$("#sp-pejabat").value.trim() || !$("#sp-jabatan").value.trim()) {
       toast("Nama pejabat dan jabatan wajib diisi.", "bad"); return;
     }
@@ -5244,11 +5582,16 @@ document.addEventListener("click", e => {
     nominatifGotoView("detail");
     return;
   }
-  const bCetak = e.target.closest("[data-nominatif-cetak]");
-  if (bCetak) {
-    const batch = uploadBatchRows.find(x => x._id === +bCetak.dataset.nominatifCetak);
-    if ($("#cetak-menu").classList.contains("open") && cetakMenuBatch === batch) cetakMenuTutup();
-    else cetakMenuBuka(bCetak, batch);
+  const bSurat = e.target.closest("[data-nominatif-surat]");
+  if (bSurat) {
+    const batch = uploadBatchRows.find(x => x._id === +bSurat.dataset.nominatifSurat);
+    if (batch) nominatifSuratPengantar(batch);
+    return;
+  }
+  const bKpa = e.target.closest("[data-nominatif-kpa-peserta]");
+  if (bKpa && nominatifDetailBatch) {
+    const p = nominatifDetailBatch.peserta[+bKpa.dataset.nominatifKpaPeserta];
+    if (p) { renderNominatifKpa(nominatifDetailBatch, p); nominatifGotoView("kpa"); }
     return;
   }
   const bPage = e.target.closest("[data-nominatif-page]");
@@ -5691,7 +6034,7 @@ document.addEventListener("click", e => {
 });
 
 /* ==================================================================== HOME */
-const HOME_SEVERITY_PILL = { "Kritis":"pill-bad", "High":"pill-warn", "Sedang":"pill-info" };
+const HOME_SEVERITY_PILL = { "Kritis":"pill-bad", "WARNING":"pill-bad", "High":"pill-warn", "Sedang":"pill-info" };
 const HOME_TAG_STYLE = {
   kebijakan: "background:var(--blue-soft);color:var(--blue-ink)",
   baru:      "background:var(--green-soft);color:var(--green-ink)",
@@ -5704,14 +6047,33 @@ const HOME_DOT_COLOR = { kebijakan:"var(--blue-ink)", info:"var(--red)" };
    Revisi (lihat pumRows), bukan data statis, supaya selalu sesuai kondisi
    pengajuan yang sebenarnya. Dipakai bersama oleh panel Notifikasi di Home
    dan lonceng di navbar supaya jumlahnya tidak pernah berbeda antar layar. */
+/* Jumlah hari kerja (Senin–Jumat) yang sudah lewat sejak tglIso sampai hari
+   ini — dipakai untuk mendeteksi SLA 3 Hari Kerja revisi pengajuan terlewat. */
+function hariKerjaSejak(tglIso) {
+  if (!tglIso) return 0;
+  const cur = new Date(tglIso); cur.setHours(0, 0, 0, 0);
+  const batas = new Date();     batas.setHours(0, 0, 0, 0);
+  let n = 0;
+  while (cur < batas) {
+    cur.setDate(cur.getDate() + 1);
+    if (cur.getDay() !== 0 && cur.getDay() !== 6) n++;
+  }
+  return n;
+}
+
 function notifRevisiPicUnor() {
   const d = new Date(), pad = n => String(n).padStart(2, "0");
   const tanggal = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
-  return pumRows.filter(r => r.status === "Revisi").map(r => ({
-    judul: "Revisi Pengajuan KPR (PUM)",
-    detail: `KPA ${r.kpa} ${r.nama} ${r.angkatan} Pengajuan KPR (PUM) terdapat revisi dengan sisa waktu SLA 3 Hari Kerja.`,
-    tanggal, tingkat: "High", go: "pum", pumId: r._id
-  }));
+  return pumRows.filter(r => r.status === "Revisi").map(r => {
+    const risk = hariKerjaSejak(r.tglRevisi) >= 3;
+    return {
+      judul: "Revisi Pengajuan KPR (PUM)",
+      detail: risk
+        ? `KPA ${r.kpa} ${r.nama} ${r.angkatan} Pengajuan KPR (PUM) terdapat revisi dan sudah terlewat SLA 3 Hari Kerja.`
+        : `KPA ${r.kpa} ${r.nama} ${r.angkatan} Pengajuan KPR (PUM) terdapat revisi dengan sisa waktu SLA 3 Hari Kerja.`,
+      tanggal, tingkat: risk ? "WARNING" : "High", go: "pum", pumId: r._id
+    };
+  });
 }
 /* Notifikasi yang lahir saat request umum dialihkan ke Divisi Layanan. Isinya
    bertambah selama sesi berjalan (hilang saat refresh, seperti data lain) dan
@@ -6707,11 +7069,14 @@ function dpPersonil(p) {
   return "Prajurit";
 }
 
-function dpBukaDetail(migrasiId) {
+function dpBukaDetail(migrasiId, asal) {
   const p = DATA_PESERTA_KELOLA.find(x => x.migrasiId === migrasiId);
   if (!p) return;
   dpPesertaAktif = p;
   dpTabAktif     = "profil";
+  dpAsalDetail   = asal || "data-peserta";
+  $("#dpd-crumb-asal").textContent = dpAsalDetail === "spp-bersih"
+    ? "List Bersih SPP Data Peserta" : "Pengelolaan Data Peserta";
   renderDetailPeserta();
   go("data-peserta-detail");
 }
@@ -6756,13 +7121,8 @@ function renderTabHakPeserta() {
   const rows = dpPesertaAktif.hakProduk || [];
   $("#dpd-panel").innerHTML = `
     <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:14px">
-        <div>
-          <h3 class="section-title" style="margin-bottom:6px">Hak / Produk</h3>
-          <div class="page-sub" style="margin:0">Pembayaran hak dan produk peserta beserta jejak pembukuannya di Axapta.</div>
-        </div>
-        <button class="btn btn-primary" id="dpd-hak-transaksi">+ Transaksi Hak/Produk</button>
-      </div>
+      <h3 class="section-title" style="margin-bottom:6px">Hak / Produk</h3>
+      <div class="page-sub" style="margin:0 0 14px">Pembayaran hak dan produk peserta beserta jejak pembukuannya di Axapta.</div>
       <div class="tbl-wrap">
         <table class="wide-table" style="min-width:2200px">
           <thead><tr>
@@ -6798,9 +7158,6 @@ function renderTabHakPeserta() {
         </table>
       </div>
     </div>`;
-
-  $("#dpd-hak-transaksi").onclick = () =>
-    toast("Form transaksi hak/produk akan menyusul sesuai referensi FSD.");
 }
 
 function dpPillStatusHutang(status) {
@@ -6809,7 +7166,7 @@ function dpPillStatusHutang(status) {
   return "pill-info";
 }
 
-/* Tab Hutang: dua section, masing-masing kartunya sendiri. */
+/* Tab Hutang: dua section (Piutang dan Piutang Mitra), masing-masing kartunya sendiri. */
 function renderTabHutangPeserta() {
   const hutang = dpPesertaAktif.hutang      || [];
   const mitra  = dpPesertaAktif.hutangMitra || [];
@@ -6823,7 +7180,7 @@ function renderTabHutangPeserta() {
       <td>${esc(rp(h.sudahBayar))}</td>
       <td class="t-strong">${esc(rp(h.sisa))}</td>
     </tr>`).join("")
-    : `<tr><td colspan="6"><div class="empty"><h4>Tidak ada hutang</h4><p>Peserta ini tidak punya hutang kepada ASABRI.</p></div></td></tr>`;
+    : `<tr><td colspan="6"><div class="empty"><h4>Tidak ada piutang</h4><p>Peserta ini tidak punya piutang kepada ASABRI.</p></div></td></tr>`;
 
   const barisMitra = mitra.length ? mitra.map(m => `
     <tr>
@@ -6838,17 +7195,17 @@ function renderTabHutangPeserta() {
       <td><span class="pill ${dpPillStatusHutang(m.status)}">${esc(m.status)}</span></td>
       <td>${esc(m.tarif)}</td>
     </tr>`).join("")
-    : `<tr><td colspan="10"><div class="empty"><h4>Tidak ada hutang mitra</h4><p>Peserta ini tidak punya pinjaman pada bank/mitra penyalur.</p></div></td></tr>`;
+    : `<tr><td colspan="10"><div class="empty"><h4>Tidak ada piutang mitra</h4><p>Peserta ini tidak punya pinjaman pada bank/mitra penyalur.</p></div></td></tr>`;
 
   $("#dpd-panel").innerHTML = `
     <div class="card">
-      <h3 class="section-title" style="margin-bottom:6px">Hutang</h3>
-      <div class="page-sub" style="margin:0 0 14px">Hutang peserta kepada ASABRI beserta sisa angsurannya.</div>
+      <h3 class="section-title" style="margin-bottom:6px">Piutang</h3>
+      <div class="page-sub" style="margin:0 0 14px">Piutang peserta kepada ASABRI beserta sisa angsurannya.</div>
       <div class="tbl-wrap">
         <table>
           <thead><tr>
-            <th>TMT</th><th>No Piutang</th><th>Jenis Piutang</th>
-            <th>Jumlah</th><th>Jumlah Sudah Bayar</th><th>Jumlah Sisa Hutang</th>
+            <th>TMT Awal Kredit</th><th>Nomor Piutang</th><th>Jenis Piutang</th>
+            <th>Jumlah</th><th>Jumlah Sudah Bayar</th><th>Jumlah Sisa Piutang</th>
           </tr></thead>
           <tbody>${barisHutang}</tbody>
         </table>
@@ -6856,7 +7213,7 @@ function renderTabHutangPeserta() {
     </div>
 
     <div class="card">
-      <h3 class="section-title" style="margin-bottom:6px">Hutang Mitra</h3>
+      <h3 class="section-title" style="margin-bottom:6px">Piutang Mitra</h3>
       <div class="page-sub" style="margin:0 0 14px">Pinjaman peserta pada bank atau mitra penyalur.</div>
       <div class="tbl-wrap">
         <table>
@@ -7466,7 +7823,10 @@ function renderPanelDetailPeserta() {
   $("#dpd-mutakhir").onclick = () => go("peremajaan-pemutakhiran");
 }
 
-$("#dpd-kembali").onclick = () => go("data-peserta");
+/* Layar detail dipakai dua pintu masuk — Pengelolaan Data Peserta dan List
+   Bersih SPP — jadi tombol Kembali mengingat asalnya. */
+let dpAsalDetail = "data-peserta";
+$("#dpd-kembali").onclick = () => go(dpAsalDetail);
 $("#dpd-tabs").addEventListener("click", e => {
   const b = e.target.closest("[data-dpd-tab]");
   if (!b) return;
@@ -7515,7 +7875,8 @@ $("#top-role").onchange = () => {
   renderRefKolektif();
   renderStatusPeserta();
   renderBup();
-  renderSpp();
+  renderSppApproval();
+  renderSppBersih();
 };
 $("#top-avatar").textContent = PENGATURAN.inisialUser;
 
@@ -10250,309 +10611,73 @@ document.addEventListener("click", e => {
 });
 
 /* ============================================================ SPP DATA PESERTA
-   Alur: permohonan dari Kantor Cabang → officer memverifikasi terhadap
-   rekomendasi data peserta serupa (restore) atau menginput data baru →
-   workflow persetujuan → data peserta tersedia di YANDU NextGen. */
+   Tiga layar berbagi satu daftar `sppRows`:
+     Pengajuan     — officer merekam data peserta lewat form tambah.
+     Approval      — pengajuan berstatus "Tertunda" disetujui atau ditolak.
+     List Bersih   — pengajuan yang sudah disetujui, datanya siap dipakai.
+   Begitu disetujui, barisnya juga dibentuk menjadi satu peserta lengkap di
+   DATA_PESERTA_KELOLA supaya tombol Detail membuka halaman Detail Peserta
+   yang sama persis dengan Pengelolaan Data Peserta. */
 let sppRows = DATA_SPP.map((r, i) => ({ ...r, _id: i, rekomendasi: r.rekomendasi.map(k => ({ ...k })) }));
 
-const SPP_PAGE_SIZE = 5;
-const SPP_TAB_STATUS = {
-  verifikasi: ["Menunggu Verifikasi"],
-  approval:   ["Menunggu Persetujuan"],
-  riwayat:    ["Disetujui", "Ditolak"]
-};
-const SPP_TAB_JUDUL = { verifikasi:"Permohonan Masuk", approval:"Menunggu Persetujuan", riwayat:"Riwayat Permohonan" };
-let sppTab = "verifikasi";
-let sppPage = 1;
-let sppCurrent = null;      // permohonan yang sedang dibuka
-let sppTindakan = "";       // "Restore Data" | "Input Data Baru"
-let sppModeBaca = false;    // true = hanya melihat (tab Riwayat / Persetujuan)
+/* Nomor permohonan meneruskan deret data contoh (SPP-2026-00117 terakhir). */
+let sppSeq = 117;
 
 function sppPillStatus(s) {
-  return s === "Disetujui" ? "pill-ok" : s === "Ditolak" ? "pill-bad"
-       : s === "Menunggu Persetujuan" ? "pill-info" : "pill-warn";
-}
-function sppPillSumber(s) { return s === "Belum Termigrasi" ? "pill-info" : s === "Data Terhapus" ? "pill-warn" : "pill-info"; }
-function sppPillSkor(n)   { return n >= 90 ? "pill-ok" : n >= 70 ? "pill-warn" : "pill-bad"; }
-
-function isiPilihanSpp() {
-  const cabang = [...new Set(sppRows.map(r => r.cabang))].sort();
-  $("#spp-f-cabang").innerHTML = `<option value="all">Semua Kantor Cabang</option>`
-    + cabang.map(c => `<option>${esc(c)}</option>`).join("");
+  return s === "Disetujui" ? "pill-ok" : s === "Ditolak" ? "pill-bad" : "pill-warn";
 }
 
-function sppBarisTersaring() {
-  const fCari     = ($("#spp-f-cari").value || "").toLowerCase();
-  const fCabang   = $("#spp-f-cabang").value;
-  const fTindakan = $("#spp-f-tindakan").value;
-  return sppRows.filter(r =>
-    SPP_TAB_STATUS[sppTab].includes(r.status) &&
-    (fCabang   === "all" || r.cabang   === fCabang) &&
-    (fTindakan === "all" || r.tindakan === fTindakan) &&
-    (!fCari || r.nama.toLowerCase().includes(fCari) || r.kpa.toLowerCase().includes(fCari)
-            || r.nrp.includes(fCari) || r.no.toLowerCase().includes(fCari)));
+/* DATA_SPP memakai "dd/mm/yyyy", DATA_PESERTA_KELOLA memakai "dd-mm-yyyy". */
+function sppTglStrip(t) { return (t || "").replace(/\//g, "-") || "-"; }
+
+/* Bentuk satu baris peserta lengkap dari pengajuan yang disetujui, memakai
+   pembangun data yang sama dengan Pengelolaan Data Peserta, lalu simpan
+   nomor uniknya di baris SPP sebagai penghubung ke layar detail. */
+function sppDaftarkanPeserta(r) {
+  if (r.migrasiId) return r.migrasiId;
+
+  const n = DATA_PESERTA_KELOLA.length;
+  const p = {
+    migrasiId:      `MG-${String(9000001 + n).padStart(10, "0")}`,
+    nrp:            r.nrp,
+    nopens:         "-",
+    ktpa:           r.kpa,
+    nama:           r.nama,
+    tempatLahir:    r.tempatLahir || "-",
+    tglLahir:       sppTglStrip(r.tglLahir),
+    tmt:            sppTglStrip(r.tmt),
+    noSkep:         r.noSkep || "-",
+    tglSkep:        sppTglStrip(r.tglSkep),
+    noSkepPensiun:  r.noSkepPensiun || "-",
+    tglSkepPensiun: sppTglStrip(r.tglSkepPensiun),
+    pangkatAwal:    r.pangkatAwal || "-",
+    pangkatAkhir:   r.pangkat || r.pangkatAwal || "-",
+    kesatuan:       r.kesatuan,
+    angkatan:       r.angkatan || "TNI-AD",
+    vip:            "TIDAK",
+    statusPeserta:  "AKTIF",
+    alihStatus:     "-",
+    statusValid:    "Valid"
+  };
+  p.profil    = lengkapiProfilPeserta(p, n);
+  p.keluarga  = buatKeluargaPeserta(p, n);
+  p.hakProduk = buatHakProdukPeserta(p, n);
+  const h = buatHutangPeserta(p, n);
+  p.hutang      = h.hutang;
+  p.hutangMitra = h.hutangMitra;
+  const s = buatRiwayatSptbPeserta(p, n);
+  p.sptb      = s.sptb;
+  p.perubahan = s.perubahan;
+
+  DATA_PESERTA_KELOLA.push(p);
+  r.migrasiId = p.migrasiId;
+  return p.migrasiId;
 }
 
-function sppPaginationHtml(totalPages) {
-  const nav = (p, label, disabled) => `<button class="btn btn-ghost btn-sm" style="min-width:30px;padding:0" ${disabled ? "disabled" : `data-spp-page="${p}"`}>${label}</button>`;
-  let html = nav(sppPage - 1, "‹", sppPage <= 1);
-  for (let p = 1; p <= totalPages; p++) {
-    html += `<button class="btn ${p === sppPage ? "btn-primary" : "btn-ghost"} btn-sm" style="min-width:30px;padding:0" data-spp-page="${p}">${p}</button>`;
-  }
-  return html + nav(sppPage + 1, "›", sppPage >= totalPages);
-}
+/* Data contoh yang sudah berstatus "Disetujui" ikut didaftarkan saat muat
+   supaya List Bersih tidak kosong sejak awal. */
+sppRows.filter(r => r.status === "Disetujui").forEach(sppDaftarkanPeserta);
 
-function sppAksiHtml(r) {
-  /* Verifikasi dan persetujuan adalah kewenangan Divisi Kepesertaan; Kantor
-     Cabang sebagai pengaju hanya memantau permohonannya. */
-  if (roleSaatIni() !== ROLE_DIVISI) return `<button class="btn btn-info btn-sm" data-spp-detail="${r._id}">👁 Detail</button>`;
-  if (r.status === "Menunggu Verifikasi") return `<button class="btn btn-info btn-sm" data-spp-verifikasi="${r._id}">⌕ Verifikasi</button>`;
-  if (r.status === "Menunggu Persetujuan") return `
-    <button class="btn btn-info btn-sm" data-spp-detail="${r._id}">👁 Detail</button>
-    <button class="btn btn-success btn-sm" data-spp-setuju="${r._id}">✓ Setujui</button>
-    <button class="btn btn-danger btn-sm" data-spp-tolak="${r._id}">✕ Tolak</button>`;
-  return `<button class="btn btn-info btn-sm" data-spp-detail="${r._id}">👁 Detail</button>`;
-}
-
-function renderSppMetrik() {
-  $("#spp-m-total").textContent      = sppRows.length;
-  $("#spp-m-verifikasi").textContent = sppRows.filter(r => r.status === "Menunggu Verifikasi").length;
-  $("#spp-m-approval").textContent   = sppRows.filter(r => r.status === "Menunggu Persetujuan").length;
-  $("#spp-m-selesai").textContent    = sppRows.filter(r => r.status === "Disetujui").length;
-}
-
-function renderSpp() {
-  const rows       = sppBarisTersaring();
-  const totalPages = Math.max(1, Math.ceil(rows.length / SPP_PAGE_SIZE));
-  if (sppPage > totalPages) sppPage = totalPages;
-  const start    = (sppPage - 1) * SPP_PAGE_SIZE;
-  const pageRows = rows.slice(start, start + SPP_PAGE_SIZE);
-
-  $("#spp-tbl-title").textContent = SPP_TAB_JUDUL[sppTab];
-  $("#spp-body").innerHTML = pageRows.length ? pageRows.map(r => `
-    <tr>
-      <td class="t-strong">${esc(r.no)}</td>
-      <td>${esc(r.tgl)}</td>
-      <td>${esc(r.kpa)}</td>
-      <td><div class="t-strong">${esc(r.nama)}</div><div class="hint" style="margin:1px 0 0">${esc(r.kesatuan)}</div></td>
-      <td>${esc(r.nrp)}</td>
-      <td>${esc(r.cabang)}</td>
-      <td>${r.dokumen.length} berkas</td>
-      <td>${r.tindakan ? `<span class="pill pill-info">${esc(r.tindakan)}</span>` : "—"}</td>
-      <td><span class="pill ${sppPillStatus(r.status)}">${esc(r.status)}</span></td>
-      <td style="white-space:nowrap">${sppAksiHtml(r)}</td>
-    </tr>`).join("")
-    : `<tr><td colspan="10"><div class="empty"><h4>Tidak ada permohonan</h4><p>Coba ubah tab, filter, atau kata kunci pencarian.</p></div></td></tr>`;
-
-  const shownFrom = rows.length ? start + 1 : 0;
-  const shownTo   = Math.min(start + SPP_PAGE_SIZE, rows.length);
-  $("#spp-count").textContent    = `Menampilkan ${shownFrom}-${shownTo} dari ${rows.length} permohonan`;
-  $("#spp-pagination").innerHTML = sppPaginationHtml(totalPages);
-  renderSppMetrik();
-}
-
-/* ------------------------------------------ Verifikasi / detail satu permohonan */
-function sppTampilkanDaftar() {
-  $("#spp-list-view").style.display   = "";
-  $("#spp-detail-view").style.display = "none";
-  $("#spp-crumb").innerHTML = `<span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><b>SPP Data Peserta</b>`;
-  sppCurrent = null;
-}
-
-function sppSetTindakan(nilai) {
-  sppTindakan = nilai;
-  $("#spp-d-tindakan").innerHTML = nilai
-    ? `<span class="pill pill-info">${esc(nilai)}</span>`
-    : "—";
-}
-
-function sppBuka(r, modeBaca) {
-  sppCurrent  = r;
-  sppModeBaca = modeBaca || roleSaatIni() !== ROLE_DIVISI;
-  sppTindakan = r.tindakan || "";
-
-  $("#spp-list-view").style.display   = "none";
-  $("#spp-detail-view").style.display = "";
-  $("#spp-crumb").innerHTML = `<span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>SPP Data Peserta</span><span>›</span><b>${esc(r.no)}</b>`;
-  $("#spp-d-title").textContent = modeBaca ? `Detail Permohonan ${r.no}` : `Verifikasi Permohonan ${r.no}`;
-  $("#spp-d-sub").textContent   = modeBaca
-    ? "Ringkasan hasil verifikasi dan dokumen permohonan."
-    : "Cek data pengajuan dan dokumen, lalu tentukan apakah data peserta di-restore atau diinput baru.";
-
-  const baris = [
-    ["No. Permohonan", r.no], ["Tanggal Pengajuan", r.tgl], ["Status", r.status],
-    ["Nomor KPA", r.kpa], ["Nama Peserta", r.nama], ["NRP / NIP", r.nrp],
-    ["NIK", r.nik], ["Tanggal Lahir", r.tglLahir], ["Pangkat / Golongan", r.pangkat],
-    ["Kesatuan / Satker", r.kesatuan], ["Kantor Cabang Pengaju", r.cabang], ["Officer Pengaju", r.pengaju],
-    ["No. Request Umum", r.noRequest]
-  ];
-  $("#spp-d-pengajuan").innerHTML = baris.map(([label, nilai]) => `
-    <div class="review-row">
-      <div class="fl">${esc(label)}</div>
-      <div class="val">${label === "Status" ? `<span class="pill ${sppPillStatus(nilai)}">${esc(nilai)}</span>` : esc(nilai)}</div>
-    </div>`).join("");
-
-  $("#spp-d-dokumen").innerHTML = r.dokumen.map((d, i) => `
-    <tr>
-      <td>${i + 1}</td>
-      <td class="t-strong">${esc(d)}</td>
-      <td><button class="btn btn-ghost btn-sm" data-spp-unduh="${esc(d)}">⭳ Unduh</button></td>
-    </tr>`).join("");
-
-  $("#spp-d-rekom-count").textContent = `${r.rekomendasi.length} data serupa`;
-  $("#spp-d-rekom-body").innerHTML = r.rekomendasi.length ? r.rekomendasi.map((k, i) => `
-    <tr>
-      <td class="t-strong">${esc(k.nama)}</td>
-      <td>${esc(k.nrp)}</td>
-      <td>${esc(k.kpa)}</td>
-      <td>${esc(k.tglLahir)}</td>
-      <td>${esc(k.satker)}</td>
-      <td><span class="pill ${sppPillSumber(k.sumber)}">${esc(k.sumber)}</span></td>
-      <td><span class="pill ${sppPillSkor(k.skor)}">${k.skor}%</span></td>
-      <td>${sppModeBaca ? "—" : `<button class="btn btn-success btn-sm" data-spp-restore="${i}">✓ Pilih & Restore</button>`}</td>
-    </tr>`).join("")
-    : `<tr><td colspan="8"><div class="empty"><h4>Tidak ada data serupa</h4><p>Sistem tidak menemukan data peserta yang mirip — lanjutkan dengan penambahan data peserta baru.</p></div></td></tr>`;
-
-  // Form penambahan data baru: prefill dari data pengajuan, kode dari tabel referensi
-  const aktif = refRows.filter(x => x.status === "Aktif");
-  const opsi  = (jenis, terpilih) => aktif.filter(x => x.jenis === jenis)
-    .map(x => `<option ${x.uraian === terpilih ? "selected" : ""}>${esc(x.uraian)}</option>`).join("")
-    + (aktif.some(x => x.jenis === jenis && x.uraian === terpilih) ? "" : `<option selected>${esc(terpilih)}</option>`);
-  $("#spp-b-kpa").value      = r.kpa;
-  $("#spp-b-nama").value     = r.nama;
-  $("#spp-b-nrp").value      = r.nrp;
-  $("#spp-b-nik").value      = r.nik;
-  $("#spp-b-lahir").value    = r.tglLahir;
-  $("#spp-b-kancab").value   = r.cabang;
-  $("#spp-b-pangkat").innerHTML  = opsi("Pangkat", r.pangkat);
-  $("#spp-b-kesatuan").innerHTML = opsi("Satker/Kesatuan", r.kesatuan);
-  $("#spp-form-baru").style.display = sppTindakan === "Input Data Baru" ? "" : "none";
-
-  $$("#spp-form-baru .inp").forEach(el => { el.disabled = sppModeBaca; });
-
-  $("#spp-d-catatan").value    = r.catatan || "";
-  $("#spp-d-catatan").disabled = sppModeBaca;
-  $("#spp-input-baru").style.display = sppModeBaca ? "none" : "";
-  $("#spp-d-aksi").style.display     = sppModeBaca ? "none" : "";
-  sppSetTindakan(sppTindakan);
-}
-
-$("#spp-kembali").onclick = sppTampilkanDaftar;
-
-$("#spp-input-baru").onclick = () => {
-  sppSetTindakan("Input Data Baru");
-  $("#spp-form-baru").style.display = "";
-  toast("Lengkapi form penambahan data peserta baru.");
-};
-
-$("#spp-ajukan").onclick = () => {
-  const r = sppCurrent;
-  if (!sppTindakan) { toast("Pilih data rekomendasi untuk di-restore atau tekan Input Data Baru.", "bad"); return; }
-  const catatan = $("#spp-d-catatan").value.trim();
-  if (!catatan) { toast("Catatan verifikasi wajib diisi.", "bad"); return; }
-  if (sppTindakan === "Input Data Baru") {
-    const wajib = ["#spp-b-kpa", "#spp-b-nama", "#spp-b-nrp", "#spp-b-nik", "#spp-b-lahir"];
-    if (wajib.some(sel => !$(sel).value.trim())) { toast("Lengkapi seluruh field wajib pada form data peserta baru.", "bad"); return; }
-    r.nama    = $("#spp-b-nama").value.trim();
-    r.nrp     = $("#spp-b-nrp").value.trim();
-    r.nik     = $("#spp-b-nik").value.trim();
-    r.pangkat = $("#spp-b-pangkat").value;
-    r.kesatuan = $("#spp-b-kesatuan").value;
-  }
-  r.tindakan = sppTindakan;
-  r.catatan  = catatan;
-  r.status   = "Menunggu Persetujuan";
-  sppTab  = "approval";
-  sppPage = 1;
-  $$("[data-spp-tab]").forEach(x => x.classList.toggle("active", x.dataset.sppTab === "approval"));
-  renderSpp();
-  sppTampilkanDaftar();
-  toast(`Permohonan ${r.no} diajukan ke persetujuan.`, "ok");
-};
-
-$("#spp-tolak").onclick = () => {
-  const r = sppCurrent;
-  const catatan = $("#spp-d-catatan").value.trim();
-  if (!catatan) { toast("Catatan verifikasi wajib diisi sebagai alasan penolakan.", "bad"); return; }
-  r.status   = "Ditolak";
-  r.catatan  = catatan;
-  r.tindakan = "";
-  renderSpp();
-  sppTampilkanDaftar();
-  toast(`Permohonan ${r.no} ditolak dan dikembalikan ke Kantor Cabang.`, "ok");
-};
-
-$("#spp-cari").onclick   = () => { sppPage = 1; renderSpp(); };
-$("#spp-export").onclick = () => toast("Daftar permohonan SPP diekspor ke Excel.");
-
-$$("[data-spp-tab]").forEach(t => t.onclick = () => {
-  $$("[data-spp-tab]").forEach(x => x.classList.toggle("active", x === t));
-  sppTab  = t.dataset.sppTab;
-  sppPage = 1;
-  renderSpp();
-});
-
-document.addEventListener("click", e => {
-  const bPage = e.target.closest("[data-spp-page]");
-  if (bPage) { sppPage = +bPage.dataset.sppPage; renderSpp(); return; }
-
-  const bVerifikasi = e.target.closest("[data-spp-verifikasi]");
-  if (bVerifikasi) { sppBuka(sppRows.find(r => r._id === +bVerifikasi.dataset.sppVerifikasi), false); return; }
-
-  const bDetail = e.target.closest("[data-spp-detail]");
-  if (bDetail) { sppBuka(sppRows.find(r => r._id === +bDetail.dataset.sppDetail), true); return; }
-
-  const bRestore = e.target.closest("[data-spp-restore]");
-  if (bRestore) {
-    const k = sppCurrent.rekomendasi[+bRestore.dataset.sppRestore];
-    sppSetTindakan("Restore Data");
-    $("#spp-form-baru").style.display = "none";
-    $("#spp-d-catatan").value = `Data ditemukan pada sumber ${k.sumber} (kemiripan ${k.skor}%) atas nama ${k.nama} — ${k.nrp}. Data diaktifkan kembali sesuai dokumen persyaratan.`;
-    toast(`Data ${k.nama} dipilih untuk di-restore.`, "ok");
-    return;
-  }
-
-  const bUnduh = e.target.closest("[data-spp-unduh]");
-  if (bUnduh) { toast(`Dokumen diunduh: ${bUnduh.dataset.sppUnduh}`); return; }
-
-  const bSetuju = e.target.closest("[data-spp-setuju]");
-  if (bSetuju) {
-    const r = sppRows.find(x => x._id === +bSetuju.dataset.sppSetuju);
-    r.status  = "Disetujui";
-    r.catatan = `${r.catatan} Disetujui — data peserta tersedia di YANDU NextGen dan siap dipakai Kantor Cabang.`;
-    renderSpp();
-    toast(`Permohonan ${r.no} disetujui — data peserta kini tersedia di sistem.`, "ok");
-    return;
-  }
-
-  const bTolak = e.target.closest("[data-spp-tolak]");
-  if (bTolak) {
-    const r = sppRows.find(x => x._id === +bTolak.dataset.sppTolak);
-    $("#modal-title").textContent = "Tolak Permohonan SPP";
-    $("#modal-sub").textContent   = `${r.no} · ${r.nama} · ${r.cabang}`;
-    $("#modal-body").innerHTML = `
-      <div class="field" style="margin-bottom:0">
-        <label class="fl">Alasan Penolakan <span class="req">*</span></label>
-        <textarea class="inp" id="spp-tolak-alasan" style="height:80px;padding:9px 10px;resize:vertical"></textarea>
-      </div>
-      <div class="form-actions" style="justify-content:flex-end">
-        <button class="btn btn-ghost" id="spp-tolak-batal">Batal</button>
-        <button class="btn btn-danger-solid" id="spp-tolak-kirim">Tolak Permohonan</button>
-      </div>`;
-    openModal();
-    $("#spp-tolak-batal").onclick = closeModal;
-    $("#spp-tolak-kirim").onclick = () => {
-      const alasan = $("#spp-tolak-alasan").value.trim();
-      if (!alasan) { toast("Alasan penolakan wajib diisi.", "bad"); return; }
-      r.status   = "Ditolak";
-      r.tindakan = "";
-      r.catatan  = alasan;
-      renderSpp();
-      closeModal();
-      toast(`Permohonan ${r.no} ditolak.`, "ok");
-    };
-  }
-});
 
 isiPilihanUnor();
 renderUnor();
@@ -10560,8 +10685,766 @@ isiPilihanRefKolektif();
 renderRefKolektif();
 renderStatusPeserta();
 renderBup();
-isiPilihanSpp();
-renderSpp();
+
+/* ------------------------ Layar Pengajuan + form "+ Tambah SPP Data Peserta"
+   Officer Kantor Cabang merekam data peserta lewat form lima section, lalu
+   hasil simpan masuk ke `sppRows` berstatus "Tertunda" dan layar langsung
+   berpindah ke Approval SPP Data Peserta. */
+
+let sptKeluarga    = [];
+let sptPangkat     = [];
+let sptBerkasTetap = {};
+let sptBerkasLain  = [];
+let sptNextId      = 1;
+
+function sptOpsi(list, kosong, terpilih) {
+  return `<option value="">${esc(kosong)}</option>`
+    + list.map(v => `<option ${v === terpilih ? "selected" : ""}>${esc(v)}</option>`).join("");
+}
+
+function isiPilihanSptForm() {
+  $("#spt-angkatan").innerHTML        = sptOpsi(SPP_ANGKATAN, "— Silahkan Pilih Angkatan —");
+  $("#spt-status-personil").innerHTML = sptOpsi(SPP_STATUS_PERSONIL, "— Silahkan Pilih Status Personil —");
+  $("#spt-unor").innerHTML            = sptOpsi(SPP_UNOR, "— Silahkan Pilih Unit Organisasi —");
+  $("#spt-pangkat-awal").innerHTML    = sptOpsi(SPP_PANGKAT, "— Silahkan Pilih Pangkat —");
+  $("#spt-pangkat-akhir").innerHTML   = sptOpsi(SPP_PANGKAT, "— Silahkan Pilih Pangkat —");
+  $("#spt-bintang-jasa").innerHTML    = sptOpsi(SPP_BINTANG_JASA, "— Silahkan Pilih Bintang Jasa —");
+  $("#spt-jk").innerHTML              = sptOpsi(SPP_JENIS_KELAMIN, "— Silahkan Pilih Jenis Kelamin —");
+  $("#spt-status-kawin").innerHTML    = sptOpsi(SPP_STATUS_KAWIN, "— Silahkan Pilih Status Kawin —");
+}
+
+/* --------------------------------------------------- section Data Keluarga */
+function renderSptKeluarga() {
+  $("#spt-keluarga-body").innerHTML = sptKeluarga.length ? sptKeluarga.map((k, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td><select class="inp" data-spt-kel="${k.id}" data-spt-kel-field="hubungan">${sptOpsi(SPP_HUBUNGAN_KELUARGA, "— Pilih —", k.hubungan)}</select></td>
+      <td><input class="inp" data-spt-kel="${k.id}" data-spt-kel-field="nama" value="${esc(k.nama)}" placeholder="Nama lengkap"></td>
+      <td><input class="inp" data-spt-kel="${k.id}" data-spt-kel-field="nik" value="${esc(k.nik)}" placeholder="16 digit"></td>
+      <td><input class="inp" data-spt-kel="${k.id}" data-spt-kel-field="tempatLahir" value="${esc(k.tempatLahir)}" placeholder="Kota"></td>
+      <td><input class="inp" type="date" data-spt-kel="${k.id}" data-spt-kel-field="tglLahir" value="${esc(k.tglLahir)}"></td>
+      <td><select class="inp" data-spt-kel="${k.id}" data-spt-kel-field="jk">${sptOpsi(SPP_JENIS_KELAMIN, "— Pilih —", k.jk)}</select></td>
+      <td><button class="btn btn-ghost btn-sm" data-spt-kel-hapus="${k.id}" title="Hapus baris">🗑</button></td>
+    </tr>`).join("")
+    : `<tr><td colspan="8"><div class="empty"><h4>Belum ada data keluarga</h4><p>Klik "+ Tambah Anggota Keluarga" untuk menambahkan baris.</p></div></td></tr>`;
+}
+
+/* ---------------------------------------------------- section Data Pangkat */
+function renderSptPangkat() {
+  $("#spt-pangkat-body").innerHTML = sptPangkat.length ? sptPangkat.map((p, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td><select class="inp" data-spt-pkt="${p.id}" data-spt-pkt-field="pangkat">${sptOpsi(SPP_PANGKAT, "— Pilih Pangkat —", p.pangkat)}</select></td>
+      <td><input class="inp" type="date" data-spt-pkt="${p.id}" data-spt-pkt-field="tmt" value="${esc(p.tmt)}"></td>
+      <td><input class="inp" data-spt-pkt="${p.id}" data-spt-pkt-field="noSkep" value="${esc(p.noSkep)}" placeholder="KEP/xxx/…"></td>
+      <td><input class="inp" type="date" data-spt-pkt="${p.id}" data-spt-pkt-field="tglSkep" value="${esc(p.tglSkep)}"></td>
+      <td><button class="btn btn-ghost btn-sm" data-spt-pkt-hapus="${p.id}" title="Hapus baris">🗑</button></td>
+    </tr>`).join("")
+    : `<tr><td colspan="6"><div class="empty"><h4>Belum ada riwayat pangkat</h4><p>Klik "+ Tambah Riwayat Pangkat" untuk menambahkan baris.</p></div></td></tr>`;
+}
+
+/* --------------------------------------------------- section Berkas Peserta
+   Memakai komponen doc-row yang sama dengan Berkas Persyaratan pada
+   Pendaftaran Peserta Baru: tiga berkas tetap, sisanya dipilih sendiri. */
+const SPT_ICON = `<span class="doc-ico" style="width:34px;height:34px;border-radius:8px;background:var(--blue-soft);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">📄</span>`;
+
+function renderSptBerkasTetap() {
+  $("#spt-berkas-tetap").innerHTML = SPP_BERKAS_TETAP.map(d => `
+    <div class="doc-row">
+      <div class="doc-info">
+        ${SPT_ICON}
+        <div>
+          <div class="doc-label">${esc(d.label)}</div>
+          <div class="hint" style="margin:1px 0 0">${d.wajib ? "Wajib" : "Opsional"} — ${esc(d.note)}</div>
+        </div>
+      </div>
+      <div class="doc-actions">
+        ${sptBerkasTetap[d.key]
+          ? `<span class="pill pill-ok">${esc(sptBerkasTetap[d.key])}</span>
+             <button class="btn btn-ghost btn-sm" data-spt-berkas-tetap-hapus="${d.key}">✕ Hapus</button>`
+          : `<label class="btn btn-ghost btn-sm">⬆ Pilih File
+               <input type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" data-spt-berkas-tetap-file="${d.key}">
+             </label>`}
+      </div>
+    </div>`).join("");
+}
+
+function renderSptBerkasLain() {
+  $("#spt-berkas-tambahan").innerHTML = sptBerkasLain.map(row => `
+    <div class="doc-row">
+      <div class="doc-info" style="flex:1;min-width:240px">
+        ${SPT_ICON}
+        <select class="inp" style="max-width:340px" data-spt-berkas-nama="${row.id}">
+          <option value="">— Pilih dokumen —</option>
+          ${DATA_BERKAS_SARAN.map(d => `<option ${d === row.nama ? "selected" : ""}>${esc(d)}</option>`).join("")}
+        </select>
+      </div>
+      <div class="doc-actions">
+        ${row.file
+          ? `<span class="pill pill-ok">${esc(row.file)}</span>
+             <button class="btn btn-ghost btn-sm" data-spt-berkas-hapus-file="${row.id}">✕ Hapus</button>`
+          : `<label class="btn btn-ghost btn-sm">⬆ Pilih File
+               <input type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" data-spt-berkas-file="${row.id}">
+             </label>`}
+        <button class="btn btn-ghost btn-sm" data-spt-berkas-hapus-row="${row.id}" title="Hapus baris">🗑</button>
+      </div>
+    </div>`).join("");
+}
+
+/* ---------------------------------------------------------- buka / tutup */
+function sptReset() {
+  $$("#spp-tambah-view .inp").forEach(el => {
+    if (el.tagName === "SELECT") el.selectedIndex = 0; else el.value = "";
+  });
+  $("#spt-tanpa-dokumen").checked = false;
+  sptKeluarga = [];
+  sptPangkat  = [];
+  sptBerkasTetap = {};
+  sptBerkasLain  = [];
+  renderSptKeluarga();
+  renderSptPangkat();
+  renderSptBerkasTetap();
+  renderSptBerkasLain();
+}
+
+function sppPengajuanIntro() {
+  $("#sppp-intro-view").style.display  = "";
+  $("#spp-tambah-view").style.display  = "none";
+  $("#sppp-detail-view").style.display = "none";
+  $("#sppp-crumb").innerHTML = `<span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>SPP Data Peserta</span><span>›</span><b>Pengajuan SPP Data Peserta</b>`;
+  renderSppPengajuan();
+}
+
+function sptBukaForm() {
+  sptReset();
+  $("#sppp-intro-view").style.display  = "none";
+  $("#sppp-detail-view").style.display = "none";
+  $("#spp-tambah-view").style.display = "";
+  $("#sppp-crumb").innerHTML = `<span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pengajuan SPP Data Peserta</span><span>›</span><b>Tambah SPP Data Peserta</b>`;
+  window.scrollTo({ top: 0, behavior: "instant" });
+}
+
+/* Tanggal form bertipe date (yyyy-mm-dd) sementara data contoh memakai
+   dd/mm/yyyy — samakan supaya tampil konsisten di tabel. */
+function sptTanggal(nilai) {
+  if (!nilai) return "";
+  const [th, bl, hr] = nilai.split("-");
+  return `${hr}/${bl}/${th}`;
+}
+
+function sptSimpan() {
+  const wajib = [
+    ["#spt-kpa", "KPA"], ["#spt-angkatan", "Angkatan"], ["#spt-status-personil", "Status Personil"],
+    ["#spt-pangkat-awal", "Pangkat Awal"], ["#spt-pangkat-akhir", "Pangkat Akhir"],
+    ["#spt-nrp", "NRP / NIP"], ["#spt-uker", "UKER"], ["#spt-tmt", "TMT Pengangkatan"],
+    ["#spt-nama", "Nama Peserta"], ["#spt-nama-konfirmasi", "Konfirmasi Nama Peserta"], ["#spt-nik", "NIK"]
+  ];
+  const kosong = wajib.find(([sel]) => !$(sel).value.trim());
+  if (kosong) { toast(`${kosong[1]} wajib diisi.`, "bad"); return; }
+
+  if ($("#spt-nama").value.trim().toUpperCase() !== $("#spt-nama-konfirmasi").value.trim().toUpperCase()) {
+    toast("Konfirmasi Nama Peserta tidak sama dengan Nama Peserta.", "bad"); return;
+  }
+
+  const berkas = [
+    ...SPP_BERKAS_TETAP.filter(d => sptBerkasTetap[d.key]).map(d => `${d.label} — ${sptBerkasTetap[d.key]}`),
+    ...sptBerkasLain.filter(r => r.nama && r.file).map(r => `${r.nama} — ${r.file}`)
+  ];
+  if (!berkas.length && !$("#spt-tanpa-dokumen").checked) {
+    toast("Unggah minimal satu berkas, atau centang \"Tidak Ada Dokumen\".", "bad"); return;
+  }
+
+  const baris = {
+    _id:        sppRows.length ? Math.max(...sppRows.map(r => r._id)) + 1 : 0,
+    no:         `SPP-2026-${String(++sppSeq).padStart(5, "0")}`,
+    tgl:        new Date().toLocaleDateString("id-ID", { day:"2-digit", month:"2-digit", year:"numeric" }),
+    kpa:        $("#spt-kpa").value.trim(),
+    nama:       $("#spt-nama").value.trim(),
+    nrp:        $("#spt-nrp").value.trim(),
+    nik:        $("#spt-nik").value.trim(),
+    tglLahir:   sptTanggal($("#spt-tgl-lahir").value),
+    pangkat:    $("#spt-pangkat-akhir").value,
+    pangkatAwal: $("#spt-pangkat-awal").value,
+    kesatuan:   $("#spt-uker").value.trim(),
+    tmt:        sptTanggal($("#spt-tmt").value),
+    noSkep:     $("#spt-no-skep").value.trim(),
+    tglSkep:    sptTanggal($("#spt-tgl-skep").value),
+    /* Sisa isian form disimpan apa adanya supaya tidak hilang saat verifikasi. */
+    angkatan:       $("#spt-angkatan").value,
+    statusPersonil: $("#spt-status-personil").value,
+    unor:           $("#spt-unor").value,
+    bintangJasa:    $("#spt-bintang-jasa").value,
+    nrpLama:        $("#spt-nrp-lama").value.trim(),
+    noSkepPensiun:  $("#spt-no-skep-pensiun").value.trim(),
+    tglSkepPensiun: sptTanggal($("#spt-tgl-skep-pensiun").value),
+    tempatLahir:    $("#spt-tempat-lahir").value.trim(),
+    jk:             $("#spt-jk").value,
+    statusKawin:    $("#spt-status-kawin").value,
+    npwp:           $("#spt-npwp").value.trim(),
+    alamat:         $("#spt-alamat").value.trim(),
+    rt:             $("#spt-rt").value.trim(),
+    rw:             $("#spt-rw").value.trim(),
+    kelurahan:      $("#spt-kelurahan").value.trim(),
+    kodepos:        $("#spt-kodepos").value.trim(),
+    telp:           $("#spt-telp").value.trim(),
+    email:          $("#spt-email").value.trim(),
+    hp:             $("#spt-hp").value.trim(),
+    ibuKandung:     $("#spt-ibu").value.trim(),
+    tanpaDokumen:   $("#spt-tanpa-dokumen").checked,
+    cabang:     $("#spt-kancab").value.trim() || "—",
+    pengaju:    `Officer KC — ${PENGATURAN.username}`,
+    noRequest:  "—",
+    dokumen:    berkas,
+    keluarga:   sptKeluarga.map(k => ({ ...k })),
+    riwayatPangkat: sptPangkat.map(p => ({ ...p })),
+    status:     "Tertunda",
+    tindakan:   "",
+    catatan:    "",
+    rekomendasi: []
+  };
+  sppRows.unshift(baris);
+
+  /* Pengajuan yang tersimpan langsung dibawa ke layar Approval, tempat
+     statusnya menunggu keputusan sebagai "Tertunda". */
+  sppPengajuanIntro();
+  $("#sppa-f-status").value = "Tertunda";
+  sppaPage = 1;
+  go("spp-approval");
+  toast(`Pengajuan ${baris.no} tersimpan dengan status Tertunda.`, "ok");
+}
+
+$("#spp-tambah").onclick = sptBukaForm;
+$("#spt-kembali").onclick = sppPengajuanIntro;
+$("#spt-batal").onclick   = sppPengajuanIntro;
+$("#spt-simpan").onclick  = sptSimpan;
+
+$("#spt-keluarga-tambah").onclick = () => {
+  sptKeluarga.push({ id: sptNextId++, hubungan:"", nama:"", nik:"", tempatLahir:"", tglLahir:"", jk:"" });
+  renderSptKeluarga();
+};
+$("#spt-pangkat-tambah").onclick = () => {
+  sptPangkat.push({ id: sptNextId++, pangkat:"", tmt:"", noSkep:"", tglSkep:"" });
+  renderSptPangkat();
+};
+$("#spt-berkas-tambah").onclick = () => {
+  sptBerkasLain.push({ id: sptNextId++, nama:"", file:null });
+  renderSptBerkasLain();
+};
+
+/* Nilai baris tabel disimpan saat diubah supaya tidak hilang ketika baris
+   lain ditambah atau dihapus (kedua tabel digambar ulang seutuhnya). */
+$("#spp-tambah-view").addEventListener("input", e => {
+  const kel = e.target.closest("[data-spt-kel]");
+  if (kel) {
+    const row = sptKeluarga.find(k => k.id === +kel.dataset.sptKel);
+    if (row) row[kel.dataset.sptKelField] = e.target.value;
+    return;
+  }
+  const pkt = e.target.closest("[data-spt-pkt]");
+  if (pkt) {
+    const row = sptPangkat.find(p => p.id === +pkt.dataset.sptPkt);
+    if (row) row[pkt.dataset.sptPktField] = e.target.value;
+  }
+});
+
+$("#spp-tambah-view").addEventListener("change", e => {
+  const namaBerkas = e.target.closest("[data-spt-berkas-nama]");
+  if (namaBerkas) {
+    const row = sptBerkasLain.find(r => r.id === +namaBerkas.dataset.sptBerkasNama);
+    if (row) row.nama = namaBerkas.value;
+    return;
+  }
+  const fileTetap = e.target.closest("[data-spt-berkas-tetap-file]");
+  if (fileTetap && fileTetap.files[0]) {
+    sptBerkasTetap[fileTetap.dataset.sptBerkasTetapFile] = fileTetap.files[0].name;
+    renderSptBerkasTetap();
+    return;
+  }
+  const file = e.target.closest("[data-spt-berkas-file]");
+  if (file && file.files[0]) {
+    const row = sptBerkasLain.find(r => r.id === +file.dataset.sptBerkasFile);
+    if (row) { row.file = file.files[0].name; renderSptBerkasLain(); }
+  }
+});
+
+$("#spp-tambah-view").addEventListener("click", e => {
+  const kelHapus = e.target.closest("[data-spt-kel-hapus]");
+  if (kelHapus) { sptKeluarga = sptKeluarga.filter(k => k.id !== +kelHapus.dataset.sptKelHapus); renderSptKeluarga(); return; }
+
+  const pktHapus = e.target.closest("[data-spt-pkt-hapus]");
+  if (pktHapus) { sptPangkat = sptPangkat.filter(p => p.id !== +pktHapus.dataset.sptPktHapus); renderSptPangkat(); return; }
+
+  const tetapHapus = e.target.closest("[data-spt-berkas-tetap-hapus]");
+  if (tetapHapus) { delete sptBerkasTetap[tetapHapus.dataset.sptBerkasTetapHapus]; renderSptBerkasTetap(); return; }
+
+  const fileHapus = e.target.closest("[data-spt-berkas-hapus-file]");
+  if (fileHapus) {
+    const row = sptBerkasLain.find(r => r.id === +fileHapus.dataset.sptBerkasHapusFile);
+    if (row) { row.file = null; renderSptBerkasLain(); }
+    return;
+  }
+
+  const rowHapus = e.target.closest("[data-spt-berkas-hapus-row]");
+  if (rowHapus) { sptBerkasLain = sptBerkasLain.filter(r => r.id !== +rowHapus.dataset.sptBerkasHapusRow); renderSptBerkasLain(); }
+});
+
+isiPilihanSptForm();
+sptReset();
+
+/* ============================================ APPROVAL SPP DATA PESERTA
+   Pengajuan masuk berstatus "Tertunda"; officer Divisi menyetujui atau
+   menolaknya di sini. Yang disetujui langsung dibentuk jadi peserta lengkap
+   dan muncul di List Bersih SPP Data Peserta. */
+
+const SPPA_PAGE_SIZE = 10;
+const SPPA_STATUS    = ["Tertunda", "Disetujui", "Ditolak"];
+let sppaPage    = 1;
+let sppaCurrent = null;
+
+function isiPilihanSppApproval() {
+  const cabang = [...new Set(sppRows.map(r => r.cabang))].sort();
+  $("#sppa-f-cabang").innerHTML = `<option value="all">Semua Kantor Cabang</option>`
+    + cabang.map(c => `<option>${esc(c)}</option>`).join("");
+}
+
+function sppaBarisTersaring() {
+  const fCari   = ($("#sppa-f-cari").value || "").toLowerCase();
+  const fCabang = $("#sppa-f-cabang").value;
+  const fStatus = $("#sppa-f-status").value;
+  return sppRows.filter(r =>
+    SPPA_STATUS.includes(r.status) &&
+    (fStatus === "all" || r.status === fStatus) &&
+    (fCabang === "all" || r.cabang === fCabang) &&
+    (!fCari || [r.no, r.kpa, r.nama, r.nrp].some(v => (v || "").toLowerCase().includes(fCari)))
+  );
+}
+
+function sppaPaginationHtml(totalPages) {
+  const nav = (p, label, disabled) => `<button class="btn btn-ghost btn-sm" style="min-width:30px;padding:0" ${disabled ? "disabled" : `data-sppa-page="${p}"`}>${label}</button>`;
+  let html = nav(sppaPage - 1, "‹", sppaPage <= 1);
+  for (let p = 1; p <= totalPages; p++)
+    html += `<button class="btn ${p === sppaPage ? "btn-primary" : "btn-ghost"} btn-sm" style="min-width:30px;padding:0" data-sppa-page="${p}">${p}</button>`;
+  return html + nav(sppaPage + 1, "›", sppaPage >= totalPages);
+}
+
+function sppaBolehPutuskan() { return roleSaatIni() === ROLE_DIVISI; }
+
+/* Keputusan setuju/tolak hanya tersedia di halaman detail, supaya officer
+   selalu membaca isi pengajuan lebih dulu. */
+function sppaAksiHtml(r) {
+  return `<button class="btn btn-info btn-sm" data-sppa-detail="${r._id}">👁 Detail</button>`;
+}
+
+function renderSppApproval() {
+  const rows       = sppaBarisTersaring();
+  const totalPages = Math.max(1, Math.ceil(rows.length / SPPA_PAGE_SIZE));
+  if (sppaPage > totalPages) sppaPage = totalPages;
+  const start    = (sppaPage - 1) * SPPA_PAGE_SIZE;
+  const pageRows = rows.slice(start, start + SPPA_PAGE_SIZE);
+
+  const fStatus = $("#sppa-f-status").value;
+  $("#sppa-tbl-title").textContent = fStatus === "all" ? "Seluruh Permohonan" : fStatus;
+
+  $("#sppa-body").innerHTML = pageRows.length ? pageRows.map(r => `
+    <tr>
+      <td class="t-strong">${esc(r.no)}</td>
+      <td>${esc(r.tgl)}</td>
+      <td>${esc(r.kpa)}</td>
+      <td><div class="t-strong">${esc(r.nama)}</div><div class="hint" style="margin:1px 0 0">${esc(r.kesatuan)}</div></td>
+      <td>${esc(r.nrp)}</td>
+      <td>${esc(r.cabang)}</td>
+      <td><span class="pill ${sppPillStatus(r.status)}">${esc(r.status)}</span></td>
+      <td style="white-space:nowrap">${sppaAksiHtml(r)}</td>
+    </tr>`).join("")
+    : `<tr><td colspan="8"><div class="empty"><h4>Tidak ada permohonan</h4><p>Belum ada permohonan SPP yang cocok dengan filter persetujuan ini.</p></div></td></tr>`;
+
+  const shownFrom = rows.length ? start + 1 : 0;
+  const shownTo   = Math.min(start + SPPA_PAGE_SIZE, rows.length);
+  $("#sppa-count").textContent    = `Menampilkan ${shownFrom}-${shownTo} dari ${rows.length} permohonan`;
+  $("#sppa-pagination").innerHTML = sppaPaginationHtml(totalPages);
+}
+
+function sppaTampilkanDaftar() {
+  $("#sppa-list-view").style.display   = "";
+  $("#sppa-detail-view").style.display = "none";
+  $("#sppa-crumb").innerHTML = `<span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>SPP Data Peserta</span><span>›</span><b>Approval SPP Data Peserta</b>`;
+  sppaCurrent = null;
+  renderSppApproval();
+}
+
+function sppaBuka(r) {
+  sppaCurrent = r;
+  $("#sppa-list-view").style.display   = "none";
+  $("#sppa-detail-view").style.display = "";
+  $("#sppa-crumb").innerHTML = `<span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Approval SPP Data Peserta</span><span>›</span><b>${esc(r.no)}</b>`;
+  $("#sppa-d-title").textContent = `Persetujuan Permohonan ${r.no}`;
+  $("#sppa-d-sub").textContent   = `${r.nama} · ${r.nrp} · ${r.cabang}`;
+
+  const baris = [
+    ["No. Permohonan", r.no], ["Tanggal Pengajuan", r.tgl], ["No. Request", r.noRequest],
+    ["Nomor KPA", r.kpa], ["Nama Peserta", r.nama], ["NRP / NIP", r.nrp],
+    ["NIK", r.nik], ["Tanggal Lahir", r.tglLahir], ["Pangkat / Golongan", r.pangkat],
+    ["Kesatuan / Satker", r.kesatuan], ["Kantor Cabang", r.cabang], ["Diajukan Oleh", r.pengaju]
+  ];
+  $("#sppa-d-pengajuan").innerHTML = baris.map(([label, nilai]) => `
+    <div class="review-row">
+      <div class="fl">${esc(label)}</div>
+      <div class="val">${esc(nilai || "—")}</div>
+    </div>`).join("");
+
+  $("#sppa-d-dokumen").innerHTML = r.dokumen.map((d, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td>${esc(d)}</td>
+      <td><button class="btn btn-ghost btn-sm" data-spp-unduh="${esc(d)}">⭳ Unduh</button></td>
+    </tr>`).join("");
+
+  $("#sppa-d-alert-teks").textContent = r.status === "Tertunda"
+    ? "Pastikan Nomor KPA dan NRP/NIP tidak menghasilkan data ganda sebelum disetujui. Setelah disetujui, data peserta langsung tersedia di YANDU NextGen dan muncul di List Bersih SPP Data Peserta."
+    : "Pengajuan ini sudah diputuskan; halaman ini hanya menampilkan rekamannya.";
+  $("#sppa-d-jumlah-berkas").textContent = `${r.dokumen.length} berkas`;
+  $("#sppa-d-status").innerHTML   = `<span class="pill ${sppPillStatus(r.status)}">${esc(r.status)}</span>`;
+  $("#sppa-d-catatan").value      = r.catatan || "";
+  $("#sppa-d-aksi").style.display = r.status === "Tertunda" && sppaBolehPutuskan() ? "" : "none";
+}
+
+/* Disetujui = data peserta dibentuk di DATA_PESERTA_KELOLA, sehingga baris
+   ini ikut muncul di List Bersih beserta halaman Detail Peserta-nya. */
+function sppaSetujui(r, alasan) {
+  r.status  = "Disetujui";
+  r.catatan = alasan || "Disetujui — data peserta tersedia di YANDU NextGen dan siap dipakai Kantor Cabang.";
+  sppDaftarkanPeserta(r);
+  sppaTampilkanDaftar();
+  renderSppPengajuan();
+  renderSppBersih();
+  toast(`Pengajuan ${r.no} disetujui — data peserta kini tersedia di sistem.`, "ok");
+}
+
+function sppaTolak(r, alasan) {
+  r.status   = "Ditolak";
+  r.tindakan = "";
+  r.catatan  = alasan;
+  sppaTampilkanDaftar();
+  renderSppPengajuan();
+  toast(`Pengajuan ${r.no} ditolak dan dikembalikan ke Kantor Cabang.`, "ok");
+}
+
+/* Dua modal keputusan: alasan persetujuan opsional, alasan penolakan wajib. */
+function sppaSetujuModal(r) {
+  $("#modal-title").textContent = "Konfirmasi Persetujuan Pengajuan SPP";
+  $("#modal-sub").textContent   = `${r.no} · ${r.nama} · ${r.cabang}`;
+  $("#modal-body").innerHTML = `
+    <div class="field">
+      <label class="fl">Alasan / Catatan Persetujuan (Opsional)</label>
+      <textarea class="inp" id="sppa-setuju-alasan" style="height:90px;padding:9px 10px;resize:vertical" placeholder="Tuliskan alasan persetujuan (opsional)"></textarea>
+    </div>
+    <div class="form-actions" style="justify-content:flex-end">
+      <button class="btn btn-ghost" id="sppa-setuju-batal">Batal</button>
+      <button class="btn btn-success" id="sppa-setuju-kirim">✓ Setujui</button>
+    </div>`;
+  openModal();
+  $("#sppa-setuju-batal").onclick = closeModal;
+  $("#sppa-setuju-kirim").onclick = () => {
+    const alasan = $("#sppa-setuju-alasan").value.trim();
+    closeModal();
+    sppaSetujui(r, alasan);
+  };
+}
+
+function sppaTolakModal(r) {
+  $("#modal-title").textContent = "Konfirmasi Penolakan Pengajuan SPP";
+  $("#modal-sub").textContent   = `${r.no} · ${r.nama} · ${r.cabang}`;
+  $("#modal-body").innerHTML = `
+    <div class="field">
+      <label class="fl">Alasan Penolakan <span class="req">*</span></label>
+      <textarea class="inp" id="sppa-tolak-alasan" style="height:90px;padding:9px 10px;resize:vertical" placeholder="Tuliskan alasan penolakan pengajuan ini..."></textarea>
+    </div>
+    <div class="form-actions" style="justify-content:flex-end">
+      <button class="btn btn-ghost" id="sppa-tolak-batal">Batal</button>
+      <button class="btn btn-danger-solid" id="sppa-tolak-kirim">✕ Tolak</button>
+    </div>`;
+  openModal();
+  $("#sppa-tolak-batal").onclick = closeModal;
+  $("#sppa-tolak-kirim").onclick = () => {
+    const alasan = $("#sppa-tolak-alasan").value.trim();
+    if (!alasan) { toast("Alasan penolakan wajib diisi.", "bad"); return; }
+    closeModal();
+    sppaTolak(r, alasan);
+  };
+}
+
+$("#sppa-kembali").onclick    = sppaTampilkanDaftar;
+$("#sppa-cari").onclick       = () => { sppaPage = 1; renderSppApproval(); };
+$("#sppa-export").onclick     = () => toast("Daftar persetujuan SPP diekspor ke Excel.");
+$("#sppa-f-status").onchange  = () => { sppaPage = 1; renderSppApproval(); };
+$("#sppa-setuju").onclick     = () => sppaSetujuModal(sppaCurrent);
+$("#sppa-tolak").onclick      = () => sppaTolakModal(sppaCurrent);
+
+document.addEventListener("click", e => {
+  const bPage = e.target.closest("[data-sppa-page]");
+  if (bPage) { sppaPage = +bPage.dataset.sppaPage; renderSppApproval(); return; }
+
+  const bDetail = e.target.closest("[data-sppa-detail]");
+  if (bDetail) { sppaBuka(sppRows.find(r => r._id === +bDetail.dataset.sppaDetail)); return; }
+
+  const bUnduh = e.target.closest("[data-spp-unduh]");
+  if (bUnduh) { toast(`Dokumen diunduh: ${bUnduh.dataset.sppUnduh}`); return; }
+});
+
+isiPilihanSppApproval();
+renderSppApproval();
+
+/* ========================================== LIST BERSIH SPP DATA PESERTA
+   Pengajuan yang sudah disetujui — datanya sudah bersih dan tersedia di
+   YANDU NextGen. Tombol Detail memakai halaman Detail Peserta yang sama
+   dengan Pengelolaan Data Peserta lewat nomor unik hasil
+   sppDaftarkanPeserta(). */
+
+const SPPB_PAGE_SIZE = 10;
+
+/* Kriteria pencarian mengikuti kolom yang ditampilkan di tabel. */
+const SPPB_TIPE_CARI = [
+  { key:"nrp",      label:"NRP" },
+  { key:"kpa",      label:"KPA" },
+  { key:"nama",     label:"NAMA" },
+  { key:"noSkep",   label:"NO.SKEP" },
+  { key:"kesatuan", label:"KESATUAN" }
+];
+
+let sppbPage = 1;
+
+function isiPilihanSppBersih() {
+  $("#sppb-f-tipe").innerHTML = SPPB_TIPE_CARI.map(t =>
+    `<option value="${esc(t.key)}">${esc(t.label)}</option>`).join("");
+}
+
+function sppbBarisTersaring() {
+  const key   = $("#sppb-f-tipe").value;
+  const nilai = ($("#sppb-f-nilai").value || "").trim().toLowerCase();
+  return sppRows.filter(r =>
+    r.status === "Disetujui" &&
+    (!nilai || String(r[key] ?? "").toLowerCase().includes(nilai))
+  );
+}
+
+function sppbPaginationHtml(totalPages) {
+  const nav = (p, label, disabled) => `<button class="btn btn-ghost btn-sm" style="min-width:30px;padding:0" ${disabled ? "disabled" : `data-sppb-page="${p}"`}>${label}</button>`;
+  let html = nav(sppbPage - 1, "‹", sppbPage <= 1);
+  for (let p = 1; p <= totalPages; p++)
+    html += `<button class="btn ${p === sppbPage ? "btn-primary" : "btn-ghost"} btn-sm" style="min-width:30px;padding:0" data-sppb-page="${p}">${p}</button>`;
+  return html + nav(sppbPage + 1, "›", sppbPage >= totalPages);
+}
+
+function renderSppBersih() {
+  const rows       = sppbBarisTersaring();
+  const totalPages = Math.max(1, Math.ceil(rows.length / SPPB_PAGE_SIZE));
+  if (sppbPage > totalPages) sppbPage = totalPages;
+  const start    = (sppbPage - 1) * SPPB_PAGE_SIZE;
+  const pageRows = rows.slice(start, start + SPPB_PAGE_SIZE);
+
+  $("#sppb-body").innerHTML = pageRows.length ? pageRows.map((r, i) => `
+    <tr>
+      <td>${start + i + 1}</td>
+      <td>${esc(r.nrp)}</td>
+      <td>${esc(r.kpa)}</td>
+      <td class="t-strong">${esc(r.nama)}</td>
+      <td>${esc(r.tglLahir || "—")}</td>
+      <td>${esc(r.tmt || "—")}</td>
+      <td>${esc(r.noSkep || "—")}</td>
+      <td>${esc(r.tglSkep || "—")}</td>
+      <td>${esc(r.pangkatAwal || "—")}</td>
+      <td>${esc(r.kesatuan)}</td>
+      <td><button class="btn btn-info btn-sm" data-sppb-detail="${r._id}">👁 Detail</button></td>
+    </tr>`).join("")
+    : `<tr><td colspan="11"><div class="empty"><h4>Belum ada data bersih</h4><p>Data muncul di sini setelah pengajuan SPP disetujui pada layar Approval.</p></div></td></tr>`;
+
+  const shownFrom = rows.length ? start + 1 : 0;
+  const shownTo   = Math.min(start + SPPB_PAGE_SIZE, rows.length);
+  $("#sppb-count").textContent    = `Menampilkan ${shownFrom}-${shownTo} dari ${rows.length} peserta`;
+  $("#sppb-pagination").innerHTML = sppbPaginationHtml(totalPages);
+}
+
+$("#sppb-cari").onclick   = () => { sppbPage = 1; renderSppBersih(); };
+$("#sppb-export").onclick = () => toast("List bersih SPP Data Peserta diekspor ke Excel.");
+$("#sppb-reset").onclick  = () => {
+  $("#sppb-f-tipe").selectedIndex = 0;
+  $("#sppb-f-nilai").value = "";
+  sppbPage = 1;
+  renderSppBersih();
+};
+$("#s-spp-bersih").addEventListener("keydown", e => {
+  if (e.key === "Enter" && e.target.id === "sppb-f-nilai") { sppbPage = 1; renderSppBersih(); }
+});
+
+document.addEventListener("click", e => {
+  const bPage = e.target.closest("[data-sppb-page]");
+  if (bPage) { sppbPage = +bPage.dataset.sppbPage; renderSppBersih(); return; }
+
+  const bDetail = e.target.closest("[data-sppb-detail]");
+  if (bDetail) {
+    const r = sppRows.find(x => x._id === +bDetail.dataset.sppbDetail);
+    dpBukaDetail(sppDaftarkanPeserta(r), "spp-bersih");
+  }
+});
+
+isiPilihanSppBersih();
+renderSppBersih();
+
+/* --------------------------------------- Daftar pengajuan di layar Pengajuan
+   Menampilkan seluruh pengajuan yang pernah direkam beserta statusnya, dan
+   satu halaman detail baca-saja berisi informasi pengajuan selengkapnya. */
+
+const SPPP_PAGE_SIZE = 10;
+let spppPage = 1;
+
+function spppBarisTersaring() {
+  const fCari   = ($("#sppp-f-cari").value || "").toLowerCase();
+  const fStatus = $("#sppp-f-status").value;
+  return sppRows.filter(r =>
+    (fStatus === "all" || r.status === fStatus) &&
+    (!fCari || [r.no, r.kpa, r.nama, r.nrp].some(v => (v || "").toLowerCase().includes(fCari)))
+  );
+}
+
+function spppPaginationHtml(totalPages) {
+  const nav = (p, label, disabled) => `<button class="btn btn-ghost btn-sm" style="min-width:30px;padding:0" ${disabled ? "disabled" : `data-sppp-page="${p}"`}>${label}</button>`;
+  let html = nav(spppPage - 1, "‹", spppPage <= 1);
+  for (let p = 1; p <= totalPages; p++)
+    html += `<button class="btn ${p === spppPage ? "btn-primary" : "btn-ghost"} btn-sm" style="min-width:30px;padding:0" data-sppp-page="${p}">${p}</button>`;
+  return html + nav(spppPage + 1, "›", spppPage >= totalPages);
+}
+
+function renderSppPengajuan() {
+  const rows       = spppBarisTersaring();
+  const totalPages = Math.max(1, Math.ceil(rows.length / SPPP_PAGE_SIZE));
+  if (spppPage > totalPages) spppPage = totalPages;
+  const start    = (spppPage - 1) * SPPP_PAGE_SIZE;
+  const pageRows = rows.slice(start, start + SPPP_PAGE_SIZE);
+
+  $("#sppp-body").innerHTML = pageRows.length ? pageRows.map(r => `
+    <tr>
+      <td class="t-strong">${esc(r.no)}</td>
+      <td>${esc(r.tgl)}</td>
+      <td>${esc(r.kpa)}</td>
+      <td><div class="t-strong">${esc(r.nama)}</div><div class="hint" style="margin:1px 0 0">${esc(r.kesatuan)}</div></td>
+      <td>${esc(r.nrp)}</td>
+      <td>${esc(r.cabang)}</td>
+      <td><span class="pill ${sppPillStatus(r.status)}">${esc(r.status)}</span></td>
+      <td><button class="btn btn-info btn-sm" data-sppp-detail="${r._id}">👁 Detail</button></td>
+    </tr>`).join("")
+    : `<tr><td colspan="8"><div class="empty"><h4>Belum ada pengajuan</h4><p>Klik "+ Tambah SPP Data Peserta" untuk merekam pengajuan baru.</p></div></td></tr>`;
+
+  const shownFrom = rows.length ? start + 1 : 0;
+  const shownTo   = Math.min(start + SPPP_PAGE_SIZE, rows.length);
+  $("#sppp-count").textContent    = `Menampilkan ${shownFrom}-${shownTo} dari ${rows.length} pengajuan`;
+  $("#sppp-pagination").innerHTML = spppPaginationHtml(totalPages);
+}
+
+function spppBaris(label, nilai) {
+  return `<div class="review-row">
+    <div class="fl">${esc(label)}</div>
+    <div class="val">${esc(nilai || "—")}</div>
+  </div>`;
+}
+
+function spppBukaDetail(r) {
+  $("#sppp-intro-view").style.display  = "none";
+  $("#spp-tambah-view").style.display  = "none";
+  $("#sppp-detail-view").style.display = "";
+  $("#sppp-crumb").innerHTML = `<span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pengajuan SPP Data Peserta</span><span>›</span><b>${esc(r.no)}</b>`;
+  $("#sppp-d-title").textContent = `Detail Pengajuan ${r.no}`;
+  $("#sppp-d-sub").textContent   = `${r.nama} · ${r.nrp} · ${r.cabang}`;
+
+  $("#sppp-d-pengajuan").innerHTML =
+    spppBaris("Nomor Permohonan", r.no) +
+    spppBaris("Tanggal Pengajuan", r.tgl) +
+    spppBaris("Status", r.status) +
+    spppBaris("Kantor Cabang", r.cabang) +
+    spppBaris("Diajukan Oleh", r.pengaju) +
+    spppBaris("No. Request Umum", r.noRequest) +
+    spppBaris("Jumlah Berkas", `${r.dokumen.length} berkas`) +
+    spppBaris("Catatan", r.catatan);
+
+  $("#sppp-d-peserta").innerHTML =
+    spppBaris("Nomor KPA", r.kpa) +
+    spppBaris("Nama Peserta", r.nama) +
+    spppBaris("NRP / NIP", r.nrp) +
+    spppBaris("NRP Lama", r.nrpLama) +
+    spppBaris("NIK", r.nik) +
+    spppBaris("NPWP", r.npwp) +
+    spppBaris("Tempat / Tanggal Lahir", [r.tempatLahir, r.tglLahir].filter(Boolean).join(", ")) +
+    spppBaris("Jenis Kelamin", r.jk) +
+    spppBaris("Status Kawin", r.statusKawin) +
+    spppBaris("Angkatan", r.angkatan) +
+    spppBaris("Status Personil", r.statusPersonil) +
+    spppBaris("Unor", r.unor) +
+    spppBaris("UKER / Kesatuan", r.kesatuan) +
+    spppBaris("Pangkat Awal", r.pangkatAwal) +
+    spppBaris("Pangkat Akhir", r.pangkat) +
+    spppBaris("TMT Pengangkatan", r.tmt) +
+    spppBaris("No. SKEP Pengangkatan", r.noSkep) +
+    spppBaris("Tanggal SKEP Pengangkatan", r.tglSkep) +
+    spppBaris("No. SKEP Pensiun", r.noSkepPensiun) +
+    spppBaris("Tanggal SKEP Pensiun", r.tglSkepPensiun) +
+    spppBaris("Bintang Jasa", r.bintangJasa) +
+    spppBaris("Alamat", [r.alamat, r.rt && `RT ${r.rt}`, r.rw && `RW ${r.rw}`, r.kelurahan, r.kodepos].filter(Boolean).join(", ")) +
+    spppBaris("No. Telepon", r.telp) +
+    spppBaris("No. Handphone", r.hp) +
+    spppBaris("Email", r.email) +
+    spppBaris("Nama Ibu Kandung", r.ibuKandung);
+
+  const keluarga = r.keluarga || [];
+  $("#sppp-d-keluarga").innerHTML = keluarga.length ? keluarga.map((k, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td>${esc(k.hubungan || "—")}</td>
+      <td>${esc(k.nama || "—")}</td>
+      <td>${esc(k.nik || "—")}</td>
+      <td>${esc(k.tempatLahir || "—")}</td>
+      <td>${esc(k.tglLahir || "—")}</td>
+      <td>${esc(k.jk || "—")}</td>
+    </tr>`).join("")
+    : `<tr><td colspan="7"><div class="empty"><h4>Tidak ada data keluarga</h4><p>Pengajuan ini direkam tanpa data anggota keluarga.</p></div></td></tr>`;
+
+  const pangkat = r.riwayatPangkat || [];
+  $("#sppp-d-pangkat").innerHTML = pangkat.length ? pangkat.map((p, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td>${esc(p.pangkat || "—")}</td>
+      <td>${esc(p.tmt || "—")}</td>
+      <td>${esc(p.noSkep || "—")}</td>
+      <td>${esc(p.tglSkep || "—")}</td>
+    </tr>`).join("")
+    : `<tr><td colspan="5"><div class="empty"><h4>Tidak ada riwayat pangkat</h4><p>Pengajuan ini direkam tanpa riwayat kepangkatan.</p></div></td></tr>`;
+
+  $("#sppp-d-dokumen").innerHTML = r.dokumen.length ? r.dokumen.map((d, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td class="t-strong">${esc(d)}</td>
+      <td><button class="btn btn-ghost btn-sm" data-spp-unduh="${esc(d)}">⭳ Unduh</button></td>
+    </tr>`).join("")
+    : `<tr><td colspan="3"><div class="empty"><h4>Tidak ada berkas</h4><p>Pengajuan ini ditandai "Tidak Ada Dokumen".</p></div></td></tr>`;
+
+  window.scrollTo({ top: 0, behavior: "instant" });
+}
+
+$("#sppp-kembali").onclick   = sppPengajuanIntro;
+$("#sppp-cari").onclick      = () => { spppPage = 1; renderSppPengajuan(); };
+$("#sppp-export").onclick    = () => toast("Daftar pengajuan SPP diekspor ke Excel.");
+$("#sppp-f-status").onchange = () => { spppPage = 1; renderSppPengajuan(); };
+$("#s-spp-pengajuan").addEventListener("keydown", e => {
+  if (e.key === "Enter" && e.target.id === "sppp-f-cari") { spppPage = 1; renderSppPengajuan(); }
+});
+
+document.addEventListener("click", e => {
+  const bPage = e.target.closest("[data-sppp-page]");
+  if (bPage) { spppPage = +bPage.dataset.spppPage; renderSppPengajuan(); return; }
+
+  const bDetail = e.target.closest("[data-sppp-detail]");
+  if (bDetail) { spppBukaDetail(sppRows.find(r => r._id === +bDetail.dataset.spppDetail)); return; }
+});
+
+renderSppPengajuan();
 
 
 /* ================================================== PEMBATALAN KPR (BUM)
@@ -10582,12 +11465,6 @@ let bpbPage = 1;
 const BPB_PILL_STATUS  = { "Tercatat":"pill-info", "Menunggu SP":"pill-warn", "Selesai":"pill-ok" };
 const BPB_PILL_PESERTA = { "Aktif":"pill-info", "Pensiun":"pill-warn" };
 
-function isiPilihanBpb() {
-  $("#bpb-f-keterangan").innerHTML =
-    `<option value="all">Semua</option>` +
-    BUM_PEMBATALAN_KETERANGAN.map(k => `<option>${esc(k)}</option>`).join("");
-}
-
 function renderBumPembatalan() {
   const fDari       = $("#bpb-f-dari").value;
   const fSampai     = $("#bpb-f-sampai").value;
@@ -10596,13 +11473,11 @@ function renderBumPembatalan() {
   const fNrp        = ($("#bpb-f-nrp").value    || "").toLowerCase();
   const fNama       = ($("#bpb-f-nama").value   || "").toLowerCase();
   const fPeserta    = $("#bpb-f-peserta").value;
-  const fKeterangan = $("#bpb-f-keterangan").value;
   const fStatus     = $("#bpb-f-status").value;
 
   const rows = bumPembatalanRows.filter(r =>
-    (fPeserta    === "all" || r.statusPeserta === fPeserta) &&
-    (fKeterangan === "all" || r.keterangan    === fKeterangan) &&
-    (fStatus     === "all" || r.status        === fStatus) &&
+    (fPeserta === "all" || r.statusPeserta === fPeserta) &&
+    (fStatus  === "all" || r.status        === fStatus) &&
     (!fCabang || r.cabang.toLowerCase().includes(fCabang)) &&
     (!fKtpa   || r.kpa.toLowerCase().includes(fKtpa)) &&
     (!fNrp    || r.nrp.includes(fNrp)) &&
@@ -10623,22 +11498,19 @@ function renderBumPembatalan() {
       <td>${esc(r.nrp)}</td>
       <td>${esc(r.kpa)}</td>
       <td><span class="pill ${BPB_PILL_PESERTA[r.statusPeserta]}">${esc(r.statusPeserta)}</span></td>
-      <td>${esc(r.keterangan)}</td>
+      <td>${esc(r.nomorPinjaman)}</td>
+      <td>${esc(r.jenisPinjaman)}</td>
       <td>${rp(r.nominal)}</td>
       <td>${esc(r.noSurat)}</td>
       <td>${esc(fmtTgl(r.tglSurat))}</td>
-      <td>${esc(r.noSp || "—")}</td>
-      <td>${esc(fmtTgl(r.tglDps) || "—")}</td>
-      <td>${esc(r.noDps || "—")}</td>
       <td>${esc(r.cabang)}</td>
-      <td><span class="pill ${BPB_PILL_STATUS[r.status]}">${esc(r.status)}</span></td>
       <td class="stick-r" style="white-space:nowrap">
         <button class="btn btn-ghost btn-sm" data-bpb-detail="${r._id}">👁 Detail</button>
         ${r.status === "Menunggu SP"
             ? `<button class="btn btn-info btn-sm" data-bpb-sp="${r._id}">🧾 Terbitkan SP</button>` : ""}
       </td>
     </tr>`).join("")
-    : `<tr><td colspan="15"><div class="empty"><h4>Tidak ada data</h4><p>Coba ubah filter atau kata kunci pencarian.</p></div></td></tr>`;
+    : `<tr><td colspan="12"><div class="empty"><h4>Tidak ada data</h4><p>Coba ubah filter atau kata kunci pencarian.</p></div></td></tr>`;
 
   const shownFrom = rows.length ? start + 1 : 0;
   const shownTo   = Math.min(start + pageSize, rows.length);
@@ -10652,8 +11524,8 @@ function renderBumPembatalan() {
 $("#bpb-cari").onclick       = () => { bpbPage = 1; renderBumPembatalan(); };
 $("#bpb-page-size").onchange = () => { bpbPage = 1; renderBumPembatalan(); };
 $("#bpb-export-excel").onclick = () => toast(
-  "Data pembatalan diekspor ke Excel: Nama, NRP, Nomor KTPA, Nominal, Nomor & Tanggal surat pembatalan, " +
-  "beserta Nomor SP pembatalan, Tanggal DPS, dan Nomor DPS untuk peserta pensiun.");
+  "Data pembatalan diekspor ke Excel: Nama, NRP, KPA, Nomor & Jenis Pinjaman, Nominal, " +
+  "Nomor & Tanggal Surat, beserta Keterangan pembatalan.");
 
 /* ------------------------------------------------------------ Halaman Detail
    Field mengikuti kolom tabel dan dikunci — halaman ini hanya untuk melihat.
@@ -10679,7 +11551,7 @@ function renderBumPembatalanDetail() {
     <div class="grid2">
       ${bplDetailField("Nama", r.nama, true)}
       ${bplDetailField("NRP/NIP", r.nrp)}
-      ${bplDetailField("Nomor KTPA", r.kpa)}
+      ${bplDetailField("KPA", r.kpa)}
       ${bplDetailField("Status Peserta", r.statusPeserta)}
       ${bplDetailField("Kantor Cabang", r.cabang)}
       ${bplDetailField("Nomor Pinjaman", r.nomorPinjaman)}
@@ -10688,10 +11560,10 @@ function renderBumPembatalanDetail() {
 
     <div class="subsection-title">Data Pembatalan</div>
     <div class="grid2">
-      ${bplDetailField("Status Keterangan Pembatalan", r.keterangan, true)}
-      ${bplDetailField("Nomor Surat Pembatalan", r.noSurat)}
-      ${bplDetailField("Tanggal Surat Pembatalan", fmtTgl(r.tglSurat))}
+      ${bplDetailField("Nomor Surat", r.noSurat)}
+      ${bplDetailField("Tanggal Surat", fmtTgl(r.tglSurat))}
       ${bplDetailField("Nominal Pembatalan", rp(r.nominal), true)}
+      ${bplDetailField("Keterangan", r.keterangan || "—", true)}
     </div>
 
     ${r.statusPeserta === "Pensiun" ? `
@@ -10732,7 +11604,7 @@ $("#bpbd-kembali-atas").onclick = () => go("bum-pembatalan");
 $("#bpbd-sp").onclick           = () => bpbShowSp(bpbDetailRow);
 
 /* --------------------------------------------- Proses Pembatalan BUM KPR
-   Nomor KTPA diketik lebih dulu; data peserta dan pinjamannya terisi dari
+   KPA diketik lebih dulu; data peserta dan pinjamannya terisi dari
    DATA_BUM, sedangkan Status Peserta diambil dari BUM_STATUS_PESERTA. Blok
    "Pengajuan Kantor Cabang" muncul otomatis hanya untuk peserta pensiun. */
 function bpbAutofillFromKtpa() {
@@ -10754,10 +11626,10 @@ function bpbAutofillFromKtpa() {
   const nota = $("#bpp-nota");
   if (!kpa) {
     nota.className = "alert alert-info";
-    nota.innerHTML = `<span>ⓘ</span><span>Masukkan Nomor KTPA peserta — status peserta dan kelengkapan yang diperlukan akan menyesuaikan otomatis.</span>`;
+    nota.innerHTML = `<span>ⓘ</span><span>Masukkan KPA peserta — status peserta dan kelengkapan yang diperlukan akan menyesuaikan otomatis.</span>`;
   } else if (!statusPeserta) {
     nota.className = "alert alert-bad";
-    nota.innerHTML = `<span>⚠</span><span>Nomor KTPA tidak ditemukan pada data pinjaman BUM KPR.</span>`;
+    nota.innerHTML = `<span>⚠</span><span>KPA tidak ditemukan pada data pinjaman BUM KPR.</span>`;
   } else if (statusPeserta === "Aktif") {
     nota.className = "alert alert-info";
     nota.innerHTML = `<span>ⓘ</span><span>Peserta masih aktif — surat pembatalan diterima langsung dari YPPSDP, tanpa Request Umum dan tanpa SP pembayaran pemotongan.</span>`;
@@ -10771,37 +11643,37 @@ function bpbShowProses() {
   $("#modal-title").textContent = "Proses Pembatalan BUM KPR";
   $("#modal-sub").textContent   = "Perekaman surat pembatalan BUM KPR dari YPPSDP.";
   $("#modal-body").innerHTML = `
-    <div class="alert alert-info" id="bpp-nota"><span>ⓘ</span><span>Masukkan Nomor KTPA peserta — status peserta dan kelengkapan yang diperlukan akan menyesuaikan otomatis.</span></div>
+    <div class="alert alert-info" id="bpp-nota"><span>ⓘ</span><span>Masukkan KPA peserta — status peserta dan kelengkapan yang diperlukan akan menyesuaikan otomatis.</span></div>
 
     <div class="subsection-title">Data Peserta</div>
     <div class="grid2">
       <div class="field">
-        <label class="fl">Nomor KTPA <span class="req">*</span></label>
-        <input class="inp" id="bpp-ktpa" placeholder="-- Masukkan Nomor KTPA --">
+        <label class="fl">KPA <span class="req">*</span></label>
+        <input class="inp" id="bpp-ktpa" placeholder="-- Masukkan KPA --">
       </div>
       <div class="field">
         <label class="fl">NRP/NIP <span class="req">*</span></label>
-        <input class="inp" id="bpp-nrp" readonly placeholder="Otomatis terisi dari Nomor KTPA">
+        <input class="inp" id="bpp-nrp" readonly placeholder="Otomatis terisi dari KPA">
       </div>
       <div class="field">
         <label class="fl">Nama <span class="req">*</span></label>
-        <input class="inp" id="bpp-nama" readonly placeholder="Otomatis terisi dari Nomor KTPA">
+        <input class="inp" id="bpp-nama" readonly placeholder="Otomatis terisi dari KPA">
       </div>
       <div class="field">
         <label class="fl">Kantor Cabang <span class="req">*</span></label>
-        <input class="inp" id="bpp-cabang" readonly placeholder="Otomatis terisi dari Nomor KTPA">
+        <input class="inp" id="bpp-cabang" readonly placeholder="Otomatis terisi dari KPA">
       </div>
       <div class="field">
         <label class="fl">Nomor Pinjaman <span class="req">*</span></label>
-        <input class="inp" id="bpp-pinjaman" readonly placeholder="Otomatis terisi dari Nomor KTPA">
+        <input class="inp" id="bpp-pinjaman" readonly placeholder="Otomatis terisi dari KPA">
       </div>
       <div class="field">
         <label class="fl">Jenis Pinjaman <span class="req">*</span></label>
-        <input class="inp" id="bpp-jenis" readonly placeholder="Otomatis terisi dari Nomor KTPA">
+        <input class="inp" id="bpp-jenis" readonly placeholder="Otomatis terisi dari KPA">
       </div>
       <div class="field span2">
         <label class="fl">Status Peserta <span class="req">*</span></label>
-        <input class="inp" id="bpp-status" readonly placeholder="Otomatis terisi dari Nomor KTPA">
+        <input class="inp" id="bpp-status" readonly placeholder="Otomatis terisi dari KPA">
       </div>
     </div>
 
@@ -10828,24 +11700,22 @@ function bpbShowProses() {
 
     <div class="subsection-title">Data Pembatalan</div>
     <div class="grid2">
-      <div class="field span2">
-        <label class="fl">Status Keterangan Pembatalan <span class="req">*</span></label>
-        <select class="inp" id="bpp-keterangan">
-          <option value="">-- Pilih Status Keterangan Pembatalan --</option>
-          ${BUM_PEMBATALAN_KETERANGAN.map(k => `<option>${esc(k)}</option>`).join("")}
-        </select>
-      </div>
       <div class="field">
-        <label class="fl">Nomor Surat Pembatalan <span class="req">*</span></label>
+        <label class="fl">Nomor Surat <span class="req">*</span></label>
         <input class="inp" id="bpp-no-surat" placeholder="Contoh: B/440/YPPSDP/VII/2026">
       </div>
       <div class="field">
-        <label class="fl">Tanggal Surat Pembatalan <span class="req">*</span></label>
+        <label class="fl">Tanggal Surat <span class="req">*</span></label>
         <input class="inp" type="date" id="bpp-tgl-surat">
       </div>
-      <div class="field span2" style="margin-bottom:0">
+      <div class="field span2">
         <label class="fl">Nominal Pembatalan <span class="req">*</span></label>
         <div class="money"><span>Rp</span><input id="bpp-nominal" inputmode="numeric" placeholder="0" aria-label="Nominal pembatalan"></div>
+      </div>
+      <div class="field span2" style="margin-bottom:0">
+        <label class="fl">Keterangan</label>
+        <input class="inp" id="bpp-keterangan" placeholder="Contoh: Pembatalan sebagian atas permintaan YPPSDP">
+        <div class="hint">Opsional — catatan singkat mengenai pembatalan ini.</div>
       </div>
     </div>
 
@@ -10871,14 +11741,14 @@ function bpbShowProses() {
     const kpa           = $("#bpp-ktpa").value.trim().toUpperCase();
     const src           = DATA_BUM.find(x => x.kpa === kpa);
     const statusPeserta = src ? (BUM_STATUS_PESERTA[kpa] || "") : "";
-    const keterangan    = $("#bpp-keterangan").value;
     const noSurat       = $("#bpp-no-surat").value.trim();
     const tglSurat      = $("#bpp-tgl-surat").value;
     const nominal       = parseNum($("#bpp-nominal").value);
+    const keterangan    = $("#bpp-keterangan").value.trim();
 
-    if (!statusPeserta) { toast("Nomor KTPA tidak ditemukan pada data pinjaman BUM KPR.", "bad"); return; }
-    if (!keterangan || !noSurat || !tglSurat || !nominal) {
-      toast("Status keterangan, nomor & tanggal surat, serta nominal pembatalan wajib diisi.", "bad");
+    if (!statusPeserta) { toast("KPA tidak ditemukan pada data pinjaman BUM KPR.", "bad"); return; }
+    if (!noSurat || !tglSurat || !nominal) {
+      toast("Nomor & tanggal surat, serta nominal pembatalan wajib diisi.", "bad");
       return;
     }
 
@@ -10981,5 +11851,479 @@ document.addEventListener("click", e => {
   if (bPage) { bpbPage = +bPage.dataset.bpbPage; renderBumPembatalan(); }
 });
 
-isiPilihanBpb();
 renderBumPembatalan();
+
+/* ======================================= BUKTI ANGSURAN KPR (BUM)
+   Hutang BUM yang tidak terpotong dari hak asuransi dibayar angsur oleh
+   peserta. Dua layar memakai satu daftar yang sama:
+
+   "Upload Bukti Angsuran"     — sisi Kantor Cabang. Merekam setoran peserta
+     beserta bukti setornya; baris baru selalu lahir "Menunggu Verifikasi"
+     dan masih boleh diunggah ulang selama belum diputus.
+   "Verifikasi Bukti Angsuran" — sisi Div. Kepesertaan. Memutus setiap
+     setoran menjadi "Terverifikasi" atau "Ditolak"; penolakan wajib
+     menyertakan catatan supaya Kantor Cabang tahu apa yang harus diperbaiki. */
+
+let bumAngsuranRows = DATA_BUM_ANGSURAN.map((r, i) => ({ ...r, _id: i }));
+let bagPage = 1;
+let bvaPage = 1;
+
+const BAG_PILL_STATUS = {
+  "Menunggu Verifikasi": "pill-warn",
+  "Terverifikasi"      : "pill-ok",
+  "Ditolak"            : "pill-bad"
+};
+
+function isiPilihanAngsuran() {
+  const opsiJenis  = `<option value="all">Semua</option>` +
+    BUM_JENIS.map(j => `<option value="${esc(j.nama)}">${esc(j.nama)}</option>`).join("");
+  const opsiStatus = `<option value="all">Semua</option>` +
+    BUM_ANGSURAN_STATUS.map(s => `<option>${esc(s)}</option>`).join("");
+  $("#bag-f-jenis").innerHTML  = opsiJenis;
+  $("#bva-f-jenis").innerHTML  = opsiJenis;
+  $("#bag-f-status").innerHTML = opsiStatus;
+  $("#bva-f-status").innerHTML = opsiStatus;
+}
+
+/* Filter yang dipakai kedua layar sama persis, hanya berbeda prefix id dan
+   tanggal yang disaring: layar upload memakai Tanggal Bayar, layar verifikasi
+   memakai Tanggal Unggah. */
+function angsuranTersaring(p, kolomTanggal) {
+  const fDari   = $(`#${p}-f-dari`).value;
+  const fSampai = $(`#${p}-f-sampai`).value;
+  const fCabang = ($(`#${p}-f-cabang`).value || "").toLowerCase();
+  const fKpa    = ($(`#${p}-f-kpa`).value    || "").toLowerCase();
+  const fNama   = ($(`#${p}-f-nama`).value   || "").toLowerCase();
+  const fJenis  = $(`#${p}-f-jenis`).value;
+  const fStatus = $(`#${p}-f-status`).value;
+
+  return bumAngsuranRows.filter(r =>
+    (fJenis  === "all" || r.jenisPinjaman === fJenis) &&
+    (fStatus === "all" || r.status        === fStatus) &&
+    (!fCabang || r.cabang.toLowerCase().includes(fCabang)) &&
+    (!fKpa    || r.kpa.toLowerCase().includes(fKpa)) &&
+    (!fNama   || r.nama.toLowerCase().includes(fNama)) &&
+    (!fDari   || r[kolomTanggal] >= fDari) &&
+    (!fSampai || r[kolomTanggal] <= fSampai));
+}
+
+function angsuranPaginasi(p, rows, halaman) {
+  const pageSize   = +$(`#${p}-page-size`).value;
+  const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+  const aman       = Math.min(halaman, totalPages);
+  const start      = (aman - 1) * pageSize;
+  const shownFrom  = rows.length ? start + 1 : 0;
+
+  $(`#${p}-count`).textContent =
+    `Menampilkan ${shownFrom}-${Math.min(start + pageSize, rows.length)} dari ${rows.length} bukti angsuran`;
+  $(`#${p}-pagination`).innerHTML = Array.from({ length: totalPages }, (_, i) => i + 1).map(n => `
+    <button class="btn ${n === aman ? "btn-primary" : "btn-ghost"} btn-sm" style="min-width:30px;padding:0" data-${p}-page="${n}">${n}</button>
+  `).join("");
+
+  return { halaman: aman, pageRows: rows.slice(start, start + pageSize) };
+}
+
+const angsuranPill = r => `<span class="pill ${BAG_PILL_STATUS[r.status]}">${esc(r.status)}</span>`;
+const angsuranJenis = r => `<span class="pill ${bumJenisTone(r.jenisPinjaman)}">${esc(r.jenisPinjaman)}</span>`;
+
+/* ------------------------------------------- Layar Upload Bukti Angsuran */
+function renderBumAngsuran() {
+  const rows = angsuranTersaring("bag", "tglBayar");
+  const { halaman, pageRows } = angsuranPaginasi("bag", rows, bagPage);
+  bagPage = halaman;
+
+  $("#bag-body").innerHTML = pageRows.length ? pageRows.map(r => `
+    <tr>
+      <td class="stick-l t-strong">${esc(r.kpa)}</td>
+      <td>${esc(r.nrp)}</td>
+      <td>${esc(r.nama)}</td>
+      <td>${esc(r.cabang)}</td>
+      <td>${esc(r.nomorPinjaman)}</td>
+      <td>${angsuranJenis(r)}</td>
+      <td>${r.angsuranKe}</td>
+      <td>${esc(fmtTgl(r.tglBayar))}</td>
+      <td>${rp(r.nominal)}</td>
+      <td>${rp(r.sisaHutang)}</td>
+      <td>${esc(r.buktiSetor)}</td>
+      <td>${angsuranPill(r)}</td>
+      <td class="stick-r">
+        <button class="btn btn-info btn-sm" data-bag-detail="${r._id}">👁 Detail</button>
+        ${r.status === "Menunggu Verifikasi"
+            ? `<button class="btn btn-ghost btn-sm" data-bag-hapus="${r._id}">⌫ Hapus</button>` : ""}
+      </td>
+    </tr>`).join("")
+    : `<tr><td colspan="13"><div class="empty"><h4>Belum ada bukti angsuran</h4><p>Unggah bukti setor peserta atau ubah filter pencarian.</p></div></td></tr>`;
+}
+
+/* Peserta yang boleh diangsur diambil dari daftar klaim BUM, jadi KPA cukup
+   diketik sekali dan sisanya terisi sendiri serta dikunci. */
+function bagCariPeserta(kpa) {
+  return DATA_BUM.find(r => r.kpa.toUpperCase() === (kpa || "").trim().toUpperCase());
+}
+function bagAngsuranBerikutnya(nomorPinjaman) {
+  const terakhir = bumAngsuranRows
+    .filter(r => r.nomorPinjaman === nomorPinjaman)
+    .reduce((maks, r) => Math.max(maks, r.angsuranKe), 0);
+  return terakhir + 1;
+}
+function bagNomorBuktiBaru() {
+  const urut = bumAngsuranRows.reduce((maks, r) => Math.max(maks, +r.noBukti.slice(-4) || 0), 0) + 1;
+  return `ANG-${new Date().getFullYear()}-${String(urut).padStart(4, "0")}`;
+}
+
+function bagAutofillDariKpa() {
+  const p = bagCariPeserta($("#bag-kpa").value);
+  const isi = (id, nilai) => { $(`#${id}`).value = nilai; };
+  if (!p) {
+    ["bag-nrp", "bag-nama", "bag-cabang", "bag-pinjaman", "bag-jenis", "bag-sisa"].forEach(id => isi(id, ""));
+    $("#bag-angsuran-ke").value = "";
+    $("#bag-status-angsuran").value = "";
+    if ($("#bag-kpa").value.trim()) toast("KPA tidak ditemukan pada daftar klaim KPR (BUM).", "bad");
+    return;
+  }
+  isi("bag-nrp",      p.nrp);
+  isi("bag-nama",     p.nama);
+  isi("bag-cabang",   p.cabang);
+  isi("bag-pinjaman", p.nomorPinjaman);
+  isi("bag-jenis",    p.jenisPinjaman);
+  isi("bag-sisa",     rp(p.sisaHutang));
+  $("#bag-angsuran-ke").value = bagAngsuranBerikutnya(p.nomorPinjaman);
+  $("#bag-status-angsuran").value = p.sisaHutang > 0 ? "Dalam Angsuran Pinjaman" : "Lunas";
+}
+
+function bagShowUpload() {
+  $("#modal-title").textContent = "Upload Bukti Angsuran KPR (BUM)";
+  $("#modal-sub").textContent   = "KPA diisi lebih dahulu — data peserta dan pinjaman terisi otomatis.";
+  $("#modal-body").innerHTML = `
+    <div class="grid2">
+      <div class="field">
+        <label class="fl">KPA <span class="req">*</span></label>
+        <input class="inp" id="bag-kpa" placeholder="-- Masukkan KPA --">
+        <div class="hint">Contoh: TB920234</div>
+      </div>
+      <div class="field">
+        <label class="fl">NRP/NIP</label>
+        <input class="inp" id="bag-nrp" disabled placeholder="Otomatis terisi dari Nomor KTPA">
+      </div>
+      <div class="field">
+        <label class="fl">Nama</label>
+        <input class="inp" id="bag-nama" disabled placeholder="Otomatis terisi dari Nomor KTPA">
+      </div>
+      <div class="field">
+        <label class="fl">Kantor Cabang</label>
+        <input class="inp" id="bag-cabang" disabled placeholder="Otomatis terisi dari Nomor KTPA">
+      </div>
+      <div class="field">
+        <label class="fl">Nomor Pinjaman</label>
+        <input class="inp" id="bag-pinjaman" disabled placeholder="Otomatis terisi dari Nomor KTPA">
+      </div>
+      <div class="field">
+        <label class="fl">Jenis Pinjaman</label>
+        <input class="inp" id="bag-jenis" disabled placeholder="Otomatis terisi dari Nomor KTPA">
+      </div>
+      <div class="field">
+        <label class="fl">Sisa Hutang</label>
+        <input class="inp" id="bag-sisa" disabled placeholder="Otomatis terisi dari Nomor KTPA">
+      </div>
+      <div class="field">
+        <label class="fl">Angsuran Ke- <span class="req">*</span></label>
+        <input class="inp" type="number" min="1" id="bag-angsuran-ke" placeholder="Otomatis terisi dari Nomor KTPA">
+        <div class="hint">Terisi dari setoran terakhir peserta; boleh diubah.</div>
+      </div>
+      <div class="field">
+        <label class="fl">Status Angsuran <span class="req">*</span></label>
+        <input class="inp" id="bag-status-angsuran" placeholder="Dalam Angsuran Pinjaman atau Lunas">
+        <div class="hint">Isi "Lunas" bila setoran ini melunasi sisa hutang peserta.</div>
+      </div>
+      <div class="field">
+        <label class="fl">Tanggal Bayar <span class="req">*</span></label>
+        <input class="inp" type="date" id="bag-tgl-bayar">
+      </div>
+      <div class="field">
+        <label class="fl">Nominal Setor <span class="req">*</span></label>
+        <div class="money"><span>Rp</span><input id="bag-nominal" inputmode="numeric" placeholder="0" aria-label="Nominal setor"></div>
+      </div>
+      <div class="field span2" style="margin-bottom:0">
+        <label class="fl">Upload Bukti Angsuran <span class="req">*</span></label>
+        <input class="inp" type="file" id="bag-bukti" accept=".pdf,.jpg,.jpeg,.png">
+        <div class="hint" id="bag-bukti-nama">Belum ada berkas terunggah. PDF, JPG, PNG — maks. 5 MB.</div>
+      </div>
+    </div>
+    <div class="form-actions" style="justify-content:flex-end">
+      <button class="btn btn-ghost" id="bag-tutup">Batal</button>
+      <button class="btn btn-primary" id="bag-simpan">💾 Simpan & Kirim Verifikasi</button>
+    </div>`;
+  openModal();
+
+  $("#bag-tutup").onclick   = closeModal;
+  $("#bag-kpa").onblur      = bagAutofillDariKpa;
+  $("#bag-kpa").onchange    = bagAutofillDariKpa;
+  $("#bag-nominal").oninput = e => {
+    const n = angkaSaja(e.target.value);
+    e.target.value = n ? Number(n).toLocaleString("id-ID") : "";
+  };
+  $("#bag-bukti").onchange = e => {
+    const f = e.target.files[0];
+    $("#bag-bukti-nama").textContent = f
+      ? `${f.name} · ${ukuranBerkas(f.size)}`
+      : "Belum ada berkas terunggah. PDF, JPG, PNG — maks. 5 MB.";
+  };
+
+  $("#bag-simpan").onclick = () => {
+    const peserta    = bagCariPeserta($("#bag-kpa").value);
+    const angsuranKe = +$("#bag-angsuran-ke").value;
+    const statusAng  = $("#bag-status-angsuran").value.trim();
+    const tglBayar   = $("#bag-tgl-bayar").value;
+    const nominal    = parseNum($("#bag-nominal").value);
+    const bukti      = $("#bag-bukti").files[0];
+
+    if (!peserta || !angsuranKe || !statusAng || !tglBayar || !nominal || !bukti) {
+      toast("KPA, Angsuran Ke-, Status Angsuran, Tanggal Bayar, Nominal Setor, dan Bukti Angsuran wajib diisi.", "bad");
+      return;
+    }
+    if (nominal > peserta.sisaHutang) {
+      toast("Nominal setor melebihi sisa hutang peserta.", "bad");
+      return;
+    }
+    bumAngsuranRows.unshift({
+      _id: Math.max(-1, ...bumAngsuranRows.map(r => r._id)) + 1,
+      noBukti: bagNomorBuktiBaru(),
+      kpa: peserta.kpa, nrp: peserta.nrp, nama: peserta.nama, cabang: peserta.cabang,
+      nomorPinjaman: peserta.nomorPinjaman, jenisPinjaman: peserta.jenisPinjaman,
+      angsuranKe, statusAngsuran: statusAng, tglBayar, nominal, sisaHutang: peserta.sisaHutang,
+      buktiSetor: bukti.name, buktiFileId: registerFile(bukti),
+      tglUnggah: new Date().toISOString().slice(0, 10),
+      status: "Menunggu Verifikasi", tglVerifikasi: "", catatan: ""
+    });
+    bagPage = 1;
+    renderBumAngsuran();
+    renderBumVerifAngsuran();
+    closeModal();
+    toast(`Bukti angsuran ke-${angsuranKe} untuk ${peserta.nama} dikirim ke verifikasi.`, "ok");
+  };
+}
+
+/* Detail bukti angsuran tampil sebagai halaman sendiri (bukan modal) supaya
+   preview berkas bukti angsuran muat ditampilkan utuh di bawah datanya. */
+let bagDetailRow  = null;
+let bagDetailAsal = "bum-angsuran";
+
+/* Berkas yang diunggah pada sesi ini punya isi asli (filePreviewRegistry);
+   data contoh hanya menyimpan nama berkas, jadi ditampilkan sebagai plakat. */
+function bagPreviewBukti(r) {
+  const file = r.buktiFileId ? filePreviewRegistry[r.buktiFileId] : null;
+  if (!file) {
+    return `
+      <div style="text-align:center;background:var(--field);border:1px solid var(--line);border-radius:9px;padding:36px 16px">
+        <div style="font-size:32px;margin-bottom:10px">📄</div>
+        <div class="t-strong">${esc(r.buktiSetor)}</div>
+        <div class="hint" style="margin-top:4px">Isi dokumen tidak tersedia untuk data contoh — hanya nama berkas yang tersimpan.</div>
+      </div>`;
+  }
+  const url     = URL.createObjectURL(file);
+  const isImage = file.type.startsWith("image/");
+  const isPdf   = file.type === "application/pdf";
+  return `
+    <div style="background:var(--field);border:1px solid var(--line);border-radius:9px;overflow:hidden;${isImage || isPdf ? "" : "padding:36px 16px;text-align:center"}">
+      ${isImage
+        ? `<img src="${url}" alt="${esc(file.name)}" style="max-width:100%;max-height:62vh;display:block;margin:0 auto">`
+        : isPdf
+        ? `<iframe src="${url}" title="${esc(file.name)}" style="width:100%;height:62vh;border:0;display:block"></iframe>`
+        : `<div style="color:var(--muted)"><div style="font-size:32px;margin-bottom:10px">📄</div>Preview tidak tersedia untuk tipe berkas ini.</div>`}
+    </div>
+    <div class="form-actions" style="justify-content:flex-start">
+      <a class="btn btn-ghost" href="${url}" download="${esc(file.name)}">⤓ Unduh Bukti Angsuran</a>
+    </div>`;
+}
+
+/* Satu halaman detail dipakai dua layar. Dibuka dari layar verifikasi,
+   halaman ini sekaligus menjadi tempat memutus — judul, remah, dan tombol
+   aksinya menyesuaikan asal navigasi. */
+const bagdDariVerifikasi = () => bagDetailAsal === "bum-verifikasi-angsuran";
+
+function renderBagDetailPage() {
+  const r = bagDetailRow;
+  if (!r) return;
+  const verif     = bagdDariVerifikasi();
+  const bisaPutus = verif && r.status === "Menunggu Verifikasi";
+  $("#bagd-page-title").textContent = verif
+    ? "Detail Verifikasi Bukti Angsuran KPR (BUM)"
+    : "Detail Bukti Angsuran KPR (BUM)";
+  $("#bagd-crumb-asal").textContent = verif ? "Verifikasi Bukti Angsuran" : "Bukti Angsuran";
+  $("#bagd-actions").innerHTML = bisaPutus ? `
+    <button class="btn btn-danger" id="bagd-tolak">✕ Tolak Verifikasi</button>
+    <button class="btn btn-success" id="bagd-setujui">✓ Setujui Verifikasi</button>` : "";
+  if (bisaPutus) {
+    $("#bagd-setujui").onclick = () => bagdConfirmSetujui(r);
+    $("#bagd-tolak").onclick   = () => bagdConfirmTolak(r);
+  }
+
+  $("#bagd-title").textContent = r.nama;
+  $("#bagd-sub").textContent   = `${r.noBukti} · ${r.kpa} · ${r.cabang}`;
+  const badge = $("#bagd-status");
+  badge.className   = `pill ${BAG_PILL_STATUS[r.status]}`;
+  badge.textContent = r.status;
+
+  $("#bagd-body").innerHTML = `
+    <div class="grid2">
+      ${reviewField("KPA", r.kpa)}
+      ${reviewField("NRP/NIP", r.nrp)}
+      ${reviewField("Nama", r.nama)}
+      ${reviewField("Kantor Cabang", r.cabang)}
+      ${reviewField("Nomor Pinjaman", r.nomorPinjaman)}
+      ${reviewField("Jenis Pinjaman", r.jenisPinjaman)}
+      ${reviewField("Angsuran Ke-", String(r.angsuranKe))}
+      ${reviewField("Status Angsuran", r.statusAngsuran || "Dalam Angsuran Pinjaman")}
+      ${reviewField("Tanggal Bayar", fmtTgl(r.tglBayar))}
+      ${reviewField("Nominal Setor", rp(r.nominal))}
+      ${reviewField("Sisa Hutang", rp(r.sisaHutang))}
+      ${reviewField("Bukti Angsuran", r.buktiSetor)}
+      ${reviewField("Tanggal Unggah", fmtTgl(r.tglUnggah))}
+      ${reviewField("Status", r.status)}
+      ${reviewField("Tanggal Verifikasi", r.tglVerifikasi ? fmtTgl(r.tglVerifikasi) : "—")}
+      ${reviewField("Catatan Pemeriksa", r.catatan || "—", true)}
+    </div>`;
+
+  $("#bagd-preview").innerHTML = bagPreviewBukti(r);
+}
+
+function bagShowDetail(r, asal) {
+  if (!r) return;
+  bagDetailRow  = r;
+  bagDetailAsal = asal || "bum-angsuran";
+  renderBagDetailPage();
+  go("bum-angsuran-detail");
+}
+$("#bagd-kembali").onclick      = () => go(bagDetailAsal);
+$("#bagd-kembali-atas").onclick = () => go(bagDetailAsal);
+
+/* --------------------------------------- Layar Verifikasi Bukti Angsuran */
+function renderBumVerifAngsuran() {
+  const rows = angsuranTersaring("bva", "tglUnggah");
+  const { halaman, pageRows } = angsuranPaginasi("bva", rows, bvaPage);
+  bvaPage = halaman;
+
+  $("#bva-body").innerHTML = pageRows.length ? pageRows.map(r => `
+    <tr>
+      <td class="stick-l t-strong">${esc(r.kpa)}</td>
+      <td>${esc(r.nrp)}</td>
+      <td>${esc(r.nama)}</td>
+      <td>${esc(r.cabang)}</td>
+      <td>${esc(r.nomorPinjaman)}</td>
+      <td>${angsuranJenis(r)}</td>
+      <td>${r.angsuranKe}</td>
+      <td>${esc(fmtTgl(r.tglBayar))}</td>
+      <td>${rp(r.nominal)}</td>
+      <td>${esc(r.buktiSetor)}</td>
+      <td>${esc(fmtTgl(r.tglUnggah))}</td>
+      <td>${angsuranPill(r)}</td>
+      <td class="stick-r">
+        <button class="btn btn-info btn-sm" data-bag-detail="${r._id}">👁 Detail</button>
+      </td>
+    </tr>`).join("")
+    : `<tr><td colspan="13"><div class="empty"><h4>Tidak ada data</h4><p>Coba ubah filter atau kata kunci pencarian.</p></div></td></tr>`;
+}
+
+function bvaPutusan(r, status, catatan, pesan, kind) {
+  r.status        = status;
+  r.catatan       = catatan;
+  r.tglVerifikasi = new Date().toISOString().slice(0, 10);
+  renderBumAngsuran();
+  renderBumVerifAngsuran();
+  renderBagDetailPage();
+  go("bum-verifikasi-angsuran");
+  toast(pesan, kind);
+}
+
+/* Putusan diambil di halaman detail; modal di bawah hanya meminta konfirmasi
+   terakhir sekaligus catatan pemeriksa. */
+function bagdConfirmSetujui(r) {
+  $("#modal-title").textContent = "Konfirmasi Persetujuan Verifikasi";
+  $("#modal-sub").textContent   = `${r.noBukti} · ${r.nama} · ${r.cabang}`;
+  $("#modal-body").innerHTML = `
+    <div class="alert alert-info">
+      <span>ⓘ</span><span>Setoran <b>${rp(r.nominal)}</b> untuk angsuran ke-${r.angsuranKe} akan ditandai <b>Terverifikasi</b> dan tidak dapat diubah lagi oleh Kantor Cabang.</span>
+    </div>
+    <div class="field" style="margin-top:14px">
+      <label class="fl" for="bagd-catatan-setuju">Catatan Pemeriksa (Opsional)</label>
+      <textarea class="inp" id="bagd-catatan-setuju" style="height:90px;padding:9px 10px;resize:vertical" placeholder="Tuliskan catatan persetujuan (opsional)"></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" id="bagd-setuju-batal">Batal</button>
+      <button class="btn btn-success" id="bagd-setuju-konfirmasi">✓ Setujui Verifikasi</button>
+    </div>`;
+  openModal();
+  $("#bagd-setuju-batal").onclick      = closeModal;
+  $("#bagd-setuju-konfirmasi").onclick = () => {
+    const catatan = $("#bagd-catatan-setuju").value.trim();
+    closeModal();
+    bvaPutusan(r, "Terverifikasi", catatan,
+      `Bukti angsuran ${r.noBukti} atas nama ${r.nama} terverifikasi.`, "ok");
+  };
+}
+
+function bagdConfirmTolak(r) {
+  $("#modal-title").textContent = "Konfirmasi Penolakan Verifikasi";
+  $("#modal-sub").textContent   = `${r.noBukti} · ${r.nama} · ${r.cabang}`;
+  $("#modal-body").innerHTML = `
+    <div class="alert alert-bad">
+      <span>⚠</span><span>Setoran ini akan dikembalikan ke ${esc(r.cabang)} untuk diperbaiki dan diunggah ulang.</span>
+    </div>
+    <div class="field" style="margin-top:14px">
+      <label class="fl" for="bagd-catatan-tolak">Alasan Penolakan <span class="req">*</span></label>
+      <textarea class="inp" id="bagd-catatan-tolak" style="height:90px;padding:9px 10px;resize:vertical" placeholder="Contoh: nominal pada bukti setor tidak sesuai dengan data yang diinput."></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" id="bagd-tolak-batal">Batal</button>
+      <button class="btn btn-danger-solid" id="bagd-tolak-konfirmasi">✕ Tolak Verifikasi</button>
+    </div>`;
+  openModal();
+  $("#bagd-tolak-batal").onclick      = closeModal;
+  $("#bagd-tolak-konfirmasi").onclick = () => {
+    const catatan = $("#bagd-catatan-tolak").value.trim();
+    if (!catatan) { toast("Alasan penolakan wajib diisi saat menolak setoran.", "bad"); return; }
+    closeModal();
+    bvaPutusan(r, "Ditolak", catatan,
+      `Bukti angsuran ${r.noBukti} ditolak dan dikembalikan ke ${r.cabang}.`, "bad");
+  };
+}
+
+/* ------------------------------------------------------------- Peristiwa */
+$("#bag-cari").onclick         = () => { bagPage = 1; renderBumAngsuran(); };
+$("#bag-page-size").onchange   = () => { bagPage = 1; renderBumAngsuran(); };
+$("#bag-upload-btn").onclick   = bagShowUpload;
+$("#bag-export-excel").onclick = () => toast("Daftar bukti angsuran KPR (BUM) diekspor ke Excel.");
+
+$("#bva-cari").onclick         = () => { bvaPage = 1; renderBumVerifAngsuran(); };
+$("#bva-page-size").onchange   = () => { bvaPage = 1; renderBumVerifAngsuran(); };
+$("#bva-export-excel").onclick = () => toast("Hasil verifikasi bukti angsuran diekspor ke Excel.");
+
+document.addEventListener("click", e => {
+  const bDetail = e.target.closest("[data-bag-detail]");
+  if (bDetail) {
+    const asal = bDetail.closest(".screen")?.id.replace(/^s-/, "") || "bum-angsuran";
+    bagShowDetail(bumAngsuranRows.find(x => x._id === +bDetail.dataset.bagDetail), asal);
+    return;
+  }
+
+  const bHapus = e.target.closest("[data-bag-hapus]");
+  if (bHapus) {
+    const r = bumAngsuranRows.find(x => x._id === +bHapus.dataset.bagHapus);
+    if (!r) return;
+    bumAngsuranRows = bumAngsuranRows.filter(x => x._id !== r._id);
+    renderBumAngsuran();
+    renderBumVerifAngsuran();
+    toast(`Bukti angsuran ${r.noBukti} dihapus.`, "ok");
+    return;
+  }
+
+  const bBagPage = e.target.closest("[data-bag-page]");
+  if (bBagPage) { bagPage = +bBagPage.dataset.bagPage; renderBumAngsuran(); return; }
+
+  const bBvaPage = e.target.closest("[data-bva-page]");
+  if (bBvaPage) { bvaPage = +bBvaPage.dataset.bvaPage; renderBumVerifAngsuran(); }
+});
+
+isiPilihanAngsuran();
+renderBumAngsuran();
+renderBumVerifAngsuran();
