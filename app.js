@@ -6133,7 +6133,7 @@ function fmtTglShortId(iso) {
 }
 
 /* Warna badge Status Approval SPTB */
-const SPTB_PILL_APPROVAL = { "Disetujui":"pill-ok", "Ditolak":"pill-bad", "Tertunda":"pill-warn" };
+const SPTB_PILL_APPROVAL = { "Disetujui":"pill-ok", "Ditolak":"pill-bad", "Pengajuan":"pill-warn" };
 
 let sptbPager = { hal: 1, per: 10 };
 
@@ -6153,7 +6153,6 @@ function renderSptb() {
   const umurMin  = $("#sptb-f-umur-min").value ? +$("#sptb-f-umur-min").value : null;
   const umurMax  = $("#sptb-f-umur-max").value ? +$("#sptb-f-umur-max").value : null;
   const sptbDari = $("#sptb-f-sptb-dari").value, sptbSampai = $("#sptb-f-sptb-sampai").value;
-  const payDari  = $("#sptb-f-pay-dari").value,  paySampai  = $("#sptb-f-pay-sampai").value;
 
   const rows = DATA_SPTB.filter(r => {
     if (fStatus && r.status !== fStatus) return false;
@@ -6169,8 +6168,6 @@ function renderSptb() {
       if (sptbDari   && r.sptbTerakhir < sptbDari) return false;
       if (sptbSampai && r.sptbTerakhir > sptbSampai) return false;
     }
-    if (payDari   && r.payTerakhir < payDari) return false;
-    if (paySampai && r.payTerakhir > paySampai) return false;
     return true;
   });
 
@@ -6180,21 +6177,15 @@ function renderSptb() {
       <td>${DATA_SPTB.indexOf(r) + 1}</td>
       <td class="t-strong">${esc(r.cabang)}</td>
       <td style="color:var(--navy);font-weight:600">${esc(r.nopens)}</td>
-      <td>${esc(r.nrpNip)}</td>
       <td class="t-strong">${esc(r.nama)}</td>
-      <td>${fmtTglShortId(r.tglLahir)}</td>
       <td>${esc(r.mitra)}</td>
       <td>${esc(r.jenisPensiun)}</td>
-      <td class="t-strong">${esc(r.unor)}</td>
-      <td>${r.sptbTerakhir ? fmtTglShortId(r.sptbTerakhir) : "—"}</td>
-      <td>${fmtTglShortId(r.payTerakhir)}</td>
+      <td>${fmtTglShortId(r.sptbTerakhir)}</td>
       <td><span class="pill ${r.status === "Sudah SPTB" ? "pill-ok" : "pill-bad"}">${esc(r.status)}</span></td>
       <td>${fmtTglShortId(r.tglPengajuan)}</td>
-      <td><span class="pill ${r.statusPengajuan === "Pengajuan" ? "pill-info" : "pill-warn"}">${esc(r.statusPengajuan)}</span></td>
       <td>${fmtTglShortId(r.tglApproval)}</td>
       <td>${r.statusApproval ? `<span class="pill ${SPTB_PILL_APPROVAL[r.statusApproval]}">${esc(r.statusApproval)}</span>` : "—"}</td>
-      <td><button class="btn btn-ghost btn-sm" data-sptb-cetak="${DATA_SPTB.indexOf(r)}">🖶 Cetak Kartu Peserta</button></td>
-    </tr>`).join("") : `<tr><td colspan="17"><div class="empty"><h4>Tidak ada data</h4><p>Coba ubah filter pencarian.</p></div></td></tr>`;
+    </tr>`).join("") : `<tr><td colspan="11"><div class="empty"><h4>Tidak ada data</h4><p>Coba ubah filter pencarian.</p></div></td></tr>`;
 
   $("#sptb-count").innerHTML  = pagerNote(pg, "peserta", "");
   $("#sptb-pager").innerHTML  = pagerHtml(sptbPager, pg, "data-sptb-hal");
@@ -6204,7 +6195,7 @@ $("#sptb-cari").onclick  = () => { sptbPager.hal = 1; renderSptb(); };
 $("#sptb-reset").onclick = () => {
   ["sptb-f-status", "sptb-f-jenis", "sptb-f-mitra", "sptb-f-cabang",
    "sptb-f-nopens", "sptb-f-umur-min", "sptb-f-umur-max",
-   "sptb-f-sptb-dari", "sptb-f-sptb-sampai", "sptb-f-pay-dari", "sptb-f-pay-sampai"]
+   "sptb-f-sptb-dari", "sptb-f-sptb-sampai"]
     .forEach(id => $(`#${id}`).value = "");
   sptbPager.hal = 1;
   renderSptb();
@@ -6222,9 +6213,6 @@ document.addEventListener("click", e => {
     toast(`Data SPTB diekspor ke ${bExport.dataset.sptbExport === "excel" ? "Excel" : "PDF"}.`, "ok");
     return;
   }
-  const bCetak = e.target.closest("[data-sptb-cetak]");
-  if (bCetak) { toast(`Kartu Peserta ${DATA_SPTB[+bCetak.dataset.sptbCetak].nama} berhasil dicetak.`, "ok"); return; }
-
   const sptbHal = e.target.closest("[data-sptb-hal]");
   if (sptbHal) { sptbPager.hal = +sptbHal.dataset.sptbHal; renderSptb(); }
 });
