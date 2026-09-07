@@ -6312,13 +6312,28 @@ function renderHome() {
 
 /* ==================================================== PENGELOLAAN REQUEST UMUM
    `riwayat` adalah satu-satunya sumber kebenaran per request — "User Request",
-   "User Terakhir Reply", dan "Diperbarui" pada tabel daftar semuanya
+   "User Terakhir Reply", "Diperbarui", dan Status pada tabel daftar semuanya
    diturunkan darinya supaya otomatis konsisten begitu ada balasan baru. */
 let ruRows = DATA_REQUEST_UMUM.map((r, i) => ({ ...r, _id: i, riwayat: r.riwayat.map(h => ({ ...h })) }));
 
 function ruUserRequest(r) { return r.riwayat[0].user; }
 function ruUserReply(r)   { return r.riwayat.length > 1 ? r.riwayat[r.riwayat.length - 1].user : "—"; }
 function ruDiperbarui(r)  { return r.riwayat[r.riwayat.length - 1].jam.split(" ").slice(0, 3).join(" "); }
+
+/* Status tidak disimpan: request yang baru dikirim Kantor Cabang belum punya
+   balasan sama sekali, begitu ada balasan (dari divisi mana pun atau dari
+   Kantor Cabang) berarti sedang berjalan, dan `selesai` hanya di-set lewat
+   tombol Selesai di panel detail. */
+function ruStatus(r)      { return r.selesai ? "Selesai" : r.riwayat.length > 1 ? "Dalam Proses" : "Belum Selesai"; }
+function ruPillStatus(s)  { return s === "Selesai" ? "pill-ok" : s === "Dalam Proses" ? "pill-info" : "pill-warn"; }
+
+/* Label penulis balasan mengikuti role yang sedang aktif. */
+function ruUserSaatIni() {
+  const role = roleSaatIni();
+  if (role === ROLE_CABANG)  return "Anda / Kantor Cabang";
+  if (role === ROLE_LAYANAN) return "Anda / Div. Layanan";
+  return "Anda / Div. Kepers.";
+}
 function ruFmtJam(d) {
   const pad = n => String(n).padStart(2, "0");
   return `${d.getDate()} ${BULAN_ID_SHORT[d.getMonth()]} ${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
@@ -6347,7 +6362,7 @@ function renderRequestUmum() {
   const fTujuan  = $("#ru-f-tujuan").value;
 
   const rows = ruRows.filter(r =>
-    (fStatus === "all" || r.status === fStatus) &&
+    (fStatus === "all" || ruStatus(r) === fStatus) &&
     (fTujuan === "all" || r.tujuan === fTujuan) &&
     (!fPeserta || r.nama.toLowerCase().includes(fPeserta) || r.nrp.includes(fPeserta)) &&
     (!fCabang  || r.cabang.toLowerCase().includes(fCabang)));
@@ -6368,9 +6383,10 @@ function renderRequestUmum() {
       <td>${esc(ruUserRequest(r))}</td>
       <td>${esc(ruUserReply(r))}</td>
       <td>${esc(ruDiperbarui(r))}</td>
+      <td><span class="pill ${ruPillStatus(ruStatus(r))}">${esc(ruStatus(r))}</span></td>
       <td><button class="btn btn-ghost btn-sm" data-ru-detail="${r._id}">👁 Detail</button></td>
     </tr>`).join("")
-    : `<tr><td colspan="10"><div class="empty"><h4>Tidak ada data</h4><p>Coba ubah filter atau kata kunci pencarian.</p></div></td></tr>`;
+    : `<tr><td colspan="11"><div class="empty"><h4>Tidak ada data</h4><p>Coba ubah filter atau kata kunci pencarian.</p></div></td></tr>`;
 
   const shownFrom = rows.length ? start + 1 : 0;
   const shownTo   = Math.min(start + RU_PAGE_SIZE, rows.length);
@@ -6418,28 +6434,60 @@ function ruShowDetail(r) {
       <td>${h.file ? `<button class="btn btn-ghost btn-sm" data-ru-unduh="${esc(h.file)}">⭳ Unduh</button>` : "—"}</td>
     </tr>`).join("");
 
+  ruTutupFormBalasan();
+
+  /* Reply terbuka untuk semua pihak yang terlibat; menandai Selesai dan
+     mengalihkan ke Divisi Layanan hanya hak Divisi Kepesertaan. Begitu
+     request ditandai Selesai, semua aksi ditutup dan diganti keterangan. */
+  const divisi = roleSaatIni() === ROLE_DIVISI;
+  $("#ru-reply").style.display       = r.selesai ? "none" : "";
+  $("#ru-selesai").style.display     = !r.selesai && divisi ? "" : "none";
+  $("#ru-alihkan").style.display     = !r.selesai && divisi ? "" : "none";
+  $("#ru-detail-note").style.display = r.selesai ? "" : "none";
+  ruOpenDetail();
+}
+
+/* Form balasan selalu tertutup saat detail dibuka/dimuat ulang — baru muncul
+   setelah tombol Reply ditekan. */
+function ruTutupFormBalasan() {
   $("#ru-balasan-isi").value  = "";
   $("#ru-balasan-file").value = "";
-  /* Pengalihan ke Divisi Layanan hanya hak Divisi Kepesertaan. */
-  $("#ru-alihkan").style.display = roleSaatIni() === ROLE_DIVISI ? "" : "none";
-  ruOpenDetail();
+  $("#ru-balasan-card").style.display = "none";
 }
 
 $("#ru-detail-x").onclick      = ruCloseDetail;
 $("#ru-detail-tutup").onclick  = ruCloseDetail;
 $("#ru-detail-overlay").onclick = e => { if (e.target.id === "ru-detail-overlay") ruCloseDetail(); };
-$("#ru-balasan-batal").onclick = () => { $("#ru-balasan-isi").value = ""; $("#ru-balasan-file").value = ""; };
+$("#ru-balasan-batal").onclick = ruTutupFormBalasan;
+
+$("#ru-reply").onclick = () => {
+  $("#ru-balasan-card").style.display = "";
+  $("#ru-balasan-isi").focus();
+};
 
 $("#ru-balasan-simpan").onclick = () => {
   const isi  = $("#ru-balasan-isi").value.trim();
   const file = $("#ru-balasan-file").files[0];
   if (!isi || !file) { toast("Isi dan Attachment wajib diisi sebelum menyimpan.", "bad"); return; }
 
+  /* Balasan pertama membuat status request berpindah ke "Dalam Proses". */
   const r = ruRows.find(x => x._id === ruDetailCurrentId);
-  r.riwayat.push({ jam: ruFmtJam(new Date()), user: "Anda / Div. Kepers.", isi, file: file.name });
+  r.riwayat.push({ jam: ruFmtJam(new Date()), user: ruUserSaatIni(), isi, file: file.name });
   renderRequestUmum();
   ruShowDetail(r);
   toast("Balasan berhasil disimpan.", "ok");
+};
+
+$("#ru-selesai").onclick = () => {
+  const r = ruRows.find(x => x._id === ruDetailCurrentId);
+  r.selesai = true;
+  r.riwayat.push({
+    jam: ruFmtJam(new Date()), user: ruUserSaatIni(),
+    isi: "Request umum ditandai Selesai oleh Divisi Kepesertaan dan Pengembangan Manfaat.", file: null
+  });
+  renderRequestUmum();
+  ruShowDetail(r);
+  toast(`Request umum ${r.kpa} ditandai Selesai.`, "ok");
 };
 
 /* ------------------------------------------- Alihkan request ke Divisi Layanan
@@ -6491,7 +6539,7 @@ $("#ru-alih-submit").onclick = () => {
   const r = ruRows.find(x => x._id === ruDetailCurrentId);
   r.tujuan = "Pelayanan";
   r.riwayat.push({
-    jam: ruFmtJam(new Date()), user: "Anda / Div. Kepers.",
+    jam: ruFmtJam(new Date()), user: ruUserSaatIni(),
     isi: `Pengajuan dialihkan ke Divisi Layanan. Alasan: ${alasan}`, file: null
   });
   ruBuatNotifPengalihan(r);
@@ -6564,8 +6612,9 @@ function ruShowTambah() {
     ruRows.unshift({
       _id: ruRows.length ? Math.max(...ruRows.map(x => x._id)) + 1 : 0,
       kpa: kpa.toUpperCase(), nama: peserta.nama, nrp: peserta.nrp, cabang: peserta.cabang,
-      kategori, tujuan, subjek, tglRequest: ruFmtTgl(now), status: "Belum Selesai",
-      riwayat: [ { jam: ruFmtJam(now), user: "Anda", isi, file: file.name } ]
+      /* Request baru belum punya balasan → ruStatus() memberi "Belum Selesai". */
+      kategori, tujuan, subjek, tglRequest: ruFmtTgl(now), selesai: false,
+      riwayat: [ { jam: ruFmtJam(now), user: ruUserSaatIni(), isi, file: file.name } ]
     });
     renderRequestUmum();
     closeModal();

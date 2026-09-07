@@ -1686,10 +1686,12 @@ const DATA_SPTB = [
    kepada Divisi Kepesertaan dan Pengembangan Manfaat. `riwayat` adalah utas
    percakapan per request — entri pertama selalu dari Kantor Cabang (pengirim
    request), entri berikutnya balasan dari Div. Kepersertaan (atau sebaliknya).
-   "User Request", "User Terakhir Reply", dan "Diperbarui" pada tabel daftar
-   tidak disimpan terpisah — semua diturunkan dari `riwayat` supaya selalu
-   konsisten begitu ada balasan baru ditambahkan.
-   status: "Belum Selesai" | "Selesai" | "SLA Lewat"
+   "User Request", "User Terakhir Reply", "Diperbarui", dan Status pada tabel
+   daftar tidak disimpan terpisah — semua diturunkan dari `riwayat` supaya
+   selalu konsisten begitu ada balasan baru ditambahkan.
+   Status (lihat ruStatus() di app.js): baru dibuat Kantor Cabang tanpa balasan
+   = "Belum Selesai", begitu ada balasan = "Dalam Proses", dan `selesai:true`
+   (ditandai Divisi Kepesertaan lewat tombol Selesai) = "Selesai".
    --------------------------------------------------------------------------- */
 const RU_KPA_LOOKUP = {
   "KPA-10023": { nama:"Budi Santoso",    nrp:"19870512001", cabang:"KC Jakarta Utama" },
@@ -1699,114 +1701,114 @@ const RU_KPA_LOOKUP = {
 
 const DATA_REQUEST_UMUM = [
   { kpa:"KPA-10023", nama:"Budi Santoso",      nrp:"19870512001", cabang:"KC Jakarta Utama", tujuan:"Kepesertaan", subjek:"Update Data NIK",
-    tglRequest:"10 Jul 2026", status:"SLA Lewat",
+    tglRequest:"10 Jul 2026", selesai:false,
     riwayat:[
       { jam:"10 Jul 2026 09:14", user:"Rina / KC Jakarta",    isi:"Perubahan NIK peserta dari 3271... menjadi 3271... sesuai dokumen terlampir.", file:"bukti-nik.pdf" },
       { jam:"10 Jul 2026 14:32", user:"Fauzi / Div. Kepers.", isi:"Data sedang dalam proses verifikasi dengan tabel referensi ASABRI.", file:null }
     ] },
   { kpa:"KPA-10024", nama:"Siti Rahayu",       nrp:"19900820002", cabang:"KC Bandung", tujuan:"Pelayanan", subjek:"Pemutakhiran Alamat",
-    tglRequest:"11 Jul 2026", status:"SLA Lewat",
+    tglRequest:"11 Jul 2026", selesai:false,
     riwayat:[
       { jam:"11 Jul 2026 08:40", user:"Agus / KC Bandung", isi:"Alamat peserta berubah ke Jl. Cihampelas No. 45, Bandung sesuai KTP baru.", file:"ktp-baru-siti.jpg" }
     ] },
   { kpa:"KPA-10025", nama:"Ahmad Fauzi",       nrp:"19951130003", cabang:"KC Surabaya", tujuan:"Kepesertaan", subjek:"Koreksi Pangkat",
-    tglRequest:"13 Jul 2026", status:"Belum Selesai",
+    tglRequest:"13 Jul 2026", selesai:false,
     riwayat:[
       { jam:"13 Jul 2026 10:05", user:"Dewi / KC Surabaya", isi:"Pangkat awal peserta salah input, seharusnya Sersan Dua bukan Sersan Satu.", file:"sk-pangkat.pdf" }
     ] },
   { kpa:"KPA-10026", nama:"Dewi Lestari",      nrp:"19880305004", cabang:"KC Medan", tujuan:"Pelayanan", subjek:"Update No. Telepon",
-    tglRequest:"14 Jul 2026", status:"Selesai",
+    tglRequest:"14 Jul 2026", selesai:true,
     riwayat:[
       { jam:"14 Jul 2026 09:00", user:"Hendra / KC Medan",    isi:"Nomor HP peserta berubah menjadi 0812-7788-9900.", file:null },
       { jam:"14 Jul 2026 15:20", user:"Fauzi / Div. Kepers.", isi:"Data nomor telepon sudah diperbarui pada sistem YANDU.", file:null }
     ] },
   { kpa:"KPA-10027", nama:"Eko Prasetyo",      nrp:"19921215005", cabang:"KC Makassar", tujuan:"Kepesertaan", subjek:"Perubahan UNOR",
-    tglRequest:"15 Jul 2026", status:"Belum Selesai",
+    tglRequest:"15 Jul 2026", selesai:false,
     riwayat:[
       { jam:"15 Jul 2026 11:12", user:"Sari / KC Makassar", isi:"Peserta pindah satuan dari KODAM VII/WRB ke KODAM XIV/HSN, mohon UNOR diperbarui.", file:"surat-mutasi.pdf" }
     ] },
   { kpa:"KPA-10028", nama:"Wati Handayani",    nrp:"19870910006", cabang:"KC Semarang", tujuan:"Pelayanan", subjek:"Update Email Peserta",
-    tglRequest:"16 Jul 2026", status:"Selesai",
+    tglRequest:"16 Jul 2026", selesai:true,
     riwayat:[
       { jam:"16 Jul 2026 08:15", user:"Joko / KC Semarang",   isi:"Email peserta berubah menjadi wati.handayani@mail.com.", file:null },
       { jam:"16 Jul 2026 13:47", user:"Rina / Div. Kepers.",  isi:"Email peserta sudah diperbarui.", file:null }
     ] },
   { kpa:"KPA-10029", nama:"Yuni Kartika",      nrp:"19930422007", cabang:"KC Palembang", tujuan:"Kepesertaan", subjek:"Update Data NPWP",
-    tglRequest:"17 Jul 2026", status:"Belum Selesai",
+    tglRequest:"17 Jul 2026", selesai:false,
     riwayat:[
       { jam:"17 Jul 2026 09:33", user:"Bambang / KC Palembang", isi:"NPWP peserta belum tercatat pada sistem, mohon ditambahkan sesuai lampiran.", file:"npwp-yuni.jpg" }
     ] },
   { kpa:"KPA-10030", nama:"Sri Wahyuni",       nrp:"19850617008", cabang:"KC Denpasar", tujuan:"Pelayanan", subjek:"Permintaan Salinan Kartu Peserta",
-    tglRequest:"18 Jul 2026", status:"SLA Lewat",
+    tglRequest:"18 Jul 2026", selesai:false,
     riwayat:[
       { jam:"18 Jul 2026 10:50", user:"Made / KC Denpasar", isi:"Peserta kehilangan kartu peserta ASABRI, mohon dicetakkan salinan.", file:null }
     ] },
   { kpa:"KPA-10031", nama:"Ratna Dewi",        nrp:"19910304009", cabang:"KC Balikpapan", tujuan:"Kepesertaan", subjek:"Koreksi Nama Peserta",
-    tglRequest:"19 Jul 2026", status:"Belum Selesai",
+    tglRequest:"19 Jul 2026", selesai:false,
     riwayat:[
       { jam:"19 Jul 2026 08:05", user:"Andi / KC Balikpapan", isi:"Ejaan nama peserta pada sistem salah, seharusnya Ratna Dewi bukan Ratna Dewy.", file:"ktp-ratna.jpg" }
     ] },
   { kpa:"KPA-10032", nama:"Hendra Gunawan",    nrp:"19890128010", cabang:"KC Manado", tujuan:"Pelayanan", subjek:"Perubahan Data Rekening",
-    tglRequest:"20 Jul 2026", status:"Selesai",
+    tglRequest:"20 Jul 2026", selesai:true,
     riwayat:[
       { jam:"20 Jul 2026 09:22", user:"Christine / KC Manado", isi:"Rekening pencairan manfaat berubah ke Bank BRI cabang Manado.", file:"buku-tabungan-hendra.jpg" },
       { jam:"20 Jul 2026 16:03", user:"Fauzi / Div. Kepers.",  isi:"Data rekening baru sudah tersimpan dan siap digunakan untuk pencairan berikutnya.", file:null }
     ] },
   { kpa:"KPA-10033", nama:"Fitri Ramadhani",   nrp:"19940512011", cabang:"KC Padang", tujuan:"Kepesertaan", subjek:"Update Data Angkatan",
-    tglRequest:"21 Jul 2026", status:"Belum Selesai",
+    tglRequest:"21 Jul 2026", selesai:false,
     riwayat:[
       { jam:"21 Jul 2026 10:40", user:"Zainal / KC Padang", isi:"Data angkatan peserta belum sesuai, seharusnya TNI AU bukan TNI AD.", file:"sk-pengangkatan-fitri.pdf" }
     ] },
   { kpa:"KPA-10034", nama:"Andi Saputra",      nrp:"19860303012", cabang:"KC Jakarta Utama", tujuan:"Pelayanan", subjek:"Permintaan Info Saldo THT",
-    tglRequest:"22 Jul 2026", status:"Selesai",
+    tglRequest:"22 Jul 2026", selesai:true,
     riwayat:[
       { jam:"22 Jul 2026 08:00", user:"Rina / KC Jakarta",    isi:"Peserta menanyakan info saldo THT terakhir untuk keperluan pengajuan KPR.", file:null },
       { jam:"22 Jul 2026 11:30", user:"Fauzi / Div. Kepers.", isi:"Info saldo THT sudah dikirimkan langsung ke peserta melalui Kantor Cabang.", file:"info-saldo-andi.pdf" }
     ] },
   { kpa:"KPA-10035", nama:"Lina Marlina",      nrp:"19920815013", cabang:"KC Bandung", tujuan:"Kepesertaan", subjek:"Koreksi Nomor SKEP",
-    tglRequest:"23 Jul 2026", status:"Belum Selesai",
+    tglRequest:"23 Jul 2026", selesai:false,
     riwayat:[
       { jam:"23 Jul 2026 09:18", user:"Agus / KC Bandung", isi:"Nomor SKEP pengangkatan salah ketik, seharusnya KEP/1123/VII/2026.", file:"skep-koreksi-lina.pdf" }
     ] },
   { kpa:"KPA-10036", nama:"Joko Purnomo",      nrp:"19830706014", cabang:"KC Surabaya", tujuan:"Pelayanan", subjek:"Pemutakhiran Alamat",
-    tglRequest:"24 Jul 2026", status:"SLA Lewat",
+    tglRequest:"24 Jul 2026", selesai:false,
     riwayat:[
       { jam:"24 Jul 2026 07:55", user:"Dewi / KC Surabaya", isi:"Alamat domisili peserta pindah ke Jl. Kertajaya No. 88, Surabaya.", file:null }
     ] },
   { kpa:"KPA-10037", nama:"Bambang Wijaya",    nrp:"19870219015", cabang:"KC Medan", tujuan:"Kepesertaan", subjek:"Perubahan Status Personil",
-    tglRequest:"25 Jul 2026", status:"Belum Selesai",
+    tglRequest:"25 Jul 2026", selesai:false,
     riwayat:[
       { jam:"25 Jul 2026 10:10", user:"Hendra / KC Medan", isi:"Status personil peserta berubah dari Aktif menjadi Purnawirawan.", file:"sk-purnawirawan.pdf" }
     ] },
   { kpa:"KPA-10038", nama:"Nur Aisyah",        nrp:"19950927016", cabang:"KC Makassar", tujuan:"Pelayanan", subjek:"Update No. Telepon",
-    tglRequest:"26 Jul 2026", status:"Selesai",
+    tglRequest:"26 Jul 2026", selesai:true,
     riwayat:[
       { jam:"26 Jul 2026 08:30", user:"Sari / KC Makassar",   isi:"Nomor HP peserta diperbarui menjadi 0813-4455-6677.", file:null },
       { jam:"26 Jul 2026 12:15", user:"Rina / Div. Kepers.",  isi:"Nomor telepon sudah diperbarui pada sistem.", file:null }
     ] },
   { kpa:"KPA-10039", nama:"Rudi Hartono",      nrp:"19840411017", cabang:"KC Semarang", tujuan:"Kepesertaan", subjek:"Update Data NIK",
-    tglRequest:"27 Jul 2026", status:"Belum Selesai",
+    tglRequest:"27 Jul 2026", selesai:false,
     riwayat:[
       { jam:"27 Jul 2026 09:45", user:"Joko / KC Semarang", isi:"NIK peserta pada sistem tertukar dengan peserta lain, mohon dikoreksi.", file:"ktp-rudi.jpg" }
     ] },
   { kpa:"KPA-10040", nama:"Maya Anggraini",    nrp:"19960130018", cabang:"KC Palembang", tujuan:"Pelayanan", subjek:"Permintaan Salinan Kartu Peserta",
-    tglRequest:"28 Jul 2026", status:"SLA Lewat",
+    tglRequest:"28 Jul 2026", selesai:false,
     riwayat:[
       { jam:"28 Jul 2026 08:20", user:"Bambang / KC Palembang", isi:"Kartu peserta ASABRI rusak, mohon dicetakkan ulang.", file:null }
     ] },
   { kpa:"KPA-10041", nama:"Doni Kusuma",       nrp:"19891005019", cabang:"KC Denpasar", tujuan:"Kepesertaan", subjek:"Koreksi Pangkat",
-    tglRequest:"29 Jul 2026", status:"Belum Selesai",
+    tglRequest:"29 Jul 2026", selesai:false,
     riwayat:[
       { jam:"29 Jul 2026 10:00", user:"Made / KC Denpasar", isi:"Pangkat peserta belum diperbarui sejak kenaikan pangkat terakhir bulan lalu.", file:"sk-kenaikan-doni.pdf" }
     ] },
   { kpa:"KPA-10042", nama:"Wulandari",         nrp:"19970822020", cabang:"KC Balikpapan", tujuan:"Pelayanan", subjek:"Perubahan Data Rekening",
-    tglRequest:"30 Jul 2026", status:"Selesai",
+    tglRequest:"30 Jul 2026", selesai:true,
     riwayat:[
       { jam:"30 Jul 2026 09:12", user:"Andi / KC Balikpapan", isi:"Rekening peserta ditutup, mohon diperbarui ke rekening baru BNI.", file:"buku-tabungan-wulan.jpg" },
       { jam:"30 Jul 2026 14:50", user:"Fauzi / Div. Kepers.", isi:"Rekening baru sudah tercatat dan aktif untuk pencairan manfaat.", file:null }
     ] },
   { kpa:"KPA-10043", nama:"Teguh Prasetya",    nrp:"19820314021", cabang:"KC Manado", tujuan:"Kepesertaan", subjek:"Update Data Angkatan",
-    tglRequest:"31 Jul 2026", status:"Belum Selesai",
+    tglRequest:"31 Jul 2026", selesai:false,
     riwayat:[
       { jam:"31 Jul 2026 08:00", user:"Christine / KC Manado", isi:"Data angkatan peserta kosong pada sistem, mohon dilengkapi sesuai SK terlampir.", file:"sk-teguh.pdf" }
     ] }

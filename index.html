@@ -2256,8 +2256,8 @@
               <select class="inp" id="ru-f-status">
                 <option value="all">Semua</option>
                 <option>Belum Selesai</option>
+                <option>Dalam Proses</option>
                 <option>Selesai</option>
-                <option>SLA Lewat</option>
               </select>
             </div>
             <div class="field" style="margin-bottom:0">
@@ -2283,7 +2283,7 @@
             <table>
               <thead><tr>
                 <th>Tgl. Request</th><th>Peserta</th><th>Cabang</th><th>Tujuan</th><th>Subjek</th>
-                <th>Isi</th><th>User Request</th><th>User Terakhir Reply</th><th>Diperbarui</th><th>Aksi</th>
+                <th>Isi</th><th>User Request</th><th>User Terakhir Reply</th><th>Diperbarui</th><th>Status</th><th>Aksi</th>
               </tr></thead>
               <tbody id="ru-body"></tbody>
             </table>
@@ -5572,7 +5572,15 @@
         </table>
       </div>
 
-      <div class="card" style="margin-top:18px;background:var(--field)">
+      <div class="form-actions" style="justify-content:flex-start;flex-wrap:wrap">
+        <button class="btn btn-primary" id="ru-reply">↩ Reply</button>
+        <button class="btn btn-success" id="ru-selesai">✓ Selesai</button>
+        <button class="btn btn-gold" id="ru-alihkan">↪ Alihkan ke Divisi Layanan</button>
+        <span class="hint" style="margin:0" id="ru-detail-note">Request sudah ditandai Selesai — tidak ada aksi lanjutan.</span>
+      </div>
+
+      <!-- Form balasan tersembunyi sampai tombol Reply ditekan -->
+      <div class="card" id="ru-balasan-card" style="margin-top:18px;background:var(--field);display:none">
         <h2 class="card-title" style="font-size:12.5px;margin-bottom:14px">✎ Ubah / Tambah Balasan</h2>
         <div class="field">
           <label class="fl">Isi <span class="req">*</span></label>
@@ -5582,12 +5590,9 @@
           <label class="fl">Attachment <span class="req">*</span></label>
           <input type="file" class="inp" id="ru-balasan-file">
         </div>
-        <div class="form-actions split">
-          <button class="btn btn-gold" id="ru-alihkan">↪ Alihkan ke Divisi Layanan</button>
-          <div style="display:flex;gap:10px">
-            <button class="btn btn-ghost" id="ru-balasan-batal">Batal</button>
-            <button class="btn btn-primary" id="ru-balasan-simpan">💾 Simpan</button>
-          </div>
+        <div class="form-actions">
+          <button class="btn btn-ghost" id="ru-balasan-batal">Batal</button>
+          <button class="btn btn-primary" id="ru-balasan-simpan">💾 Simpan</button>
         </div>
       </div>
     </div>
