@@ -6632,21 +6632,32 @@ document.addEventListener("click", e => {
 });
 
 /* ================================================ PENGELOLAAN ALIH STATUS PESERTA
-   Satu baris daftar = satu pengajuan (bukan satu peserta). Layar ini punya tiga
-   tampilan yang bergantian di dalam satu <section>:
-     list   — filter + tabel pengajuan
-     detail — ringkasan satu pengajuan (Perorangan) / tabel pesertanya (Kolektif)
-     form   — tambah pengajuan baru, bercabang Perorangan vs Kolektif
+   Satu baris daftar = satu PESERTA. data.js menyimpan data per pengajuan;
+   di sini kelompok itu diratakan dan tiap baris ikut membawa tanggal serta
+   tipe pengajuannya (dipakai filter Tanggal Pengajuan dan form Ubah).
+   Layar ini punya dua tampilan yang bergantian di dalam satu <section>:
+     list — filter + tabel peserta (setiap kolom bisa diurutkan naik/turun)
+     form — tambah pengajuan baru (Perorangan / Kolektif) atau ubah satu peserta
    Seluruh perubahan hanya mengenai salinan di memori (asRows); data.js sendiri
    tidak pernah disentuh. */
-let asRows = DATA_ALIH_STATUS_PENGAJUAN.map((r, i) => ({ ...r, _id: i }));
+let asRows = DATA_ALIH_STATUS_PENGAJUAN
+  .flatMap(pj => pj.peserta.map(p => ({
+    ...p,
+    tglPengajuan: pj.tglPengajuan, mekanisme: pj.mekanisme, tipe: pj.tipe
+  })))
+  .map((r, i) => ({ ...r, _id: i }));
 
+/* Kolom "No" ikut bisa diurutkan: naik = urutan asli data, turun = dibalik.
+   Nomor yang tampil selalu 1, 2, 3, … sesuai posisi baris di layar. */
 const AS_KOLOM = [
-  { key:"tglPengajuan", label:"Tanggal Pengajuan" },
-  { key:"mekanisme",    label:"Mekanisme Alih Status Peserta" },
-  { key:"tipePeserta",  label:"Tipe Peserta" },
-  { key:"tipe",         label:"Tipe Alih Status Peserta" },
-  { key:"jumlahBerkas", label:"Jumlah Berkas" }
+  { key:"no",        label:"No" },
+  { key:"nrpBaru",   label:"NRP/NIP Baru" },
+  { key:"nrpLama",   label:"NRP/NIP Lama" },
+  { key:"nama",      label:"Nama Peserta" },
+  { key:"gol",       label:"Pangkat/Golongan" },
+  { key:"noDps",     label:"No DPS" },
+  { key:"tglDps",    label:"Tanggal DPS" },
+  { key:"tglPindah", label:"Tanggal Pindah" }
 ];
 
 const AS_PAGE_SIZE = 5;
@@ -6657,12 +6668,6 @@ function asFmtTgl(iso) {
   if (!iso) return "—";
   const [y, m, d] = iso.split("-");
   return `${d}-${m}-${y}`;
-}
-
-function asJumlahBerkas(r) { return r.peserta.length; }
-
-function asPillTipe(t) {
-  return t === "Masuk" ? "pill-ok" : t === "Batal" ? "pill-bad" : "pill-info";
 }
 
 /* Deret halaman dengan elipsis: halaman 1 dan terakhir selalu tampil,
@@ -6688,30 +6693,34 @@ function asPaginationHtml(totalPages) {
     + nav(asPage + 1, "›", asPage >= totalPages);
 }
 
+/* Filter "Peserta" mencocokkan nama, KTA, KPA, maupun NRP/NIP (baru atau lama). */
 function asBarisTersaring() {
-  const fTanggal   = $("#as-f-tanggal").value;
-  const fMekanisme = $("#as-f-mekanisme").value;
-  const fTipePeserta = $("#as-f-tipe-peserta").value;
-  const fTipe      = $("#as-f-tipe").value;
+  const fPeserta = ($("#as-f-peserta").value || "").trim().toLowerCase();
+  const fPindah  = $("#as-f-tgl-pindah").value;
+  const fDari    = $("#as-f-pengajuan-dari").value;
+  const fSampai  = $("#as-f-pengajuan-sampai").value;
 
   return asRows.filter(r =>
-    (!fTanggal || r.tglPengajuan === fTanggal) &&
-    (fMekanisme   === "all" || r.mekanisme   === fMekanisme) &&
-    (fTipePeserta === "all" || r.tipePeserta === fTipePeserta) &&
-    (fTipe        === "all" || r.tipe        === fTipe));
+    (!fPeserta || [r.nama, r.kta, r.kpa, r.nrpBaru, r.nrpLama].some(v => (v || "").toLowerCase().includes(fPeserta))) &&
+    (!fPindah || r.tglPindah === fPindah) &&
+    (!fDari   || r.tglPengajuan >= fDari) &&
+    (!fSampai || r.tglPengajuan <= fSampai));
+}
+
+function asUrutkan(rows) {
+  if (!asSort.col) return rows;
+  if (asSort.col === "no") return asSort.dir === 1 ? rows : rows.reverse();
+  return rows.sort((a, b) =>
+    String(a[asSort.col] || "").localeCompare(String(b[asSort.col] || ""), "id", { numeric: true }) * asSort.dir);
 }
 
 function renderAlihStatus() {
-  $("#as-thead").innerHTML = `<th>No</th>` + AS_KOLOM.map(k => `
-    <th data-as-sort="${k.key}" style="cursor:pointer;white-space:nowrap">
-      ${esc(k.label)} <span style="opacity:.5">${asSort.col === k.key ? (asSort.dir === 1 ? "▲" : "▼") : "⇅"}</span>
+  $("#as-thead").innerHTML = AS_KOLOM.map(k => `
+    <th class="th-sort" data-as-sort="${k.key}" style="white-space:nowrap">${esc(k.label)}
+      <span class="sort-ind">${asSort.col === k.key ? (asSort.dir === 1 ? "▲" : "▼") : "⇅"}</span>
     </th>`).join("") + `<th>Aksi</th>`;
 
-  const rows = asBarisTersaring();
-  if (asSort.col) rows.sort((a, b) => {
-    const nilai = r => asSort.col === "jumlahBerkas" ? asJumlahBerkas(r) : r[asSort.col] || "";
-    return String(nilai(a)).localeCompare(String(nilai(b)), "id", { numeric: true }) * asSort.dir;
-  });
+  const rows = asUrutkan(asBarisTersaring());
 
   const totalPages = Math.max(1, Math.ceil(rows.length / AS_PAGE_SIZE));
   if (asPage > totalPages) asPage = totalPages;
@@ -6721,106 +6730,79 @@ function renderAlihStatus() {
   $("#as-body").innerHTML = pageRows.length ? pageRows.map((r, i) => `
     <tr>
       <td>${start + i + 1}</td>
-      <td class="t-strong">${esc(asFmtTgl(r.tglPengajuan))}</td>
-      <td>${esc(r.mekanisme)}</td>
-      <td>${esc(r.tipePeserta)}</td>
-      <td><span class="pill ${asPillTipe(r.tipe)}">${esc(r.tipe)}</span></td>
-      <td>${asJumlahBerkas(r)}</td>
-      <td><button class="btn btn-info btn-sm" data-as-detail="${r._id}">👁 Detail</button></td>
+      <td class="t-strong">${esc(r.nrpBaru)}</td>
+      <td>${esc(r.nrpLama || "—")}</td>
+      <td>${esc(r.nama)}</td>
+      <td>${esc(r.gol || "—")}</td>
+      <td>${esc(r.noDps || "—")}</td>
+      <td>${esc(asFmtTgl(r.tglDps))}</td>
+      <td>${esc(asFmtTgl(r.tglPindah))}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-info btn-sm"   data-as-ubah="${r._id}">✎ Ubah</button>
+        <button class="btn btn-danger btn-sm" data-as-hapus="${r._id}">⌫ Hapus</button>
+      </td>
     </tr>`).join("")
-    : `<tr><td colspan="7"><div class="empty"><h4>Tidak ada data</h4><p>Coba ubah filter atau kata kunci pencarian.</p></div></td></tr>`;
+    : `<tr><td colspan="9"><div class="empty"><h4>Tidak ada data</h4><p>Coba ubah filter atau kata kunci pencarian.</p></div></td></tr>`;
 
   const shownFrom = rows.length ? start + 1 : 0;
   const shownTo   = Math.min(start + AS_PAGE_SIZE, rows.length);
-  $("#as-count").textContent = `Menampilkan ${shownFrom}-${shownTo} dari ${rows.length} pengajuan`;
+  $("#as-count").textContent = `Menampilkan ${shownFrom}-${shownTo} dari ${rows.length} data`;
   $("#as-pagination").innerHTML = asPaginationHtml(totalPages);
 }
 
-$("#as-cari").onclick   = () => { asPage = 1; renderAlihStatus(); };
-$("#as-export").onclick = () => toast(`Daftar pengajuan alih status (${asBarisTersaring().length} pengajuan) diekspor ke Excel.`);
-
-/* ------------------------------------------------------- Detail pengajuan */
-function asNilaiPeserta(p, kolom) {
-  const v = p[kolom.key];
-  if (v === null || v === undefined || v === "") return "—";
-  if (kolom.tipe === "tanggal") return asFmtTgl(v);
-  if (kolom.tipe === "rupiah")  return rp(v);
-  return String(v);
-}
-
-function asShowDetail(r) {
-  $("#as-detail-sub").textContent =
-    `${r.mekanisme} · ${r.tipePeserta} · Alih Status ${r.tipe} · ${asJumlahBerkas(r)} berkas`;
-  $("#as-d-tanggal").textContent     = asFmtTgl(r.tglPengajuan);
-  $("#as-d-mekanisme").textContent   = r.mekanisme;
-  $("#as-d-tipe-peserta").textContent = r.tipePeserta;
-  $("#as-d-tipe").textContent        = r.tipe;
-
-  const kolektif = r.mekanisme === "Kolektif";
-  $("#as-detail-perorangan").style.display = kolektif ? "none" : "";
-  $("#as-detail-kolektif").style.display   = kolektif ? "" : "none";
-
-  if (kolektif) {
-    $("#as-detail-kolektif-judul").textContent = `Daftar Peserta pada Berkas (${asJumlahBerkas(r)})`;
-    $("#as-detail-head").innerHTML = `<th class="stick-l">No</th>`
-      + ALIH_STATUS_KOLOM_PESERTA.map(k => `<th>${esc(k.label)}</th>`).join("");
-    $("#as-detail-body").innerHTML = r.peserta.map((p, i) => `
-      <tr>
-        <td class="stick-l">${i + 1}</td>
-        ${ALIH_STATUS_KOLOM_PESERTA.map(k => `<td>${esc(asNilaiPeserta(p, k))}</td>`).join("")}
-      </tr>`).join("");
-  } else {
-    const p = r.peserta[0] || {};
-    const baris = (k) => `
-      <div class="review-row">
-        <div class="fl">${esc(k.label)}</div>
-        <div class="val">${esc(asNilaiPeserta(p, k))}</div>
-      </div>`;
-    const grup = (judul, keys) => `
-      <div class="subsection-title">${esc(judul)}</div>
-      <div class="grid3">${ALIH_STATUS_KOLOM_PESERTA.filter(k => keys.includes(k.key)).map(baris).join("")}</div>`;
-
-    $("#as-detail-ringkas").innerHTML =
-        grup("Data Peserta", ["nrpBaru","nrpLama","nama","tglLahir","angkatan","unor",
-                              "statusPersonil","gol","tmtPangkat","gajiPokok","statusMenikah"])
-      + grup("Data Alih Status", ["satkerLama","satkerBaru","tglPindah","noSkep","tglSkep"])
-      + grup("Data Pembayaran", ["jumlahDiizinkan","tglBayar","noDpb"])
-      + `<div class="grid3">
-           <div class="review-row">
-             <div class="fl">Bukti Pembayaran</div>
-             <div class="val">${p.buktiBayar ? esc(p.buktiBayar) : "—"}</div>
-           </div>
-         </div>`;
+$("#as-cari").onclick = () => {
+  const dari = $("#as-f-pengajuan-dari").value, sampai = $("#as-f-pengajuan-sampai").value;
+  if (dari && sampai && dari > sampai) {
+    toast("Tanggal Pengajuan Dari tidak boleh melewati Tanggal Pengajuan Sampai.", "bad");
+    return;
   }
-  alihStatusGotoView("detail");
+  asPage = 1;
+  renderAlihStatus();
+};
+$("#as-export").onclick = () => toast(`Daftar alih status peserta (${asBarisTersaring().length} data) diekspor ke Excel.`);
+
+/* ------------------------------------------------------------------ hapus */
+function asShowHapus(r) {
+  $("#modal-title").textContent = "Hapus Alih Status Peserta";
+  $("#modal-sub").textContent   = "Tindakan ini tidak dapat dibatalkan.";
+  $("#modal-body").innerHTML = `
+    <div class="alert alert-bad"><span>⚠</span><span>Data alih status atas nama <b>${esc(r.nama)}</b> (No DPS ${esc(r.noDps || "—")}) akan dihapus dari daftar.</span></div>
+    <div class="form-actions" style="justify-content:flex-end">
+      <button class="btn btn-ghost" id="as-hapus-batal">Batal</button>
+      <button class="btn btn-danger-solid" id="as-hapus-ya">⌫ Hapus</button>
+    </div>`;
+  openModal();
+  $("#as-hapus-batal").onclick = closeModal;
+  $("#as-hapus-ya").onclick = () => {
+    asRows = asRows.filter(x => x._id !== r._id);
+    renderAlihStatus();
+    closeModal();
+    toast("Data alih status peserta berhasil dihapus.", "ok");
+  };
 }
 
-$("#as-detail-kembali").onclick = () => alihStatusGotoView("list");
-$("#as-detail-export").onclick  = () => toast("Daftar peserta pada berkas diekspor ke Excel.");
-
-/* --------------------------------------------- Form Alih Status Peserta (tambah)
+/* ------------------------------------------ Form Alih Status Peserta (tambah/ubah)
    Bukan modal: form tampil sebagai tampilan lain di dalam layar yang sama,
    pola yang dipakai juga oleh Pendaftaran Perorangan (riwayat ↔ wizard).
 
-   Alurnya bercabang di langkah 1 (Data Pengajuan):
+   Alur tambah bercabang di langkah 1 (Data Pengajuan):
      Perorangan → 2. Input Alih Status Peserta (form satu peserta)
-     Kolektif   → 2. Unggah Berkas  →  3. Validasi dan Submit */
-let asFormStep = 1;
+     Kolektif   → 2. Unggah Berkas  →  3. Validasi dan Submit
+   Tombol "Ubah" di tabel langsung membuka langkah 2 form perorangan yang sudah
+   terisi — walaupun baris itu dulunya masuk lewat unggahan kolektif. */
+let asFormStep   = 1;
+let asFormEditId = null;   /* null = mode tambah, selain itu = _id yang diubah */
 
 function alihStatusGotoView(view) {
-  $("#as-list-view").style.display   = view === "list"   ? "" : "none";
-  $("#as-detail-view").style.display = view === "detail" ? "" : "none";
-  $("#as-form-view").style.display   = view === "form"   ? "" : "none";
-  const ujung = view === "detail" ? "Detail Pengajuan Alih Status"
-              : view === "form"   ? $("#asf-title").textContent
-              : null;
-  $("#as-crumb").innerHTML = ujung
-    ? `<span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pengelolaan Alih Status Peserta</span><span>›</span><b>${esc(ujung)}</b>`
+  $("#as-list-view").style.display = view === "list" ? "" : "none";
+  $("#as-form-view").style.display = view === "form" ? "" : "none";
+  $("#as-crumb").innerHTML = view === "form"
+    ? `<span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pengelolaan Alih Status Peserta</span><span>›</span><b>${esc($("#asf-title").textContent)}</b>`
     : `<span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><b>Pengelolaan Alih Status Peserta</b>`;
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function asJalurKolektif() { return $("#asf-mekanisme").value === "Kolektif"; }
+function asJalurKolektif() { return asFormEditId === null && $("#asf-mekanisme").value === "Kolektif"; }
 
 /* Label langkah mengikuti mekanisme yang sedang dipilih — Perorangan hanya
    punya dua langkah, Kolektif tiga. */
@@ -6854,14 +6836,84 @@ $("#asf-stepper").onclick = e => {
   if (b && !b.disabled) asGotoStep(+b.dataset.asfStep);
 };
 
-$("#asf-mekanisme").onchange = () => { asResetUnggah(); asRenderStepper(); };
+$("#asf-mekanisme").onchange = () => { asResetUnggah(); asTampilKpa(); asRenderStepper(); };
 
-/* ---------------------------------------------------------- langkah 1 */
+/* ---------------------------------------------------------- langkah 1
+   KPA hanya ada untuk mekanisme Perorangan: peserta dicari dari
+   ALIH_STATUS_KPA_LOOKUP, dan begitu "Lanjutkan" ditekan data kepesertaannya
+   mengisi form langkah 2. NRP/NIP dan Nama Peserta terkunci; Tanggal Lahir
+   s.d. Status Menikah boleh dikoreksi; field lainnya tetap kosong untuk diisi
+   petugas. Pola ini sama dengan autofill KPA di Pendaftaran Ulang Klaim KPR (BUM). */
 const AS_PENGAJUAN_WAJIB = [
-  ["asf-mekanisme",    "Pilih Mekanisme Alih Status Peserta"],
-  ["asf-tipe-peserta", "Tipe Peserta"],
-  ["asf-tipe",         "Tipe Alih Status Peserta"]
+  ["asf-mekanisme", "Pilih Mekanisme Alih Status Peserta"],
+  ["asf-tipe",      "Tipe Alih Status Peserta"]
 ];
+
+/* Kolom langkah 2 yang terisi dari data kepesertaan (NRP/NIP Lama sengaja
+   tidak termasuk — selalu dikosongkan). */
+const AS_KPA_OTOMATIS = ["nrpBaru", "nama", "tglLahir", "angkatan", "unor",
+                         "statusPersonil", "gol", "tmtPangkat", "statusMenikah"];
+let asKpaTerisi = null;   /* KPA yang terakhir dipakai mengisi form langkah 2 */
+
+/* KPA wajib hanya saat menambah lewat Perorangan. Mode ubah memakai peserta
+   yang sudah tercatat di baris itu, jadi KPA-nya dikunci. */
+function asPerluKpa() { return asFormEditId === null && $("#asf-mekanisme").value === "Perorangan"; }
+
+function asTampilKpa() {
+  $("#asf-kpa-field").style.display = $("#asf-mekanisme").value === "Perorangan" ? "" : "none";
+}
+
+function asCariKpa(kataKunci) {
+  const q = kataKunci.trim().toLowerCase();
+  return Object.entries(ALIH_STATUS_KPA_LOOKUP)
+    .filter(([kpa, p]) => !q || [kpa, p.nama, p.nrpBaru].some(v => v.toLowerCase().includes(q)))
+    .slice(0, 8);
+}
+
+function asInfoKpa() {
+  const p = ALIH_STATUS_KPA_LOOKUP[$("#asf-kpa").value.trim().toUpperCase()];
+  $("#asf-kpa-hint").innerHTML = p
+    ? `<span class="ok-txt">✓ ${esc(p.nama)} · NRP/NIP ${esc(p.nrpBaru)}</span>`
+    : "Ketik KPA, nama, atau NRP/NIP lalu pilih peserta dari daftar.";
+}
+
+function asRenderDaftarKpa() {
+  const hasil = asCariKpa($("#asf-kpa").value);
+  $("#asf-kpa-list").innerHTML = hasil.map(([kpa, p]) => `
+    <div class="autocomplete-item" data-kpa="${esc(kpa)}">${esc(kpa)} — ${esc(p.nama)}
+      <small>NRP/NIP ${esc(p.nrpBaru)} · ${esc(p.angkatan)}</small>
+    </div>`).join("");
+  $("#asf-kpa-list").classList.toggle("open", hasil.length > 0);
+}
+
+$("#asf-kpa").oninput = () => {
+  $("#asf-kpa").closest(".field").classList.remove("err");
+  asRenderDaftarKpa();
+  asInfoKpa();
+};
+$("#asf-kpa").onfocus = () => { if (!$("#asf-kpa").readOnly) asRenderDaftarKpa(); };
+$("#asf-kpa").onblur  = () => $("#asf-kpa-list").classList.remove("open");
+/* mousedown + preventDefault: input tidak kehilangan fokus sebelum item terpilih */
+$("#asf-kpa-list").onmousedown = e => {
+  const item = e.target.closest(".autocomplete-item");
+  if (!item) return;
+  e.preventDefault();
+  $("#asf-kpa").value = item.dataset.kpa;
+  $("#asf-kpa-list").classList.remove("open");
+  $("#asf-kpa").closest(".field").classList.remove("err");
+  asInfoKpa();
+};
+
+/* Mengisi ulang hanya kalau KPA-nya berganti, supaya koreksi petugas di
+   langkah 2 tidak tertimpa saat bolak-balik Kembali ⇄ Lanjutkan. */
+function asIsiDariKpa(kpa) {
+  if (asKpaTerisi === kpa) return;
+  const p = ALIH_STATUS_KPA_LOOKUP[kpa];
+  AS_FORM_FIELD.filter(([, key]) => AS_KPA_OTOMATIS.includes(key))
+    .forEach(([id, key]) => { $("#" + id).value = p[key] || ""; });
+  $("#asf-nrp-lama").value = "";
+  asKpaTerisi = kpa;
+}
 
 function asCekWajib(daftar) {
   const kurang = daftar.filter(([id]) => !$("#" + id).value.trim());
@@ -6873,19 +6925,33 @@ function asCekWajib(daftar) {
 
 function asKonteksPengajuan() {
   return {
-    mekanisme:   $("#asf-mekanisme").value,
-    tipePeserta: $("#asf-tipe-peserta").value,
-    tipe:        $("#asf-tipe").value
+    mekanisme: $("#asf-mekanisme").value,
+    tipe:      $("#asf-tipe").value
   };
+}
+
+function asIsiRekapPengajuan() {
+  $("#asf-rekap-mekanisme").textContent = $("#asf-mekanisme").value   || "—";
+  $("#asf-rekap-tipe").textContent      = $("#asf-tipe").value        || "—";
+  $("#asf-rekap-kpa").textContent       = $("#asf-kpa").value.trim() || "—";
 }
 
 $("#asf-batal").onclick = () => alihStatusGotoView("list");
 
 $("#asf-lanjut").onclick = () => {
-  if (!asCekWajib(AS_PENGAJUAN_WAJIB)) return;
-  $("#asf-rekap-mekanisme").textContent    = $("#asf-mekanisme").value;
-  $("#asf-rekap-tipe-peserta").textContent = $("#asf-tipe-peserta").value;
-  $("#asf-rekap-tipe").textContent         = $("#asf-tipe").value;
+  const wajib = asPerluKpa() ? [...AS_PENGAJUAN_WAJIB, ["asf-kpa", "Cari Peserta"]] : AS_PENGAJUAN_WAJIB;
+  if (!asCekWajib(wajib)) return;
+  if (asPerluKpa()) {
+    const kpa = $("#asf-kpa").value.trim().toUpperCase();
+    if (!ALIH_STATUS_KPA_LOOKUP[kpa]) {
+      $("#asf-kpa").closest(".field").classList.add("err");
+      toast("Peserta tidak ditemukan pada data kepesertaan — pilih peserta dari daftar pencarian.", "bad");
+      return;
+    }
+    $("#asf-kpa").value = kpa;
+    asIsiDariKpa(kpa);
+  }
+  asIsiRekapPengajuan();
   asGotoStep(2);
 };
 
@@ -6900,7 +6966,7 @@ const AS_FORM_FIELD = [
   ["asf-satker-baru",  "satkerBaru"],  ["asf-tgl-pindah",  "tglPindah"],
   ["asf-no-skep",      "noSkep"],      ["asf-tgl-skep",    "tglSkep"],
   ["asf-jumlah",       "jumlahDiizinkan"], ["asf-tgl-bayar", "tglBayar"],
-  ["asf-no-dpb",       "noDpb"]
+  ["asf-no-dps",       "noDps"]
 ];
 
 /* Field wajib mengikuti tanda (*) di form. */
@@ -6910,16 +6976,28 @@ const AS_FORM_WAJIB = [
   ["asf-personil",  "Status Personil"], ["asf-tgl-pindah", "Tanggal Pindah"]
 ];
 
-function asShowForm() {
-  $("#asf-mekanisme").value    = "";
-  $("#asf-tipe-peserta").value = "";
-  $("#asf-tipe").value         = "";
-  AS_FORM_FIELD.forEach(([id]) => { $("#" + id).value = ""; });
+function asShowForm(r) {
+  asFormEditId = r ? r._id : null;
+  $("#asf-title").textContent = r ? "Ubah Alih Status Peserta" : "Tambah Alih Status Peserta";
+  $("#asf-sub").textContent   = r ? `Mengubah data alih status atas nama ${r.nama}.`
+                                  : "Tentukan mekanisme pengajuan lebih dulu, lalu isi atau unggah data pesertanya.";
+
+  $("#asf-mekanisme").value    = r ? r.mekanisme   || "" : "";
+  $("#asf-tipe").value         = r ? r.tipe        || "" : "";
+  $("#asf-kpa").value          = r ? r.kpa         || "" : "";
+  $("#asf-kpa").readOnly       = !!r;
+  $("#asf-kpa-list").classList.remove("open");
+  asKpaTerisi = r ? r.kpa || null : null;
+  asTampilKpa();
+  asInfoKpa();
+  AS_FORM_FIELD.forEach(([id, key]) => { $("#" + id).value = r && r[key] != null ? r[key] : ""; });
   $("#asf-bukti").value = "";
-  $("#asf-bukti-nama").textContent = "Belum ada berkas terunggah.";
+  $("#asf-bukti-nama").textContent = r && r.buktiBayar ? `Berkas tersimpan: ${r.buktiBayar}` : "Belum ada berkas terunggah.";
   $$("#as-form-view .field").forEach(f => f.classList.remove("err"));
   asResetUnggah();
-  asGotoStep(1);
+
+  if (r) { asIsiRekapPengajuan(); asGotoStep(2); }
+  else   { asGotoStep(1); }
   alihStatusGotoView("form");
 }
 
@@ -6930,29 +7008,62 @@ $("#asf-bukti").onchange = () => {
 
 $("#asf-pero-kembali").onclick = () => asGotoStep(1);
 
+/* No DPS otomatis selalu naik dari angka terbesar yang pernah terbit, jadi
+   nomor milik baris yang sudah dihapus tidak pernah dipakai ulang. Nomor yang
+   diketik manual di form ikut dicatat supaya nomor otomatis tidak bentrok. */
+const asAngkaDps = no => +String(no || "").replace(/\D/g, "") || 0;
+let asNoDpsTerakhir = Math.max(0, ...asRows.map(x => asAngkaDps(x.noDps)));
+
+function asNoDps(manual) {
+  if (manual) {
+    asNoDpsTerakhir = Math.max(asNoDpsTerakhir, asAngkaDps(manual));
+    return manual;
+  }
+  asNoDpsTerakhir += 1;
+  return String(asNoDpsTerakhir).padStart(6, "0");
+}
+
 $("#asf-simpan").onclick = () => {
   if (!asCekWajib(AS_FORM_WAJIB)) return;
 
-  const p = {};
+  const p = { ...asKonteksPengajuan() };
   AS_FORM_FIELD.forEach(([id, key]) => { p[key] = $("#" + id).value.trim(); });
   p.nama      = p.nama.toUpperCase();
   p.nrpLama   = p.nrpLama || null;
   p.gajiPokok = +p.gajiPokok.replace(/\D/g, "") || 0;
   p.jumlahDiizinkan = +p.jumlahDiizinkan || 0;
   const berkas = $("#asf-bukti").files[0];
-  p.buktiBayar = berkas ? berkas.name : null;
 
-  asTambahPengajuan([p]);
-  toast("Pengajuan alih status peserta berhasil disimpan.", "ok");
+  if (asFormEditId === null) {
+    p.buktiBayar = berkas ? berkas.name : null;
+    p.kpa = $("#asf-kpa").value.trim().toUpperCase() || null;
+    asTambahPeserta([p]);
+    toast("Alih status peserta berhasil disimpan.", "ok");
+  } else {
+    const baris = asRows.find(x => x._id === asFormEditId);
+    Object.assign(baris, p, { noDps: asNoDps(p.noDps || baris.noDps) });
+    if (berkas) baris.buktiBayar = berkas.name;
+    renderAlihStatus();
+    alihStatusGotoView("list");
+    toast("Data alih status peserta berhasil diperbarui.", "ok");
+  }
 };
 
-/* Pengajuan baru selalu masuk paling atas dengan tanggal pengajuan hari ini. */
-function asTambahPengajuan(peserta) {
-  asRows.unshift({
-    ...asKonteksPengajuan(),
-    tglPengajuan: new Date().toISOString().slice(0, 10),
-    peserta,
-    _id: asRows.length ? Math.max(...asRows.map(x => x._id)) + 1 : 0
+/* Peserta baru masuk paling atas, membawa tanggal pengajuan hari ini. No DPS
+   dipakai dari input bila diisi, selain itu diterbitkan otomatis; Tanggal DPS
+   selalu terbit otomatis saat data pertama kali disimpan. Daftar diproses dari
+   baris terakhir supaya — sama seperti data contoh — baris teratas memegang
+   No DPS terbesar dan nomornya menurun ke bawah. */
+function asTambahPeserta(daftar) {
+  const hariIni = new Date().toISOString().slice(0, 10);
+  daftar.slice().reverse().forEach(p => {
+    asRows.unshift({
+      kta: null, ...p,
+      noDps:  asNoDps(p.noDps),
+      tglDps: hariIni,
+      tglPengajuan: hariIni,
+      _id: asRows.length ? Math.max(...asRows.map(x => x._id)) + 1 : 0
+    });
   });
   asPage = 1;
   renderAlihStatus();
@@ -7044,21 +7155,22 @@ $("#asf-btn-validasi").onclick = () => {
 $("#asf-validasi-kembali").onclick = () => asGotoStep(2);
 $("#asf-export-validasi").onclick  = () => toast("Rekap hasil validasi diekspor ke Excel.");
 
-/* Baris valid dari berkas kolektif menjadi satu pengajuan baru. Kolom yang
-   tidak ada di berkas contoh dibiarkan kosong supaya jelas belum terisi. */
+/* Baris valid dari berkas kolektif masuk ke daftar sebagai peserta-peserta
+   baru. Kolom yang tidak ada di berkas contoh dibiarkan kosong. */
 $("#asf-submit").onclick = () => {
   if ($("#asf-submit").disabled) return;
+  const konteks = asKonteksPengajuan();
   const peserta = DATA_ALIH_STATUS_KOLEKTIF.rows
     .filter(r => r.status === "valid")
     .map(r => {
       const [nrpBaru, nama, satkerBaru, tglPindah] = r.nilai;
-      return { nrpBaru, nrpLama:null, nama, satkerBaru, tglPindah, buktiBayar:null };
+      return { ...konteks, nrpBaru, nrpLama:null, nama, gol:"", satkerBaru, tglPindah, buktiBayar:null };
     });
-  asTambahPengajuan(peserta);
+  asTambahPeserta(peserta);
   toast(`${peserta.length} baris alih status kolektif berhasil disubmit.`, "ok");
 };
 
-$("#as-tambah").onclick = asShowForm;
+$("#as-tambah").onclick = () => asShowForm(null);
 
 document.addEventListener("click", e => {
   const bPage = e.target.closest("[data-as-page]");
@@ -7068,12 +7180,16 @@ document.addEventListener("click", e => {
   if (th) {
     const col = th.dataset.asSort;
     asSort = { col, dir: asSort.col === col ? -asSort.dir : 1 };
+    asPage = 1;
     renderAlihStatus();
     return;
   }
 
-  const bDetail = e.target.closest("[data-as-detail]");
-  if (bDetail) { asShowDetail(asRows.find(x => x._id === +bDetail.dataset.asDetail)); }
+  const bUbah = e.target.closest("[data-as-ubah]");
+  if (bUbah) { asShowForm(asRows.find(x => x._id === +bUbah.dataset.asUbah)); return; }
+
+  const bHapus = e.target.closest("[data-as-hapus]");
+  if (bHapus) { asShowHapus(asRows.find(x => x._id === +bHapus.dataset.asHapus)); }
 });
 
 /* ============================================== NOTIFIKASI DI NAVBAR (LONCENG)
