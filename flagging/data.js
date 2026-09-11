@@ -35,9 +35,12 @@ const FCBI_VALIDASI = {
   ortuYatim: { tone:"bad",
     judul:"Validasi tidak lolos",
     pesan:"terdaftar sebagai Peserta dengan jenis pensiun orang tua dan yatim/piatu — tidak bisa melanjutkan ke Pengajuan Cek Kredit Pinjaman Mitra." },
-  usia75: { tone:"bad",
-    judul:"Validasi tidak lolos",
-    pesan:"terdaftar sebagai Peserta dengan usia di atas 75 tahun — tidak bisa melanjutkan ke Pengajuan Cek Kredit Pinjaman Mitra." },
+  /* Usia di atas 75 tahun hanya diperingatkan: informasi pesertanya tetap
+     tampil dan booking masih boleh dilanjutkan. `lanjut` yang menentukan itu,
+     bukan `tone` — jadi peringatan lain tetap bisa memblokir kalau perlu. */
+  usia75: { tone:"warn", lanjut:true,
+    judul:"Perhatian",
+    pesan:"terdaftar sebagai Peserta dengan usia di atas 75 tahun — booking masih dapat dilanjutkan, mohon dipastikan kembali kelayakannya." },
   ptdh: { tone:"bad",
     judul:"Validasi tidak lolos",
     pesan:"terdaftar memiliki status PTDH (Pemberhentian Tidak Dengan Hormat) — tidak bisa melanjutkan ke Pengajuan Cek Kredit Pinjaman Mitra." }
@@ -99,49 +102,89 @@ const DATA_FLAGGING_PENSIUN_WARIS = [
    tampil apa adanya di kolom Hasil Validasi.
    --------------------------------------------------------------------------- */
 const DATA_FLAGGING_KOLEKTIF_PESERTA = [
-  { ktpa:"BD316947", nrp:"544925",   nomorPensiun:"", nama:"DODY ISWAHYUDIONO", tglLahir:"1961-10-16", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"DODY ISWAHYUDIONO", booking:true  },
-  { ktpa:"BE401859", nrp:"541451",   nomorPensiun:"", nama:"TARYONO",           tglLahir:"1962-06-20", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"TARYONO",           booking:true  },
-  { ktpa:"EE331520", nrp:"63050076", nomorPensiun:"", nama:"RAHDI ROHENDI",     tglLahir:"1963-05-04", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"RAHDI ROHENDI",     booking:true  },
-  { ktpa:"EE337485", nrp:"63010063", nomorPensiun:"", nama:"CHARLESE TOMASOA",  tglLahir:"1963-01-27", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"CHARLESE TOMASOA",  booking:true  },
-  { ktpa:"ED337689", nrp:"62090675", nomorPensiun:"", nama:"SLAMET SUWARSONO",  tglLahir:"1962-09-04", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"SLAMET SUWARSONO",  booking:true  },
-  { ktpa:"DE301113", nrp:"510791",   nomorPensiun:"", nama:"JAHJO BUDIJANTO",   tglLahir:"1962-05-07", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"JAHJO BUDIJANTO",   booking:true  },
-  { ktpa:"BD318204", nrp:"545013",   nomorPensiun:"", nama:"SUPRIYADI",         tglLahir:"1961-11-22", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"SUPRIYADI",         booking:false },
-  { ktpa:"BE402677", nrp:"541990",   nomorPensiun:"", nama:"AGUS SETIAWAN",     tglLahir:"1962-03-11", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"AGUS SETIAWAN",     booking:false },
-  { ktpa:"EE332018", nrp:"63050211", nomorPensiun:"", nama:"BAMBANG HERMANTO",  tglLahir:"1963-07-19", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"BAMBANG HERMANTO",  booking:false },
-  { ktpa:"ED338102", nrp:"62090884", nomorPensiun:"", nama:"MARWAN HIDAYAT",    tglLahir:"1962-12-30", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"MARWAN HIDAYAT",    booking:false, validasi:"Usia di atas 75 tahun" },
+  { ktpa:"BD316947", nrp:"544925",   nomorPensiun:"", nama:"DODY ISWAHYUDIONO", tglLahir:"1961-10-16", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"DODY ISWAHYUDIONO", booking:true,
+    status:"Booked", gaji:3700000, nik:"32710101610617919", mitra:"Bank BRI", cabangMitra:"KC Jakarta Pusat" },
+  { ktpa:"BE401859", nrp:"541451",   nomorPensiun:"", nama:"TARYONO",           tglLahir:"1962-06-20", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"TARYONO",           booking:true,
+    status:"Booked", gaji:3900000, nik:"32710201610625838", mitra:"Bank BNI", cabangMitra:"KC Bandung" },
+  { ktpa:"EE331520", nrp:"63050076", nomorPensiun:"", nama:"RAHDI ROHENDI",     tglLahir:"1963-05-04", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"RAHDI ROHENDI",     booking:true,
+    status:"Pengajuan", gaji:4100000, nik:"32710301610633757", mitra:"Bank Mandiri", cabangMitra:"KC Surabaya" },
+  { ktpa:"EE337485", nrp:"63010063", nomorPensiun:"", nama:"CHARLESE TOMASOA",  tglLahir:"1963-01-27", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"CHARLESE TOMASOA",  booking:true,
+    status:"Booked", gaji:4300000, nik:"32710401610641676", mitra:"Bank BTN", cabangMitra:"KC Semarang" },
+  { ktpa:"ED337689", nrp:"62090675", nomorPensiun:"", nama:"SLAMET SUWARSONO",  tglLahir:"1962-09-04", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"SLAMET SUWARSONO",  booking:true,
+    status:"Pengajuan", gaji:4500000, nik:"32710501610649595", mitra:"PT Pos Indonesia", cabangMitra:"KC Medan" },
+  { ktpa:"DE301113", nrp:"510791",   nomorPensiun:"", nama:"JAHJO BUDIJANTO",   tglLahir:"1962-05-07", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"JAHJO BUDIJANTO",   booking:true,
+    status:"Booked", gaji:4700000, nik:"32710601610657514", mitra:"Bank BRI", cabangMitra:"KC Jakarta Pusat" },
+  { ktpa:"BD318204", nrp:"545013",   nomorPensiun:"", nama:"SUPRIYADI",         tglLahir:"1961-11-22", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"SUPRIYADI",         booking:false,
+    status:"Booked", gaji:4900000, nik:"32710701610665433", mitra:"Bank BNI", cabangMitra:"KC Bandung" },
+  { ktpa:"BE402677", nrp:"541990",   nomorPensiun:"", nama:"AGUS SETIAWAN",     tglLahir:"1962-03-11", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"AGUS SETIAWAN",     booking:false,
+    status:"Booked", gaji:5100000, nik:"32710801610673352", mitra:"Bank Mandiri", cabangMitra:"KC Surabaya" },
+  { ktpa:"EE332018", nrp:"63050211", nomorPensiun:"", nama:"BAMBANG HERMANTO",  tglLahir:"1963-07-19", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"BAMBANG HERMANTO",  booking:false,
+    status:"Booked", gaji:5300000, nik:"32710901610681271", mitra:"Bank BTN", cabangMitra:"KC Semarang" },
+  { ktpa:"ED338102", nrp:"62090884", nomorPensiun:"", nama:"MARWAN HIDAYAT",    tglLahir:"1962-12-30", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"MARWAN HIDAYAT",    booking:false, validasi:"Usia di atas 75 tahun",
+    status:"Booked", gaji:5500000, nik:"32710001610689190", mitra:"PT Pos Indonesia", cabangMitra:"KC Medan" },
 
-  { ktpa:"CY104869", nrp:"197804081998032003", nomorPensiun:"PS-2019-004821", nama:"MADE WARDANI",     tglLahir:"1978-04-08", pensiun:"Y", hidup:"Y", nopensPenerima:"PS-2019-004821-01", namaPenerima:"MADE WARDANI",        booking:false },
-  { ktpa:"CE360625", nrp:"132170",             nomorPensiun:"PS-2015-002214", nama:"KENEDI",           tglLahir:"1970-03-15", pensiun:"Y", hidup:"T", nopensPenerima:"PS-2015-002214-01", namaPenerima:"SRI RAHAYU (ISTRI)",  booking:false, validasi:"Peserta meninggal, belum klaim" },
-  { ktpa:"CE358403", nrp:"127485",             nomorPensiun:"PS-2012-001190", nama:"FIRMAN DEWANTORO", tglLahir:"1968-06-27", pensiun:"Y", hidup:"Y", nopensPenerima:"PS-2012-001190-01", namaPenerima:"FIRMAN DEWANTORO",    booking:false },
-  { ktpa:"CX882140", nrp:"118034",             nomorPensiun:"PS-2011-000774", nama:"SLAMET RIYADI",    tglLahir:"1966-02-09", pensiun:"Y", hidup:"T", nopensPenerima:"PS-2011-000774-01", namaPenerima:"WAGIYEM (ISTRI)",     booking:false },
-  { ktpa:"CX770311", nrp:"109556",             nomorPensiun:"PS-2009-000318", nama:"DARMAWAN",         tglLahir:"1964-08-23", pensiun:"Y", hidup:"T", nopensPenerima:"PS-2009-000318-01", namaPenerima:"RUSMIATI (IBU)",      booking:false, validasi:"Pensiun orang tua/yatim piatu" },
-  { ktpa:"CY338120", nrp:"141902",             nomorPensiun:"PS-2016-003077", nama:"ROHANA SIREGAR",   tglLahir:"1972-01-30", pensiun:"Y", hidup:"Y", nopensPenerima:"PS-2016-003077-01", namaPenerima:"ROHANA SIREGAR",      booking:false },
-  { ktpa:"CY220745", nrp:"098231",             nomorPensiun:"PS-2008-000512", nama:"SUTRISNO HADI",    tglLahir:"1949-05-12", pensiun:"Y", hidup:"Y", nopensPenerima:"PS-2008-000512-01", namaPenerima:"SUTRISNO HADI",       booking:false, validasi:"Usia di atas 75 tahun" },
-  { ktpa:"CZ441207", nrp:"152880",             nomorPensiun:"PS-2018-004013", nama:"HERU SANTOSA",     tglLahir:"1974-09-17", pensiun:"Y", hidup:"Y", nopensPenerima:"PS-2018-004013-01", namaPenerima:"HERU SANTOSA",        booking:false },
-  { ktpa:"CZ452988", nrp:"154317",             nomorPensiun:"PS-2018-004566", nama:"NURHAYATI",        tglLahir:"1975-11-02", pensiun:"Y", hidup:"Y", nopensPenerima:"PS-2018-004566-01", namaPenerima:"NURHAYATI",           booking:false },
-  { ktpa:"CW661430", nrp:"087445",             nomorPensiun:"PS-2006-000129", nama:"MOCHAMAD ZEIN",    tglLahir:"1951-07-25", pensiun:"Y", hidup:"T", nopensPenerima:"PS-2006-000129-01", namaPenerima:"SITI AMINAH (ISTRI)", booking:false, validasi:"Peserta meninggal, belum klaim" },
+  { ktpa:"CY104869", nrp:"197804081998032003", nomorPensiun:"PS-2019-004821", nama:"MADE WARDANI",     tglLahir:"1978-04-08", pensiun:"Y", hidup:"Y", nopensPenerima:"PS-2019-004821-01", namaPenerima:"MADE WARDANI",        booking:false,
+    status:"Booked", gaji:5700000, nik:"32710101610697109", mitra:"Bank BRI", cabangMitra:"KC Jakarta Pusat" },
+  { ktpa:"CE360625", nrp:"132170",             nomorPensiun:"PS-2015-002214", nama:"KENEDI",           tglLahir:"1970-03-15", pensiun:"Y", hidup:"T", nopensPenerima:"PS-2015-002214-01", namaPenerima:"SRI RAHAYU (ISTRI)",  booking:false, validasi:"Peserta meninggal, belum klaim",
+    status:"Booked", gaji:5900000, nik:"32710201610705028", mitra:"Bank BNI", cabangMitra:"KC Bandung" },
+  { ktpa:"CE358403", nrp:"127485",             nomorPensiun:"PS-2012-001190", nama:"FIRMAN DEWANTORO", tglLahir:"1968-06-27", pensiun:"Y", hidup:"Y", nopensPenerima:"PS-2012-001190-01", namaPenerima:"FIRMAN DEWANTORO",    booking:false,
+    status:"Booked", gaji:6100000, nik:"32710301610712947", mitra:"Bank Mandiri", cabangMitra:"KC Surabaya" },
+  { ktpa:"CX882140", nrp:"118034",             nomorPensiun:"PS-2011-000774", nama:"SLAMET RIYADI",    tglLahir:"1966-02-09", pensiun:"Y", hidup:"T", nopensPenerima:"PS-2011-000774-01", namaPenerima:"WAGIYEM (ISTRI)",     booking:false,
+    status:"Booked", gaji:6300000, nik:"32710401610720866", mitra:"Bank BTN", cabangMitra:"KC Semarang" },
+  { ktpa:"CX770311", nrp:"109556",             nomorPensiun:"PS-2009-000318", nama:"DARMAWAN",         tglLahir:"1964-08-23", pensiun:"Y", hidup:"T", nopensPenerima:"PS-2009-000318-01", namaPenerima:"RUSMIATI (IBU)",      booking:false, validasi:"Pensiun orang tua/yatim piatu",
+    status:"Booked", gaji:6500000, nik:"32710501610728785", mitra:"PT Pos Indonesia", cabangMitra:"KC Medan" },
+  { ktpa:"CY338120", nrp:"141902",             nomorPensiun:"PS-2016-003077", nama:"ROHANA SIREGAR",   tglLahir:"1972-01-30", pensiun:"Y", hidup:"Y", nopensPenerima:"PS-2016-003077-01", namaPenerima:"ROHANA SIREGAR",      booking:false,
+    status:"Booked", gaji:6700000, nik:"32710601610736704", mitra:"Bank BRI", cabangMitra:"KC Jakarta Pusat" },
+  { ktpa:"CY220745", nrp:"098231",             nomorPensiun:"PS-2008-000512", nama:"SUTRISNO HADI",    tglLahir:"1949-05-12", pensiun:"Y", hidup:"Y", nopensPenerima:"PS-2008-000512-01", namaPenerima:"SUTRISNO HADI",       booking:false, validasi:"Usia di atas 75 tahun",
+    status:"Booked", gaji:6900000, nik:"32710701610744623", mitra:"Bank BNI", cabangMitra:"KC Bandung" },
+  { ktpa:"CZ441207", nrp:"152880",             nomorPensiun:"PS-2018-004013", nama:"HERU SANTOSA",     tglLahir:"1974-09-17", pensiun:"Y", hidup:"Y", nopensPenerima:"PS-2018-004013-01", namaPenerima:"HERU SANTOSA",        booking:false,
+    status:"Booked", gaji:7100000, nik:"32710801610752542", mitra:"Bank Mandiri", cabangMitra:"KC Surabaya" },
+  { ktpa:"CZ452988", nrp:"154317",             nomorPensiun:"PS-2018-004566", nama:"NURHAYATI",        tglLahir:"1975-11-02", pensiun:"Y", hidup:"Y", nopensPenerima:"PS-2018-004566-01", namaPenerima:"NURHAYATI",           booking:false,
+    status:"Booked", gaji:7300000, nik:"32710901610760461", mitra:"Bank BTN", cabangMitra:"KC Semarang" },
+  { ktpa:"CW661430", nrp:"087445",             nomorPensiun:"PS-2006-000129", nama:"MOCHAMAD ZEIN",    tglLahir:"1951-07-25", pensiun:"Y", hidup:"T", nopensPenerima:"PS-2006-000129-01", namaPenerima:"SITI AMINAH (ISTRI)", booking:false, validasi:"Peserta meninggal, belum klaim",
+    status:"Booked", gaji:7500000, nik:"32710001610768380", mitra:"PT Pos Indonesia", cabangMitra:"KC Medan" },
 
-  { ktpa:"BD319871", nrp:"545620",   nomorPensiun:"", nama:"WAHYU KURNIAWAN", tglLahir:"1961-04-18", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"WAHYU KURNIAWAN", booking:false },
-  { ktpa:"BE403155", nrp:"542208",   nomorPensiun:"", nama:"SUGENG RIYANTO",  tglLahir:"1962-08-06", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"SUGENG RIYANTO",  booking:false },
-  { ktpa:"EE333044", nrp:"63050398", nomorPensiun:"", nama:"ASEP SAEPUDIN",   tglLahir:"1963-10-11", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"ASEP SAEPUDIN",   booking:false },
-  { ktpa:"EE338790", nrp:"63010502", nomorPensiun:"", nama:"YOHANES LEIMENA", tglLahir:"1963-03-29", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"YOHANES LEIMENA", booking:false },
-  { ktpa:"ED339215", nrp:"62091106", nomorPensiun:"", nama:"DIDIK PURWANTO",  tglLahir:"1962-11-14", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"DIDIK PURWANTO",  booking:false },
-  { ktpa:"DE302447", nrp:"511340",   nomorPensiun:"", nama:"HARTONO WIJAYA",  tglLahir:"1962-01-23", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"HARTONO WIJAYA",  booking:false },
-  { ktpa:"BD320566", nrp:"546077",   nomorPensiun:"", nama:"IWAN SETIAWAN",   tglLahir:"1961-06-30", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"IWAN SETIAWAN",   booking:false },
-  { ktpa:"BE404012", nrp:"542751",   nomorPensiun:"", nama:"RUDI HARTANTO",   tglLahir:"1962-02-15", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"RUDI HARTANTO",   booking:false },
-  { ktpa:"EE334610", nrp:"63050644", nomorPensiun:"", nama:"DEDE SUHERMAN",   tglLahir:"1963-12-08", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"DEDE SUHERMAN",   booking:false, validasi:"Status PTDH" },
-  { ktpa:"ED340188", nrp:"62091390", nomorPensiun:"", nama:"TEGUH PRAYITNO",  tglLahir:"1962-07-21", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"TEGUH PRAYITNO",  booking:false },
+  { ktpa:"BD319871", nrp:"545620",   nomorPensiun:"", nama:"WAHYU KURNIAWAN", tglLahir:"1961-04-18", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"WAHYU KURNIAWAN", booking:false,
+    status:"Booked", gaji:7700000, nik:"32710101610776299", mitra:"Bank BRI", cabangMitra:"KC Jakarta Pusat" },
+  { ktpa:"BE403155", nrp:"542208",   nomorPensiun:"", nama:"SUGENG RIYANTO",  tglLahir:"1962-08-06", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"SUGENG RIYANTO",  booking:false,
+    status:"Booked", gaji:7900000, nik:"32710201610784218", mitra:"Bank BNI", cabangMitra:"KC Bandung" },
+  { ktpa:"EE333044", nrp:"63050398", nomorPensiun:"", nama:"ASEP SAEPUDIN",   tglLahir:"1963-10-11", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"ASEP SAEPUDIN",   booking:false,
+    status:"Booked", gaji:3600000, nik:"32710301610792137", mitra:"Bank Mandiri", cabangMitra:"KC Surabaya" },
+  { ktpa:"EE338790", nrp:"63010502", nomorPensiun:"", nama:"YOHANES LEIMENA", tglLahir:"1963-03-29", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"YOHANES LEIMENA", booking:false,
+    status:"Booked", gaji:3800000, nik:"32710401610800056", mitra:"Bank BTN", cabangMitra:"KC Semarang" },
+  { ktpa:"ED339215", nrp:"62091106", nomorPensiun:"", nama:"DIDIK PURWANTO",  tglLahir:"1962-11-14", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"DIDIK PURWANTO",  booking:false,
+    status:"Booked", gaji:4000000, nik:"32710501610807975", mitra:"PT Pos Indonesia", cabangMitra:"KC Medan" },
+  { ktpa:"DE302447", nrp:"511340",   nomorPensiun:"", nama:"HARTONO WIJAYA",  tglLahir:"1962-01-23", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"HARTONO WIJAYA",  booking:false,
+    status:"Booked", gaji:4200000, nik:"32710601610815894", mitra:"Bank BRI", cabangMitra:"KC Jakarta Pusat" },
+  { ktpa:"BD320566", nrp:"546077",   nomorPensiun:"", nama:"IWAN SETIAWAN",   tglLahir:"1961-06-30", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"IWAN SETIAWAN",   booking:false,
+    status:"Booked", gaji:4400000, nik:"32710701610823813", mitra:"Bank BNI", cabangMitra:"KC Bandung" },
+  { ktpa:"BE404012", nrp:"542751",   nomorPensiun:"", nama:"RUDI HARTANTO",   tglLahir:"1962-02-15", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"RUDI HARTANTO",   booking:false,
+    status:"Booked", gaji:4600000, nik:"32710801610831732", mitra:"Bank Mandiri", cabangMitra:"KC Surabaya" },
+  { ktpa:"EE334610", nrp:"63050644", nomorPensiun:"", nama:"DEDE SUHERMAN",   tglLahir:"1963-12-08", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"DEDE SUHERMAN",   booking:false, validasi:"Status PTDH",
+    status:"Booked", gaji:4800000, nik:"32710901610839651", mitra:"Bank BTN", cabangMitra:"KC Semarang" },
+  { ktpa:"ED340188", nrp:"62091390", nomorPensiun:"", nama:"TEGUH PRAYITNO",  tglLahir:"1962-07-21", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"TEGUH PRAYITNO",  booking:false,
+    status:"Booked", gaji:5000000, nik:"32710001610847570", mitra:"PT Pos Indonesia", cabangMitra:"KC Medan" },
 
-  { ktpa:"DA275319", nrp:"498106",   nomorPensiun:"", nama:"MUHAMAD YUSUF",   tglLahir:"1960-09-12", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"MUHAMAD YUSUF",   booking:false },
-  { ktpa:"DA276804", nrp:"498772",   nomorPensiun:"", nama:"ANWAR SANUSI",    tglLahir:"1960-12-05", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"ANWAR SANUSI",    booking:false },
-  { ktpa:"DB281945", nrp:"502330",   nomorPensiun:"", nama:"SUKARDI",         tglLahir:"1961-02-28", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"SUKARDI",         booking:false, validasi:"Sudah flagging di mitra lain" },
-  { ktpa:"DB283077", nrp:"502918",   nomorPensiun:"", nama:"EDI SUSANTO",     tglLahir:"1961-08-09", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"EDI SUSANTO",     booking:false },
-  { ktpa:"DC291266", nrp:"506415",   nomorPensiun:"", nama:"SITI MARYAM",     tglLahir:"1961-05-16", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"SITI MARYAM",     booking:false },
-  { ktpa:"DC292703", nrp:"507082",   nomorPensiun:"", nama:"RATNA JUWITA",    tglLahir:"1961-10-03", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"RATNA JUWITA",    booking:false },
-  { ktpa:"DD298114", nrp:"509237",   nomorPensiun:"", nama:"BUDI SANTOSO",    tglLahir:"1962-04-25", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"BUDI SANTOSO",    booking:false },
-  { ktpa:"DD299560", nrp:"509854",   nomorPensiun:"", nama:"TRI WAHYUNI",     tglLahir:"1962-06-13", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"TRI WAHYUNI",     booking:false },
-  { ktpa:"DE303901", nrp:"511876",   nomorPensiun:"", nama:"GUNAWAN SUDIRJO", tglLahir:"1962-10-19", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"GUNAWAN SUDIRJO", booking:false },
-  { ktpa:"DE305238", nrp:"512443",   nomorPensiun:"", nama:"LILIS SURYANI",   tglLahir:"1962-12-01", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"LILIS SURYANI",   booking:false }
+  { ktpa:"DA275319", nrp:"498106",   nomorPensiun:"", nama:"MUHAMAD YUSUF",   tglLahir:"1960-09-12", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"MUHAMAD YUSUF",   booking:false,
+    status:"Booked", gaji:5200000, nik:"32710101610855489", mitra:"Bank BRI", cabangMitra:"KC Jakarta Pusat" },
+  { ktpa:"DA276804", nrp:"498772",   nomorPensiun:"", nama:"ANWAR SANUSI",    tglLahir:"1960-12-05", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"ANWAR SANUSI",    booking:false,
+    status:"Booked", gaji:5400000, nik:"32710201610863408", mitra:"Bank BNI", cabangMitra:"KC Bandung" },
+  { ktpa:"DB281945", nrp:"502330",   nomorPensiun:"", nama:"SUKARDI",         tglLahir:"1961-02-28", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"SUKARDI",         booking:false, validasi:"Sudah flagging di mitra lain",
+    status:"Booked", gaji:5600000, nik:"32710301610871327", mitra:"Bank Mandiri", cabangMitra:"KC Surabaya" },
+  { ktpa:"DB283077", nrp:"502918",   nomorPensiun:"", nama:"EDI SUSANTO",     tglLahir:"1961-08-09", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"EDI SUSANTO",     booking:false,
+    status:"Booked", gaji:5800000, nik:"32710401610879246", mitra:"Bank BTN", cabangMitra:"KC Semarang" },
+  { ktpa:"DC291266", nrp:"506415",   nomorPensiun:"", nama:"SITI MARYAM",     tglLahir:"1961-05-16", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"SITI MARYAM",     booking:false,
+    status:"Booked", gaji:6000000, nik:"32710501610887165", mitra:"PT Pos Indonesia", cabangMitra:"KC Medan" },
+  { ktpa:"DC292703", nrp:"507082",   nomorPensiun:"", nama:"RATNA JUWITA",    tglLahir:"1961-10-03", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"RATNA JUWITA",    booking:false,
+    status:"Booked", gaji:6200000, nik:"32710601610895084", mitra:"Bank BRI", cabangMitra:"KC Jakarta Pusat" },
+  { ktpa:"DD298114", nrp:"509237",   nomorPensiun:"", nama:"BUDI SANTOSO",    tglLahir:"1962-04-25", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"BUDI SANTOSO",    booking:false,
+    status:"Booked", gaji:6400000, nik:"32710701610903003", mitra:"Bank BNI", cabangMitra:"KC Bandung" },
+  { ktpa:"DD299560", nrp:"509854",   nomorPensiun:"", nama:"TRI WAHYUNI",     tglLahir:"1962-06-13", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"TRI WAHYUNI",     booking:false,
+    status:"Booked", gaji:6600000, nik:"32710801610910922", mitra:"Bank Mandiri", cabangMitra:"KC Surabaya" },
+  { ktpa:"DE303901", nrp:"511876",   nomorPensiun:"", nama:"GUNAWAN SUDIRJO", tglLahir:"1962-10-19", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"GUNAWAN SUDIRJO", booking:false,
+    status:"Booked", gaji:6800000, nik:"32710901610918841", mitra:"Bank BTN", cabangMitra:"KC Semarang" },
+  { ktpa:"DE305238", nrp:"512443",   nomorPensiun:"", nama:"LILIS SURYANI",   tglLahir:"1962-12-01", pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"LILIS SURYANI",   booking:false,
+    status:"Booked", gaji:7000000, nik:"32710001610926760", mitra:"PT Pos Indonesia", cabangMitra:"KC Medan" },
 ];
 
 /* Riwayat batch kolektif yang sudah diunggah. Sengaja dikosongkan supaya
@@ -167,45 +210,46 @@ const DASHBOARD_FLAGGING = {
   persetujuan: { labels: DASHBOARD_FLAGGING_BULAN, values: [3650, 4700, 2250, 3480, 2870, 3400, 3650], seri: "Nasabah",      satuan: "NASABAH" },
   pelunasan:   { labels: DASHBOARD_FLAGGING_BULAN, values: [5, 32, 38, 48, 56, 71, 55],                seri: "Nasabah",      satuan: "NASABAH" }
 };
-
-
-
 /* ---------------------------------------------------------------------------
    5. PENSIUNAN
-   Rekap per mitra bayar untuk satu periode (bulan + tahun), cabang, dan jenis
-   bayar. `penerima` = flagging + nonFlagging; `netto` adalah total yang
-   dibayarkan ke mitra pada periode tersebut.
+   Rekap per mitra bayar untuk satu periode (bulan + tahun). Peserta dihitung
+   terpisah antara yang berstatus aktif dan pensiun — keduanya hanya mencakup
+   peserta yang punya flagging pinjaman mitra. `imbalAktif`/`imbalPensiun`
+   adalah total imbal jasa untuk masing-masing kelompok. `penerima` dan `netto`
+   mencakup seluruh penerima di mitra tersebut, berflagging maupun tidak.
+
+   `cabang` dan `jenisBayar` tidak lagi difilter di layar, tapi tetap disimpan
+   supaya rekapnya bisa dipecah lagi kalau filternya dibutuhkan kembali.
    --------------------------------------------------------------------------- */
-const FP_JENIS_BAYAR = ["Dapem Induk", "Non Dapem PP"];
 
 const DATA_FLAGGING_PENSIUNAN = [
-  { bulan:"Januari",  tahun:2025, cabang:"KC Jakarta Pusat",   jenisBayar:"Dapem Induk",  mitra:"Bank BRI",                     flagging:412, nonFlagging:828, netto:2480000000 },
-  { bulan:"Januari",  tahun:2025, cabang:"KC Jakarta Selatan", jenisBayar:"Dapem Induk",  mitra:"Bank BNI",                     flagging:298, nonFlagging:578, netto:1752000000 },
-  { bulan:"Januari",  tahun:2025, cabang:"KC Bandung",         jenisBayar:"Dapem Induk",  mitra:"Bank Mandiri",                 flagging:187, nonFlagging:345, netto:1064000000 },
-  { bulan:"Januari",  tahun:2025, cabang:"KC Surabaya",        jenisBayar:"Non Dapem PP", mitra:"Bank BTN",                     flagging:154, nonFlagging:402, netto:1112000000 },
-  { bulan:"Januari",  tahun:2025, cabang:"KC Medan",           jenisBayar:"Dapem Induk",  mitra:"Bank BCA",                     flagging:121, nonFlagging:289, netto:820000000  },
-  { bulan:"Januari",  tahun:2025, cabang:"KC Makassar",        jenisBayar:"Dapem Induk",  mitra:"Bank Syariah Indonesia (BSI)", flagging:96,  nonFlagging:233, netto:658000000  },
-  { bulan:"Januari",  tahun:2025, cabang:"KC Jakarta Pusat",   jenisBayar:"Non Dapem PP", mitra:"Bank DKI",                     flagging:74,  nonFlagging:168, netto:484000000  },
-  { bulan:"Januari",  tahun:2025, cabang:"KC Bandung",         jenisBayar:"Dapem Induk",  mitra:"Bank Jabar Banten (BJB)",      flagging:63,  nonFlagging:149, netto:424000000  },
-  { bulan:"Januari",  tahun:2025, cabang:"KC Surabaya",        jenisBayar:"Dapem Induk",  mitra:"Bank Jatim",                   flagging:58,  nonFlagging:131, netto:378000000  },
-  { bulan:"Januari",  tahun:2025, cabang:"KC Medan",           jenisBayar:"Non Dapem PP", mitra:"Bank Sumut",                   flagging:41,  nonFlagging:96,  netto:274000000  },
-  { bulan:"Januari",  tahun:2025, cabang:"KC Padang",          jenisBayar:"Dapem Induk",  mitra:"Bank Nagari",                  flagging:33,  nonFlagging:78,  netto:222000000  },
-  { bulan:"Januari",  tahun:2025, cabang:"KC Pekanbaru",       jenisBayar:"Dapem Induk",  mitra:"Bank Riau Kepri",              flagging:27,  nonFlagging:64,  netto:182000000  },
-  { bulan:"Januari",  tahun:2025, cabang:"KC Balikpapan",      jenisBayar:"Non Dapem PP", mitra:"Bank Kalbar",                  flagging:19,  nonFlagging:45,  netto:128000000  },
+  { bulan:"Januari",  tahun:2025, cabang:"KC Jakarta Pusat",   jenisBayar:"Dapem Induk",  mitra:"Bank BRI",                     pesertaAktif:124, imbalAktif:3100000, pesertaPensiun:288, imbalPensiun:5760000, penerima:1240, netto:2480000000 },
+  { bulan:"Januari",  tahun:2025, cabang:"KC Jakarta Selatan", jenisBayar:"Dapem Induk",  mitra:"Bank BNI",                     pesertaAktif:89, imbalAktif:2225000, pesertaPensiun:209, imbalPensiun:4180000, penerima:876, netto:1752000000 },
+  { bulan:"Januari",  tahun:2025, cabang:"KC Bandung",         jenisBayar:"Dapem Induk",  mitra:"Bank Mandiri",                 pesertaAktif:56, imbalAktif:1400000, pesertaPensiun:131, imbalPensiun:2620000, penerima:532, netto:1064000000 },
+  { bulan:"Januari",  tahun:2025, cabang:"KC Surabaya",        jenisBayar:"Non Dapem PP", mitra:"Bank BTN",                     pesertaAktif:46, imbalAktif:1150000, pesertaPensiun:108, imbalPensiun:2160000, penerima:556, netto:1112000000 },
+  { bulan:"Januari",  tahun:2025, cabang:"KC Medan",           jenisBayar:"Dapem Induk",  mitra:"Bank BCA",                     pesertaAktif:36, imbalAktif:900000, pesertaPensiun:85, imbalPensiun:1700000, penerima:410, netto:820000000 },
+  { bulan:"Januari",  tahun:2025, cabang:"KC Makassar",        jenisBayar:"Dapem Induk",  mitra:"Bank Syariah Indonesia (BSI)", pesertaAktif:29, imbalAktif:725000, pesertaPensiun:67, imbalPensiun:1340000, penerima:329, netto:658000000 },
+  { bulan:"Januari",  tahun:2025, cabang:"KC Jakarta Pusat",   jenisBayar:"Non Dapem PP", mitra:"Bank DKI",                     pesertaAktif:22, imbalAktif:550000, pesertaPensiun:52, imbalPensiun:1040000, penerima:242, netto:484000000 },
+  { bulan:"Januari",  tahun:2025, cabang:"KC Bandung",         jenisBayar:"Dapem Induk",  mitra:"Bank Jabar Banten (BJB)",      pesertaAktif:19, imbalAktif:475000, pesertaPensiun:44, imbalPensiun:880000, penerima:212, netto:424000000 },
+  { bulan:"Januari",  tahun:2025, cabang:"KC Surabaya",        jenisBayar:"Dapem Induk",  mitra:"Bank Jatim",                   pesertaAktif:17, imbalAktif:425000, pesertaPensiun:41, imbalPensiun:820000, penerima:189, netto:378000000 },
+  { bulan:"Januari",  tahun:2025, cabang:"KC Medan",           jenisBayar:"Non Dapem PP", mitra:"Bank Sumut",                   pesertaAktif:12, imbalAktif:300000, pesertaPensiun:29, imbalPensiun:580000, penerima:137, netto:274000000 },
+  { bulan:"Januari",  tahun:2025, cabang:"KC Padang",          jenisBayar:"Dapem Induk",  mitra:"Bank Nagari",                  pesertaAktif:10, imbalAktif:250000, pesertaPensiun:23, imbalPensiun:460000, penerima:111, netto:222000000 },
+  { bulan:"Januari",  tahun:2025, cabang:"KC Pekanbaru",       jenisBayar:"Dapem Induk",  mitra:"Bank Riau Kepri",              pesertaAktif:8, imbalAktif:200000, pesertaPensiun:19, imbalPensiun:380000, penerima:91, netto:182000000 },
+  { bulan:"Januari",  tahun:2025, cabang:"KC Balikpapan",      jenisBayar:"Non Dapem PP", mitra:"Bank Kalbar",                  pesertaAktif:6, imbalAktif:150000, pesertaPensiun:13, imbalPensiun:260000, penerima:64, netto:128000000 },
 
-  { bulan:"Februari", tahun:2025, cabang:"KC Jakarta Pusat",   jenisBayar:"Dapem Induk",  mitra:"Bank BRI",                     flagging:428, nonFlagging:845, netto:2546000000 },
-  { bulan:"Februari", tahun:2025, cabang:"KC Jakarta Selatan", jenisBayar:"Dapem Induk",  mitra:"Bank BNI",                     flagging:305, nonFlagging:592, netto:1794000000 },
-  { bulan:"Februari", tahun:2025, cabang:"KC Bandung",         jenisBayar:"Dapem Induk",  mitra:"Bank Mandiri",                 flagging:194, nonFlagging:358, netto:1104000000 },
-  { bulan:"Februari", tahun:2025, cabang:"KC Surabaya",        jenisBayar:"Non Dapem PP", mitra:"Bank BTN",                     flagging:160, nonFlagging:411, netto:1142000000 },
-  { bulan:"Februari", tahun:2025, cabang:"KC Medan",           jenisBayar:"Dapem Induk",  mitra:"Bank BCA",                     flagging:128, nonFlagging:297, netto:850000000  },
-  { bulan:"Februari", tahun:2025, cabang:"KC Makassar",        jenisBayar:"Dapem Induk",  mitra:"Bank Syariah Indonesia (BSI)", flagging:101, nonFlagging:240, netto:682000000  },
-  { bulan:"Februari", tahun:2025, cabang:"KC Padang",          jenisBayar:"Dapem Induk",  mitra:"Bank Nagari",                  flagging:36,  nonFlagging:81,  netto:234000000  },
+  { bulan:"Februari", tahun:2025, cabang:"KC Jakarta Pusat",   jenisBayar:"Dapem Induk",  mitra:"Bank BRI",                     pesertaAktif:128, imbalAktif:3200000, pesertaPensiun:300, imbalPensiun:6000000, penerima:1273, netto:2546000000 },
+  { bulan:"Februari", tahun:2025, cabang:"KC Jakarta Selatan", jenisBayar:"Dapem Induk",  mitra:"Bank BNI",                     pesertaAktif:91, imbalAktif:2275000, pesertaPensiun:214, imbalPensiun:4280000, penerima:897, netto:1794000000 },
+  { bulan:"Februari", tahun:2025, cabang:"KC Bandung",         jenisBayar:"Dapem Induk",  mitra:"Bank Mandiri",                 pesertaAktif:58, imbalAktif:1450000, pesertaPensiun:136, imbalPensiun:2720000, penerima:552, netto:1104000000 },
+  { bulan:"Februari", tahun:2025, cabang:"KC Surabaya",        jenisBayar:"Non Dapem PP", mitra:"Bank BTN",                     pesertaAktif:48, imbalAktif:1200000, pesertaPensiun:112, imbalPensiun:2240000, penerima:571, netto:1142000000 },
+  { bulan:"Februari", tahun:2025, cabang:"KC Medan",           jenisBayar:"Dapem Induk",  mitra:"Bank BCA",                     pesertaAktif:38, imbalAktif:950000, pesertaPensiun:90, imbalPensiun:1800000, penerima:425, netto:850000000 },
+  { bulan:"Februari", tahun:2025, cabang:"KC Makassar",        jenisBayar:"Dapem Induk",  mitra:"Bank Syariah Indonesia (BSI)", pesertaAktif:30, imbalAktif:750000, pesertaPensiun:71, imbalPensiun:1420000, penerima:341, netto:682000000 },
+  { bulan:"Februari", tahun:2025, cabang:"KC Padang",          jenisBayar:"Dapem Induk",  mitra:"Bank Nagari",                  pesertaAktif:11, imbalAktif:275000, pesertaPensiun:25, imbalPensiun:500000, penerima:117, netto:234000000 },
 
-  { bulan:"Maret",    tahun:2025, cabang:"KC Jakarta Pusat",   jenisBayar:"Dapem Induk",  mitra:"Bank BRI",                     flagging:441, nonFlagging:862, netto:2606000000 },
-  { bulan:"Maret",    tahun:2025, cabang:"KC Jakarta Selatan", jenisBayar:"Dapem Induk",  mitra:"Bank BNI",                     flagging:312, nonFlagging:604, netto:1832000000 },
-  { bulan:"Maret",    tahun:2025, cabang:"KC Bandung",         jenisBayar:"Dapem Induk",  mitra:"Bank Mandiri",                 flagging:201, nonFlagging:366, netto:1134000000 },
-  { bulan:"Maret",    tahun:2025, cabang:"KC Surabaya",        jenisBayar:"Non Dapem PP", mitra:"Bank BTN",                     flagging:166, nonFlagging:419, netto:1170000000 },
-  { bulan:"Maret",    tahun:2025, cabang:"KC Balikpapan",      jenisBayar:"Non Dapem PP", mitra:"Bank Kalbar",                  flagging:22,  nonFlagging:49,  netto:142000000  }
+  { bulan:"Maret",    tahun:2025, cabang:"KC Jakarta Pusat",   jenisBayar:"Dapem Induk",  mitra:"Bank BRI",                     pesertaAktif:132, imbalAktif:3300000, pesertaPensiun:309, imbalPensiun:6180000, penerima:1303, netto:2606000000 },
+  { bulan:"Maret",    tahun:2025, cabang:"KC Jakarta Selatan", jenisBayar:"Dapem Induk",  mitra:"Bank BNI",                     pesertaAktif:94, imbalAktif:2350000, pesertaPensiun:218, imbalPensiun:4360000, penerima:916, netto:1832000000 },
+  { bulan:"Maret",    tahun:2025, cabang:"KC Bandung",         jenisBayar:"Dapem Induk",  mitra:"Bank Mandiri",                 pesertaAktif:60, imbalAktif:1500000, pesertaPensiun:141, imbalPensiun:2820000, penerima:567, netto:1134000000 },
+  { bulan:"Maret",    tahun:2025, cabang:"KC Surabaya",        jenisBayar:"Non Dapem PP", mitra:"Bank BTN",                     pesertaAktif:50, imbalAktif:1250000, pesertaPensiun:116, imbalPensiun:2320000, penerima:585, netto:1170000000 },
+  { bulan:"Maret",    tahun:2025, cabang:"KC Balikpapan",      jenisBayar:"Non Dapem PP", mitra:"Bank Kalbar",                  pesertaAktif:7, imbalAktif:175000, pesertaPensiun:15, imbalPensiun:300000, penerima:71, netto:142000000 }
 ];
 
 
@@ -218,9 +262,10 @@ const DATA_FLAGGING_PENSIUNAN = [
    `pinjaman` berisi Info Pinjaman yang tampil di layar Detail Pengajuan;
    namanya mengikuti kolom template unggahan (awal_kredit, plafon, no_pk, dst).
    --------------------------------------------------------------------------- */
-/* Urutan status mengikuti perjalanan pengajuan: "Pengajuan" masih menunggu
-   keputusan di Persetujuan, lalu jadi "Booked" atau "Dibatalkan". */
-const FPG_STATUS_PINJAMAN = ["Pengajuan", "Booked", "Dibatalkan"];
+/* Layar Pinjaman » Pengajuan hanya memuat pengajuan yang masih menunggu
+   keputusan. Begitu disetujui atau ditolak di Persetujuan, statusnya berubah
+   jadi "Booked"/"Dibatalkan" dan barisnya keluar dari daftar itu. */
+const FPG_STATUS_PINJAMAN = ["Pengajuan"];
 
 const DATA_FLAGGING_PENGAJUAN = [
   { ktpa:"BD316947", nrp:"544925", mitra:"Bank BRI", nomorPensiun:"", nama:"DODY ISWAHYUDIONO", tglLahir:"1961-10-16",
@@ -378,10 +423,14 @@ const DATA_FLAGGING_PENGAJUAN = [
    --------------------------------------------------------------------------- */
 const FPS_STATUS = ["Pending", "Disetujui", "Ditolak"];
 
+/* Aktivitas ini punya halaman persetujuannya sendiri (Persetujuan » Top Up),
+   jadi sengaja tidak ikut tampil di antrean umum. */
+const FPS_AKTIVITAS_TOPUP = "Pengajuan Top Up";
+
 /* Kolom `aktivitas` menyebut permintaan apa yang sedang diputuskan, bukan
    sekadar identitas pesertanya. Nilai yang dipakai:
    Pengajuan Pinjaman · Pengajuan Take Over · Pengajuan Top Up ·
-   Perubahan Data · Perubahan Take Over · Pelunasan ·
+   Perubahan Data · Perubahan Take Over · Pelunasan Flagging ·
    Pengajuan Pembatalan Flagging ·
    Pengajuan Pembatalan Booking · Pelepasan Flagging.
    Yang membawa muatan tambahan (`perubahan`) berasal dari layar Flagging —
@@ -395,6 +444,37 @@ const FPS_STATUS = ["Pending", "Disetujui", "Ditolak"];
    permintaannya disetujui. */
 
 const DATA_FLAGGING_PERSETUJUAN = [
+  /* Satu pengajuan top up yang masih Pending, lengkap dengan muatannya, supaya
+     halaman Persetujuan » Top Up bisa langsung diputuskan tanpa submit dulu. */
+  { sumber:"Tambahkan Top Up", ktpa:"BZ143428", nrp:"196707181991031007",
+    mitra:"BANK WOORI SAUDARA", nopens:"BZ143428111028", nama:"SUROSO", tglLahir:"1967-07-18",
+    aktivitas:"Pengajuan Top Up", status:"Pending", tglProses:"",
+    perubahan:[
+      { label:"Top Up Ke",        dari:"–", ke:"3" },
+      { label:"Plafon",           dari:"Rp 100.000.000", ke:"Rp 185.000.000" },
+      { label:"Besaran Angsuran", dari:"Rp 2.600.000",   ke:"Rp 3.250.000" }
+    ],
+    topupBaru:{ ind:"", mitra:"BANK WOORI SAUDARA", ktpa:"BZ143428", nrp:"196707181991031007",
+      nik:"3277021807600003", nomorPensiun:"BZ143428111028", nama:"SUROSO", tglLahir:"1967-07-18",
+      topUpKe:3, statusPinjaman:"Disetujui", statusTagih:"N", kategori:"", status:"Tertunda",
+      tglSetuju:"", pengguna:"",
+      pinjaman:{ tglPermohonan:"2026-09-02", awalKredit:"2026-09-05", akhirKredit:"2032-09-05",
+        plafon:185000000, gajiPeserta:5000000, norekTab:"1987574317", norekKredit:"1987574317",
+        noPk:"TU/2026/09/0006", nik:"3277021807600003", jnsTab:"Tabungan",
+        cabangMitra:"KC Semarang", angsuran:3250000, subKredit:"Kredit Multiguna",
+        lampiranSp3r:"SP3R-TU-BZ143428-3.pdf", lampiranPernyataan:"Pernyataan-Kredit-TU-BZ143428-3.pdf" } },
+    riwayat:[
+      { tgl:"2026-09-02", user:"operator.woori", aksi:"Diajukan", ket:"Pengajuan top up ketiga peserta" }
+    ] },
+
+  /* Tiap baris Pinjaman » Pengajuan berstatus "Pengajuan" punya pasangan
+     Pending di sini — layar itu memang hanya memuat yang masih diantre. */
+  { ktpa:"CY338120", nrp:"141902", mitra:"Bank Jatim", nopens:"PS-2016-003077", nama:"ROHANA SIREGAR", tglLahir:"1972-01-30",
+    aktivitas:"Pengajuan Pinjaman", status:"Pending", tglProses:"", sumber:"Pengajuan",
+    riwayat:[
+      { tgl:"2026-07-10", user:"operator.jatim", aksi:"Diajukan", ket:"Unggahan berkas pengajuan Bank Jatim" }
+    ] },
+
   { ktpa:"BD316947", nrp:"544925", mitra:"Bank BRI", nopens:"", nama:"DODY ISWAHYUDIONO", tglLahir:"1961-10-16",
     aktivitas:"Pengajuan Pinjaman", status:"Disetujui", tglProses:"2026-07-02", sumber:"Check dan Booking Kolektif",
     riwayat:[
@@ -413,7 +493,7 @@ const DATA_FLAGGING_PERSETUJUAN = [
       { tgl:"2026-07-08", user:"operator.bni", aksi:"Diajukan", ket:"Unggahan berkas pengajuan Bank BNI" }
     ] },
   { ktpa:"ED337689", nrp:"62090675", mitra:"Bank Mandiri", nopens:"", nama:"SLAMET SUWARSONO", tglLahir:"1962-09-04",
-    aktivitas:"Pengajuan Take Over", status:"Pending", tglProses:"", sumber:"Pengajuan",
+    aktivitas:"Pengajuan Pinjaman", status:"Pending", tglProses:"", sumber:"Pengajuan",
     riwayat:[
       { tgl:"2026-07-09", user:"operator.mandiri", aksi:"Diajukan", ket:"Unggahan berkas pengajuan Bank Mandiri" }
     ] },
@@ -433,10 +513,9 @@ const DATA_FLAGGING_PERSETUJUAN = [
   /* Tiga baris berikut memberi tiap mitra bayar pada pilihan role satu contoh
      penolakan, supaya notifikasi saat berganti role bisa langsung terlihat. */
   { ktpa:"EE337485", nrp:"63010063", mitra:"Bank BNI", nopens:"", nama:"CHARLESE TOMASOA", tglLahir:"1963-01-27",
-    aktivitas:"Pengajuan Pinjaman", status:"Ditolak", tglProses:"2026-07-12", sumber:"Pengajuan",
+    aktivitas:"Pengajuan Pinjaman", status:"Pending", tglProses:"", sumber:"Pengajuan",
     riwayat:[
-      { tgl:"2026-07-08", user:"operator.bni",    aksi:"Diajukan", ket:"Unggahan berkas pengajuan Bank BNI" },
-      { tgl:"2026-07-12", user:"verifikator.kep", aksi:"Ditolak",  ket:"Nomor rekening kredit tidak sesuai" }
+      { tgl:"2026-07-08", user:"operator.bni", aksi:"Diajukan", ket:"Unggahan berkas pengajuan Bank BNI" }
     ] },
   { ktpa:"CD552018", nrp:"158431", mitra:"Bank Mandiri", nopens:"", nama:"BAGAS NUGROHO", tglLahir:"1986-11-27",
     aktivitas:"Pengajuan Top Up", status:"Ditolak", tglProses:"2026-07-14", sumber:"Check dan Booking Individu",
@@ -462,7 +541,7 @@ const DATA_FLAGGING_PERSETUJUAN = [
     riwayat:[ { tgl:"2026-07-18", user:"ahmad.roji", aksi:"Diajukan", ket:"Perubahan data dari layar Detail Flagging" } ] },
   { sumber:"Pelunasan", ktpa:"ED334862", nrp:"64020307", mitra:"BANK SYARIAH INDONESIA", nopens:"ED334862111030",
     nama:"SUWIRYO PRANOTO", tglLahir:"1964-02-01",
-    aktivitas:"Pelunasan", status:"Disetujui", tglProses:"2026-05-18", pengaju:"ahmad.roji",
+    aktivitas:"Pelunasan Flagging", status:"Disetujui", tglProses:"2026-05-18", pengaju:"ahmad.roji",
     perubahan:[
       { label:"Tgl Pelunasan", dari:"–", ke:"2026-05-18" },
       { label:"Keterangan",    dari:"–", ke:"Pelunasan sesuai jadwal" }
@@ -1067,4 +1146,89 @@ const DATA_FLAGGING_PENAGIHAN = [
         awalKredit:"2025-10-20", akhirKredit:"2034-10-17", plafon:220000000, angsuran:1180000,
         statusTagih:"Ditagih", statusUser:"WOORI011", statusTgl:"2026-08-05" }
     ] }
+];
+
+/* ---------------------------------------------------------------------------
+   13. PARAMETER PENETAPAN TARIF
+   Satu baris = satu tarif yang berlaku untuk sepasang Jenis Tarif dan Jenis
+   Peserta. Pasangan itu unik: satu jenis tarif hanya punya satu nominal per
+   jenis peserta, jadi layar Penetapan Tarif menolak pasangan yang sudah ada.
+   `periode` adalah tanggal mulai berlakunya nominal tersebut.
+   --------------------------------------------------------------------------- */
+const FTR_JENIS_TARIF   = ["Checking", "Booking", "Flagging", "Top Up", "Take Over"];
+const FTR_JENIS_PESERTA = ["Aktif", "Pensiun"];
+
+const DATA_FLAGGING_TARIF = [
+  { jenisTarif:"Checking",  jenisPeserta:"Aktif",   nominal:5000,   periode:"2026-01-01" },
+  { jenisTarif:"Checking",  jenisPeserta:"Pensiun", nominal:5000,   periode:"2026-01-01" },
+  { jenisTarif:"Booking",   jenisPeserta:"Aktif",   nominal:15000,  periode:"2026-01-01" },
+  { jenisTarif:"Booking",   jenisPeserta:"Pensiun", nominal:12500,  periode:"2026-01-01" },
+  { jenisTarif:"Flagging",  jenisPeserta:"Aktif",   nominal:25000,  periode:"2026-02-01" },
+  { jenisTarif:"Flagging",  jenisPeserta:"Pensiun", nominal:20000,  periode:"2026-02-01" },
+  { jenisTarif:"Top Up",    jenisPeserta:"Pensiun", nominal:17500,  periode:"2026-03-01" },
+  { jenisTarif:"Take Over", jenisPeserta:"Pensiun", nominal:30000,  periode:"2026-03-01" }
+];
+
+/* ---------------------------------------------------------------------------
+   14. CHECK DAN BOOKING — INDIVIDU
+   Peserta yang sudah dibooking lewat layar Pencarian Peserta. Bentuk barisnya
+   sama dengan blok Kolektif (Peserta + Penerima) supaya kedua tabel sebangun,
+   ditambah data kepesertaan yang dipakai mengisi otomatis form Ubah:
+   `gaji`, `nik`, `mitra`, dan `cabangMitra`.
+
+   `status` menentukan aksi mana yang hidup:
+     "Booked"    → Ubah dan Pembatalan aktif; pinjamannya belum diajukan.
+     "Pengajuan" → keduanya mati; datanya sudah masuk Pinjaman » Pengajuan.
+   --------------------------------------------------------------------------- */
+const FCBI_STATUS = ["Booked", "Pengajuan"];
+
+const DATA_FLAGGING_INDIVIDU = [
+  { ktpa:"BD316947", nrp:"544925", nomorPensiun:"", nama:"DODY ISWAHYUDIONO", tglLahir:"1961-10-16",
+    pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"DODY ISWAHYUDIONO", status:"Booked",
+    gaji:7500000, nik:"3171011610610001", mitra:"Bank BRI", cabangMitra:"KC Jakarta Pusat" },
+
+  { ktpa:"BE401859", nrp:"541451", nomorPensiun:"", nama:"TARYONO", tglLahir:"1962-06-20",
+    pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"TARYONO", status:"Booked",
+    gaji:4500000, nik:"3171012006620002", mitra:"Bank BRI", cabangMitra:"KC Jakarta Pusat" },
+
+  { ktpa:"EE331520", nrp:"63050076", nomorPensiun:"", nama:"RAHDI ROHENDI", tglLahir:"1963-05-04",
+    pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"RAHDI ROHENDI", status:"Pengajuan",
+    gaji:5200000, nik:"3273010405630004", mitra:"Bank BNI", cabangMitra:"KC Bandung",
+    pinjaman:{ tglPermohonan:"2026-07-02", tglPelunasan:"", awalKredit:"2026-07-02", akhirKredit:"2031-07-02",
+      plafon:110000000, gajiPeserta:5200000, angsuran:1950000, norekTab:"0401000331520", norekKredit:"0409000331520",
+      noPk:"PK/2026/07/3001", nik:"3273010405630004", jnsTab:"Tabungan", cabangMitra:"KC Bandung",
+      subKredit:"Kredit Multiguna", lampiranSp3r:"SP3R-EE331520.pdf", lampiranPernyataan:"Pernyataan-Kredit-EE331520.pdf" } },
+
+  { ktpa:"EE337485", nrp:"63010063", nomorPensiun:"", nama:"CHARLESE TOMASOA", tglLahir:"1963-01-27",
+    pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"CHARLESE TOMASOA", status:"Pengajuan",
+    gaji:4800000, nik:"3273012701630005", mitra:"Bank BNI", cabangMitra:"KC Bandung",
+    pinjaman:{ tglPermohonan:"2026-07-02", tglPelunasan:"", awalKredit:"2026-07-02", akhirKredit:"2032-07-02",
+      plafon:95000000, gajiPeserta:4800000, angsuran:1620000, norekTab:"0401000337485", norekKredit:"0409000337485",
+      noPk:"PK/2026/07/3002", nik:"3273012701630005", jnsTab:"Tabungan", cabangMitra:"KC Bandung",
+      subKredit:"Kredit Multiguna", lampiranSp3r:"SP3R-EE337485.pdf", lampiranPernyataan:"Pernyataan-Kredit-EE337485.pdf" } },
+
+  { ktpa:"ED337689", nrp:"62090675", nomorPensiun:"", nama:"SLAMET SUWARSONO", tglLahir:"1962-09-04",
+    pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"SLAMET SUWARSONO", status:"Pengajuan",
+    gaji:6100000, nik:"3578010409620006", mitra:"Bank Mandiri", cabangMitra:"KC Surabaya",
+    pinjaman:{ tglPermohonan:"2026-07-08", tglPelunasan:"", awalKredit:"2026-07-08", akhirKredit:"2033-07-08",
+      plafon:145000000, gajiPeserta:6100000, angsuran:2280000, norekTab:"0501000337689", norekKredit:"0509000337689",
+      noPk:"PK/2026/07/3003", nik:"3578010409620006", jnsTab:"Giro", cabangMitra:"KC Surabaya",
+      subKredit:"Kredit Pensiun", lampiranSp3r:"SP3R-ED337689.pdf", lampiranPernyataan:"Pernyataan-Kredit-ED337689.pdf" } },
+
+  { ktpa:"DE301113", nrp:"510791", nomorPensiun:"", nama:"JAHJO BUDIJANTO", tglLahir:"1962-05-07",
+    pensiun:"T", hidup:"Y", nopensPenerima:"", namaPenerima:"JAHJO BUDIJANTO", status:"Booked",
+    gaji:5900000, nik:"", mitra:"Bank BTN", cabangMitra:"KC Semarang" },
+
+  /* Pensiun sendiri: penerimanya dirinya sendiri, jadi nomor pensiunnya terisi
+     di kedua sisi. */
+  { ktpa:"CY104869", nrp:"197804081998032003", nomorPensiun:"PS-2019-004821", nama:"MADE WARDANI",
+    tglLahir:"1978-04-08", pensiun:"Y", hidup:"Y", nopensPenerima:"PS-2019-004821",
+    namaPenerima:"MADE WARDANI", status:"Booked",
+    gaji:4120000, nik:"5171010804780003", mitra:"PT Pos Indonesia", cabangMitra:"KC Denpasar" },
+
+  /* Pensiun waris: peserta sudah meninggal, yang menerima ahli warisnya. */
+  { ktpa:"CE360625", nrp:"132170", nomorPensiun:"PS-2015-002214", nama:"KENEDI",
+    tglLahir:"1970-03-15", pensiun:"Y", hidup:"T", nopensPenerima:"PS-2015-002214-01",
+    namaPenerima:"SRI WAHYUNI", status:"Booked",
+    gaji:3480000, nik:"1271011503700008", mitra:"Bank BNI", cabangMitra:"KC Palembang" }
 ];

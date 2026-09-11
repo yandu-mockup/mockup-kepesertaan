@@ -39,18 +39,6 @@
 
     <button class="nav-item" data-go="iuran-premi">Pengelolaan Iuran Premi THT, JKK, dan JKm</button>
 
-    <button class="nav-item nav-parent" id="nav-kpr-pum" aria-expanded="true">
-      <span>Pengelolaan KPR (PUM)</span><span class="chevron">⌄</span>
-    </button>
-    <div class="nav-children" id="nav-kpr-pum-children">
-      <button class="nav-item nav-child" data-go="parameter-plafon">Parameter Plafon</button>
-      <button class="nav-item nav-child" data-go="parameter-pernyataan">Parameter Pernyataan Tanggung Jawab</button>
-      <button class="nav-item nav-child" data-go="alokasi">Alokasi Dana KPR (PUM)</button>
-      <button class="nav-item nav-child" data-go="pum">Pengajuan KPR (PUM)</button>
-      <button class="nav-item nav-child" data-go="approval-pum">Approval KPR (PUM)</button>
-      <button class="nav-item nav-child" data-go="pelunasan">Pelunasan KPR (PUM)</button>
-    </div>
-
     <button class="nav-item nav-parent" id="nav-klaim-bum" aria-expanded="true">
       <span>Pengelolaan Klaim KPR (BUM)</span><span class="chevron">⌄</span>
     </button>
@@ -70,7 +58,13 @@
 
     <button class="nav-item" data-go="sptb">Pengelolaan Surat Pernyataan Tanda Bukti Diri (SPTB)</button>
     <button class="nav-item" data-go="e-dosir">Manajemen Dokumen Peserta (E-Dosir)</button>
-    <button class="nav-item" data-go="request-umum">Pengelolaan Request Umum</button>
+    <button class="nav-item nav-parent" id="nav-request-umum" aria-expanded="true">
+      <span>Pengelolaan Request Umum</span><span class="chevron">⌄</span>
+    </button>
+    <div class="nav-children" id="nav-request-umum-children">
+      <button class="nav-item nav-child" data-go="request-umum">Daftar Request Umum</button>
+      <button class="nav-item nav-child" data-go="ru-kategori">Parameter Kategori Request Umum</button>
+    </div>
     <button class="nav-item" data-go="alih-status">Pengelolaan Alih Status Peserta</button>
     <button class="nav-item nav-parent" id="nav-referensi" aria-expanded="true">
       <span>Pengelolaan Referensi Data Kepesertaan</span><span class="chevron">⌄</span>
@@ -119,6 +113,10 @@
         </div>
         <select class="role-chip" id="top-role" aria-label="Pilih role">
           <option>Divisi Kepesertaan dan Pengembangan Manfaat</option>
+          <option>Kepala Divisi Kepesertaan dan Pengembangan Manfaat</option>
+          <option>Kepala Bidang Lojita</option>
+          <option>Kepala Bidang Pulminpes</option>
+          <option>Kepala Bidang Pengembangan Manfaat</option>
           <option>Divisi Layanan</option>
           <option>Kantor Cabang</option>
           <option>PIC UNOR/Kesatuan</option>
@@ -180,8 +178,6 @@
           <h2 class="section-title">Pintasan modul</h2>
           <div class="toolbar" style="margin-bottom:0">
             <button class="btn btn-primary" data-go="pendaftaran-kolektif">Registrasi kolektif</button>
-            <button class="btn btn-ghost" data-go="alokasi">Alokasi dana PUM</button>
-            <button class="btn btn-ghost" data-go="pelunasan">Approval pelunasan</button>
             <button class="btn btn-ghost" data-go="distribusi">Monitoring distribusi BDN</button>
             <button class="btn btn-ghost" data-go="bum">Rekonsiliasi BUM KPR</button>
           </div>
@@ -421,7 +417,124 @@
                 </div>
                 <div class="field">
                   <label class="fl caps">Pangkat Awal <span class="req">*</span></label>
-                  <select class="inp" id="pp2-pangkat"></select>
+                  <select class="inp" id="pp2-pangkat">
+                    <option value="">Pilih pangkat</option>
+                    <optgroup label="PNS">
+                      <option>GOL.I/A</option>
+                      <option>GOL.I/B</option>
+                      <option>GOL.I/C</option>
+                      <option>GOL.I/D</option>
+                      <option>GOL.II/A</option>
+                      <option>GOL.II/B</option>
+                      <option>GOL.II/C</option>
+                      <option>GOL.II/D</option>
+                      <option>GOL.III/A</option>
+                      <option>GOL.III/B</option>
+                      <option>GOL.III/C</option>
+                      <option>GOL.III/D</option>
+                      <option>GOL.IV/A</option>
+                      <option>GOL.IV/B</option>
+                      <option>GOL.IV/C</option>
+                      <option>GOL.IV/D</option>
+                      <option>GOL.IV/E</option>
+                    </optgroup>
+                    <optgroup label="TNI-AD">
+                      <option>PRADA</option>
+                      <option>PRATU</option>
+                      <option>PRAKA</option>
+                      <option>KOPDA</option>
+                      <option>KOPTU</option>
+                      <option>KOPKA</option>
+                      <option>SERDA</option>
+                      <option>SERTU</option>
+                      <option>SERKA</option>
+                      <option>SERMA</option>
+                      <option>PELDA</option>
+                      <option>PELTU</option>
+                      <option>LETDA</option>
+                      <option>LETTU</option>
+                      <option>KAPTEN</option>
+                      <option>MAYOR</option>
+                      <option>LETKOL</option>
+                      <option>KOLONEL</option>
+                      <option>BRIGJEN TNI</option>
+                      <option>MAYJEN TNI</option>
+                      <option>LETJEN TNI</option>
+                      <option>JENDERAL TNI</option>
+                    </optgroup>
+                    <optgroup label="TNI-AL">
+                      <option>KELASI DUA</option>
+                      <option>KELASI SATU</option>
+                      <option>KELASI KEPALA</option>
+                      <option>KOPDA</option>
+                      <option>KOPTU</option>
+                      <option>KOPKA</option>
+                      <option>SERDA</option>
+                      <option>SERTU</option>
+                      <option>SERKA</option>
+                      <option>SERMA</option>
+                      <option>PELDA</option>
+                      <option>PELTU</option>
+                      <option>LETDA</option>
+                      <option>LETTU</option>
+                      <option>KAPTEN</option>
+                      <option>MAYOR</option>
+                      <option>LETKOL</option>
+                      <option>KOLONEL</option>
+                      <option>LAKSMA TNI</option>
+                      <option>LAKSDA TNI</option>
+                      <option>LAKSDYA TNI</option>
+                      <option>LAKSAMANA TNI</option>
+                    </optgroup>
+                    <optgroup label="TNI-AU">
+                      <option>PRADA</option>
+                      <option>PRATU</option>
+                      <option>PRAKA</option>
+                      <option>KOPDA</option>
+                      <option>KOPTU</option>
+                      <option>KOPKA</option>
+                      <option>SERDA</option>
+                      <option>SERTU</option>
+                      <option>SERKA</option>
+                      <option>SERMA</option>
+                      <option>PELDA</option>
+                      <option>PELTU</option>
+                      <option>LETDA</option>
+                      <option>LETTU</option>
+                      <option>KAPTEN</option>
+                      <option>MAYOR</option>
+                      <option>LETKOL</option>
+                      <option>KOLONEL</option>
+                      <option>MARSMA TNI</option>
+                      <option>MARSDA TNI</option>
+                      <option>MARSDYA TNI</option>
+                      <option>MARSEKAL TNI</option>
+                    </optgroup>
+                    <optgroup label="POLRI">
+                      <option>BHARADA</option>
+                      <option>BHARATU</option>
+                      <option>BHARAKA</option>
+                      <option>ABRIPDA</option>
+                      <option>ABRIPTU</option>
+                      <option>ABRIP</option>
+                      <option>BRIPDA</option>
+                      <option>BRIPTU</option>
+                      <option>BRIPKA</option>
+                      <option>BRIGADIR</option>
+                      <option>AIPDA</option>
+                      <option>AIPTU</option>
+                      <option>IPDA</option>
+                      <option>IPTU</option>
+                      <option>AKP</option>
+                      <option>KOMPOL</option>
+                      <option>AKBP</option>
+                      <option>KOMBES POL</option>
+                      <option>BRIGJEN POL</option>
+                      <option>IRJEN POL</option>
+                      <option>KOMJEN POL</option>
+                      <option>JENDERAL POL</option>
+                    </optgroup>
+                  </select>
                 </div>
                 <div class="field">
                   <label class="fl caps">TMT Pengangkatan <span class="req">*</span></label>
@@ -2245,11 +2358,23 @@
           <div class="grid4">
             <div class="field" style="margin-bottom:0">
               <label class="fl caps">Peserta</label>
-              <input class="inp" id="ru-f-peserta" placeholder="Cari nama / NRP peserta...">
+              <input class="inp" id="ru-f-peserta" placeholder="Cari KPA / NRP / NIP / Nama...">
             </div>
             <div class="field" style="margin-bottom:0">
               <label class="fl caps">Cabang</label>
               <input class="inp" id="ru-f-cabang" placeholder="Cari kantor cabang...">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="ru-f-lahir">Tanggal Lahir</label>
+              <input class="inp" type="date" id="ru-f-lahir">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="ru-f-req-dari">Tanggal Request</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input class="inp" type="date" id="ru-f-req-dari" aria-label="Tanggal Request dari">
+                <span style="color:var(--muted)">–</span>
+                <input class="inp" type="date" id="ru-f-req-sampai" aria-label="Tanggal Request sampai">
+              </div>
             </div>
             <div class="field" style="margin-bottom:0">
               <label class="fl caps">Status</label>
@@ -2281,10 +2406,8 @@
           </div>
           <div class="tbl-wrap">
             <table>
-              <thead><tr>
-                <th>Tgl. Request</th><th>Peserta</th><th>Cabang</th><th>Tujuan</th><th>Subjek</th>
-                <th>Isi</th><th>User Request</th><th>User Terakhir Reply</th><th>Diperbarui</th><th>Status</th><th>Aksi</th>
-              </tr></thead>
+              <!-- Kepala kolom dirender renderRequestUmum() supaya penanda sort ikut berganti -->
+              <thead><tr id="ru-head"></tr></thead>
               <tbody id="ru-body"></tbody>
             </table>
           </div>
@@ -2292,6 +2415,57 @@
             <div class="tbl-note" id="ru-count" style="margin:0"></div>
             <div id="ru-pagination" style="display:flex;gap:4px"></div>
           </div>
+        </div>
+      </section>
+
+      <!-- ---------- PENGELOLAAN REQUEST UMUM — PARAMETER KATEGORI ---------- -->
+      <section class="screen" id="s-ru-kategori">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pengelolaan Request Umum</span><span>›</span><b>Parameter Kategori Request Umum</b></div>
+
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Parameter Kategori Request Umum</h1>
+            <div class="page-sub">Pemeliharaan daftar kategori request umum per divisi, dipakai sebagai pilihan Kategori saat membuat request umum baru.</div>
+          </div>
+          <button class="btn btn-primary" id="rukat-tambah">+ Tambah Kategori</button>
+        </div>
+
+        <div class="card">
+          <div class="grid3">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rukat-f-kategori">Kategori</label>
+              <input class="inp" id="rukat-f-kategori" placeholder="Cari kategori...">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rukat-f-subjek">Subjek</label>
+              <select class="inp" id="rukat-f-subjek">
+                <option value="all">Semua Subjek</option>
+                <option>Divisi Kepesertaan</option>
+                <option>Divisi Layanan</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" id="rukat-cari">⌕ Cari</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:10px">
+              <h2 class="card-title" style="margin:0">Daftar Kategori Request Umum</h2>
+              <span class="pill pill-info" id="rukat-badge">0 entri</span>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>No</th><th>Subjek</th><th>Kategori</th><th>Aksi</th>
+              </tr></thead>
+              <tbody id="rukat-body"></tbody>
+            </table>
+          </div>
+          <div class="tbl-note" id="rukat-count"></div>
         </div>
       </section>
 
@@ -3360,14 +3534,46 @@
           </div>
 
           <div class="review-card" style="margin-bottom:20px">
-            <div class="review-card-head">Data Pengajuan</div>
+            <div class="review-card-head">Informasi Pengajuan</div>
             <div class="review-card-body">
               <div class="grid3" id="sppa-d-pengajuan"></div>
             </div>
           </div>
 
+          <div class="review-card" style="margin-bottom:20px">
+            <div class="review-card-head">Data Personil &amp; Profil Peserta</div>
+            <div class="review-card-body">
+              <div class="grid3" id="sppa-d-peserta"></div>
+            </div>
+          </div>
+
           <div class="card">
-            <h3 class="card-title">Dokumen Persyaratan</h3>
+            <h3 class="card-title">Data Keluarga</h3>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr>
+                  <th>No</th><th>Hubungan</th><th>Nama</th><th>NIK</th>
+                  <th>Tempat Lahir</th><th>Tanggal Lahir</th><th>Jenis Kelamin</th>
+                </tr></thead>
+                <tbody id="sppa-d-keluarga"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">Data Pangkat</h3>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr>
+                  <th>No</th><th>Pangkat</th><th>TMT Pangkat</th><th>Nomor SKEP</th><th>Tanggal SKEP</th>
+                </tr></thead>
+                <tbody id="sppa-d-pangkat"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">Berkas Peserta</h3>
             <div class="tbl-wrap">
               <table>
                 <thead><tr><th>No</th><th>Nama Dokumen</th><th>Aksi</th></tr></thead>
@@ -3376,27 +3582,9 @@
             </div>
           </div>
 
-          <div class="card">
-            <h3 class="card-title">Keputusan Persetujuan</h3>
-            <div class="alert alert-info" id="sppa-d-alert"><span>ⓘ</span><span id="sppa-d-alert-teks"></span></div>
-            <div class="grid2">
-              <div class="field">
-                <label class="fl">Status Saat Ini</label>
-                <div id="sppa-d-status">—</div>
-              </div>
-              <div class="field">
-                <label class="fl">Jumlah Berkas</label>
-                <div id="sppa-d-jumlah-berkas">—</div>
-              </div>
-            </div>
-            <div class="field">
-              <label class="fl" for="sppa-d-catatan">Catatan</label>
-              <textarea class="inp" id="sppa-d-catatan" style="height:80px;padding:9px 10px;resize:vertical" disabled></textarea>
-            </div>
-            <div class="form-actions split" id="sppa-d-aksi">
-              <button class="btn btn-danger" id="sppa-tolak">✕ Tolak</button>
-              <button class="btn btn-success" id="sppa-setuju">✓ Setujui</button>
-            </div>
+          <div class="form-actions" id="sppa-d-aksi">
+            <button class="btn btn-danger" id="sppa-tolak">✕ Tolak</button>
+            <button class="btn btn-success" id="sppa-setuju">✓ Setujui</button>
           </div>
         </div>
       </section>
@@ -3681,1203 +3869,6 @@
           <div class="form-actions" style="border-top:0;padding-top:0;margin-top:0">
             <button class="btn btn-ghost" id="dkf-batal">Batal</button>
             <button class="btn btn-primary" id="dkf-simpan">Simpan</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- ---------- PARAMETER PLAFON ---------- -->
-      <section class="screen" id="s-parameter-plafon">
-        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pengelolaan KPR (PUM)</span><span>›</span><b>Parameter Plafon</b></div>
-        <div class="page-head">
-          <div>
-            <h1 class="page-title">Parameter Plafon</h1>
-            <div class="page-sub">Pengaturan nominal plafon PUM KPR per Angkatan.</div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="toolbar" style="justify-content:flex-end">
-            <button class="btn btn-primary" id="plafon-input">+ Input Plafon</button>
-          </div>
-          <div class="tbl-wrap">
-            <table>
-              <thead><tr><th>No</th><th>Status Personil</th><th>Angkatan</th><th>Kesatuan</th><th>Golongan</th><th>Pangkat</th><th>Nominal Plafon</th><th>Aksi</th></tr></thead>
-              <tbody id="plafon-body"></tbody>
-            </table>
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
-            <div class="tbl-note" id="plafon-note" style="margin:0"></div>
-            <div id="plafon-pager" style="display:flex;gap:4px"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ---------- PARAMETER PERNYATAAN TANGGUNG JAWAB ---------- -->
-      <section class="screen" id="s-parameter-pernyataan">
-        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pengelolaan KPR (PUM)</span><span>›</span><b>Parameter Pernyataan Tanggung Jawab</b></div>
-        <div class="page-head">
-          <div>
-            <h1 class="page-title">Parameter Pernyataan Tanggung Jawab</h1>
-            <div class="page-sub">Pengaturan isi disclaimer "Pernyataan Atas Tanggung Jawab dan Keabsahan Data Pengajuan KPR (PUM)" yang wajib disetujui PIC UNOR/Kesatuan sebelum menyimpan draft pengajuan.</div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="tbl-wrap">
-            <table>
-              <thead><tr><th>No</th><th>Judul Pernyataan</th><th>Isi Pernyataan</th><th>Aksi</th></tr></thead>
-              <tbody id="pernyataan-body"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ---------- ALOKASI DANA ---------- -->
-      <section class="screen" id="s-alokasi">
-        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pengelolaan KPR (PUM)</span><span>›</span><b>Alokasi Dana KPR (PUM)</b></div>
-        <div class="page-head">
-          <div>
-            <h1 class="page-title">Alokasi dana KPR (PUM)</h1>
-            <div class="page-sub">Saldo alokasi tampil otomatis begitu kesatuan dipilih</div>
-          </div>
-        </div>
-
-        <div class="card" style="max-width:520px">
-          <div class="field" style="margin-bottom:9px">
-            <label class="fl">Kesatuan</label>
-            <select class="inp" id="al-kesatuan"></select>
-          </div>
-
-          <div class="saldo" id="al-saldo" style="display:none">
-            <div>
-              <div class="saldo-lbl"><span class="dot"></span><span class="live">LIVE</span><span id="al-saldo-lbl"></span></div>
-              <div class="saldo-val" id="al-saldo-val">Rp 0</div>
-            </div>
-            <div class="saldo-ico">▤</div>
-          </div>
-
-          <div class="field" style="margin-bottom:6px">
-            <label class="fl">Nominal alokasi dana</label>
-            <div class="money"><span>Rp</span><input id="al-nominal" inputmode="numeric" placeholder="0" aria-label="Nominal alokasi dana"></div>
-          </div>
-          <div class="hint" id="al-hint">Sisa saldo setelah alokasi akan terupdate otomatis.</div>
-
-          <div class="field" style="margin-top:18px">
-            <label class="fl">Periode (tahun)</label>
-            <select class="inp" id="al-tahun"></select>
-          </div>
-
-          <div class="form-actions">
-            <button class="btn btn-ghost" id="al-batal">Batal</button>
-            <button class="btn btn-primary" id="al-simpan">Simpan</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- ---------- PENGELOLAAN PUM KPR ---------- -->
-      <section class="screen" id="s-pum">
-        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pengelolaan KPR (PUM)</span><span>›</span><b>Pengajuan KPR (PUM)</b></div>
-        <div class="page-head">
-          <div>
-            <h1 class="page-title">Pengajuan KPR (PUM)</h1>
-            <div class="page-sub">Proses pembentukan dan pengelolaan PUM/BUM Kredit Pemilikan Rumah.</div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="filter-row">
-            <span>Filter by:</span>
-            <input class="filter-txt" id="pum-f-kpa"  placeholder="KPA" aria-label="Filter KPA">
-            <input class="filter-txt" id="pum-f-npwp" placeholder="NPWP" aria-label="Filter NPWP">
-            <input class="filter-txt" id="pum-f-nama" placeholder="Nama" aria-label="Filter Nama">
-            <input class="filter-txt" id="pum-f-nrp"  placeholder="NRP/NIP" aria-label="Filter NRP/NIP">
-          </div>
-          <div class="toolbar" style="justify-content:space-between">
-            <div class="filter-box">▽
-              <select id="pum-filter">
-                <option value="all">Status: Semua</option>
-                <option value="Draft">Status: Draft</option>
-                <option value="Submitted">Status: Tertunda</option>
-                <option value="Revisi">Status: Revisi</option>
-                <option value="Disetujui">Status: Disetujui</option>
-                <option value="Ditolak">Status: Ditolak</option>
-              </select>
-            </div>
-            <div style="display:flex;gap:10px">
-              <button class="btn btn-ghost" id="btn-export-pum">▤ Export File</button>
-              <button class="btn btn-primary" id="btn-ajukan-pum">+ Pengajuan KPR (PUM)</button>
-            </div>
-          </div>
-          <div class="tbl-wrap">
-            <table>
-              <thead><tr>
-                <th>KPA</th><th>NRP/NIP</th><th>NPWP</th><th>Nama</th><th>Angkatan</th>
-                <th>Tanggal Ambil PUM</th><th>Tipe PUM</th><th>Status</th>
-                <th>Jumlah Ambil PUM</th><th>Aksi</th>
-              </tr></thead>
-              <tbody id="pum-body"></tbody>
-            </table>
-          </div>
-          <div class="tbl-note" id="pum-count"></div>
-        </div>
-      </section>
-
-      <!-- ---------- DETAIL PENGAJUAN KPR (PUM) ---------- -->
-      <section class="screen" id="s-pum-detail">
-        <div class="head-row">
-          <button class="link-back" id="pd-kembali-atas">← Kembali</button>
-          <div class="head-divider"></div>
-          <div>
-            <h1 class="page-title">Detail Pengajuan KPR (PUM)</h1>
-            <div class="crumb" style="margin:3px 0 0">
-              <span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span id="pd-crumb-module">Pengelolaan KPR (PUM)</span><span>›</span><span>Detail</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
-            <div>
-              <h2 class="card-title" style="margin-bottom:2px" id="pd-title">—</h2>
-              <div class="hint" style="margin:0" id="pd-sub"></div>
-            </div>
-            <span class="pill pill-info" id="pd-badge"></span>
-          </div>
-
-          <div id="pd-body" style="margin-top:18px"></div>
-
-          <div class="form-actions split">
-            <button class="btn btn-ghost" id="pd-kembali">← Kembali ke Daftar</button>
-            <div style="display:flex;gap:10px" id="pd-actions"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ---------- APPROVAL PUM KPR ---------- -->
-      <section class="screen" id="s-approval-pum">
-        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pengelolaan KPR (PUM)</span><span>›</span><b>Approval KPR (PUM)</b></div>
-        <div class="page-head">
-          <div>
-            <h1 class="page-title">Approval KPR (PUM)</h1>
-            <div class="page-sub">Persetujuan pengajuan PUM KPR yang telah disubmit oleh PIC UNOR/Kesatuan.</div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="filter-row">
-            <span>Filter by:</span>
-            <input class="filter-txt" id="ap-f-kta"  placeholder="KPA" aria-label="Filter KPA">
-            <input class="filter-txt" id="ap-f-npwp" placeholder="NPWP" aria-label="Filter NPWP">
-            <input class="filter-txt" id="ap-f-nama" placeholder="Nama" aria-label="Filter Nama">
-            <input class="filter-txt" id="ap-f-nrp"  placeholder="NRP/NIP" aria-label="Filter NRP/NIP">
-          </div>
-          <div class="toolbar" style="justify-content:flex-end">
-            <div class="filter-box">▽
-              <select id="ap-filter">
-                <option value="Submitted">FILTER: Tertunda</option>
-                <option value="Disetujui">FILTER: Diterima</option>
-                <option value="Ditolak">FILTER: Ditolak</option>
-                <option value="all">FILTER: Semua</option>
-              </select>
-            </div>
-          </div>
-          <div class="tbl-wrap">
-            <table>
-              <thead><tr>
-                <th>KPA</th><th>NRP/NIP</th><th>NPWP</th><th>Nama</th><th>Angkatan</th>
-                <th>Tgl Ambil PUM</th><th>Tipe PUM</th><th>Jumlah Ambil PUM</th><th>Status</th><th>Aksi</th>
-              </tr></thead>
-              <tbody id="ap-body"></tbody>
-            </table>
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
-            <div class="tbl-note" id="ap-count" style="margin:0"></div>
-            <div style="display:flex;align-items:center;gap:14px">
-              <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)">
-                Per halaman
-                <select class="inp" id="ap-page-size" style="width:64px;height:30px;padding:0 6px;font-size:11px">
-                  <option>10</option><option>25</option><option>50</option>
-                </select>
-              </div>
-              <div id="ap-pagination" style="display:flex;gap:4px"></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ---------- PENGAJUAN BARU PUM KPR ---------- -->
-      <section class="screen" id="s-pum-baru">
-        <div class="head-row">
-          <button class="link-back" id="pum-baru-kembali">← Kembali</button>
-          <div class="head-divider"></div>
-          <div>
-            <h1 class="page-title">Pengajuan Baru KPR (PUM)</h1>
-            <div class="crumb" style="margin:3px 0 0">
-              <span>Dashboard</span><span>/</span><span>Pengajuan PUM KPR</span><span>/</span><span>Pengajuan Baru</span>
-            </div>
-          </div>
-        </div>
-        <hr class="hr-page">
-
-        <div class="card">
-          <h2 class="card-title">Cari Data Peserta</h2>
-          <hr class="hr-card">
-          <div class="field" style="max-width:700px">
-            <label class="fl">Nomor KPA <span class="req">*</span></label>
-            <div style="display:flex;gap:12px">
-              <input class="inp" id="pum-baru-kpa" placeholder="1234">
-              <button class="btn btn-primary" id="pum-baru-cari" style="flex-shrink:0;white-space:nowrap">Cari Data</button>
-            </div>
-            <div class="hint">Masukkan nomor KPA peserta untuk mengambil data otomatis dari sistem.</div>
-          </div>
-
-          <div id="pum-baru-hasil" style="display:none;margin-top:22px"></div>
-        </div>
-      </section>
-
-      <!-- ---------- FORM PENGAJUAN PUM KPR (WIZARD) ---------- -->
-      <section class="screen" id="s-pum-form">
-        <div class="head-row">
-          <button class="link-back" id="pf-kembali-atas">← Kembali</button>
-          <div class="head-divider"></div>
-          <div>
-            <h1 class="page-title">Pengajuan Baru KPR (PUM)</h1>
-            <div class="crumb" style="margin:3px 0 0">
-              <span>Dashboard</span><span>/</span><span>Pengajuan PUM KPR</span><span>/</span><span>Pengajuan Baru</span>
-            </div>
-          </div>
-          <div class="saldo" id="pf-saldo" style="display:none;margin:0 0 0 auto;max-width:360px">
-            <div>
-              <div class="saldo-lbl"><span class="dot"></span><span class="live">LIVE</span><span id="pf-saldo-lbl"></span></div>
-              <div class="saldo-val" id="pf-saldo-val">Rp 0</div>
-            </div>
-            <div class="saldo-ico">▤</div>
-          </div>
-        </div>
-
-        <div class="wizard" id="pf-wizard"></div>
-
-        <!-- ===== STEP 1: DATA PESERTA ===== -->
-        <div id="pf-step-1">
-          <div class="card">
-            <h2 class="card-title">Data Peserta Pengajuan PUM KPR</h2>
-
-            <div class="grid3" style="grid-template-columns:1fr 1fr">
-              <div class="field">
-                <label class="fl">KPA <span class="req">*</span></label>
-                <input class="inp" id="pf-ktpa">
-              </div>
-              <div class="field">
-                <label class="fl">NRP/NIP <span class="req">*</span></label>
-                <input class="inp" id="pf-nrp">
-              </div>
-              <div class="field">
-                <label class="fl">Nama Lengkap</label>
-                <input class="inp" id="pf-nama">
-              </div>
-              <div class="field">
-                <label class="fl">Tempat Lahir</label>
-                <input class="inp" id="pf-tempat-lahir" placeholder="Masukkan tempat lahir">
-              </div>
-              <div class="field">
-                <label class="fl">Tanggal Lahir</label>
-                <input class="inp" type="date" id="pf-tgl-lahir">
-              </div>
-              <div class="field">
-                <label class="fl">Jenis Kelamin</label>
-                <select class="inp" id="pf-jk">
-                  <option value="">Pilih jenis kelamin</option>
-                  <option>Laki-laki</option>
-                  <option>Perempuan</option>
-                </select>
-              </div>
-              <div class="field">
-                <label class="fl">Status Kawin</label>
-                <select class="inp" id="pf-kawin">
-                  <option value="">Pilih status kawin</option>
-                  <option>Belum Kawin</option>
-                  <option>Kawin</option>
-                  <option>Cerai</option>
-                </select>
-              </div>
-              <div class="field">
-                <label class="fl">NIK <span class="req">*</span></label>
-                <div style="display:flex;gap:10px">
-                  <input class="inp" id="pf-nik" placeholder="Masukkan NIK (16 digit)">
-                  <button class="btn btn-ghost" id="pf-cek-nik" type="button" style="flex-shrink:0;white-space:nowrap">Cek NIK</button>
-                </div>
-              </div>
-              <div class="field">
-                <label class="fl">Nomor Handphone</label>
-                <input class="inp" id="pf-hp" placeholder="08XXXXXXXXXX">
-              </div>
-              <div class="field span2">
-                <label class="fl">Alamat</label>
-                <textarea class="inp" id="pf-alamat" style="height:60px;padding:9px 10px;resize:vertical" placeholder="Nama jalan, nomor rumah"></textarea>
-              </div>
-              <div class="field">
-                <label class="fl">RT</label>
-                <input class="inp" id="pf-rt" placeholder="002">
-              </div>
-              <div class="field">
-                <label class="fl">RW</label>
-                <input class="inp" id="pf-rw" placeholder="005">
-              </div>
-              <div class="field" style="position:relative">
-                <label class="fl">Kelurahan</label>
-                <input class="inp" id="pf-kelurahan" placeholder="Ketik nama kelurahan..." autocomplete="off">
-                <div class="autocomplete-list" id="pf-kelurahan-list"></div>
-              </div>
-              <div class="field">
-                <label class="fl">Kecamatan</label>
-                <input class="inp" id="pf-kecamatan" placeholder="Terisi otomatis" disabled>
-              </div>
-              <div class="field">
-                <label class="fl">Kabupaten/Kota</label>
-                <input class="inp" id="pf-kabupaten" placeholder="Terisi otomatis" disabled>
-              </div>
-              <div class="field">
-                <label class="fl">Provinsi</label>
-                <input class="inp" id="pf-provinsi" placeholder="Terisi otomatis" disabled>
-              </div>
-              <div class="field">
-                <label class="fl">Kode Pos</label>
-                <input class="inp" id="pf-kodepos" placeholder="10410">
-                <div class="hint" id="pf-kodepos-saran" style="display:none"></div>
-              </div>
-              <div class="field">
-                <label class="fl">Pangkat <span class="req">*</span></label>
-                <select class="inp" id="pf-pangkat">
-                  <option value="">Pilih pangkat</option>
-                  <optgroup label="PNS">
-                    <option>GOL.I/A</option>
-                    <option>GOL.I/B</option>
-                    <option>GOL.I/C</option>
-                    <option>GOL.I/D</option>
-                    <option>GOL.II/A</option>
-                    <option>GOL.II/B</option>
-                    <option>GOL.II/C</option>
-                    <option>GOL.II/D</option>
-                    <option>GOL.III/A</option>
-                    <option>GOL.III/B</option>
-                    <option>GOL.III/C</option>
-                    <option>GOL.III/D</option>
-                    <option>GOL.IV/A</option>
-                    <option>GOL.IV/B</option>
-                    <option>GOL.IV/C</option>
-                    <option>GOL.IV/D</option>
-                    <option>GOL.IV/E</option>
-                  </optgroup>
-                  <optgroup label="TNI-AD">
-                    <option>PRADA</option>
-                    <option>PRATU</option>
-                    <option>PRAKA</option>
-                    <option>KOPDA</option>
-                    <option>KOPTU</option>
-                    <option>KOPKA</option>
-                    <option>SERDA</option>
-                    <option>SERTU</option>
-                    <option>SERKA</option>
-                    <option>SERMA</option>
-                    <option>PELDA</option>
-                    <option>PELTU</option>
-                    <option>LETDA</option>
-                    <option>LETTU</option>
-                    <option>KAPTEN</option>
-                    <option>MAYOR</option>
-                    <option>LETKOL</option>
-                    <option>KOLONEL</option>
-                    <option>BRIGJEN TNI</option>
-                    <option>MAYJEN TNI</option>
-                    <option>LETJEN TNI</option>
-                    <option>JENDERAL TNI</option>
-                  </optgroup>
-                  <optgroup label="TNI-AL">
-                    <option>KELASI DUA</option>
-                    <option>KELASI SATU</option>
-                    <option>KELASI KEPALA</option>
-                    <option>KOPDA</option>
-                    <option>KOPTU</option>
-                    <option>KOPKA</option>
-                    <option>SERDA</option>
-                    <option>SERTU</option>
-                    <option>SERKA</option>
-                    <option>SERMA</option>
-                    <option>PELDA</option>
-                    <option>PELTU</option>
-                    <option>LETDA</option>
-                    <option>LETTU</option>
-                    <option>KAPTEN</option>
-                    <option>MAYOR</option>
-                    <option>LETKOL</option>
-                    <option>KOLONEL</option>
-                    <option>LAKSMA TNI</option>
-                    <option>LAKSDA TNI</option>
-                    <option>LAKSDYA TNI</option>
-                    <option>LAKSAMANA TNI</option>
-                  </optgroup>
-                  <optgroup label="TNI-AU">
-                    <option>PRADA</option>
-                    <option>PRATU</option>
-                    <option>PRAKA</option>
-                    <option>KOPDA</option>
-                    <option>KOPTU</option>
-                    <option>KOPKA</option>
-                    <option>SERDA</option>
-                    <option>SERTU</option>
-                    <option>SERKA</option>
-                    <option>SERMA</option>
-                    <option>PELDA</option>
-                    <option>PELTU</option>
-                    <option>LETDA</option>
-                    <option>LETTU</option>
-                    <option>KAPTEN</option>
-                    <option>MAYOR</option>
-                    <option>LETKOL</option>
-                    <option>KOLONEL</option>
-                    <option>MARSMA TNI</option>
-                    <option>MARSDA TNI</option>
-                    <option>MARSDYA TNI</option>
-                    <option>MARSEKAL TNI</option>
-                  </optgroup>
-                  <optgroup label="POLRI">
-                    <option>BHARADA</option>
-                    <option>BHARATU</option>
-                    <option>BHARAKA</option>
-                    <option>ABRIPDA</option>
-                    <option>ABRIPTU</option>
-                    <option>ABRIP</option>
-                    <option>BRIPDA</option>
-                    <option>BRIPTU</option>
-                    <option>BRIPKA</option>
-                    <option>BRIGADIR</option>
-                    <option>AIPDA</option>
-                    <option>AIPTU</option>
-                    <option>IPDA</option>
-                    <option>IPTU</option>
-                    <option>AKP</option>
-                    <option>KOMPOL</option>
-                    <option>AKBP</option>
-                    <option>KOMBES POL</option>
-                    <option>BRIGJEN POL</option>
-                    <option>IRJEN POL</option>
-                    <option>KOMJEN POL</option>
-                    <option>JENDERAL POL</option>
-                  </optgroup>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-actions split">
-              <button class="btn btn-ghost" id="pf-kembali">← Kembali</button>
-              <button class="btn btn-gold" id="pf-lanjut">Selanjutnya →</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- ===== STEP 2: KEPANGKATAN ===== -->
-        <div id="pf-step-2" style="display:none">
-          <div class="card">
-            <h2 class="card-title" style="margin-bottom:4px">Riwayat Kepangkatan Peserta</h2>
-            <div class="hint" style="margin:0 0 16px">Riwayat kepangkatan peserta dari sistem kepesertaan.</div>
-            <hr class="hr-card">
-            <div class="tbl-wrap">
-              <table>
-                <thead><tr><th>No</th><th>Pangkat</th><th>Nomor SKEP Pengangkatan</th><th>TMT Pengangkatan</th><th>Tanggal SKEP Pengangkatan</th></tr></thead>
-                <tbody id="kp-riwayat-db-body"></tbody>
-              </table>
-            </div>
-            <div class="empty" id="kp-riwayat-db-empty" style="padding:20px 0">
-              <p>Tidak ada riwayat kepangkatan pada sistem kepesertaan untuk peserta ini.</p>
-            </div>
-          </div>
-
-          <div class="card">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
-              <h2 class="card-title" style="margin-bottom:4px">Update Kepangkatan Peserta</h2>
-              <button class="btn btn-ghost btn-sm" id="btn-tambah-riwayat">+ Update Kepangkatan Peserta</button>
-            </div>
-            <div class="hint" style="margin:0 0 16px">Pengisian update kepangkatan peserta bila terdapat kenaikan pangkat terbaru.</div>
-            <hr class="hr-card">
-
-            <div id="riwayat-list"></div>
-            <div class="empty" id="riwayat-empty" style="padding:20px 0">
-              <p>Belum ada update kepangkatan peserta. Klik "+ Update Kepangkatan Peserta" untuk menambahkan.</p>
-            </div>
-
-            <div class="form-actions split">
-              <button class="btn btn-ghost" id="pf2-kembali">← Kembali</button>
-              <button class="btn btn-gold" id="pf2-lanjut">Selanjutnya →</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- ===== STEP 3: TIPE KPR (PUM) ===== -->
-        <div id="pf-step-3" style="display:none">
-          <div class="card">
-            <h2 class="card-title">Pilih Tipe Pengambilan PUM KPR</h2>
-            <hr class="hr-card">
-
-            <div class="tipe-grid">
-              <div class="tipe-card selected" data-tipe="Kredit Rumah">
-                <div class="tipe-ico">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg>
-                </div>
-                <div class="tipe-title">Kredit Rumah</div>
-                <div class="tipe-sub">Melalui fasilitas kredit bank/KPR</div>
-              </div>
-              <div class="tipe-card" data-tipe="Pembelian Rumah Secara Mandiri">
-                <div class="tipe-ico">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                </div>
-                <div class="tipe-title">Pembelian Rumah Secara Mandiri</div>
-                <div class="tipe-sub">Pembelian mandiri tanpa KPR</div>
-              </div>
-              <div class="tipe-card" data-tipe="Membangun Rumah">
-                <div class="tipe-ico">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-                </div>
-                <div class="tipe-title">Membangun Rumah</div>
-                <div class="tipe-sub">Pembangunan di atas lahan sendiri</div>
-              </div>
-            </div>
-
-            <div class="hint" style="margin-bottom:18px">Pilih tipe pengambilan PUM KPR sesuai kebutuhan peserta. Detail Pengajuan dan Dokumen persyaratan akan disesuaikan dengan tipe yang dipilih.</div>
-            <hr class="hr-card">
-
-            <div class="form-actions split">
-              <button class="btn btn-ghost" id="pf3-kembali">← Kembali</button>
-              <button class="btn btn-gold" id="pf3-lanjut">Lanjutkan →</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- ===== STEP 4: DETAIL PENGAJUAN ===== -->
-        <div id="pf-step-4" style="display:none">
-          <div class="card">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
-              <h2 class="card-title" id="pf4-title" style="margin-bottom:0">Detail Pengajuan - Kredit Rumah</h2>
-              <span class="pill pill-info" id="pf4-badge">TIPE: KREDIT RUMAH</span>
-            </div>
-
-            <!-- ===== Konten khusus tipe: Kredit Rumah ===== -->
-            <div id="pf4-kredit-rumah">
-              <div class="subsection-title">Data Peserta (Terisi Otomatis)</div>
-              <div class="grid3" style="grid-template-columns:1fr 1fr">
-                <div class="field">
-                  <label class="fl">KPA</label>
-                  <input class="inp" id="pf4-ktpa" disabled>
-                </div>
-                <div class="field">
-                  <label class="fl">Nama Peserta</label>
-                  <input class="inp" id="pf4-nama-peserta" disabled>
-                </div>
-                <div class="field">
-                  <label class="fl">Pangkat</label>
-                  <input class="inp" id="pf4-pangkat" disabled>
-                </div>
-                <div class="field">
-                  <label class="fl">UKER</label>
-                  <input class="inp" id="pf4-uker" disabled>
-                </div>
-                <div class="field">
-                  <label class="fl">Plafon</label>
-                  <input class="inp" id="pf4-jumlah-pum" disabled>
-                </div>
-                <div class="field">
-                  <label class="fl">Masa Kerja Dinas</label>
-                  <input class="inp" id="pf4-masa-kerja" disabled>
-                </div>
-              </div>
-
-              <div class="hint" style="margin:14px 0 10px;font-weight:600;color:var(--body)">Alamat Rumah Pemohon</div>
-              <div class="grid3" style="grid-template-columns:1fr 1fr">
-                <div class="field span2">
-                  <label class="fl">Alamat</label>
-                  <textarea class="inp" id="pf4-rp-alamat" style="height:50px;padding:9px 10px;resize:vertical" disabled></textarea>
-                </div>
-                <div class="field"><label class="fl">RT</label><input class="inp" id="pf4-rp-rt" disabled></div>
-                <div class="field"><label class="fl">RW</label><input class="inp" id="pf4-rp-rw" disabled></div>
-                <div class="field"><label class="fl">Kelurahan</label><input class="inp" id="pf4-rp-kelurahan" disabled></div>
-                <div class="field"><label class="fl">Kecamatan</label><input class="inp" id="pf4-rp-kecamatan" disabled></div>
-                <div class="field"><label class="fl">Kabupaten/Kota</label><input class="inp" id="pf4-rp-kabupaten" disabled></div>
-                <div class="field"><label class="fl">Provinsi</label><input class="inp" id="pf4-rp-provinsi" disabled></div>
-                <div class="field"><label class="fl">Kode Pos</label><input class="inp" id="pf4-rp-kodepos" disabled></div>
-              </div>
-
-              <div class="subsection-title">Data Kredit &amp; Properti</div>
-              <div class="grid3" style="grid-template-columns:1fr 1fr">
-                <div class="field">
-                  <label class="fl">Nama Perumahan</label>
-                  <input class="inp" id="pf4-nama-perumahan" placeholder="Nama perumahan">
-                </div>
-                <div class="field">
-                  <label class="fl">Nama Developer</label>
-                  <input class="inp" id="pf4-nama-developer" placeholder="Nama developer perumahan">
-                </div>
-                <div class="field span2">
-                  <label class="fl">Alamat Perumahan</label>
-                  <textarea class="inp" id="pf4-alamat-perumahan" style="height:60px;padding:9px 10px;resize:vertical" placeholder="Alamat lengkap perumahan"></textarea>
-                </div>
-                <div class="field">
-                  <label class="fl">Tipe Rumah</label>
-                  <input class="inp" id="pf4-tipe-rumah" placeholder="Contoh: 36/90">
-                </div>
-                <div class="field">
-                  <label class="fl">Blok-Nomor Rumah</label>
-                  <input class="inp" id="pf4-blok-rumah" placeholder="Contoh: A5/12">
-                </div>
-                <div class="field" style="position:relative">
-                  <label class="fl">Kelurahan</label>
-                  <input class="inp" id="pf4-kelurahan" placeholder="Ketik nama kelurahan..." autocomplete="off">
-                  <div class="autocomplete-list" id="pf4-kelurahan-list"></div>
-                </div>
-                <div class="field">
-                  <label class="fl">Kecamatan</label>
-                  <input class="inp" id="pf4-kecamatan" placeholder="Terisi otomatis" disabled>
-                </div>
-                <div class="field">
-                  <label class="fl">Kabupaten/Kota</label>
-                  <input class="inp" id="pf4-kabupaten" placeholder="Terisi otomatis" disabled>
-                </div>
-                <div class="field">
-                  <label class="fl">Provinsi</label>
-                  <input class="inp" id="pf4-provinsi" placeholder="Terisi otomatis" disabled>
-                </div>
-                <div class="field">
-                  <label class="fl">Jenis Kredit</label>
-                  <select class="inp" id="pf4-jenis-kredit">
-                    <option value="">Pilih jenis kredit</option>
-                    <option>Bank</option>
-                    <option>TWP</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label class="fl">Bank Kredit</label>
-                  <input class="inp" id="pf4-bank-kredit" placeholder="Nama bank kredit">
-                </div>
-                <div class="field">
-                  <label class="fl">Nomor Akad Kredit</label>
-                  <input class="inp" id="pf4-nomor-akad" placeholder="Nomor akad dari bank">
-                </div>
-                <div class="field">
-                  <label class="fl">Tanggal Akad Kredit</label>
-                  <input class="inp" type="date" id="pf4-tgl-akad">
-                </div>
-                <div class="field">
-                  <label class="fl">Upload Fotocopy Akad Kredit <span class="req">*</span> <span class="hint" style="display:inline;font-weight:400">(Legalisir Kepala Satuan Kerja)</span></label>
-                  <label class="upload-zone">
-                    <input type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" id="pf4-file-akad">
-                    <div class="upload-ico">⬆</div>
-                    <div style="font-weight:600;font-size:12.5px">Klik atau seret file ke sini</div>
-                    <div class="hint" style="margin-top:2px">PDF, JPG, PNG - maks.5 MB</div>
-                  </label>
-                </div>
-              </div>
-
-              <div class="subsection-title">Data Rekening Penyaluran KPR (PUM)</div>
-              <div class="grid3" style="grid-template-columns:1fr 1fr">
-                <div class="field">
-                  <label class="fl">Nama Rekening Peserta Penyaluran KPR (PUM)</label>
-                  <input class="inp" id="pf4-nama-rekening" placeholder="Nama sesuai rekening">
-                </div>
-                <div class="field">
-                  <label class="fl">Nomor Rekening Tujuan</label>
-                  <div style="display:flex;gap:10px">
-                    <input class="inp" id="pf4-nomor-rekening" placeholder="Nomor rekening tujuan">
-                    <button class="btn btn-ghost" id="pf4-cek-rekening" style="flex-shrink:0;white-space:nowrap">Cek Rekening</button>
-                  </div>
-                </div>
-                <div class="field">
-                  <label class="fl">Mitra Bayar</label>
-                  <select class="inp" id="pf4-mitra-bayar">
-                    <option value="">--Pilih Bank--</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label class="fl">Cabang Mitra Bayar</label>
-                  <input class="inp" id="pf4-cabang-mitra" placeholder="Nama cabang bank">
-                </div>
-                <div class="field">
-                  <label class="fl">Upload Buku Tabungan <span class="req">*</span></label>
-                  <label class="upload-zone">
-                    <input type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" id="pf4-file-buku">
-                    <div class="upload-ico">⬆</div>
-                    <div style="font-weight:600;font-size:12.5px">Klik atau seret file ke sini</div>
-                    <div class="hint" style="margin-top:2px">PDF, JPG, PNG - maks.5 MB</div>
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <!-- ===== Konten khusus tipe: Pembelian Rumah Secara Mandiri ===== -->
-            <div id="pf4-pembelian-mandiri" style="display:none">
-              <div class="subsection-title">Data Peserta (Terisi Otomatis)</div>
-              <div class="grid3" style="grid-template-columns:1fr 1fr">
-                <div class="field">
-                  <label class="fl">KPA</label>
-                  <input class="inp" id="pf4pm-ktpa" disabled>
-                </div>
-                <div class="field">
-                  <label class="fl">Nama Peserta</label>
-                  <input class="inp" id="pf4pm-nama-peserta" disabled>
-                </div>
-                <div class="field">
-                  <label class="fl">Pangkat</label>
-                  <input class="inp" id="pf4pm-pangkat" disabled>
-                </div>
-                <div class="field">
-                  <label class="fl">UKER</label>
-                  <input class="inp" id="pf4pm-uker" disabled>
-                </div>
-                <div class="field">
-                  <label class="fl">Plafon</label>
-                  <input class="inp" id="pf4pm-jumlah-pum" disabled>
-                </div>
-                <div class="field">
-                  <label class="fl">Masa Kerja Dinas</label>
-                  <input class="inp" id="pf4pm-masa-kerja" disabled>
-                </div>
-              </div>
-
-              <div class="hint" style="margin:14px 0 10px;font-weight:600;color:var(--body)">Alamat Rumah Pemohon</div>
-              <div class="grid3" style="grid-template-columns:1fr 1fr">
-                <div class="field span2">
-                  <label class="fl">Alamat</label>
-                  <textarea class="inp" id="pf4pm-rp-alamat" style="height:50px;padding:9px 10px;resize:vertical" disabled></textarea>
-                </div>
-                <div class="field"><label class="fl">RT</label><input class="inp" id="pf4pm-rp-rt" disabled></div>
-                <div class="field"><label class="fl">RW</label><input class="inp" id="pf4pm-rp-rw" disabled></div>
-                <div class="field"><label class="fl">Kelurahan</label><input class="inp" id="pf4pm-rp-kelurahan" disabled></div>
-                <div class="field"><label class="fl">Kecamatan</label><input class="inp" id="pf4pm-rp-kecamatan" disabled></div>
-                <div class="field"><label class="fl">Kabupaten/Kota</label><input class="inp" id="pf4pm-rp-kabupaten" disabled></div>
-                <div class="field"><label class="fl">Provinsi</label><input class="inp" id="pf4pm-rp-provinsi" disabled></div>
-                <div class="field"><label class="fl">Kode Pos</label><input class="inp" id="pf4pm-rp-kodepos" disabled></div>
-              </div>
-
-              <div class="subsection-title">Data Properti</div>
-              <div class="grid3" style="grid-template-columns:1fr 1fr">
-                <div class="field">
-                  <label class="fl">Jenis Hak Kepemilikan Atas Tanah <span class="req">*</span></label>
-                  <select class="inp" id="pf4pm-jenis-hak">
-                    <option value="">Pilih jenis hak kepemilikan</option>
-                    <option>Sertifikat</option>
-                    <option>Akta Jual Beli</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label class="fl">Atas Nama Peserta atau Pasangan</label>
-                  <input class="inp" id="pf4pm-atas-nama" placeholder="Nama sesuai dokumen kepemilikan">
-                </div>
-                <div class="field">
-                  <label class="fl">Nomor Sertifikat/Akta Jual Beli</label>
-                  <input class="inp" id="pf4pm-nomor-hak" placeholder="Nomor dokumen kepemilikan">
-                </div>
-                <div class="field">
-                  <label class="fl">Tanggal Sertifikat/Akta Jual Beli</label>
-                  <input class="inp" type="date" id="pf4pm-tgl-hak">
-                </div>
-                <div class="field">
-                  <label class="fl">Upload Fotocopy Sertifikat/Akta Jual Beli <span class="req">*</span> <span class="hint" style="display:inline;font-weight:400">(Legalisir Kepala Satuan Kerja)</span></label>
-                  <label class="upload-zone">
-                    <input type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" id="pf4pm-file-hak">
-                    <div class="upload-ico">⬆</div>
-                    <div style="font-weight:600;font-size:12.5px">Klik atau seret file ke sini</div>
-                    <div class="hint" style="margin-top:2px">PDF, JPG, PNG - maks.5 MB</div>
-                  </label>
-                </div>
-                <div class="field">
-                  <label class="fl">Nama Perumahan</label>
-                  <input class="inp" id="pf4pm-nama-perumahan" placeholder="Nama perumahan">
-                </div>
-                <div class="field">
-                  <label class="fl">Nama Developer</label>
-                  <input class="inp" id="pf4pm-nama-developer" placeholder="Nama developer perumahan">
-                </div>
-                <div class="field span2">
-                  <label class="fl">Alamat Perumahan <span class="req">*</span></label>
-                  <textarea class="inp" id="pf4pm-alamat-perumahan" style="height:60px;padding:9px 10px;resize:vertical" placeholder="Alamat lengkap perumahan"></textarea>
-                </div>
-                <div class="field">
-                  <label class="fl">Tipe Rumah</label>
-                  <input class="inp" id="pf4pm-tipe-rumah" placeholder="Contoh: 36/90">
-                </div>
-                <div class="field">
-                  <label class="fl">Blok-Nomor Rumah</label>
-                  <input class="inp" id="pf4pm-blok-rumah" placeholder="Contoh: A5/12">
-                </div>
-                <div class="field" style="position:relative">
-                  <label class="fl">Kelurahan</label>
-                  <input class="inp" id="pf4pm-kelurahan" placeholder="Ketik nama kelurahan..." autocomplete="off">
-                  <div class="autocomplete-list" id="pf4pm-kelurahan-list"></div>
-                </div>
-                <div class="field">
-                  <label class="fl">Kecamatan</label>
-                  <input class="inp" id="pf4pm-kecamatan" placeholder="Terisi otomatis" disabled>
-                </div>
-                <div class="field">
-                  <label class="fl">Kabupaten/Kota</label>
-                  <input class="inp" id="pf4pm-kabupaten" placeholder="Terisi otomatis" disabled>
-                </div>
-                <div class="field">
-                  <label class="fl">Provinsi</label>
-                  <input class="inp" id="pf4pm-provinsi" placeholder="Terisi otomatis" disabled>
-                </div>
-              </div>
-
-              <div class="subsection-title">Data Rekening Penyaluran KPR (PUM)</div>
-              <div class="grid3" style="grid-template-columns:1fr 1fr">
-                <div class="field">
-                  <label class="fl">Nama Rekening Peserta Penyaluran KPR (PUM)</label>
-                  <input class="inp" id="pf4pm-nama-rekening" placeholder="Nama sesuai rekening">
-                </div>
-                <div class="field">
-                  <label class="fl">Nomor Rekening Tujuan</label>
-                  <div style="display:flex;gap:10px">
-                    <input class="inp" id="pf4pm-nomor-rekening" placeholder="Nomor rekening tujuan">
-                    <button class="btn btn-ghost" id="pf4pm-cek-rekening" style="flex-shrink:0;white-space:nowrap">Cek Rekening</button>
-                  </div>
-                </div>
-                <div class="field">
-                  <label class="fl">Mitra Bayar</label>
-                  <select class="inp" id="pf4pm-mitra-bayar">
-                    <option value="">--Pilih Bank--</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label class="fl">Cabang Mitra Bayar</label>
-                  <input class="inp" id="pf4pm-cabang-mitra" placeholder="Nama cabang bank">
-                </div>
-                <div class="field">
-                  <label class="fl">Upload Buku Tabungan <span class="req">*</span></label>
-                  <label class="upload-zone">
-                    <input type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" id="pf4pm-file-buku">
-                    <div class="upload-ico">⬆</div>
-                    <div style="font-weight:600;font-size:12.5px">Klik atau seret file ke sini</div>
-                    <div class="hint" style="margin-top:2px">PDF, JPG, PNG - maks.5 MB</div>
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <!-- ===== Konten khusus tipe: Membangun Rumah ===== -->
-            <div id="pf4-membangun-rumah" style="display:none">
-              <div class="subsection-title">Data Peserta (Terisi Otomatis)</div>
-              <div class="grid3" style="grid-template-columns:1fr 1fr">
-                <div class="field">
-                  <label class="fl">KPA</label>
-                  <input class="inp" id="pf4mr-ktpa" disabled>
-                </div>
-                <div class="field">
-                  <label class="fl">Nama Peserta</label>
-                  <input class="inp" id="pf4mr-nama-peserta" disabled>
-                </div>
-                <div class="field">
-                  <label class="fl">Pangkat</label>
-                  <input class="inp" id="pf4mr-pangkat" disabled>
-                </div>
-                <div class="field">
-                  <label class="fl">UKER</label>
-                  <input class="inp" id="pf4mr-uker" disabled>
-                </div>
-                <div class="field">
-                  <label class="fl">Plafon</label>
-                  <input class="inp" id="pf4mr-jumlah-pum" disabled>
-                </div>
-                <div class="field">
-                  <label class="fl">Masa Kerja Dinas</label>
-                  <input class="inp" id="pf4mr-masa-kerja" disabled>
-                </div>
-              </div>
-
-              <div class="hint" style="margin:14px 0 10px;font-weight:600;color:var(--body)">Alamat Rumah Pemohon</div>
-              <div class="grid3" style="grid-template-columns:1fr 1fr">
-                <div class="field span2">
-                  <label class="fl">Alamat</label>
-                  <textarea class="inp" id="pf4mr-rp-alamat" style="height:50px;padding:9px 10px;resize:vertical" disabled></textarea>
-                </div>
-                <div class="field"><label class="fl">RT</label><input class="inp" id="pf4mr-rp-rt" disabled></div>
-                <div class="field"><label class="fl">RW</label><input class="inp" id="pf4mr-rp-rw" disabled></div>
-                <div class="field"><label class="fl">Kelurahan</label><input class="inp" id="pf4mr-rp-kelurahan" disabled></div>
-                <div class="field"><label class="fl">Kecamatan</label><input class="inp" id="pf4mr-rp-kecamatan" disabled></div>
-                <div class="field"><label class="fl">Kabupaten/Kota</label><input class="inp" id="pf4mr-rp-kabupaten" disabled></div>
-                <div class="field"><label class="fl">Provinsi</label><input class="inp" id="pf4mr-rp-provinsi" disabled></div>
-                <div class="field"><label class="fl">Kode Pos</label><input class="inp" id="pf4mr-rp-kodepos" disabled></div>
-              </div>
-
-              <div class="subsection-title">Data Lokasi Pembangunan</div>
-              <div class="grid3" style="grid-template-columns:1fr 1fr">
-                <div class="field">
-                  <label class="fl">Jenis Hak Kepemilikan Atas Tanah <span class="req">*</span></label>
-                  <select class="inp" id="pf4mr-jenis-hak">
-                    <option value="">Pilih jenis hak kepemilikan</option>
-                    <option>Sertifikat</option>
-                    <option>Akta Jual Beli</option>
-                    <option>Girik</option>
-                    <option>Akta Hibah (Legalisir Notaris)</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label class="fl">Atas Nama Peserta atau Pasangan</label>
-                  <input class="inp" id="pf4mr-atas-nama" placeholder="Nama sesuai dokumen kepemilikan">
-                </div>
-                <div class="field">
-                  <label class="fl">Nomor Sertifikat/Akta Jual Beli/Girik/Akta Hibah</label>
-                  <input class="inp" id="pf4mr-nomor-hak" placeholder="Nomor dokumen kepemilikan">
-                </div>
-                <div class="field">
-                  <label class="fl">Tanggal Sertifikat/Akta Jual Beli/Girik/Akta Hibah</label>
-                  <input class="inp" type="date" id="pf4mr-tgl-hak">
-                </div>
-                <div class="field">
-                  <label class="fl">Upload Sertifikat/Akta Jual Beli/Girik/Akta Hibah <span class="hint" style="display:inline;font-weight:400">(Legalisir Kepala Satuan Kerja)</span></label>
-                  <label class="upload-zone">
-                    <input type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" id="pf4mr-file-hak">
-                    <div class="upload-ico">⬆</div>
-                    <div style="font-weight:600;font-size:12.5px">Klik atau seret file ke sini</div>
-                    <div class="hint" style="margin-top:2px">PDF, JPG, PNG - maks.5 MB</div>
-                  </label>
-                </div>
-                <div class="field">
-                  <label class="fl">Fotocopy PBG (Persetujuan Bangunan Gedung)</label>
-                  <label class="upload-zone">
-                    <input type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" id="pf4mr-file-pbg">
-                    <div class="upload-ico">⬆</div>
-                    <div style="font-weight:600;font-size:12.5px">Klik atau seret file ke sini</div>
-                    <div class="hint" style="margin-top:2px">PDF, JPG, PNG - maks.5 MB</div>
-                  </label>
-                </div>
-                <div class="field span2">
-                  <label class="fl">Alamat Lengkap Rumah Yang Akan Dibangun</label>
-                  <textarea class="inp" id="pf4mr-alamat-baru" style="height:60px;padding:9px 10px;resize:vertical" placeholder="Alamat lengkap rumah yang akan dibangun"></textarea>
-                </div>
-                <div class="field"><label class="fl">RT</label><input class="inp" id="pf4mr-rt" placeholder="002"></div>
-                <div class="field"><label class="fl">RW</label><input class="inp" id="pf4mr-rw" placeholder="005"></div>
-                <div class="field" style="position:relative">
-                  <label class="fl">Kelurahan</label>
-                  <input class="inp" id="pf4mr-kelurahan" placeholder="Ketik nama kelurahan..." autocomplete="off">
-                  <div class="autocomplete-list" id="pf4mr-kelurahan-list"></div>
-                </div>
-                <div class="field">
-                  <label class="fl">Kecamatan</label>
-                  <input class="inp" id="pf4mr-kecamatan" placeholder="Terisi otomatis" disabled>
-                </div>
-                <div class="field">
-                  <label class="fl">Kota/Kabupaten</label>
-                  <input class="inp" id="pf4mr-kabupaten" placeholder="Terisi otomatis" disabled>
-                </div>
-                <div class="field">
-                  <label class="fl">Provinsi</label>
-                  <input class="inp" id="pf4mr-provinsi" placeholder="Terisi otomatis" disabled>
-                </div>
-              </div>
-
-              <div class="subsection-title">Data Rekening Penyaluran KPR (PUM)</div>
-              <div class="grid3" style="grid-template-columns:1fr 1fr">
-                <div class="field">
-                  <label class="fl">Nama Rekening Peserta Penyaluran KPR (PUM)</label>
-                  <input class="inp" id="pf4mr-nama-rekening" placeholder="Nama sesuai rekening">
-                </div>
-                <div class="field">
-                  <label class="fl">Nomor Rekening Tujuan</label>
-                  <div style="display:flex;gap:10px">
-                    <input class="inp" id="pf4mr-nomor-rekening" placeholder="Nomor rekening tujuan">
-                    <button class="btn btn-ghost" id="pf4mr-cek-rekening" style="flex-shrink:0;white-space:nowrap">Cek Rekening</button>
-                  </div>
-                </div>
-                <div class="field">
-                  <label class="fl">Mitra Bayar</label>
-                  <select class="inp" id="pf4mr-mitra-bayar">
-                    <option value="">--Pilih Bank--</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label class="fl">Cabang Mitra Bayar</label>
-                  <input class="inp" id="pf4mr-cabang-mitra" placeholder="Nama cabang bank">
-                </div>
-                <div class="field">
-                  <label class="fl">Upload Buku Tabungan <span class="req">*</span></label>
-                  <label class="upload-zone">
-                    <input type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" id="pf4mr-file-buku">
-                    <div class="upload-ico">⬆</div>
-                    <div style="font-weight:600;font-size:12.5px">Klik atau seret file ke sini</div>
-                    <div class="hint" style="margin-top:2px">PDF, JPG, PNG - maks.5 MB</div>
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <!-- ===== Placeholder untuk tipe lain (rancangan menyusul) ===== -->
-            <div id="pf4-tipe-lain" style="display:none">
-              <div class="alert alert-info" style="margin-top:18px"><span>ⓘ</span><span id="pf4-tipe-lain-msg"></span></div>
-            </div>
-
-            <div class="subsection-title" style="margin-top:22px">Dokumen Persyaratan</div>
-            <div class="alert alert-info">
-              <span>ⓘ</span>
-              <span>Unggah semua dokumen wajib sebelum melanjutkan ke pratinjau. Format yang diterima: PDF, JPG, PNG. Ukuran maksimum per file: 5 MB. Nama file akan tersimpan di sistem setelah diunggah.</span>
-            </div>
-
-            <div style="display:flex;justify-content:space-between;align-items:center;margin:22px 0 8px">
-              <span class="subsection-title" style="margin:0" id="pf5-list-title">Daftar Dokumen Persyaratan - Kredit Rumah</span>
-              <span class="hint" id="pf5-progress-lbl" style="margin:0"></span>
-            </div>
-            <div class="progress-track"><div class="progress-fill" id="pf5-progress-fill"></div></div>
-
-            <div class="alert alert-bad" id="pf5-alert-kurang" style="margin-top:16px">
-              <span>⚠</span><span id="pf5-alert-kurang-msg"></span>
-            </div>
-            <div class="alert alert-ok" id="pf5-alert-lengkap" style="margin-top:16px;display:none">
-              <span>✓</span><span>Semua dokumen wajib sudah diunggah.</span>
-            </div>
-
-            <div id="pf5-list"></div>
-
-            <div class="hint" style="margin:16px 0 0">Format yang diterima: PDF, JPG, PNG. Ukuran maksimum per file: 5 MB.</div>
-
-            <div class="form-actions split">
-              <button class="btn btn-ghost" id="pf4-kembali">← Kembali</button>
-              <button class="btn btn-gold" id="pf4-lanjut">Pratinjau →</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- ===== STEP 6: REVIEW & SIMPAN ===== -->
-        <div id="pf-step-6" style="display:none">
-          <div class="card">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
-              <h2 class="card-title" style="margin-bottom:0">Ringkasan Pengajuan PUM KPR</h2>
-              <span class="pill pill-info" id="pf6-badge">TIPE: KREDIT RUMAH</span>
-            </div>
-
-            <!-- ===== Ringkasan bersama untuk semua tipe (langkah 1 & 2) ===== -->
-            <div class="subsection-title">Data Peserta</div>
-            <div class="grid3" style="grid-template-columns:1fr 1fr" id="pf6-data-peserta"></div>
-
-            <div class="subsection-title">Riwayat Kepangkatan Peserta</div>
-            <div id="pf6-riwayat-db"></div>
-
-            <div class="subsection-title">Update Kepangkatan Peserta</div>
-            <div id="pf6-riwayat"></div>
-
-            <div class="subsection-title">Tipe KPR (PUM)</div>
-            <span class="pill pill-info" id="pf6-tipe-pill" style="font-size:12px"></span>
-
-            <!-- ===== Ringkasan khusus tipe: Kredit Rumah ===== -->
-            <div id="pf6-kredit-rumah">
-              <div class="subsection-title">Detail Pengajuan - Kredit Rumah</div>
-              <div class="hint" style="margin:-8px 0 10px;font-weight:600;color:var(--body)">Data Peserta (Terisi Otomatis)</div>
-              <div class="grid3" style="grid-template-columns:1fr 1fr" id="pf6-dp-peserta"></div>
-              <div class="hint" style="margin:18px 0 10px;font-weight:600;color:var(--body)">Data Kredit &amp; Properti</div>
-              <div class="grid3" style="grid-template-columns:1fr 1fr" id="pf6-dp-properti"></div>
-              <div class="hint" style="margin:18px 0 10px;font-weight:600;color:var(--body)">Data Rekening Penyaluran KPR (PUM)</div>
-              <div class="grid3" style="grid-template-columns:1fr 1fr" id="pf6-dp-rekening"></div>
-
-              <div class="subsection-title">Dokumen Terunggah</div>
-              <div id="pf6-dokumen"></div>
-            </div>
-
-            <!-- ===== Ringkasan khusus tipe: Pembelian Rumah Secara Mandiri ===== -->
-            <div id="pf6-pembelian-mandiri" style="display:none">
-              <div class="subsection-title">Detail Pengajuan - Pembelian Rumah Secara Mandiri</div>
-              <div class="hint" style="margin:-8px 0 10px;font-weight:600;color:var(--body)">Data Peserta (Terisi Otomatis)</div>
-              <div class="grid3" style="grid-template-columns:1fr 1fr" id="pf6pm-dp-peserta"></div>
-              <div class="hint" style="margin:18px 0 10px;font-weight:600;color:var(--body)">Data Properti</div>
-              <div class="grid3" style="grid-template-columns:1fr 1fr" id="pf6pm-dp-properti"></div>
-              <div class="hint" style="margin:18px 0 10px;font-weight:600;color:var(--body)">Data Rekening Penyaluran KPR (PUM)</div>
-              <div class="grid3" style="grid-template-columns:1fr 1fr" id="pf6pm-dp-rekening"></div>
-
-              <div class="subsection-title">Dokumen Terunggah</div>
-              <div id="pf6pm-dokumen"></div>
-            </div>
-
-            <!-- ===== Ringkasan khusus tipe: Membangun Rumah ===== -->
-            <div id="pf6-membangun-rumah" style="display:none">
-              <div class="subsection-title">Detail Pengajuan - Membangun Rumah</div>
-              <div class="hint" style="margin:-8px 0 10px;font-weight:600;color:var(--body)">Data Peserta (Terisi Otomatis)</div>
-              <div class="grid3" style="grid-template-columns:1fr 1fr" id="pf6mr-dp-peserta"></div>
-              <div class="hint" style="margin:18px 0 10px;font-weight:600;color:var(--body)">Data Lokasi Pembangunan</div>
-              <div class="grid3" style="grid-template-columns:1fr 1fr" id="pf6mr-dp-lokasi"></div>
-              <div class="hint" style="margin:18px 0 10px;font-weight:600;color:var(--body)">Data Rekening Penyaluran KPR (PUM)</div>
-              <div class="grid3" style="grid-template-columns:1fr 1fr" id="pf6mr-dp-rekening"></div>
-
-              <div class="subsection-title">Dokumen Terunggah</div>
-              <div id="pf6mr-dokumen"></div>
-            </div>
-
-            <div id="pf6-tipe-lain" style="display:none">
-              <div class="alert alert-info" style="margin-top:18px"><span>ⓘ</span><span id="pf6-tipe-lain-msg"></span></div>
-            </div>
-
-            <div class="form-actions split">
-              <button class="btn btn-ghost" id="pf6-kembali">← Kembali</button>
-              <button class="btn btn-primary" id="pf6-submit">➤ Simpan Draft Pengajuan</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ---------- PELUNASAN KPR (PUM) ---------- -->
-      <section class="screen" id="s-pelunasan">
-        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pengelolaan KPR (PUM)</span><span>›</span><b>Pelunasan KPR (PUM)</b></div>
-        <div class="page-head">
-          <div>
-            <h1 class="page-title">Pelunasan KPR (PUM)</h1>
-            <div class="page-sub">Data pelunasan terbentuk otomatis saat jatuh tempo, menunggu approval Divisi Kepesertaan.</div>
-          </div>
-          <button class="btn btn-ghost btn-pill" id="btn-export-pel">⤓ Ekspor laporan</button>
-        </div>
-
-        <div class="card">
-          <div class="tbl-wrap">
-            <table>
-              <thead><tr>
-                <th>KPA</th><th>NRP/NIP</th><th>NPWP</th><th>Nama</th><th>Angkatan</th>
-                <th>Tgl Ambil PUM</th><th>Tipe PUM</th><th>Jumlah Ambil PUM</th><th>Aksi</th>
-              </tr></thead>
-              <tbody id="pel-body"></tbody>
-            </table>
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
-            <div class="tbl-note" id="pel-count" style="margin:0"></div>
-            <div style="display:flex;align-items:center;gap:14px">
-              <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)">
-                Per halaman
-                <select class="inp" id="pel-page-size" style="width:64px;height:30px;padding:0 6px;font-size:11px">
-                  <option>10</option><option>25</option><option>50</option>
-                </select>
-              </div>
-              <div id="pel-pagination" style="display:flex;gap:4px"></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ---------- DETAIL PELUNASAN KPR (PUM) ---------- -->
-      <section class="screen" id="s-pelunasan-detail">
-        <div class="head-row">
-          <button class="link-back" id="peld-kembali-atas">← Kembali</button>
-          <div class="head-divider"></div>
-          <div>
-            <h1 class="page-title">Detail Pelunasan KPR (PUM)</h1>
-            <div class="crumb" style="margin:3px 0 0">
-              <span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pengelolaan KPR (PUM)</span><span>›</span><span>Pelunasan KPR (PUM)</span><span>›</span><span>Detail</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
-            <div>
-              <h2 class="card-title" style="margin-bottom:2px" id="peld-title">—</h2>
-              <div class="hint" style="margin:0" id="peld-sub"></div>
-            </div>
-          </div>
-
-          <div id="peld-body" style="margin-top:18px"></div>
-
-          <div class="form-actions split">
-            <button class="btn btn-ghost" id="peld-kembali">← Kembali ke Daftar</button>
           </div>
         </div>
       </section>

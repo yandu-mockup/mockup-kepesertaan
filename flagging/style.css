@@ -460,6 +460,13 @@ tbody tr:hover{background:rgba(248,250,252,.9)}
 tbody tr.row-sorot,tbody tr.row-sorot:hover{background:var(--amber-soft)}
 tbody tr.row-sorot td:first-child{box-shadow:inset 3px 0 0 var(--amber)}
 .t-name{color:var(--navy); font-weight:700}
+/* Nama di dalam tabel yang bisa diklik menuju layar detail */
+button.t-name{
+  background:none; border:0; padding:0; font:inherit; font-weight:700;
+  color:var(--navy); cursor:pointer; text-align:left;
+}
+button.t-name:hover{text-decoration:underline}
+button.t-name:focus-visible{outline:0; border-radius:4px; box-shadow:0 0 0 3px var(--ring)}
 .t-strong{font-weight:800; color:var(--ink)}
 .wide-table{min-width:2560px; font-size:11px}
 .wide-table thead th{padding:9px 12px}
@@ -779,20 +786,18 @@ textarea.inp{height:auto; padding:9px 12px; line-height:1.5}
   container-type:inline-size;
   -webkit-print-color-adjust:exact; print-color-adjust:exact;
 }
-/* Pita navy sudut kiri atas — tepi kanan & bawahnya digariskan emas mengikuti
-   lengkungnya, jadi satu bentuk saja sudah menghasilkan dua aksen sekaligus. */
+/* Pita navy sudut kiri atas — tepi kanannya melengkung penuh dari tepi atas
+   sampai tepi bawah pita, digariskan emas mengikuti lengkungnya, jadi satu
+   bentuk saja sudah menghasilkan dua aksen sekaligus. */
 .kpa-card::before{
-  content:""; position:absolute; left:0; top:0; width:58%; height:31%; z-index:0;
+  content:""; position:absolute; left:0; top:0; width:49%; height:30%; z-index:0;
   background:linear-gradient(135deg,var(--ktpa-navy) 0%,var(--ktpa-navy-2) 100%);
   border-right:2px solid var(--ktpa-gold); border-bottom:2px solid var(--ktpa-gold);
-  border-radius:16px 0 3.4em 0;
+  border-radius:16px 0 0 0;
+  border-bottom-right-radius:26% 100%;
 }
-/* Garis emas tipis di sudut kanan atas */
-.kpa-card::after{
-  content:""; position:absolute; right:13%; top:-22%; width:1.4%; height:54%; z-index:0;
-  background:var(--ktpa-gold); opacity:.55; transform:rotate(28deg);
-}
-/* Sudut kanan bawah: baji navy (elemen) + pita emas di sebelahnya (::before) */
+/* Sudut kanan atas & kanan bawah: baji navy (elemen) + pita emas di sebelahnya
+   (::before). Keduanya memakai kelas yang sama, hanya beda posisi. */
 .kpa-sudut{
   position:absolute; right:-9%; bottom:-12%; width:14%; height:52%; z-index:0;
   background:linear-gradient(135deg,var(--ktpa-navy-2) 0%,var(--ktpa-navy) 100%);
@@ -803,6 +808,7 @@ textarea.inp{height:auto; padding:9px 12px; line-height:1.5}
   width:46%; height:100%;
   background:linear-gradient(180deg,var(--ktpa-gold-soft),var(--ktpa-gold));
 }
+.kpa-sudut-atas{ bottom:auto; top:-11%; height:26% }
 
 /* Ukuran huruf ikut lebar kartu. Dipasang di anak langsung, bukan di .kpa-card,
    karena satuan cqw tidak boleh mengacu ke kontainer dirinya sendiri. */
@@ -811,7 +817,7 @@ textarea.inp{height:auto; padding:9px 12px; line-height:1.5}
 /* min-height menyamai tinggi pita navy, supaya nama peserta selalu mulai di bawahnya */
 .kpa-head{
   display:flex; justify-content:space-between; align-items:flex-start; gap:1em;
-  position:relative; z-index:2; min-height:5.4em;
+  position:relative; z-index:2; min-height:5em;
 }
 .kpa-title{font-size:1.05em; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:#fff}
 .kpa-title b{color:var(--ktpa-gold); font-weight:800}
@@ -820,35 +826,42 @@ textarea.inp{height:auto; padding:9px 12px; line-height:1.5}
 .kpa-logo{display:block; height:2.7em; width:auto; margin-left:auto}
 .kpa-tagline{margin-top:.3em; font-size:.62em; line-height:1.3; color:var(--ktpa-navy); font-weight:600}
 
-.kpa-body{display:flex; align-items:center; gap:1.4em; flex:1; padding:.4em 0; position:relative; z-index:2}
-.kpa-info{flex:1; min-width:0}
+.kpa-body{display:flex; align-items:center; gap:1.4em; flex:1; padding:.25em 0; position:relative; z-index:2}
+.kpa-info{flex:0 1 49%; min-width:0}
 .kpa-nama{
-  font-size:1.75em; font-weight:800; letter-spacing:.01em; margin-bottom:.35em; color:var(--ktpa-navy);
+  font-size:1.75em; font-weight:800; letter-spacing:.01em; color:var(--ktpa-navy);
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
-.kpa-row{display:flex; align-items:center; gap:.7em; padding:.3em 0; border-top:1px solid var(--line)}
-.kpa-nama + .kpa-row{border-top:0}
+/* Garis emas pendek di bawah nama, seperti garis di bawah judul kartu */
+.kpa-nama::after{content:""; display:block; width:2.5em; height:3px; margin:.25em 0 .32em; background:var(--ktpa-gold)}
+.kpa-row{display:flex; align-items:center; gap:.7em}
+/* Pembatas antar baris hanya selebar kolom teks, tidak sampai ke kolom ikon */
+.kpa-rt{flex:1; min-width:0; padding:.18em 0; border-top:1px solid var(--line)}
+.kpa-nama + .kpa-row .kpa-rt{border-top:0}
 .kpa-ico{
   flex:0 0 auto; width:1.9em; height:1.9em; border-radius:50%;
   display:grid; place-items:center; font-size:1.02em; line-height:1;
   background:var(--ktpa-navy); color:#fff;
 }
-.kpa-rt{min-width:0}
+/* Baris tanpa ikon: lingkaran dikosongkan supaya teksnya tetap sejajar */
+.kpa-ico-kosong{background:none}
 .kpa-k{font-size:.7em; letter-spacing:.09em; text-transform:uppercase; color:var(--muted)}
 .kpa-v{font-weight:700; letter-spacing:.02em; color:var(--ktpa-navy); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 
-.kpa-qr-wrap{flex:0 0 auto; text-align:center; margin-right:.4em}
+.kpa-qr-wrap{flex:0 0 auto; text-align:center; margin:0 3.9em 0 auto}
 .kpa-qr{
-  width:8.6em; padding:.4em; border-radius:.55em;
+  width:6.9em; padding:.4em; border-radius:.55em;
   background:#fff; border:1.5px solid var(--ktpa-gold);
 }
 .kpa-qr svg{display:block; width:100%; height:auto}
 .kpa-kode{margin-top:.5em; font-weight:700; letter-spacing:.06em; font-size:.95em; color:var(--ktpa-navy)}
 
+/* Pita putih di sudut kiri bawah — melebar seperlunya mengikuti isinya */
 .kpa-foot{
-  position:relative; z-index:2; margin:auto -5.5% 0; padding:.55em 5.5%;
-  background:#fff; color:var(--ktpa-navy); border-radius:46% 46% 0 0 / 1.6em 1.6em 0 0;
-  display:flex; align-items:center; justify-content:center; gap:1em;
+  position:relative; z-index:2; align-self:flex-start; margin:auto 0 0 -5.5%;
+  padding:.5em 1.5em .5em 5.5%;
+  background:#fff; color:var(--ktpa-navy); border-radius:0 1.5em 0 0;
+  display:flex; align-items:center; gap:.9em;
   font-size:10px; font-size:2.3cqw; font-weight:700;
 }
 .kpa-foot span{display:flex; align-items:center; gap:.5em}

@@ -34,11 +34,16 @@
       <button class="nav-item nav-child" data-go="flagging-pinjaman-pengajuan">Pengajuan</button>
       <button class="nav-item nav-child" data-go="flagging-pinjaman-flagging">Flagging</button>
       <button class="nav-item nav-child" data-go="flagging-pinjaman-takeover">Take Over</button>
-      <button class="nav-item nav-child" data-go="flagging-pinjaman-topup">Top Up</button>
       <button class="nav-item nav-child" data-go="flagging-pinjaman-penagihan">Penagihan</button>
     </div>
 
-    <button class="nav-item" data-go="flagging-persetujuan">Persetujuan</button>
+    <button class="nav-item nav-parent" id="nav-flagging-persetujuan" aria-expanded="true">
+      <span>Persetujuan</span><span class="chevron">⌄</span>
+    </button>
+    <div class="nav-children" id="nav-flagging-persetujuan-children">
+      <button class="nav-item nav-child" data-go="flagging-persetujuan">Pengajuan</button>
+      <button class="nav-item nav-child" data-go="flagging-persetujuan-topup">Top Up</button>
+    </div>
 
     <button class="nav-item nav-parent" id="nav-flagging-laporan" aria-expanded="true">
       <span>Laporan</span><span class="chevron">⌄</span>
@@ -153,12 +158,12 @@
         <div class="page-head">
           <div>
             <h1 class="page-title">Pensiunan</h1>
-            <div class="page-sub">Rekap peserta pensiunan per mitra bayar, dipisah antara yang berstatus flagging dan non flagging.</div>
+            <div class="page-sub">Rekap peserta berflagging per mitra bayar, dipisah antara peserta aktif dan pensiun beserta imbal jasanya.</div>
           </div>
         </div>
         <div class="card">
           <h3 class="card-title">Search &amp; Filter</h3>
-          <div class="grid3">
+          <div class="grid3" style="align-items:end">
             <div class="field" style="margin-bottom:0">
               <label class="fl" for="fp-f-bulan">Periode Bulan</label>
               <select class="inp" id="fp-f-bulan"></select>
@@ -172,23 +177,8 @@
               <input class="inp" id="fp-f-mitra" placeholder="Cari mitra...">
             </div>
           </div>
-          <div class="grid3" style="margin-top:14px;align-items:end">
-            <div class="field" style="margin-bottom:0">
-              <label class="fl" for="fp-f-cabang">Cabang</label>
-              <input class="inp" id="fp-f-cabang" placeholder="Cabang...">
-            </div>
-            <div class="field" style="margin-bottom:0">
-              <label class="fl" for="fp-jenis-trigger">Jenis Bayar</label>
-              <div class="multisel" id="fp-f-jenis">
-                <button type="button" class="inp multisel-trigger" id="fp-jenis-trigger" aria-expanded="false" aria-haspopup="true">
-                  <span class="multisel-val" id="fp-jenis-val"></span><span class="multisel-caret">⌄</span>
-                </button>
-                <div class="multisel-pop" id="fp-jenis-pop"></div>
-              </div>
-            </div>
-            <div class="toolbar" style="justify-content:flex-end;margin-bottom:0">
-              <button class="btn btn-primary" id="fp-cari">⌕ Cari</button>
-            </div>
+          <div class="toolbar" style="justify-content:flex-end;margin-top:14px;margin-bottom:0">
+            <button class="btn btn-primary" id="fp-cari">⌕ Cari</button>
           </div>
         </div>
 
@@ -202,8 +192,10 @@
               <thead><tr>
                 <th style="width:52px">No</th>
                 <th>Mitra Bayar</th>
-                <th class="num">Peserta Flagging</th>
-                <th class="num">Peserta Non Flagging</th>
+                <th class="num">Peserta Aktif</th>
+                <th class="num">Imbal Jasa Peserta Aktif</th>
+                <th class="num">Peserta Pensiun</th>
+                <th class="num">Imbal Jasa Peserta Pensiun</th>
                 <th class="num">Jumlah Penerima</th>
                 <th class="num">Jumlah Netto</th>
               </tr></thead>
@@ -260,9 +252,148 @@
               <tbody id="fps-body"></tbody>
             </table>
           </div>
+
+      <!-- ---------- FLAGGING » PERSETUJUAN » RIWAYAT ---------- -->
+      <section class="screen" id="s-flagging-persetujuan-riwayat">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Persetujuan</span><span>›</span><b>Riwayat Persetujuan</b></div>
+        <div class="page-head">
+          <div style="display:flex;align-items:flex-start;gap:14px">
+            <button class="btn btn-ghost" data-go="flagging-persetujuan" id="fpsr-kembali">← Kembali</button>
+            <div>
+              <h1 class="page-title">Riwayat Persetujuan</h1>
+              <div class="page-sub" id="fpsr-sub"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="tbl-wrap">
+            <table class="wide-table">
+              <thead>
+                <tr>
+                  <th rowspan="2">Tanggal Permohonan</th>
+                  <th colspan="2" class="th-group">Mitra</th>
+                  <th rowspan="2">Nama</th>
+                  <th rowspan="2">KPA</th>
+                  <th rowspan="2">NOPENS</th>
+                  <th rowspan="2">NIK</th>
+                  <th rowspan="2">Nomor Pinjaman Kredit</th>
+                  <th colspan="3" class="th-group">Update</th>
+                </tr>
+                <tr>
+                  <th>Nama</th><th>Cabang</th>
+                  <th>Tanggal</th><th>Pemakai</th><th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="fpsr-body"></tbody>
+            </table>
+          </div>
+          <div class="tbl-note" id="fpsr-count"></div>
+        </div>
+      </section>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
             <div class="tbl-note" id="fps-count" style="margin:0"></div>
             <div id="fps-pager" style="display:flex;gap:4px"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- FLAGGING » PERSETUJUAN » TOP UP ---------- -->
+      <section class="screen" id="s-flagging-persetujuan-topup">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Persetujuan</span><span>›</span><b>Top Up</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Persetujuan — Top Up</h1>
+            <div class="page-sub">Antrean pengajuan top up dari layar Tambahkan Top Up.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="grid3" style="align-items:end">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="fpt2-f-cari">KPA/NRP/NIP/Nama</label>
+              <input class="inp" id="fpt2-f-cari" placeholder="Masukkan kata kunci pencarian...">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="fpt2-f-status">Status</label>
+              <select class="inp" id="fpt2-f-status"></select>
+            </div>
+            <div class="toolbar" style="justify-content:flex-end;margin-bottom:0">
+              <button class="btn btn-primary" id="fpt2-cari">⌕ Cari</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>KPA</th>
+                <th>NRP/NIP</th>
+                <th>Mitra</th>
+                <th>NOPENS</th>
+                <th>Nama</th>
+                <th>Aktivitas</th>
+                <th class="num">Top Up Ke</th>
+                <th class="num">Plafon</th>
+                <th>Status</th>
+                <th>Tanggal Proses</th>
+                <th>Aksi</th>
+              </tr></thead>
+              <tbody id="fpt2-body"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+            <div class="tbl-note" id="fpt2-count" style="margin:0"></div>
+            <div id="fpt2-pager" style="display:flex;gap:4px"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- FLAGGING » PERSETUJUAN » TOP UP » DETAIL ---------- -->
+      <section class="screen" id="s-flagging-persetujuan-topup-detail">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Persetujuan</span><span>›</span><span>Top Up</span><span>›</span><b>Detail Top Up</b></div>
+        <div class="page-head">
+          <div style="display:flex;align-items:flex-start;gap:14px">
+            <button class="btn btn-ghost" data-go="flagging-persetujuan-topup">← Kembali</button>
+            <div>
+              <h1 class="page-title">Detail Pengajuan Top Up</h1>
+              <div class="page-sub" id="fptd-sub"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Data Top Up</h2>
+          <hr class="hr-card">
+          <h4 class="section-title">Informasi Peserta</h4>
+          <div class="grid3" id="fptd-peserta"></div>
+        </div>
+
+        <div class="card">
+          <h4 class="section-title">Informasi Top Up</h4>
+          <div class="grid2" id="fptd-topup"></div>
+          <div class="alert alert-info" id="fptd-tanpa-muatan" style="display:none">
+            <span>ⓘ</span><span>Pengajuan ini tidak membawa rincian top up — kemungkinan dibuat sebelum layar Tambahkan Top Up dipakai.</span>
+          </div>
+
+          <div class="alert alert-info" id="fptd-keputusan" style="display:none">
+            <span>ⓘ</span><span id="fptd-keputusan-teks"></span>
+          </div>
+
+          <div class="form-actions" id="fptd-aksi">
+            <button class="btn btn-danger" id="fptd-tolak">Tolak</button>
+            <button class="btn btn-success" id="fptd-setujui">Setujui</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h4 class="section-title">Riwayat</h4>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Tanggal</th><th>Pengguna</th><th>Aksi</th><th>Keterangan</th></tr></thead>
+              <tbody id="fptd-riwayat"></tbody>
+            </table>
           </div>
         </div>
       </section>
@@ -326,11 +457,118 @@
         <div class="page-head">
           <div>
             <h1 class="page-title">Parameter Penetapan Tarif</h1>
-            <div class="page-sub">Parameter tarif/bunga pinjaman mitra.</div>
+            <div class="page-sub">Tarif layanan per jenis transaksi dan jenis peserta.</div>
+          </div>
+          <button class="btn btn-primary" data-go="flagging-tarif-tambah">+ Penetapan Tarif</button>
+        </div>
+
+        <div class="card">
+          <div class="grid3" style="align-items:end">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="ftr-f-tarif">Jenis Tarif</label>
+              <select class="inp" id="ftr-f-tarif"></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="ftr-f-peserta">Jenis Peserta</label>
+              <select class="inp" id="ftr-f-peserta"></select>
+            </div>
+            <div class="toolbar" style="justify-content:flex-end;margin-bottom:0">
+              <button class="btn btn-primary" id="ftr-cari">⌕ Cari</button>
+            </div>
           </div>
         </div>
+
         <div class="card">
-          <div class="alert alert-info"><span>ⓘ</span><span>Halaman ini masih dalam pengembangan. Isinya akan menyusul sesuai referensi FSD.</span></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:52px">No</th>
+                  <th>Jenis Tarif</th>
+                  <th>Jenis Peserta</th>
+                  <th style="width:120px">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="ftr-body"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+            <div class="tbl-note" id="ftr-count" style="margin:0"></div>
+            <div id="ftr-pager" style="display:flex;gap:4px"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- PARAMETER PENETAPAN TARIF » PENETAPAN TARIF ---------- -->
+      <section class="screen" id="s-flagging-tarif-tambah">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Parameter Penetapan Tarif</span><span>›</span><b>Penetapan Tarif</b></div>
+        <div class="page-head">
+          <div style="display:flex;align-items:flex-start;gap:14px">
+            <button class="btn btn-ghost" data-go="flagging-parameter-tarif">← Kembali</button>
+            <div>
+              <h1 class="page-title">Penetapan Tarif</h1>
+              <div class="page-sub">Tetapkan nominal tarif untuk satu jenis transaksi dan jenis peserta.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="grid2">
+            <div class="field">
+              <label class="fl" for="ftt2-tarif">Jenis Tarif <span class="req">*</span></label>
+              <select class="inp" id="ftt2-tarif"></select>
+            </div>
+            <div class="field">
+              <label class="fl" for="ftt2-peserta">Jenis Peserta <span class="req">*</span></label>
+              <select class="inp" id="ftt2-peserta"></select>
+            </div>
+
+            <div class="field">
+              <label class="fl" for="ftt2-nominal">Nominal <span class="req">*</span></label>
+              <div class="money"><span>Rp</span><input id="ftt2-nominal" placeholder="0"></div>
+            </div>
+            <div class="field">
+              <label class="fl" for="ftt2-periode">Periode <span class="req">*</span></label>
+              <input class="inp" type="date" id="ftt2-periode">
+              <div class="hint">Tanggal mulai berlakunya tarif ini.</div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn-ghost" data-go="flagging-parameter-tarif">Batal</button>
+            <button class="btn btn-primary" id="ftt2-simpan">Simpan Tarif</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- PARAMETER PENETAPAN TARIF » DETAIL ---------- -->
+      <section class="screen" id="s-flagging-tarif-detail">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Parameter Penetapan Tarif</span><span>›</span><b>Detail Tarif</b></div>
+        <div class="page-head">
+          <div style="display:flex;align-items:flex-start;gap:14px">
+            <button class="btn btn-ghost" data-go="flagging-parameter-tarif">← Kembali</button>
+            <div>
+              <h1 class="page-title">Detail Tarif</h1>
+              <div class="page-sub" id="ftrd-sub"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="grid3">
+            <div class="field">
+              <label class="fl" for="ftrd-tarif">Jenis Tarif</label>
+              <input class="inp" id="ftrd-tarif" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="ftrd-peserta">Jenis Peserta</label>
+              <input class="inp" id="ftrd-peserta" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="ftrd-nominal">Nominal</label>
+              <div class="money"><span>Rp</span><input id="ftrd-nominal" disabled></div>
+            </div>
+          </div>
         </div>
       </section>
       <!-- ---------- FLAGGING » CHECK DAN BOOKING » INDIVIDU ---------- -->
@@ -339,10 +577,68 @@
         <div class="page-head">
           <div>
             <h1 class="page-title">Check dan Booking — Individu</h1>
-            <div class="page-sub">Pengecekan status flagging dan booking untuk satu peserta</div>
+            <div class="page-sub">Peserta yang sudah dibooking satu per satu lewat pencarian KPA.</div>
+          </div>
+          <button class="btn btn-primary" data-go="flagging-cb-individu-cari">+ Check dan Booking Individu</button>
+        </div>
+
+        <div class="card">
+          <div class="grid3" style="align-items:end">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="fci-f-cari">KPA/NRP/NIP/Nama</label>
+              <input class="inp" id="fci-f-cari" placeholder="Masukkan kata kunci pencarian...">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="fci-f-status">Status</label>
+              <select class="inp" id="fci-f-status"></select>
+            </div>
+            <div class="toolbar" style="justify-content:flex-end;margin-bottom:0">
+              <button class="btn btn-primary" id="fci-cari">⌕ Cari</button>
+            </div>
           </div>
         </div>
 
+        <div class="card">
+          <div class="tbl-wrap">
+            <table class="wide-table">
+              <thead>
+                <tr>
+                  <th rowspan="2" style="width:52px">No</th>
+                  <th rowspan="2">KPA</th>
+                  <th rowspan="2">NRP/NIP</th>
+                  <th colspan="3" class="th-group">Peserta</th>
+                  <th colspan="4" class="th-group">Penerima</th>
+                  <th rowspan="2">Booking</th>
+                  <th rowspan="2">Status</th>
+                  <th rowspan="2" class="stick-r">Aksi</th>
+                </tr>
+                <tr>
+                  <th>Nomor Pensiun</th><th>Nama</th><th>Tanggal Lahir</th>
+                  <th>Pensiun</th><th>Hidup</th><th>Nopensiun</th><th>Nama</th>
+                </tr>
+              </thead>
+              <tbody id="fci-body"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+            <div class="tbl-note" id="fci-count" style="margin:0"></div>
+            <div id="fci-pager" style="display:flex;gap:4px"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- FLAGGING » CHECK DAN BOOKING » INDIVIDU » PENCARIAN ---------- -->
+      <section class="screen" id="s-flagging-cb-individu-cari">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Check dan Booking</span><span>›</span><span>Individu</span><span>›</span><b>Check dan Booking Individu</b></div>
+        <div class="page-head">
+          <div style="display:flex;align-items:flex-start;gap:14px">
+            <button class="btn btn-ghost" data-go="flagging-cb-individu">← Kembali</button>
+            <div>
+              <h1 class="page-title">Check dan Booking Individu</h1>
+              <div class="page-sub">Pengecekan status flagging dan booking untuk satu peserta</div>
+            </div>
+          </div>
+        </div>
         <div class="card">
           <h2 class="card-title">Pencarian Peserta</h2>
           <hr class="hr-card">
@@ -458,6 +754,176 @@
         </div>
       </section>
 
+      <!-- ---------- FLAGGING » CHECK DAN BOOKING » INDIVIDU » DETAIL ---------- -->
+      <section class="screen" id="s-flagging-cb-booking-detail">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Check dan Booking</span><span>›</span><span id="fcid-crumb-asal">Individu</span><span>›</span><b>Detail Booking</b></div>
+        <div class="page-head">
+          <div style="display:flex;align-items:flex-start;gap:14px">
+            <button class="btn btn-ghost" data-go="flagging-cb-individu" id="fcid-kembali">← Kembali</button>
+            <div>
+              <h1 class="page-title">Detail Booking</h1>
+              <div class="page-sub" id="fcid-sub"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Data Peserta</h2>
+          <hr class="hr-card">
+          <div class="grid3" id="fcid-peserta"></div>
+        </div>
+
+        <div class="card">
+          <h4 class="section-title">Data Pinjaman</h4>
+          <div class="grid2" id="fcid-pinjaman"></div>
+          <div class="alert alert-info" id="fcid-pinjaman-kosong" style="display:none">
+            <span>ⓘ</span><span>Data pinjaman belum diisi. Lengkapi lewat tombol Ubah di daftar Individu.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- FLAGGING » CHECK DAN BOOKING » INDIVIDU » UBAH ---------- -->
+      <section class="screen" id="s-flagging-cb-booking-ubah">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Check dan Booking</span><span>›</span><span id="fciu-crumb-asal">Individu</span><span>›</span><b>Ubah Booking</b></div>
+        <div class="page-head">
+          <div style="display:flex;align-items:flex-start;gap:14px">
+            <button class="btn btn-ghost" data-go="flagging-cb-individu" id="fciu-kembali">← Kembali</button>
+            <div>
+              <h1 class="page-title">Ubah Booking</h1>
+              <div class="page-sub" id="fciu-sub"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Data Peserta</h2>
+          <hr class="hr-card">
+          <div class="grid3">
+            <div class="field">
+              <label class="fl" for="fciu-kpa">KPA</label>
+              <input class="inp" id="fciu-kpa" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="fciu-nrp">NRP/NIP</label>
+              <input class="inp" id="fciu-nrp" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="fciu-nama">Nama</label>
+              <input class="inp" id="fciu-nama" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="fciu-nopens">NOPENS</label>
+              <input class="inp" id="fciu-nopens" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="fciu-tgl-lahir">Tanggal Lahir</label>
+              <input class="inp" type="date" id="fciu-tgl-lahir" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="fciu-gaji">Gaji Peserta</label>
+              <div class="money"><span>Rp</span><input id="fciu-gaji" disabled></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h4 class="section-title">Data Pinjaman</h4>
+          <div class="grid2">
+            <div class="field">
+              <label class="fl" for="fciu-tgl-pelunasan">Tgl Pelunasan</label>
+              <input class="inp" type="date" id="fciu-tgl-pelunasan">
+            </div>
+            <div class="field">
+              <label class="fl" for="fciu-p-tgl-lahir">Tgl Lahir</label>
+              <input class="inp" type="date" id="fciu-p-tgl-lahir" disabled>
+              <div class="hint">Mengikuti Tanggal Lahir di Data Peserta.</div>
+            </div>
+
+            <div class="field">
+              <label class="fl" for="fciu-p-nopens">NOPENS</label>
+              <input class="inp" id="fciu-p-nopens" disabled>
+              <div class="hint">Mengikuti NOPENS di Data Peserta.</div>
+            </div>
+            <div class="field">
+              <label class="fl" for="fciu-akhir-kredit">Tanggal Akhir Kredit</label>
+              <input class="inp" type="date" id="fciu-akhir-kredit">
+            </div>
+
+            <div class="field">
+              <label class="fl" for="fciu-p-nama">Nama</label>
+              <input class="inp" id="fciu-p-nama" disabled>
+              <div class="hint">Mengikuti Nama di Data Peserta.</div>
+            </div>
+            <div class="field">
+              <label class="fl" for="fciu-norek-tab">Nomor Rekening Tabungan</label>
+              <input class="inp" id="fciu-norek-tab">
+            </div>
+
+            <div class="field">
+              <label class="fl" for="fciu-awal-kredit">Awal Kredit</label>
+              <input class="inp" type="date" id="fciu-awal-kredit">
+            </div>
+            <div class="field">
+              <label class="fl" for="fciu-no-pk">Nomor Perjanjian Kredit</label>
+              <input class="inp" id="fciu-no-pk">
+            </div>
+
+            <div class="field">
+              <label class="fl" for="fciu-plafon">Plafon</label>
+              <div class="money"><span>Rp</span><input id="fciu-plafon"></div>
+            </div>
+            <div class="field">
+              <label class="fl" for="fciu-cabang">Cabang Mitra Bayar</label>
+              <input class="inp" id="fciu-cabang" disabled>
+              <div class="hint">Terisi otomatis dari data kepesertaan.</div>
+            </div>
+
+            <div class="field">
+              <label class="fl" for="fciu-norek-kredit">Nomor Rekening Kredit</label>
+              <input class="inp" id="fciu-norek-kredit">
+            </div>
+            <div class="field">
+              <label class="fl" for="fciu-angsuran">Besaran Angsuran <span class="req">*</span></label>
+              <div class="money"><span>Rp</span><input id="fciu-angsuran"></div>
+            </div>
+
+            <div class="field">
+              <label class="fl" for="fciu-mitra">Mitra Bayar</label>
+              <input class="inp" id="fciu-mitra" disabled>
+              <div class="hint" id="fciu-mitra-hint">Mengikuti mitra bayar yang sedang login.</div>
+            </div>
+            <div class="field">
+              <label class="fl" for="fciu-sub-kredit">Sub Kredit <span class="req">*</span></label>
+              <input class="inp" id="fciu-sub-kredit">
+            </div>
+
+            <div class="field">
+              <label class="fl" for="fciu-jns-tab">Jenis Tabungan</label>
+              <input class="inp" id="fciu-jns-tab">
+            </div>
+            <div class="field">
+              <label class="fl" for="fciu-sp3r">Unggah Lampiran SP3R <span class="req">*</span></label>
+              <input class="inp" type="file" id="fciu-sp3r">
+            </div>
+
+            <div class="field">
+              <label class="fl" for="fciu-nik">NIK <span class="req">*</span></label>
+              <input class="inp" id="fciu-nik" disabled>
+              <div class="hint">Terisi otomatis dari data kepesertaan.</div>
+            </div>
+            <div class="field">
+              <label class="fl" for="fciu-pernyataan">Unggah Lampiran Surat Pernyataan Kredit Mitra Bayar <span class="req">*</span></label>
+              <input class="inp" type="file" id="fciu-pernyataan">
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn-ghost" data-go="flagging-cb-individu" id="fciu-batal">Batal</button>
+            <button class="btn btn-primary" id="fciu-submit">Submit</button>
+          </div>
+        </div>
+      </section>
+
       <!-- ---------- FLAGGING » CHECK DAN BOOKING » KOLEKTIF ---------- -->
       <section class="screen" id="s-flagging-cb-kolektif">
         <div class="crumb"><span>Beranda</span><span>›</span><span>Check dan Booking</span><span>›</span><b>Kolektif</b></div>
@@ -468,82 +934,93 @@
           </div>
           <button class="btn btn-primary" data-go="flagging-cb-check">+ Check &amp; Booking Flagging Kolektif</button>
         </div>
-
-        <div class="tabs">
-          <button class="tab active" data-fcbk-tab="mitra">Mitra</button>
-          <button class="tab" data-fcbk-tab="peserta">Peserta</button>
-        </div>
-
-        <!-- ===== tab Mitra: riwayat batch yang diunggah ===== -->
-        <div id="fcbk-panel-mitra">
-          <div class="card">
-            <div class="toolbar" style="justify-content:flex-end">
-              <div class="tbl-note" id="fcbk-batch-count" style="margin:0"></div>
+        <!-- ===== filter tabel Mitra ===== -->
+        <div class="card">
+          <div class="grid3" style="align-items:end">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="fcbk-bf-mitra">Mitra Bayar</label>
+              <input class="inp" id="fcbk-bf-mitra" placeholder="Masukkan nama mitra...">
             </div>
-            <div class="tbl-wrap">
-              <table>
-                <thead><tr>
-                  <th style="width:52px">F</th><th>Mitra</th><th>Status</th><th>Pengguna</th><th>Tanggal</th>
-                </tr></thead>
-                <tbody id="fcbk-batch-body"></tbody>
-              </table>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="fcbk-bf-tanggal">Tanggal</label>
+              <input class="inp" type="date" id="fcbk-bf-tanggal">
+            </div>
+            <div class="toolbar" style="justify-content:flex-end;margin-bottom:0">
+              <button class="btn btn-primary" id="fcbk-batch-cari">⌕ Cari</button>
             </div>
           </div>
         </div>
 
-        <!-- ===== tab Peserta: daftar peserta hasil batch ===== -->
-        <div id="fcbk-panel-peserta" style="display:none">
-          <div class="card">
-            <div class="grid3">
-              <div class="field" style="margin-bottom:0">
-                <label class="fl" for="fcbk-f-ktpa">No KPA</label>
-                <input class="inp" id="fcbk-f-ktpa" placeholder="No KPA...">
-              </div>
-              <div class="field" style="margin-bottom:0">
-                <label class="fl" for="fcbk-f-nrp">NRP</label>
-                <input class="inp" id="fcbk-f-nrp" placeholder="NRP...">
-              </div>
-              <div class="field" style="margin-bottom:0">
-                <label class="fl" for="fcbk-f-nik">NIK</label>
-                <input class="inp" id="fcbk-f-nik" placeholder="NIK...">
-              </div>
+        <!-- ===== Mitra: riwayat batch yang diunggah ===== -->
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h3 class="card-title" style="margin:0">Mitra</h3>
+            <div class="tbl-note" id="fcbk-batch-count" style="margin:0"></div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>Mitra</th><th>Status</th><th>Pengguna</th><th>Tanggal</th>
+              </tr></thead>
+              <tbody id="fcbk-batch-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ===== Peserta: daftar peserta hasil batch ===== -->
+        <div class="card">
+          <div class="grid3">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="fcbk-f-ktpa">No KPA</label>
+              <input class="inp" id="fcbk-f-ktpa" placeholder="No KPA...">
             </div>
-            <div class="grid3" style="margin-top:14px;align-items:end">
-              <div class="field" style="margin-bottom:0">
-                <label class="fl" for="fcbk-f-nama">Nama</label>
-                <input class="inp" id="fcbk-f-nama" placeholder="Nama...">
-              </div>
-              <div></div>
-              <div class="toolbar" style="justify-content:flex-end;margin-bottom:0">
-                <button class="btn btn-primary" id="fcbk-cari">⌕ Cari</button>
-              </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="fcbk-f-nrp">NRP</label>
+              <input class="inp" id="fcbk-f-nrp" placeholder="NRP...">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="fcbk-f-nik">NIK</label>
+              <input class="inp" id="fcbk-f-nik" placeholder="NIK...">
             </div>
           </div>
+          <div class="grid3" style="margin-top:14px;align-items:end">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="fcbk-f-nama">Nama</label>
+              <input class="inp" id="fcbk-f-nama" placeholder="Nama...">
+            </div>
+            <div></div>
+            <div class="toolbar" style="justify-content:flex-end;margin-bottom:0">
+              <button class="btn btn-primary" id="fcbk-cari">⌕ Cari</button>
+            </div>
+          </div>
+        </div>
 
-          <div class="card">
-            <div class="tbl-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th rowspan="2" style="width:52px">No</th>
-                    <th rowspan="2">KPA</th>
-                    <th rowspan="2">NRP/NIP</th>
-                    <th colspan="3" class="th-group">Peserta</th>
-                    <th colspan="4" class="th-group">Penerima</th>
-                    <th rowspan="2">Booking</th>
-                  </tr>
-                  <tr>
-                    <th>Nomor Pensiun</th><th>Nama</th><th>Tanggal Lahir</th>
-                    <th>Pensiun</th><th>Hidup</th><th>Nopensiun</th><th>Nama</th>
-                  </tr>
-                </thead>
-                <tbody id="fcbk-peserta-body"></tbody>
-              </table>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
-              <div class="tbl-note" id="fcbk-peserta-count" style="margin:0"></div>
-              <div id="fcbk-peserta-pager" style="display:flex;gap:4px"></div>
-            </div>
+        <div class="card">
+          <h3 class="card-title">Peserta</h3>
+          <div class="tbl-wrap">
+            <table class="wide-table">
+              <thead>
+                <tr>
+                  <th rowspan="2" style="width:52px">No</th>
+                  <th rowspan="2">KPA</th>
+                  <th rowspan="2">NRP/NIP</th>
+                  <th colspan="3" class="th-group">Peserta</th>
+                  <th colspan="4" class="th-group">Penerima</th>
+                  <th rowspan="2">Booking</th>
+                  <th rowspan="2">Status</th>
+                  <th rowspan="2" class="stick-r">Aksi</th>
+                </tr>
+                <tr>
+                  <th>Nomor Pensiun</th><th>Nama</th><th>Tanggal Lahir</th>
+                  <th>Pensiun</th><th>Hidup</th><th>Nopensiun</th><th>Nama</th>
+                </tr>
+              </thead>
+              <tbody id="fcbk-peserta-body"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+            <div class="tbl-note" id="fcbk-peserta-count" style="margin:0"></div>
+            <div id="fcbk-peserta-pager" style="display:flex;gap:4px"></div>
           </div>
         </div>
       </section>
@@ -656,9 +1133,6 @@
         </div>
 
         <div class="card">
-          <div class="toolbar" style="justify-content:flex-end">
-            <button class="btn btn-primary" data-go="flagging-pengajuan-unggah">⬆ Unggah Pengajuan Flagging</button>
-          </div>
           <div class="tbl-wrap">
             <table>
               <thead>
@@ -747,10 +1221,7 @@
         </div>
 
         <div class="card">
-          <div class="toolbar" style="justify-content:space-between">
-            <h2 class="card-title" style="margin:0">Data Pinjaman</h2>
-            <button class="btn btn-ghost" id="fpd-ubah">✎ Ubah</button>
-          </div>
+          <h2 class="card-title">Data Pinjaman</h2>
           <hr class="hr-card">
 
           <h4 class="section-title">Info Peserta</h4>
@@ -878,13 +1349,8 @@
             </div>
           </div>
 
-          <div class="alert alert-info" id="fpd-terkunci" style="display:none">
+          <div class="alert alert-info" id="fpd-terkunci">
             <span>ⓘ</span><span id="fpd-terkunci-teks"></span>
-          </div>
-
-          <div class="form-actions" id="fpd-actions" style="display:none">
-            <button class="btn btn-ghost" id="fpd-batal">Batal</button>
-            <button class="btn btn-primary" id="fpd-simpan">Submit Pengajuan</button>
           </div>
         </div>
       </section>
@@ -1053,7 +1519,6 @@
             <table class="wide-table">
               <thead>
                 <tr>
-                  <th rowspan="2" style="width:44px">I</th>
                   <th rowspan="2">Mitra Bayar</th>
                   <th rowspan="2">No. KTPA</th>
                   <th rowspan="2">NRP</th>
@@ -1063,7 +1528,6 @@
                   <th rowspan="2">Tanggal Lahir</th>
                   <th colspan="7" class="th-group">Info Kredit</th>
                   <th colspan="2" class="th-group">Status</th>
-                  <th rowspan="2">Kategori</th>
                   <th rowspan="2">Tanggal Setuju</th>
                   <th rowspan="2">Pengguna</th>
                   <th rowspan="2" class="stick-r">Aksi</th>
@@ -1285,12 +1749,7 @@
             <div class="field">
               <label class="fl" for="fpl-tgl">Tgl Pelunasan <span class="req">*</span></label>
               <input class="inp" type="date" id="fpl-tgl">
-              <div class="hint">Terisi mengikuti Tanggal Akhir Kredit, masih bisa diubah.</div>
-            </div>
-            <div class="field">
-              <label class="fl" for="fpl-kategori">Kategori Pelunasan <span class="req">*</span></label>
-              <select class="inp" id="fpl-kategori"></select>
-              <div class="hint" id="fpl-kategori-hint"></div>
+              <div class="hint" id="fpl-tgl-hint">Terisi mengikuti Tanggal Akhir Kredit, masih bisa diubah.</div>
             </div>
             <div class="field span2">
               <label class="fl" for="fpl-berkas">Unggah Berkas <span class="req">*</span></label>
@@ -1746,7 +2205,7 @@
         <div class="crumb"><span>Beranda</span><span>›</span><span>Pinjaman</span><span>›</span><span>Top Up</span><span>›</span><b>Tambahkan Top Up</b></div>
         <div class="page-head">
           <div style="display:flex;align-items:flex-start;gap:14px">
-            <button class="btn btn-ghost" data-go="flagging-pinjaman-topup">← Kembali</button>
+            <button class="btn btn-ghost" data-go="flagging-pinjaman-flagging">← Kembali</button>
             <div>
               <h1 class="page-title">Tambahkan Top Up</h1>
               <div class="page-sub">Cari peserta yang plafon pinjamannya akan ditambah.</div>
@@ -1899,8 +2358,8 @@
             </div>
 
             <div class="form-actions">
-              <button class="btn btn-ghost" data-go="flagging-pinjaman-topup">Batal</button>
-              <button class="btn btn-primary" id="ftut-simpan">Submit Top Up</button>
+              <button class="btn btn-ghost" data-go="flagging-pinjaman-flagging">Batal</button>
+              <button class="btn btn-primary" id="ftut-simpan">Submit</button>
             </div>
           </div>
         </div>
@@ -1911,7 +2370,7 @@
         <div class="crumb"><span>Beranda</span><span>›</span><span>Pinjaman</span><span>›</span><span>Top Up</span><span>›</span><b>Detail Top Up</b></div>
         <div class="page-head">
           <div style="display:flex;align-items:flex-start;gap:14px">
-            <button class="btn btn-ghost" data-go="flagging-pinjaman-topup">← Kembali</button>
+            <button class="btn btn-ghost" data-go="flagging-pinjaman-flagging">← Kembali</button>
             <div>
               <h1 class="page-title">Detail Top Up</h1>
               <div class="page-sub" id="ftud-sub"></div>
@@ -1943,100 +2402,93 @@
           <button class="btn btn-primary" data-go="flagging-penagihan-tambah">+ Tambah Penagihan Pinjaman</button>
         </div>
 
-        <div class="tabs">
-          <button class="tab active" data-fpn-tab="mitra">Mitra</button>
-          <button class="tab" data-fpn-tab="peserta">Peserta</button>
-        </div>
-
-        <!-- ===== tab Mitra: batch penagihan per mitra bayar ===== -->
-        <div id="fpn-panel-mitra">
-          <div class="card">
-            <div class="grid3" style="align-items:end">
-              <div class="field" style="margin-bottom:0">
-                <label class="fl" for="fpn-f-mitra">Mitra Bayar</label>
-                <input class="inp" id="fpn-f-mitra" placeholder="Masukkan nama mitra...">
-              </div>
-              <div class="field" style="margin-bottom:0">
-                <label class="fl" for="fpn-f-status">Status Peserta</label>
-                <select class="inp" id="fpn-f-status"></select>
-              </div>
-              <div class="toolbar" style="justify-content:flex-end;margin-bottom:0">
-                <button class="btn btn-primary" id="fpn-cari">⌕ Cari</button>
-              </div>
+        <!-- ===== Mitra: batch penagihan per mitra bayar ===== -->
+        <div class="card">
+          <div class="grid3" style="align-items:end">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="fpn-f-mitra">Mitra Bayar</label>
+              <input class="inp" id="fpn-f-mitra" placeholder="Masukkan nama mitra...">
             </div>
-          </div>
-
-          <div class="card">
-            <div class="tbl-wrap">
-              <table class="wide-table">
-                <thead>
-                  <tr>
-                    <th rowspan="2">Mitra</th>
-                    <th rowspan="2">Status</th>
-                    <th colspan="3" class="th-group">Info Tanggal</th>
-                    <th rowspan="2">Catatan</th>
-                    <th colspan="2" class="th-group">Info Pembuatan</th>
-                    <th rowspan="2" class="stick-r">Aksi</th>
-                  </tr>
-                  <tr>
-                    <th>Tagihan</th><th>Awal</th><th>Akhir</th>
-                    <th>User</th><th>Tanggal</th>
-                  </tr>
-                </thead>
-                <tbody id="fpn-body"></tbody>
-              </table>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="fpn-f-status">Status Peserta</label>
+              <select class="inp" id="fpn-f-status"></select>
             </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
-              <div class="tbl-note" id="fpn-count" style="margin:0"></div>
-              <div id="fpn-pager" style="display:flex;gap:4px"></div>
+            <div class="toolbar" style="justify-content:flex-end;margin-bottom:0">
+              <button class="btn btn-primary" id="fpn-cari">⌕ Cari</button>
             </div>
           </div>
         </div>
 
-        <!-- ===== tab Peserta: peserta dari seluruh batch penagihan ===== -->
-        <div id="fpn-panel-peserta" style="display:none">
-          <div class="card">
-            <div class="grid3" style="align-items:end">
-              <div class="field" style="margin-bottom:0">
-                <label class="fl" for="fpp-f-cari">KPA/NRP/NIP/Nama</label>
-                <input class="inp" id="fpp-f-cari" placeholder="Masukkan kata kunci pencarian...">
-              </div>
-              <div class="field" style="margin-bottom:0">
-                <label class="fl" for="fpp-f-status">Status Peserta</label>
-                <select class="inp" id="fpp-f-status"></select>
-              </div>
-              <div class="toolbar" style="justify-content:flex-end;margin-bottom:0">
-                <button class="btn btn-primary" id="fpp-cari">⌕ Cari</button>
-              </div>
+        <div class="card">
+          <h3 class="card-title">Mitra</h3>
+          <div class="tbl-wrap">
+            <table class="wide-table">
+              <thead>
+                <tr>
+                  <th rowspan="2">Mitra</th>
+                  <th rowspan="2">Status</th>
+                  <th colspan="3" class="th-group">Info Tanggal</th>
+                  <th rowspan="2">Catatan</th>
+                  <th colspan="2" class="th-group">Info Pembuatan</th>
+                  <th rowspan="2" class="stick-r">Aksi</th>
+                </tr>
+                <tr>
+                  <th>Tagihan</th><th>Awal</th><th>Akhir</th>
+                  <th>User</th><th>Tanggal</th>
+                </tr>
+              </thead>
+              <tbody id="fpn-body"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+            <div class="tbl-note" id="fpn-count" style="margin:0"></div>
+            <div id="fpn-pager" style="display:flex;gap:4px"></div>
+          </div>
+        </div>
+
+        <!-- ===== Peserta: peserta dari seluruh batch penagihan ===== -->
+        <div class="card">
+          <div class="grid3" style="align-items:end">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="fpp-f-cari">KPA/NRP/NIP/Nama</label>
+              <input class="inp" id="fpp-f-cari" placeholder="Masukkan kata kunci pencarian...">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="fpp-f-status">Status Peserta</label>
+              <select class="inp" id="fpp-f-status"></select>
+            </div>
+            <div class="toolbar" style="justify-content:flex-end;margin-bottom:0">
+              <button class="btn btn-primary" id="fpp-cari">⌕ Cari</button>
             </div>
           </div>
+        </div>
 
-          <div class="card">
-            <div class="tbl-wrap">
-              <table class="wide-table">
-                <thead>
-                  <tr>
-                    <th rowspan="2">KPA</th>
-                    <th rowspan="2">NRP/NIP</th>
-                    <th rowspan="2">NOPENS</th>
-                    <th rowspan="2">Nama</th>
-                    <th rowspan="2">Tanggal Lahir</th>
-                    <th rowspan="2">Pensiun</th>
-                    <th colspan="3" class="th-group">Info Kredit</th>
-                    <th colspan="3" class="th-group">Info Status</th>
-                  </tr>
-                  <tr>
-                    <th>Awal Kredit</th><th>Akhir Kredit</th><th class="num">Plafon</th>
-                    <th>Status</th><th>User</th><th>Tanggal</th>
-                  </tr>
-                </thead>
-                <tbody id="fpp-body"></tbody>
-              </table>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
-              <div class="tbl-note" id="fpp-count" style="margin:0"></div>
-              <div id="fpp-pager" style="display:flex;gap:4px"></div>
-            </div>
+        <div class="card">
+          <h3 class="card-title">Peserta</h3>
+          <div class="tbl-wrap">
+            <table class="wide-table">
+              <thead>
+                <tr>
+                  <th rowspan="2">KPA</th>
+                  <th rowspan="2">NRP/NIP</th>
+                  <th rowspan="2">NOPENS</th>
+                  <th rowspan="2">Nama</th>
+                  <th rowspan="2">Tanggal Lahir</th>
+                  <th rowspan="2">Pensiun</th>
+                  <th colspan="3" class="th-group">Info Kredit</th>
+                  <th colspan="3" class="th-group">Info Status</th>
+                </tr>
+                <tr>
+                  <th>Awal Kredit</th><th>Akhir Kredit</th><th class="num">Plafon</th>
+                  <th>Status</th><th>User</th><th>Tanggal</th>
+                </tr>
+              </thead>
+              <tbody id="fpp-body"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+            <div class="tbl-note" id="fpp-count" style="margin:0"></div>
+            <div id="fpp-pager" style="display:flex;gap:4px"></div>
           </div>
         </div>
       </section>

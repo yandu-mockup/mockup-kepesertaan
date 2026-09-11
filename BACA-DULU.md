@@ -26,6 +26,8 @@ memakai font sistem.
 | `logo-asabri-white.png` | Logo di navbar | Tidak |
 | `Template Pendaftaran Peserta Kolektif.xlsx` | Berkas yang diunduh tombol "⤓ Unduh template" di Pendaftaran Kolektif | Tidak |
 | `Pemutakhiran Data *.xlsx` (3 berkas) | Template per Jenis Pemutakhiran Data di layar Peremajaan | Tidak |
+| `pum/` | **Aplikasi terpisah "KPR (PUM)"** — buka `pum/index.html` | Jarang |
+| `flagging/` | **Aplikasi terpisah "Flagging Mitra Bayar"** — buka `flagging/index.html` | Jarang |
 | `CLAUDE.md` | Panduan untuk yang menambah layar/fitur baru | Jarang |
 
 Seluruh warna dan komponen (tombol, tabel, form, badge) didefinisikan di
@@ -48,7 +50,8 @@ Aturan penulisan:
 - Jangan menghapus tanda kurung `[ ] { }` pembungkusnya
 
 ### Contoh 1 — mengubah saldo alokasi dana
-Cari bagian **3. SALDO ALOKASI DANA KPR (PUM)**, ubah angkanya:
+Saldo alokasi dana ada di aplikasi KPR (PUM). Buka `pum/data.js`, cari bagian
+**1. SALDO ALOKASI DANA KPR (PUM)**, ubah angkanya:
 ```js
 "mabes-tni": { label:"Mabes TNI", saldo:1250000000 },
 ```
@@ -109,10 +112,17 @@ isinya menyusul sesuai referensi FSD.
 |---|---|
 | Pengelolaan Iuran Premi THT, JKK, dan JKm | Daftar peserta aktif, tombol Hitung Premi menampilkan simulasi |
 
-### Pengelolaan KPR (PUM)
+### KPR (PUM) — aplikasi terpisah
+
+Modul Pengelolaan KPR (PUM) **sudah dipisah** menjadi aplikasi sendiri di
+folder [`pum/`](pum/). Buka `pum/index.html` untuk menjalankannya — isinya
+lengkap dan berdiri sendiri (punya `index.html`, `data.js`, `app.js`, dan
+`style.css` sendiri), jadi tidak ada berkas yang dipinjam dari folder induk.
+
 | Layar | Yang bisa dicoba |
 |---|---|
-| Parameter Plafon | Nominal plafon PUM KPR per Angkatan |
+| Parameter Plafon | Nominal plafon PUM KPR per Angkatan, dropdown berjenjang Status Personil → Angkatan → Golongan → Pangkat |
+| Parameter Pernyataan Tanggung Jawab | Isi poin disclaimer yang wajib disetujui sebelum simpan draft pengajuan |
 | Alokasi Dana KPR (PUM) | Saldo LIVE per kesatuan, sisa saldo terhitung otomatis, tolak jika melebihi saldo |
 | Pengajuan KPR (PUM) | Daftar pengajuan, filter KPA/NPWP/Nama/NRP & status, aksi Detail/Ubah/Hapus/Submit, form Pengajuan Baru dengan pencarian Nomor KPA |
 | Approval KPR (PUM) | Persetujuan pengajuan yang sudah disubmit PIC UNOR/Kesatuan |
@@ -171,8 +181,8 @@ dipinjam dari folder induk.
 Beberapa layar tidak punya menu sendiri karena dibuka dari layar lain (ditandai
 **↳** pada tabel di atas): **Monitoring Distribusi BDN** dari pintasan di
 Dashboard, **Daftar Peserta DAPEM** dari Daftar Periode, **Daftar Peserta
-NON DAPEM** dari layar Pembentukan NON DAPEM, serta Detail/Form
-Pengajuan PUM dan layar Tinjau Temuan DAPEM/NON DAPEM.
+NON DAPEM** dari layar Pembentukan NON DAPEM, serta layar Tinjau Temuan
+DAPEM/NON DAPEM.
 
 ## Catatan
 

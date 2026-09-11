@@ -38,7 +38,24 @@ strukturnya. Hampir semua pola sudah pernah dipakai di suatu tempat.
 | `Template Pendaftaran Peserta Kolektif.xlsx` | Berkas yang diunduh tombol "⤓ Unduh template" di Upload Kolektif |
 | `Pemutakhiran Data *.xlsx` (3 berkas) | Template per Jenis Pemutakhiran Data; dirujuk lewat `templateFile` di `DATA_PEREMAJAAN` |
 | `Template Alih Status Kolektif.xlsx` | Berkas yang diunduh tombol "⤓ Unduh Template" di Alih Status mekanisme Kolektif; dirujuk lewat `templateFile` di `DATA_ALIH_STATUS_KOLEKTIF` |
+| `pum/` | **Aplikasi terpisah "KPR (PUM)"** — lihat di bawah |
 | `flagging/` | **Aplikasi terpisah "Flagging Mitra Bayar"** — lihat di bawah |
+
+## Aplikasi terpisah: `pum/`
+
+Modul Pengelolaan KPR (PUM) sudah dikeluarkan dari prototipe ini menjadi
+aplikasi sendiri di folder `pum/`, dengan nama **KPR (PUM)**. Isinya lengkap
+dan berdiri sendiri: `index.html`, `data.js`, `app.js`, `style.css`, dan
+`logo-asabri-white.png` — tidak ada berkas yang di-`../`.
+
+Sub modul yang ada di sana: Parameter Plafon, Parameter Pernyataan Tanggung
+Jawab, Alokasi Dana KPR (PUM), Pengajuan KPR (PUM) (beserta layar Pengajuan
+Baru, wizard 5 langkah, dan Detail), Approval KPR (PUM), serta Pelunasan
+KPR (PUM) (beserta Detail).
+
+`DATA_BUM` ikut disalin ke `pum/data.js` karena wizard Pengajuan memakainya
+untuk menolak peserta yang masih punya Pinjaman KPR (BUM) aktif — hanya
+dibaca, tidak pernah diubah dari sana.
 
 ## Aplikasi terpisah: `flagging/`
 
@@ -51,10 +68,11 @@ serta dua berkas template yang diunduh tombol "⤓ Download Template Excel":
 Kolektif) dan `Template Pengajuan Flagging.xlsx` (layar Unggah Pengajuan
 Flagging) — tidak ada berkas yang di-`../`.
 
-Aturan yang sama berlaku di sana: gaya, komponen, dan token warna mengikuti
-`flagging/style.css` (salinan design system yang sama). Kalau menambah komponen
-baru yang berguna untuk kedua aplikasi, tambahkan di **kedua** `style.css` —
-jangan saling merujuk antar folder.
+Aturan yang sama berlaku di kedua folder itu: gaya, komponen, dan token warna
+mengikuti `pum/style.css` / `flagging/style.css` (salinan design system yang
+sama). Kalau menambah komponen baru yang berguna untuk lebih dari satu
+aplikasi, tambahkan di **semua** `style.css` — jangan saling merujuk antar
+folder.
 
 ---
 

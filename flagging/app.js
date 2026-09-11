@@ -51,6 +51,8 @@ function go(id) {
   if (id === "flagging-takeover-tambah")   fttReset();
   if (id === "flagging-topup-tambah")      ftutReset();
   if (id === "flagging-penagihan-tambah")  fptReset();
+  if (id === "flagging-tarif-tambah")      ftt2Reset();
+  if (id === "flagging-cb-individu-cari") { $("#fcbi-kpa").value = ""; fcbiSembunyikanHasil(); }
 }
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-go]");
@@ -205,55 +207,18 @@ renderFlaggingDashboard();
    Rekap mitra bayar per periode. Filter dijalankan saat tombol "Cari" ditekan
    (bukan saat mengetik) supaya perilakunya sama dengan layar SPTB. */
 let fpPager  = { hal: 1, per: 5 };
-let fpFilter = { bulan: "Januari", tahun: "2025", mitra: "", cabang: "", jenis: [] };
-
-/* Jenis Bayar boleh lebih dari satu, jadi dibuat sebagai panel kotak centang
-   yang tampil seperti <select>. Semua jenis tercentang saat layar dibuka. */
-const fpJenis = new Set(FP_JENIS_BAYAR);
+let fpFilter = { bulan: "Januari", tahun: "2025", mitra: "" };
 
 function isiPilihanFp() {
   $("#fp-f-bulan").innerHTML = BULAN_ID.map(b => `<option>${esc(b)}</option>`).join("");
   $("#fp-f-bulan").value = fpFilter.bulan;
-  $("#fp-jenis-pop").innerHTML = FP_JENIS_BAYAR.map(j => `
-    <label class="multisel-opt">
-      <input type="checkbox" value="${esc(j)}" ${fpJenis.has(j) ? "checked" : ""}>${esc(j)}
-    </label>`).join("");
-  fpTulisLabelJenis();
 }
-
-function fpTulisLabelJenis() {
-  const el = $("#fp-jenis-val");
-  const dipilih = FP_JENIS_BAYAR.filter(j => fpJenis.has(j));
-  el.textContent = dipilih.length ? dipilih.join(", ") : "Pilih jenis bayar…";
-  el.classList.toggle("kosong", dipilih.length === 0);
-}
-
-function fpTutupJenis() {
-  $("#fp-jenis-pop").classList.remove("open");
-  $("#fp-jenis-trigger").setAttribute("aria-expanded", "false");
-}
-
-$("#fp-jenis-trigger").onclick = () => {
-  const buka = !$("#fp-jenis-pop").classList.contains("open");
-  $("#fp-jenis-pop").classList.toggle("open", buka);
-  $("#fp-jenis-trigger").setAttribute("aria-expanded", String(buka));
-};
-$("#fp-jenis-pop").onchange = e => {
-  const c = e.target;
-  if (c.checked) fpJenis.add(c.value); else fpJenis.delete(c.value);
-  fpTulisLabelJenis();
-};
-document.addEventListener("click", e => {
-  if (!e.target.closest("#fp-f-jenis")) fpTutupJenis();
-});
 
 function fpBacaFilter() {
   fpFilter = {
-    bulan:  $("#fp-f-bulan").value,
-    tahun:  $("#fp-f-tahun").value.trim(),
-    mitra:  $("#fp-f-mitra").value.trim().toLowerCase(),
-    cabang: $("#fp-f-cabang").value.trim().toLowerCase(),
-    jenis:  FP_JENIS_BAYAR.filter(j => fpJenis.has(j))
+    bulan: $("#fp-f-bulan").value,
+    tahun: $("#fp-f-tahun").value.trim(),
+    mitra: $("#fp-f-mitra").value.trim().toLowerCase()
   };
 }
 
@@ -261,10 +226,8 @@ function fpRows() {
   const f = fpFilter;
   return DATA_FLAGGING_PENSIUNAN.filter(r =>
     r.bulan === f.bulan &&
-    (!f.tahun  || String(r.tahun) === f.tahun) &&
-    (!f.mitra  || r.mitra.toLowerCase().includes(f.mitra)) &&
-    (!f.cabang || r.cabang.toLowerCase().includes(f.cabang)) &&
-    f.jenis.includes(r.jenisBayar)
+    (!f.tahun || String(r.tahun) === f.tahun) &&
+    (!f.mitra || r.mitra.toLowerCase().includes(f.mitra))
   );
 }
 
@@ -277,16 +240,14 @@ function renderFlaggingPensiunan() {
       <tr>
         <td>${pg.mulai + i + 1}</td>
         <td class="t-strong">${esc(r.mitra)}</td>
-        <td class="num">${r.flagging.toLocaleString("id-ID")}</td>
-        <td class="num">${r.nonFlagging.toLocaleString("id-ID")}</td>
-        <td class="num">${(r.flagging + r.nonFlagging).toLocaleString("id-ID")}</td>
+        <td class="num">${r.pesertaAktif.toLocaleString("id-ID")}</td>
+        <td class="num">${rp(r.imbalAktif)}</td>
+        <td class="num">${r.pesertaPensiun.toLocaleString("id-ID")}</td>
+        <td class="num">${rp(r.imbalPensiun)}</td>
+        <td class="num">${r.penerima.toLocaleString("id-ID")}</td>
         <td class="num">${rp(r.netto)}</td>
       </tr>`).join("")
-    : `<tr><td colspan="6"><div class="empty">${
-        fpFilter.jenis.length
-          ? "Tidak ada mitra bayar yang cocok dengan filter."
-          : "Pilih minimal satu Jenis Bayar untuk menampilkan data."
-      }</div></td></tr>`;
+    : `<tr><td colspan="8"><div class="empty">Tidak ada mitra bayar yang cocok dengan filter.</div></td></tr>`;
 
   $("#fp-count").textContent = `Menampilkan ${rows.length.toLocaleString("id-ID")} data`;
   $("#fp-pager").innerHTML   = rows.length ? pagerHtml(fpPager, pg, "data-fp-hal") : "";
@@ -301,6 +262,110 @@ document.addEventListener("click", e => {
 isiPilihanFp();
 fpBacaFilter();
 renderFlaggingPensiunan();
+
+/* ============================================ FLAGGING » PARAMETER PENETAPAN TARIF
+   Tarif layanan per pasangan Jenis Tarif × Jenis Peserta. Daftarnya hanya
+   menampilkan pasangan itu; nominalnya ada di halaman Detail. Baris baru
+   dibuat lewat layar Penetapan Tarif. */
+
+let ftrPager  = { hal: 1, per: 10 };
+let ftrFilter = { tarif: "Semua Jenis Tarif", peserta: "Semua Jenis Peserta" };
+let ftrSeq    = 0;
+let ftrRows   = DATA_FLAGGING_TARIF.map(r => ({ ...r, id: "tr" + (++ftrSeq) }));
+
+const ftrOpsi = (sel, semua, daftar) => {
+  $(sel).innerHTML = [semua, ...daftar].map(s => `<option>${esc(s)}</option>`).join("");
+};
+ftrOpsi("#ftr-f-tarif",   "Semua Jenis Tarif",   FTR_JENIS_TARIF);
+ftrOpsi("#ftr-f-peserta", "Semua Jenis Peserta", FTR_JENIS_PESERTA);
+$("#ftt2-tarif").innerHTML   = FTR_JENIS_TARIF.map(s => `<option>${esc(s)}</option>`).join("");
+$("#ftt2-peserta").innerHTML = FTR_JENIS_PESERTA.map(s => `<option>${esc(s)}</option>`).join("");
+
+function ftrDaftar() {
+  const f = ftrFilter;
+  return ftrRows.filter(r =>
+    (f.tarif   === "Semua Jenis Tarif"   || r.jenisTarif   === f.tarif) &&
+    (f.peserta === "Semua Jenis Peserta" || r.jenisPeserta === f.peserta)
+  );
+}
+
+function renderFtr() {
+  const rows = ftrDaftar();
+  const pg   = pagerPotong(rows, ftrPager);
+
+  $("#ftr-body").innerHTML = pg.hal.length
+    ? pg.hal.map((r, i) => `
+      <tr>
+        <td>${pg.mulai + i + 1}</td>
+        <td class="t-strong">${esc(r.jenisTarif)}</td>
+        <td>${esc(r.jenisPeserta)}</td>
+        <td style="white-space:nowrap">
+          <button class="btn btn-info btn-sm" data-ftr-detail="${esc(r.id)}">Detail</button>
+        </td>
+      </tr>`).join("")
+    : `<tr><td colspan="4"><div class="empty">Tidak ada tarif yang cocok dengan filter.</div></td></tr>`;
+
+  $("#ftr-count").innerHTML = pagerNote(pg, "tarif", "");
+  $("#ftr-pager").innerHTML = rows.length ? pagerHtml(ftrPager, pg, "data-ftr-hal") : "";
+}
+
+$("#ftr-cari").onclick = () => {
+  ftrFilter.tarif   = $("#ftr-f-tarif").value;
+  ftrFilter.peserta = $("#ftr-f-peserta").value;
+  ftrPager.hal = 1;
+  renderFtr();
+};
+
+const ftrCari = id => ftrRows.find(r => r.id === id);
+
+/* ---- Detail Tarif: baca-saja, tempat nominalnya ditampilkan. */
+function ftrdIsi(r) {
+  $("#ftrd-sub").textContent     = `${r.jenisTarif} · ${r.jenisPeserta}`;
+  $("#ftrd-tarif").value         = r.jenisTarif;
+  $("#ftrd-peserta").value       = r.jenisPeserta;
+  $("#ftrd-nominal").value       = r.nominal.toLocaleString("id-ID");
+}
+
+/* ---- Penetapan Tarif */
+function ftt2Reset() {
+  $("#ftt2-tarif").value   = FTR_JENIS_TARIF[0];
+  $("#ftt2-peserta").value = FTR_JENIS_PESERTA[0];
+  $("#ftt2-nominal").value = "";
+  $("#ftt2-periode").value = "";
+}
+
+$("#ftt2-simpan").onclick = () => {
+  const jenisTarif   = $("#ftt2-tarif").value;
+  const jenisPeserta = $("#ftt2-peserta").value;
+  const nominal      = fpdAngka($("#ftt2-nominal").value);
+  const periode      = $("#ftt2-periode").value;
+
+  if (!$("#ftt2-nominal").value.trim()) { toast("Nominal wajib diisi.", "bad"); return; }
+  if (nominal <= 0)                     { toast("Nominal harus lebih besar dari nol.", "bad"); return; }
+  if (!periode)                         { toast("Periode wajib diisi.", "bad"); return; }
+
+  /* Satu pasangan jenis tarif × jenis peserta hanya boleh punya satu nominal. */
+  if (ftrRows.some(r => r.jenisTarif === jenisTarif && r.jenisPeserta === jenisPeserta)) {
+    toast(`Tarif ${jenisTarif} untuk peserta ${jenisPeserta} sudah ditetapkan.`, "bad");
+    return;
+  }
+
+  ftrRows.unshift({ id: "tr" + (++ftrSeq), jenisTarif, jenisPeserta, nominal, periode });
+  ftrPager.hal = 1;
+  renderFtr();
+  go("flagging-parameter-tarif");
+  toast(`Tarif ${jenisTarif} (${jenisPeserta}) ditetapkan ${rp(nominal)}.`, "ok");
+};
+
+document.addEventListener("click", e => {
+  const bDetail = e.target.closest("[data-ftr-detail]");
+  if (bDetail) { ftrdIsi(ftrCari(bDetail.dataset.ftrDetail)); go("flagging-tarif-detail"); return; }
+
+  const bHal = e.target.closest("[data-ftr-hal]");
+  if (bHal) { ftrPager.hal = +bHal.dataset.ftrHal; renderFtr(); }
+});
+
+renderFtr();
 
 /* ================================================ FLAGGING » CHECK DAN BOOKING » INDIVIDU */
 
@@ -418,7 +483,9 @@ $("#fcbi-search").onclick = () => {
   if (!p) { toast(`Nomor KPA "${kpa}" tidak ditemukan pada sistem ASABRI.`, "bad"); return; }
 
   const v = fcbiCekValidasi(p);
-  if (v) { fcbiPopupValidasi(p.kpa, v); return; }
+  /* Peringatan yang boleh dilanjutkan tidak menghentikan alur — pop-upnya
+     ditampilkan setelah kartu Informasi Peserta selesai diisi di bawah. */
+  if (v && !v.lanjut) { fcbiPopupValidasi(p.kpa, v); return; }
 
   fcbiPeserta = p;               /* dipakai tombol Booking di bawah */
   if (DATA_FLAGGING_AKTIF.includes(p)) {
@@ -445,31 +512,348 @@ $("#fcbi-search").onclick = () => {
     fcbiIsiGaji("w", p);
     $("#fcbi-hasil-waris").style.display = "";
   }
+
+  if (v) fcbiPopupValidasi(p.kpa, v);   /* peringatan, kartunya sudah tampil */
 };
 
-/* Booking individu masuk ke antrean Persetujuan. Nomor pensiun diambil sesuai
-   jenis pesertanya: `nomorPensiun` untuk pensiun sendiri, `nopens` untuk waris. */
-function fcbiKirimPersetujuan(nama) {
+/* Booking individu mendaftarkan pesertanya ke daftar Check dan Booking »
+   Individu dengan status "Booked". Pengajuan pinjamannya baru dibuat nanti
+   lewat tombol Ubah di daftar itu, bukan di sini. */
+function fcbiBooking(namaPenerima, nopensPenerima) {
   const p = fcbiPeserta;
-  const masuk = fpsTambah({
-    ktpa: p.kpa, nrp: p.nrp || "", mitra: p.mitra,
-    nopens: p.nomorPensiun || p.nopens || "", nama, tglLahir: p.tglLahir || ""
-  }, "Check dan Booking Individu");
-  renderFps();
-  toast(masuk
-    ? `Booking pinjaman untuk ${nama} diajukan dan masuk antrean Persetujuan.`
-    : `${nama} sudah punya pengajuan yang menunggu persetujuan.`, masuk ? "ok" : "bad");
+  if (!fciTambah(p, namaPenerima, nopensPenerima)) {
+    toast(`${p.nama} sudah ada di daftar Check dan Booking Individu.`, "bad");
+    return;
+  }
+  go(fcbAsal.layar);
+  toast(`Booking ${namaPenerima} tersimpan — lengkapi data pinjamannya lewat tombol Ubah.`, "ok");
 }
 
-$("#fcbi-a-booking").onclick = () => fcbiKirimPersetujuan($("#fcbi-a-nama").value);
+$("#fcbi-a-booking").onclick = () => fcbiBooking($("#fcbi-a-nama").value, "");
 
-$("#fcbi-s-booking").onclick = () => fcbiKirimPersetujuan($("#fcbi-s-nama").value);
+$("#fcbi-s-booking").onclick = () =>
+  fcbiBooking($("#fcbi-s-nama").value, $("#fcbi-s-nopensiun").value);
 
 $("#fcbi-w-booking").onclick = () => {
   if (!$("#fcbi-w-nama-peminjam").value.trim()) { toast("Nomor Pensiun Peminjam belum dipilih.", "bad"); return; }
-  fcbiKirimPersetujuan($("#fcbi-w-nama-peminjam").value);
+  fcbiBooking($("#fcbi-w-nama-peminjam").value, $("#fcbi-w-nopensiun-peminjam").value);
 };
 
+
+/* ======================================== FLAGGING » CHECK DAN BOOKING » INDIVIDU
+   Daftar peserta yang sudah dibooking satu per satu. Barisnya lahir dari layar
+   Pencarian Peserta (tombol Booking) dengan status "Booked", lalu berubah jadi
+   "Pengajuan" begitu Data Pinjaman-nya disubmit lewat layar Ubah.
+
+   Status menentukan aksi mana yang hidup — lihat fciAksi(). */
+
+let fciPager  = { hal: 1, per: 10 };
+let fciFilter = { cari: "", status: "Semua Status" };
+let fciSeq    = 0;
+let fciRows   = DATA_FLAGGING_INDIVIDU.map(r => ({ ...r, id: "ci" + (++fciSeq) }));
+
+$("#fci-f-status").innerHTML =
+  ["Semua Status", ...FCBI_STATUS].map(s => `<option>${esc(s)}</option>`).join("");
+
+const fciKosong = v => v ? esc(v) : `<span style="color:var(--faint)">–</span>`;
+const fciKode   = v => `<span class="pill ${v === "Y" ? "pill-ok" : "pill-info"}">${esc(v)}</span>`;
+const fciPill   = s => `<span class="pill ${
+  s === "Booked" ? "pill-ok" : s === "Dibatalkan" ? "pill-bad" : "pill-warn"}">${esc(s)}</span>`;
+
+function fciDaftar() {
+  const f = fciFilter;
+  return fciRows.filter(r =>
+    (f.status === "Semua Status" || r.status === f.status) &&
+    (!f.cari || [r.ktpa, r.nrp, r.nama].some(v => String(v).toLowerCase().includes(f.cari)))
+  );
+}
+
+/* Ubah dan Pembatalan hanya untuk booking yang belum diajukan. Begitu statusnya
+   "Pengajuan", pinjamannya sudah ada di Pinjaman » Pengajuan dan keputusannya
+   ada di Persetujuan — bukan lagi di layar ini. */
+function fciAksi(r) {
+  const bisa  = r.status === "Booked";
+  const alasan = bisa ? "" : "Hanya untuk booking berstatus Booked";
+  return `
+    <button class="btn btn-info btn-sm" data-fci-detail="${esc(r.id)}">Detail</button>
+    <button class="btn btn-ghost btn-sm" data-fci-ubah="${esc(r.id)}" ${bisa ? "" : "disabled"}
+      title="${esc(bisa ? "Lengkapi data pinjaman" : alasan)}">Ubah</button>
+    <button class="btn btn-danger btn-sm" data-fci-batal="${esc(r.id)}" ${bisa ? "" : "disabled"}
+      title="${esc(bisa ? "Batalkan booking" : alasan)}">Pembatalan</button>`;
+}
+
+function renderFci() {
+  const rows = fciDaftar();
+  const pg   = pagerPotong(rows, fciPager);
+
+  $("#fci-body").innerHTML = pg.hal.length
+    ? pg.hal.map((r, i) => `
+      <tr>
+        <td>${pg.mulai + i + 1}</td>
+        <td class="t-strong">${esc(r.ktpa)}</td>
+        <td>${esc(r.nrp)}</td>
+        <td>${fciKosong(r.nomorPensiun)}</td>
+        <td class="t-strong">${esc(r.nama)}</td>
+        <td>${esc(r.tglLahir)}</td>
+        <td>${fciKode(r.pensiun)}</td>
+        <td>${fciKode(r.hidup)}</td>
+        <td>${fciKosong(r.nopensPenerima)}</td>
+        <td class="t-strong">${esc(r.namaPenerima)}</td>
+        <td><input type="checkbox" checked disabled aria-label="Sudah dibooking"></td>
+        <td>${fciPill(r.status)}</td>
+        <td class="stick-r" style="white-space:nowrap">${fciAksi(r)}</td>
+      </tr>`).join("")
+    : `<tr><td colspan="13"><div class="empty">Belum ada peserta yang dibooking lewat Check dan Booking Individu.</div></td></tr>`;
+
+  $("#fci-count").innerHTML = pagerNote(pg, "peserta", "");
+  $("#fci-pager").innerHTML = rows.length ? pagerHtml(fciPager, pg, "data-fci-hal") : "";
+}
+
+$("#fci-cari").onclick = () => {
+  fciFilter.cari   = $("#fci-f-cari").value.trim().toLowerCase();
+  fciFilter.status = $("#fci-f-status").value;
+  fciPager.hal = 1;
+  renderFci();
+};
+
+const fciCari = id => fciRows.find(r => r.id === id);
+
+/* ---- Detail dan Ubah Booking dipakai bersama oleh daftar Individu dan tabel
+   Peserta di layar Kolektif — formnya identik, hanya asal barisnya berbeda.
+   `fcbAsal` menyimpan dari mana baris itu dibuka supaya tombol Kembali,
+   remah roti, dan render setelah submit menunjuk ke daftar yang benar. */
+const FCB_ASAL = {
+  individu: { layar:"flagging-cb-individu", label:"Individu",
+              render: () => renderFci(),          sumber:"Check dan Booking Individu" },
+  kolektif: { layar:"flagging-cb-kolektif", label:"Kolektif",
+              render: () => renderFcbkPeserta(),  sumber:"Check dan Booking Kolektif" }
+};
+let fcbAsal = FCB_ASAL.individu;
+
+function fcbSetAsal(kunci, prefix) {
+  fcbAsal = FCB_ASAL[kunci] || FCB_ASAL.individu;
+  $(`#${prefix}-crumb-asal`).textContent = fcbAsal.label;
+  $(`#${prefix}-kembali`).dataset.go     = fcbAsal.layar;
+}
+
+function fcidField(label, nilai) {
+  return `<div class="field">
+    <label class="fl">${esc(label)}</label>
+    <input class="inp" value="${esc(nilai || "–")}" disabled>
+  </div>`;
+}
+
+function fcidIsi(r, asal) {
+  fcbSetAsal(asal, "fcid");
+  $("#fcid-sub").textContent = `${r.ktpa} — ${r.nama} · ${r.status}`;
+  $("#fcid-peserta").innerHTML = [
+    fcidField("KPA",           r.ktpa),
+    fcidField("NRP/NIP",       r.nrp),
+    fcidField("Nama",          r.nama),
+    fcidField("NOPENS",        r.nomorPensiun),
+    fcidField("Tanggal Lahir", r.tglLahir),
+    fcidField("Gaji Peserta",  rp(r.gaji)),
+    fcidField("NIK",           r.nik),
+    fcidField("Mitra Bayar",   r.mitra),
+    fcidField("Cabang Mitra Bayar", r.cabangMitra)
+  ].join("");
+
+  /* Data Pinjaman baru terisi setelah Submit di layar Ubah; selama masih
+     "Booked" bagian ini digantikan banner keterangan. */
+  const j = r.pinjaman;
+  $("#fcid-pinjaman").innerHTML = j ? [
+    fcidField("Tgl Pelunasan",            j.tglPelunasan),
+    fcidField("Tgl Lahir",                r.tglLahir),
+    fcidField("NOPENS",                   r.nomorPensiun),
+    fcidField("Tanggal Akhir Kredit",     j.akhirKredit),
+    fcidField("Nama",                     r.nama),
+    fcidField("Nomor Rekening Tabungan",  j.norekTab),
+    fcidField("Awal Kredit",              j.awalKredit),
+    fcidField("Nomor Perjanjian Kredit",  j.noPk),
+    fcidField("Plafon",                   rp(j.plafon)),
+    fcidField("Cabang Mitra Bayar",       j.cabangMitra),
+    fcidField("Nomor Rekening Kredit",    j.norekKredit),
+    fcidField("Besaran Angsuran",         rp(j.angsuran)),
+    fcidField("Mitra Bayar",              r.mitra),
+    fcidField("Sub Kredit",               j.subKredit),
+    fcidField("Jenis Tabungan",           j.jnsTab),
+    fcidField("Lampiran SP3R",            j.lampiranSp3r),
+    fcidField("NIK",                      j.nik || r.nik),
+    fcidField("Lampiran Surat Pernyataan Kredit Mitra Bayar", j.lampiranPernyataan)
+  ].join("") : "";
+  $("#fcid-pinjaman-kosong").style.display = j ? "none" : "";
+}
+
+/* ---- Ubah Booking: melengkapi Data Pinjaman lalu mengajukannya. */
+let fciuRow = null;
+
+/* Mitra Bayar mengikuti role yang sedang login kalau role itu memang mitra
+   bayar; kalau bukan, dipakai mitra bawaan pesertanya. */
+const fciuMitra = r =>
+  DATA_MITRA_BAYAR.includes($("#top-role").value) ? $("#top-role").value : r.mitra;
+
+function fciuIsi(r, asal) {
+  fcbSetAsal(asal, "fciu");
+  $("#fciu-batal").dataset.go = fcbAsal.layar;
+  fciuRow = r;
+  $("#fciu-sub").textContent = `${r.ktpa} — ${r.nama}`;
+
+  $("#fciu-kpa").value       = r.ktpa;
+  $("#fciu-nrp").value       = r.nrp;
+  $("#fciu-nama").value      = r.nama;
+  $("#fciu-nopens").value    = r.nomorPensiun;
+  $("#fciu-tgl-lahir").value = r.tglLahir;
+  $("#fciu-gaji").value      = r.gaji.toLocaleString("id-ID");
+
+  /* Tiga field ini cerminan Data Peserta di atas — dikunci supaya tidak bisa
+     berbeda dari sumbernya. */
+  $("#fciu-p-tgl-lahir").value = r.tglLahir;
+  $("#fciu-p-nopens").value    = r.nomorPensiun;
+  $("#fciu-p-nama").value      = r.nama;
+
+  const mitra = fciuMitra(r);
+  $("#fciu-mitra").value       = mitra;
+  $("#fciu-mitra-hint").textContent = DATA_MITRA_BAYAR.includes($("#top-role").value)
+    ? "Mengikuti mitra bayar yang sedang login."
+    : `Role aktif bukan mitra bayar — dipakai mitra bawaan peserta (${r.mitra}).`;
+  $("#fciu-cabang").value      = r.cabangMitra;
+  $("#fciu-nik").value         = r.nik;
+
+  ["tgl-pelunasan", "akhir-kredit", "awal-kredit", "norek-tab", "no-pk", "plafon",
+   "norek-kredit", "angsuran", "sub-kredit", "jns-tab", "sp3r", "pernyataan"]
+    .forEach(id => { $(`#fciu-${id}`).value = ""; });
+}
+
+$("#fciu-submit").onclick = () => {
+  const r = fciuRow;
+  if (!r) { toast("Baris booking tidak ditemukan.", "bad"); return; }
+
+  const sp3r  = $("#fciu-sp3r").files && $("#fciu-sp3r").files[0];
+  const nyata = $("#fciu-pernyataan").files && $("#fciu-pernyataan").files[0];
+
+  if (!$("#fciu-nik").value.trim())        { toast("NIK peserta belum tersedia di data kepesertaan.", "bad"); return; }
+  if (!$("#fciu-angsuran").value.trim())   { toast("Besaran Angsuran wajib diisi.", "bad"); return; }
+  if (!$("#fciu-sub-kredit").value.trim()) { toast("Sub Kredit wajib diisi.", "bad"); return; }
+  if (!sp3r)                               { toast("Lampiran SP3R wajib diunggah.", "bad"); return; }
+  if (!nyata)                              { toast("Lampiran Surat Pernyataan Kredit Mitra Bayar wajib diunggah.", "bad"); return; }
+
+  const mitra = $("#fciu-mitra").value.trim();
+  const hari  = fpsHariIni();
+  /* Satu objek pinjaman dipakai dua kali: disimpan di baris Individu supaya
+     bisa ditampilkan lagi di Detail Booking, dan dibawa ke Pinjaman » Pengajuan. */
+  const pinjaman = {
+    tglPermohonan: hari,
+    tglPelunasan:  $("#fciu-tgl-pelunasan").value,
+    awalKredit:    $("#fciu-awal-kredit").value,
+    akhirKredit:   $("#fciu-akhir-kredit").value,
+    plafon:        fpdAngka($("#fciu-plafon").value),
+    gajiPeserta:   r.gaji,
+    angsuran:      fpdAngka($("#fciu-angsuran").value),
+    norekTab:      $("#fciu-norek-tab").value.trim(),
+    norekKredit:   $("#fciu-norek-kredit").value.trim(),
+    noPk:          $("#fciu-no-pk").value.trim(),
+    nik:           $("#fciu-nik").value.trim(),
+    jnsTab:        $("#fciu-jns-tab").value.trim(),
+    cabangMitra:   $("#fciu-cabang").value.trim(),
+    subKredit:     $("#fciu-sub-kredit").value.trim(),
+    lampiranSp3r:  sp3r.name, lampiranPernyataan: nyata.name
+  };
+
+  /* Barisnya masuk Pinjaman » Pengajuan berstatus "Pengajuan"; keputusannya
+     diambil di Persetujuan, yang lalu mengubahnya jadi Booked/Dibatalkan. */
+  fpgRowsAll.unshift({
+    ktpa: r.ktpa, nrp: r.nrp, mitra, nomorPensiun: r.nomorPensiun,
+    nama: r.nama, tglLahir: r.tglLahir,
+    statusPinjaman: "Pengajuan", statusPensiun: r.pensiun === "Y" ? "Pensiun" : "Aktif",
+    bookingTgl: "", bookingUser: "",
+    pengajuanTgl: hari, pengajuanUser: "operator.mitra",
+    catatan: `Diajukan dari ${fcbAsal.sumber}.`,
+    pinjaman: { ...pinjaman },
+    riwayat: [{ tgl: hari, user: "operator.mitra", aksi: "Diajukan",
+                ket: `Data pinjaman dilengkapi dari ${fcbAsal.sumber}` }]
+  });
+
+  fpsTambah({
+    ktpa: r.ktpa, nrp: r.nrp, mitra, nopens: r.nomorPensiun,
+    nama: r.nama, tglLahir: r.tglLahir, aktivitas: "Pengajuan Pinjaman"
+  }, fcbAsal.sumber);
+
+  r.status   = "Pengajuan";
+  r.pinjaman = pinjaman;   /* dipakai Detail Booking */
+  fcbAsal.render();
+  renderFpg();
+  renderFps();
+  go(fcbAsal.layar);
+  toast(`Pengajuan pinjaman ${r.nama} disubmit — masuk Pinjaman » Pengajuan.`, "ok");
+};
+
+/* ---- Pembatalan booking: barisnya memang lahir dari booking, jadi dibatalkan
+   berarti dikeluarkan dari daftar. */
+function fciBatal(r) {
+  $("#modal-title").textContent = "Pembatalan Booking";
+  $("#modal-sub").textContent   = `${r.ktpa} — ${r.nama}`;
+  $("#modal-ico").style.display = "";
+  $("#modal-ico").className     = "modal-ico bad";
+  $("#modal-ico").textContent   = "⊗";
+  $("#modal-body").innerHTML = `
+    <div style="font-size:13px;color:var(--body);line-height:1.7;margin-bottom:18px">
+      Booking <b>${esc(r.nama)}</b> akan dibatalkan dan dikeluarkan dari daftar.
+    </div>
+    <div class="form-actions" style="justify-content:flex-end">
+      <button class="btn btn-ghost" id="fci-batal-tidak">Batal</button>
+      <button class="btn btn-danger-solid" id="fci-batal-ok">Batalkan Booking</button>
+    </div>`;
+  openModal();
+  $("#fci-batal-tidak").onclick = closeModal;
+  $("#fci-batal-ok").onclick = () => {
+    fciRows = fciRows.filter(x => x !== r);
+    renderFci();
+    closeModal();
+    toast(`Booking ${r.nama} dibatalkan.`);
+  };
+}
+
+/* Dipanggil tombol Booking di layar Pencarian Peserta. */
+function fciTambah(p, namaPenerima, nopensPenerima) {
+  if (fciRows.some(r => r.ktpa === p.kpa)) return false;
+  fciRows.unshift({
+    id: "ci" + (++fciSeq),
+    ktpa: p.kpa, nrp: p.nrp || "", nomorPensiun: p.nomorPensiun || p.nopens || "",
+    nama: p.nama, tglLahir: p.tglLahir || "",
+    pensiun: (p.nomorPensiun || p.nopens) ? "Y" : "T",
+    hidup: DATA_FLAGGING_PENSIUN_WARIS.includes(p) ? "T" : "Y",
+    nopensPenerima: nopensPenerima || "", namaPenerima: namaPenerima || p.nama,
+    status: "Booked",
+    gaji: p.gaji || 0, nik: fciNik(p.nama), mitra: p.mitra, cabangMitra: ""
+  });
+  fciPager.hal = 1;
+  renderFci();
+  return true;
+}
+
+/* NIK dicocokkan lewat registri nama; peserta yang belum terdaftar di sana
+   dibiarkan kosong dan baru bisa disubmit setelah NIK-nya tersedia. */
+function fciNik(nama) {
+  const kunci = Object.keys(DATA_NIK).find(k =>
+    DATA_NIK[k].nama.toUpperCase().startsWith(String(nama).toUpperCase()));
+  return kunci || "";
+}
+
+document.addEventListener("click", e => {
+  const bDetail = e.target.closest("[data-fci-detail]");
+  if (bDetail) { fcidIsi(fciCari(bDetail.dataset.fciDetail), "individu"); go("flagging-cb-booking-detail"); return; }
+
+  const bUbah = e.target.closest("[data-fci-ubah]");
+  if (bUbah && !bUbah.disabled) { fciuIsi(fciCari(bUbah.dataset.fciUbah), "individu"); go("flagging-cb-booking-ubah"); return; }
+
+  const bBatal = e.target.closest("[data-fci-batal]");
+  if (bBatal && !bBatal.disabled) { fciBatal(fciCari(bBatal.dataset.fciBatal)); return; }
+
+  const bHal = e.target.closest("[data-fci-hal]");
+  if (bHal) { fciPager.hal = +bHal.dataset.fciHal; renderFci(); }
+});
+
+renderFci();
 
 /* =============================================== FLAGGING » CHECK DAN BOOKING » KOLEKTIF */
 
@@ -480,18 +864,6 @@ let fcbkFilter = { ktpa: "", nrp: "", nik: "", nama: "" };
    tiap kali booking disimpan; status booking peserta ikut diperbarui. */
 let fcbkBatchRows   = [...DATA_FLAGGING_KOLEKTIF_BATCH];
 let fcbkPesertaRows = DATA_FLAGGING_KOLEKTIF_PESERTA.map(r => ({ ...r }));
-
-
-/* ---- tab Mitra / Kolektif */
-function fcbkGotoTab(tab) {
-  $$("[data-fcbk-tab]").forEach(b => b.classList.toggle("active", b.dataset.fcbkTab === tab));
-  $("#fcbk-panel-mitra").style.display   = tab === "mitra"   ? "" : "none";
-  $("#fcbk-panel-peserta").style.display = tab === "peserta" ? "" : "none";
-}
-document.addEventListener("click", e => {
-  const b = e.target.closest("[data-fcbk-tab]");
-  if (b) fcbkGotoTab(b.dataset.fcbkTab);
-});
 
 /* ---- tab Mitra: daftar peserta */
 /* Tab Peserta hanya memuat peserta yang sudah dibooking — barisnya bertambah
@@ -512,6 +884,19 @@ function fcbkRows() {
    seperti kolom status di tabel lain. */
 const fcbkKode = v => `<span class="pill ${v === "Y" ? "pill-ok" : "pill-info"}">${esc(v)}</span>`;
 const fcbkKosong = v => v ? esc(v) : `<span style="color:var(--faint)">–</span>`;
+/* Aksi per baris memakai aturan yang sama dengan daftar Individu: Ubah dan
+   Pembatalan hanya hidup selama booking-nya belum diajukan. */
+function fcbkAksi(r) {
+  const bisa   = r.status === "Booked";
+  const alasan = bisa ? "" : "Hanya untuk booking berstatus Booked";
+  return `
+    <button class="btn btn-info btn-sm" data-fcbk-detail="${esc(r.ktpa)}">Detail</button>
+    <button class="btn btn-ghost btn-sm" data-fcbk-ubah="${esc(r.ktpa)}" ${bisa ? "" : "disabled"}
+      title="${esc(bisa ? "Lengkapi data pinjaman" : alasan)}">Ubah</button>
+    <button class="btn btn-danger btn-sm" data-fcbk-batal="${esc(r.ktpa)}" ${bisa ? "" : "disabled"}
+      title="${esc(bisa ? "Batalkan booking" : alasan)}">Pembatalan</button>`;
+}
+
 
 function renderFcbkPeserta() {
   const rows = fcbkRows();
@@ -532,8 +917,10 @@ function renderFcbkPeserta() {
         <td class="t-strong">${esc(r.namaPenerima)}</td>
         <td><input type="checkbox" ${r.booking ? "checked" : ""} disabled
              aria-label="${r.booking ? "Sudah dibooking" : "Belum dibooking"}"></td>
+        <td>${fciPill(r.status)}</td>
+        <td class="stick-r" style="white-space:nowrap">${fcbkAksi(r)}</td>
       </tr>`).join("")
-    : `<tr><td colspan="11"><div class="empty">${
+    : `<tr><td colspan="13"><div class="empty">${
         fcbkPesertaRows.some(r => r.booking)
           ? "Tidak ada peserta yang cocok dengan filter."
           : "Belum ada peserta yang dibooking. Jalankan Check &amp; Booking Flagging Kolektif terlebih dahulu."
@@ -554,26 +941,96 @@ $("#fcbk-cari").onclick = () => {
   fcbkPager.hal = 1;
   renderFcbkPeserta();
 };
+
+/* Baris tabel Peserta memakai layar Detail/Ubah bersama; KPA jadi kuncinya
+   karena satu peserta hanya muncul sekali di daftar kolektif. */
+function fcbkCariPeserta(ktpa, aksi) {
+  const r = fcbkPesertaRows.find(x => x.ktpa === ktpa);
+  if (!r) return;
+  if (aksi === "ubah") { fciuIsi(r, "kolektif"); go("flagging-cb-booking-ubah"); }
+  else                 { fcidIsi(r, "kolektif"); go("flagging-cb-booking-detail"); }
+}
+
+/* Pembatalan tidak mengeluarkan barisnya — statusnya berubah jadi "Dibatalkan"
+   supaya jejak booking yang pernah ada tetap terlihat di tabel Peserta. */
+function fcbkBatalBooking(ktpa) {
+  const r = fcbkPesertaRows.find(x => x.ktpa === ktpa);
+  if (!r) return;
+  $("#modal-title").textContent = "Pembatalan Booking";
+  $("#modal-sub").textContent   = `${r.ktpa} — ${r.nama}`;
+  $("#modal-ico").style.display = "";
+  $("#modal-ico").className     = "modal-ico bad";
+  $("#modal-ico").textContent   = "⊗";
+  $("#modal-body").innerHTML = `
+    <div style="font-size:13px;color:var(--body);line-height:1.7;margin-bottom:18px">
+      Booking <b>${esc(r.nama)}</b> akan dibatalkan — statusnya berubah menjadi Dibatalkan.
+    </div>
+    <div class="form-actions" style="justify-content:flex-end">
+      <button class="btn btn-ghost" id="fcbk-batal-tidak">Batal</button>
+      <button class="btn btn-danger-solid" id="fcbk-batal-ok">Batalkan Booking</button>
+    </div>`;
+  openModal();
+  $("#fcbk-batal-tidak").onclick = closeModal;
+  $("#fcbk-batal-ok").onclick = () => {
+    r.status = "Dibatalkan";
+    renderFcbkPeserta();
+    closeModal();
+    toast(`Booking ${r.nama} dibatalkan.`);
+  };
+}
+
 document.addEventListener("click", e => {
+  const bDetail = e.target.closest("[data-fcbk-detail]");
+  if (bDetail) { fcbkCariPeserta(bDetail.dataset.fcbkDetail, "detail"); return; }
+
+  const bUbah = e.target.closest("[data-fcbk-ubah]");
+  if (bUbah && !bUbah.disabled) { fcbkCariPeserta(bUbah.dataset.fcbkUbah, "ubah"); return; }
+
+  const bBatal = e.target.closest("[data-fcbk-batal]");
+  if (bBatal && !bBatal.disabled) { fcbkBatalBooking(bBatal.dataset.fcbkBatal); return; }
+
   const b = e.target.closest("[data-fcbk-hal]");
   if (b) { fcbkPager.hal = +b.dataset.fcbkHal; renderFcbkPeserta(); }
 });
 
-/* ---- tab Mitra: riwayat batch */
+/* ---- Mitra: riwayat batch yang diunggah */
+let fcbkBatchFilter = { mitra: "", tanggal: "" };
+
+function fcbkBatchDaftar() {
+  const f = fcbkBatchFilter;
+  return fcbkBatchRows.filter(r =>
+    (!f.mitra   || r.mitra.toLowerCase().includes(f.mitra)) &&
+    (!f.tanggal || r.tanggal === f.tanggal)
+  );
+}
+
 function renderFcbkBatch() {
-  $("#fcbk-batch-body").innerHTML = fcbkBatchRows.length
-    ? fcbkBatchRows.map((r, i) => `
+  const rows = fcbkBatchDaftar();
+  /* Empty state membedakan "belum pernah unggah" dari "filternya tidak kena",
+     supaya operator tahu apakah datanya memang belum ada. */
+  $("#fcbk-batch-body").innerHTML = rows.length
+    ? rows.map(r => `
       <tr>
-        <td>${i + 1}</td>
         <td class="t-strong">${esc(r.mitra)}</td>
         <td><span class="pill ${r.status === "Selesai" ? "pill-ok" : "pill-warn"}">${esc(r.status)}</span></td>
         <td>${esc(r.pengguna)}</td>
         <td>${esc(r.tanggal)}</td>
       </tr>`).join("")
-    : `<tr><td colspan="5"><div class="empty">Belum ada batch kolektif yang diunggah.</div></td></tr>`;
-  $("#fcbk-batch-count").textContent = `Menampilkan ${fcbkBatchRows.length} data`;
+    : `<tr><td colspan="4"><div class="empty">${
+        fcbkBatchRows.length
+          ? "Tidak ada batch yang cocok dengan filter."
+          : "Belum ada batch kolektif yang diunggah."
+      }</div></td></tr>`;
+  $("#fcbk-batch-count").textContent = `Menampilkan ${rows.length} data`;
 }
 
+$("#fcbk-batch-cari").onclick = () => {
+  fcbkBatchFilter = {
+    mitra:   $("#fcbk-bf-mitra").value.trim().toLowerCase(),
+    tanggal: $("#fcbk-bf-tanggal").value
+  };
+  renderFcbkBatch();
+};
 /* ---- layar Check & Booking Flagging Kolektif (Mitra + unggah berkas)
    Berkas yang diunggah ditampilkan apa adanya di tabel di bawah form; kolom
    Booking berupa kotak centang, dan peserta yang sudah pernah dibooking
@@ -684,16 +1141,13 @@ $("#fcbk-simpan-booking").onclick = () => {
   }
 
   const jumlah = fcbkPilih.size;
-  /* Setiap peserta terpilih ikut masuk antrean Persetujuan. */
-  let masuk = 0;
-  fcbkPilih.forEach(i => {
-    const r = fcbkPesertaRows[i];
-    if (fpsTambah({
-      ktpa: r.ktpa, nrp: r.nrp, mitra, nopens: r.nomorPensiun,
-      nama: r.nama, tglLahir: r.tglLahir
-    }, "Check dan Booking Kolektif")) masuk++;
+  /* Booking kolektif hanya menandai pesertanya "Booked" dan menstempel mitra
+     batch-nya. Pengajuan pinjamannya dibuat belakangan lewat tombol Ubah di
+     tabel Peserta — sama seperti alur Individu. */
+  fcbkPesertaRows.forEach((r, i) => {
+    r.booking = fcbkPilih.has(i);
+    if (r.booking) { r.status = r.status || "Booked"; r.mitra = mitra; }
   });
-  fcbkPesertaRows.forEach((r, i) => r.booking = fcbkPilih.has(i));
   fcbkBatchRows.unshift({
     mitra, status:"Selesai", pengguna:"Operator Kepesertaan",
     tanggal: new Date().toISOString().slice(0, 10)
@@ -702,9 +1156,7 @@ $("#fcbk-simpan-booking").onclick = () => {
   renderFcbkPeserta();
   renderFps();
   go("flagging-cb-kolektif");
-  fcbkGotoTab("mitra");
-  toast(`Booking flagging kolektif ${mitra} berhasil untuk ${jumlah} peserta` +
-        (masuk ? `, ${masuk} masuk antrean Persetujuan.` : "."), "ok");
+  toast(`Booking flagging kolektif ${mitra} berhasil untuk ${jumlah} peserta — lengkapi data pinjamannya lewat tombol Ubah.`, "ok");
 };
 
 renderFcbkPeserta();
@@ -758,9 +1210,6 @@ function renderFpg() {
         <td style="white-space:nowrap">
           <button class="btn btn-info btn-sm" data-fpg-detail="${esc(r.ktpa)}">Detail</button>
           <button class="btn btn-ghost btn-sm" data-fpg-riwayat="${esc(r.ktpa)}">Riwayat</button>
-          <button class="btn btn-danger btn-sm" data-fpg-batal="${esc(r.ktpa)}"
-            ${r.statusPinjaman === "Booked" ? "" : "disabled"}
-            title="${r.statusPinjaman === "Booked" ? "Batalkan booking" : "Hanya untuk pengajuan berstatus Booked"}">Batal Booking</button>
         </td>
       </tr>`).join("")
     : `<tr><td colspan="14"><div class="empty">Tidak ada pengajuan yang cocok dengan filter.</div></td></tr>`;
@@ -825,36 +1274,11 @@ function fpgBaris(label, nilai) {
     <div style="flex:1;font-size:12.5px;color:var(--ink);font-weight:600">${nilai || `<span style="color:var(--faint)">–</span>`}</div>
   </div>`;
 }
-
 /* ---- layar Detail Pengajuan (Data Pinjaman)
-   Semua field dimulai terkunci; tombol Ubah membuka yang boleh disunting saja.
-   KPA/NRP/Nama/NOPENS/Tanggal Lahir peserta, Mitra Bayar, dan Cabang Mitra
-   Bayar tetap terkunci karena ikut data induk, bukan isian operator. */
+   Baca-saja seluruhnya. Barisnya sampai ke sini hanya kalau statusnya masih
+   "Pengajuan", artinya sudah dikirim ke Persetujuan dan sedang menunggu
+   keputusan — jadi tidak ada lagi yang boleh disunting dari layar ini. */
 let fpdRow = null;
-
-/* Field yang boleh disunting setelah tombol Ubah ditekan. */
-const FPD_EDITABLE = ["fpd-tgl-permohonan", "fpd-p-tgl-lahir", "fpd-p-nopens", "fpd-akhir-kredit",
-  "fpd-p-nama", "fpd-norek-tab", "fpd-awal-kredit", "fpd-no-pk", "fpd-plafon", "fpd-norek-kredit",
-  "fpd-angsuran", "fpd-jns-tab", "fpd-sub-kredit", "fpd-nik", "fpd-cek-nik",
-  "fpd-sp3r", "fpd-pernyataan"];
-
-/* Hanya pengajuan yang masih berstatus "Pengajuan" boleh disunting. Yang sudah
-   Booked atau Dibatalkan dikunci: tombol Ubah disembunyikan dan diganti banner
-   keterangan, supaya data yang sudah diputuskan tidak berubah lagi. */
-const fpdBisaUbah = () => fpdRow && fpdRow.statusPinjaman === "Pengajuan";
-
-function fpdSetUbah(aktif) {
-  const boleh = fpdBisaUbah() && aktif;
-  FPD_EDITABLE.forEach(id => { const el = $(`#${id}`); if (el) el.disabled = !boleh; });
-  $("#fpd-actions").style.display   = boleh ? "" : "none";
-  $("#fpd-ubah").style.display      = fpdBisaUbah() && !aktif ? "" : "none";
-  $("#fpd-terkunci").style.display  = fpdBisaUbah() ? "none" : "";
-  if (!fpdBisaUbah() && fpdRow) {
-    $("#fpd-terkunci-teks").textContent =
-      `Pengajuan berstatus ${fpdRow.statusPinjaman} tidak dapat diubah. ` +
-      `Hanya pengajuan berstatus Pengajuan yang masih bisa disunting.`;
-  }
-}
 
 function fpdIsi(r) {
   fpdRow = r;
@@ -894,11 +1318,11 @@ function fpdIsi(r) {
   /* Hasil Cek NIK milik baris sebelumnya tidak boleh ikut terbawa. */
   fpdNikRujukan = null;
   fpdCekKecocokanNik();
-  fpdSetUbah(false);
+  $("#fpd-terkunci-teks").textContent =
+    "Pengajuan ini sudah masuk antrean Persetujuan dengan aktivitas " +
+    "\"Pengajuan Pinjaman\" berstatus Pending — datanya tidak dapat diubah lagi.";
 }
 
-$("#fpd-ubah").onclick  = () => fpdSetUbah(true);
-$("#fpd-batal").onclick = () => fpdIsi(fpdRow);   /* buang perubahan yang belum disimpan */
 
 /* ---- Cek NIK
    Nama dan Tgl Lahir pada Info Pinjaman dibandingkan dengan registri NIK.
@@ -966,71 +1390,6 @@ function showAlertPopupFpd(judul, pesan, tone) {
 
 const fpdAngka = v => Number(String(v).replace(/[^\d]/g, "")) || 0;
 
-$("#fpd-simpan").onclick = () => {
-  const nik = $("#fpd-nik").value.trim();
-  if (!/^\d{16}$/.test(nik))                { toast("NIK harus 16 digit angka.", "bad"); return; }
-  if (!$("#fpd-angsuran").value.trim())     { toast("Besaran Angsuran wajib diisi.", "bad"); return; }
-  if (!$("#fpd-sub-kredit").value.trim())   { toast("Sub Kredit wajib diisi.", "bad"); return; }
-
-  /* Hasil Cek NIK yang belum diperbaiki menahan pengiriman. */
-  const salah = fpdCekKecocokanNik();
-  if (salah.nama || salah.tgl) {
-    toast("Perbaiki Nama dan/atau Tanggal Lahir agar sesuai NIK sebelum mengirim pengajuan.", "bad");
-    return;
-  }
-
-  const p = fpdRow.pinjaman;
-  p.tglPermohonan = $("#fpd-tgl-permohonan").value;
-  p.akhirKredit   = $("#fpd-akhir-kredit").value;
-  p.awalKredit    = $("#fpd-awal-kredit").value;
-  p.norekTab      = $("#fpd-norek-tab").value.trim();
-  p.norekKredit   = $("#fpd-norek-kredit").value.trim();
-  p.noPk          = $("#fpd-no-pk").value.trim();
-  p.plafon        = fpdAngka($("#fpd-plafon").value);
-  p.angsuran      = fpdAngka($("#fpd-angsuran").value);
-  p.jnsTab        = $("#fpd-jns-tab").value.trim();
-  p.subKredit     = $("#fpd-sub-kredit").value.trim();
-  p.nik           = nik;
-  /* Nama & NOPENS pada Info Pinjaman boleh berbeda dari data peserta
-     (mis. penerima waris), jadi disimpan di baris pengajuannya. */
-  fpdRow.nama         = $("#fpd-p-nama").value.trim();
-  fpdRow.nomorPensiun = $("#fpd-p-nopens").value.trim();
-  fpdRow.tglLahir     = $("#fpd-p-tgl-lahir").value;
-
-  const berkas = id => ($(`#${id}`).files && $(`#${id}`).files[0]);
-  if (berkas("fpd-sp3r"))       p.lampiranSp3r       = berkas("fpd-sp3r").name;
-  if (berkas("fpd-pernyataan")) p.lampiranPernyataan = berkas("fpd-pernyataan").name;
-
-  fpdRow.riwayat.push({
-    tgl: new Date().toISOString().slice(0, 10),
-    user: "verifikator.kep",
-    aksi: "Data pinjaman diubah",
-    ket: "Perubahan disimpan dari layar Detail Pengajuan"
-  });
-
-  /* Submit sekaligus mengirim pengajuannya ke antrean Persetujuan. */
-  const masuk = fpsTambah({
-    ktpa: fpdRow.ktpa, nrp: fpdRow.nrp, mitra: fpdRow.mitra,
-    nopens: fpdRow.nomorPensiun, nama: fpdRow.nama, tglLahir: fpdRow.tglLahir
-  }, "Pengajuan");
-  if (masuk) {
-    fpdRow.riwayat.push({
-      tgl: new Date().toISOString().slice(0, 10),
-      user: "verifikator.kep",
-      aksi: "Dikirim ke Persetujuan",
-      ket: "Menunggu keputusan Divisi Kepesertaan"
-    });
-  }
-
-  renderFpg();
-  renderFps();
-  fpdIsi(fpdRow);
-  toast(masuk
-    ? `Pengajuan ${fpdRow.nama} disubmit dan masuk antrean Persetujuan.`
-    : `Data pinjaman ${fpdRow.nama} disimpan. ${fpdRow.nama} sudah punya pengajuan yang menunggu persetujuan.`,
-    masuk ? "ok" : "");
-};
-
 /* ---- layar Riwayat Pengajuan
    Satu baris = satu update. Kolom identitas (Mitra, Nama, No KTPA, dst) diambil
    dari baris pengajuannya, sedangkan grup "Update" berisi jejak per kejadian.
@@ -1056,61 +1415,12 @@ function fprIsi(r) {
   $("#fpr-count").textContent = `${r.riwayat.length} update tercatat.`;
 }
 
-function fpgBatalBooking(r) {
-  $("#modal-title").textContent = "Pembatalan Booking";
-  $("#modal-sub").textContent   = `${r.ktpa} — ${r.nama}`;
-  $("#modal-ico").style.display = "";
-  $("#modal-ico").className     = "modal-ico bad";
-  $("#modal-ico").textContent   = "⊗";
-  $("#modal-body").innerHTML = `
-    <div class="field">
-      <label class="fl" for="fpg-batal-alasan">Alasan Pembatalan <span class="req">*</span></label>
-      <textarea class="inp" id="fpg-batal-alasan" style="height:74px;padding:9px 10px;resize:vertical"
-        placeholder="Tuliskan alasan pembatalan booking..."></textarea>
-    </div>
-    <div class="form-actions" style="justify-content:flex-end">
-      <button class="btn btn-ghost" id="fpg-batal-batal">Batal</button>
-      <button class="btn btn-danger-solid" id="fpg-batal-ok">Batalkan Booking</button>
-    </div>`;
-  openModal();
-  $("#fpg-batal-batal").onclick = closeModal;
-  $("#fpg-batal-ok").onclick = () => {
-    const alasan = $("#fpg-batal-alasan").value.trim();
-    if (!alasan) { toast("Alasan pembatalan wajib diisi.", "bad"); return; }
-
-    /* Pembatalan booking tidak langsung berlaku — diajukan dulu ke Persetujuan,
-       sama seperti Pembatalan Flagging dari layar Flagging. */
-    const masuk = fpsTambah({
-      ktpa: r.ktpa, nrp: r.nrp, mitra: r.mitra, nopens: r.nomorPensiun,
-      nama: r.nama, tglLahir: r.tglLahir, aktivitas: "Pengajuan Pembatalan Booking",
-      perubahan: [{ label:"Alasan Pembatalan", dari:"–", ke: alasan }]
-    }, "Pengajuan");
-    if (!masuk) {
-      toast(`${r.nama} sudah punya permintaan yang menunggu persetujuan.`, "bad");
-      return;
-    }
-    r.riwayat.push({
-      tgl: fpsHariIni(),
-      user: "operator.mitra",
-      aksi: "Pembatalan booking diajukan",
-      ket: alasan
-    });
-    renderFpg();
-    renderFps();
-    closeModal();
-    toast(`Pembatalan booking ${r.nama} diajukan — menunggu Persetujuan.`, "ok");
-  };
-}
-
 document.addEventListener("click", e => {
   const bDetail = e.target.closest("[data-fpg-detail]");
   if (bDetail) { fpdIsi(fpgCari(bDetail.dataset.fpgDetail)); go("flagging-pengajuan-detail"); return; }
 
   const bRiwayat = e.target.closest("[data-fpg-riwayat]");
   if (bRiwayat) { fprIsi(fpgCari(bRiwayat.dataset.fpgRiwayat)); go("flagging-pengajuan-riwayat"); return; }
-
-  const bBatal = e.target.closest("[data-fpg-batal]");
-  if (bBatal && !bBatal.disabled) { fpgBatalBooking(fpgCari(bBatal.dataset.fpgBatal)); return; }
 
   const bHal = e.target.closest("[data-fpg-hal]");
   if (bHal) { fpgPager.hal = +bHal.dataset.fpgHal; renderFpg(); }
@@ -1135,7 +1445,7 @@ const fpsPill = s => `<span class="pill ${
 const fpsKosong = v => v ? esc(v) : `<span style="color:var(--faint)">–</span>`;
 /* Pelunasan diberi nada hijau supaya beda dari permintaan yang menambah beban. */
 const fpsAktivitasPill = a =>
-  `<span class="pill ${a === "Pelunasan" ? "pill-ok" : "pill-info"}">${esc(a || "–")}</span>`;
+  `<span class="pill ${a === "Pelunasan Flagging" ? "pill-ok" : "pill-info"}">${esc(a || "–")}</span>`;
 
 /* Satu peserta hanya boleh punya satu baris yang masih berstatus "Pengajuan",
    supaya antreannya tidak menumpuk saat layar sumber ditekan berulang kali. */
@@ -1165,6 +1475,8 @@ function fpsTambah(entry, sumber) {
 function fpsDaftar() {
   const f = fpsFilter;
   return fpsRows.filter(r =>
+    /* Top up punya halaman persetujuannya sendiri. */
+    r.aktivitas !== FPS_AKTIVITAS_TOPUP &&
     (f.status === "Semua Status" || r.status === f.status) &&
     (!f.cari || [r.ktpa, r.nrp, r.nama].some(v => String(v).toLowerCase().includes(f.cari)))
   );
@@ -1262,7 +1574,7 @@ function fpsTerapkan(r) {
 
   const pinjaman = fflRows.find(x => x.ktpa === r.ktpa);
   if (!pinjaman) return;
-  if (r.aktivitas === "Pelunasan" && r.pelunasan) {
+  if (r.aktivitas === "Pelunasan Flagging" && r.pelunasan) {
     pinjaman.statusPinjaman = "Lunas";
     pinjaman.kategori       = r.pelunasan.kategori;
     pinjaman.riwayat.push({
@@ -1448,27 +1760,40 @@ function fsdKonfirmasi(mode) {
 $("#fsd-setujui").onclick = () => fsdKonfirmasi("setuju");
 $("#fsd-tolak").onclick   = () => fsdKonfirmasi("tolak");
 
-function fpsShowRiwayat(r) {
-  $("#modal-title").textContent = "Riwayat Persetujuan";
-  $("#modal-sub").textContent   = `${r.ktpa} — ${r.nama}`;
-  $("#modal-body").innerHTML = `
-    <div class="tbl-wrap">
-      <table>
-        <thead><tr><th>Tanggal</th><th>User</th><th>Aksi</th><th>Keterangan</th></tr></thead>
-        <tbody>${r.riwayat.map(h => `
-          <tr>
-            <td>${esc(h.tgl)}</td>
-            <td>${esc(h.user)}</td>
-            <td class="t-strong">${esc(h.aksi)}</td>
-            <td>${esc(h.ket)}</td>
-          </tr>`).join("")}</tbody>
-      </table>
-    </div>
-    <div class="form-actions" style="justify-content:flex-end">
-      <button class="btn btn-ghost" id="fps-riwayat-tutup">Tutup</button>
-    </div>`;
-  openModal();
-  $("#fps-riwayat-tutup").onclick = closeModal;
+/* ---- layar Riwayat Persetujuan
+   Satu baris = satu update. Baris antrean hanya menyimpan identitas peserta,
+   jadi kolom kredit (Tanggal Permohonan, Cabang, NIK, Nomor Pinjaman Kredit)
+   dicari ke sumber pinjamannya: muatan permintaan itu sendiri kalau ada, lalu
+   daftar Pengajuan, Flagging, dan Top Up. */
+function fpsSumberPinjaman(r) {
+  const muatan = (r.takeoverBaru && r.takeoverBaru.pinjaman)
+              || (r.topupBaru    && r.topupBaru.pinjaman);
+  if (muatan) return muatan;
+  const dari = fpgRowsAll.find(x => x.ktpa === r.ktpa)
+            || fflRows.find(x => x.ktpa === r.ktpa)
+            || ftuRows.find(x => x.ktpa === r.ktpa);
+  return (dari && dari.pinjaman) || {};
+}
+
+function fpsrIsi(r, asal) {
+  const p = fpsSumberPinjaman(r);
+  $("#fpsr-kembali").dataset.go = asal || "flagging-persetujuan";
+  $("#fpsr-sub").textContent = `${r.ktpa} — ${r.nama} · ${r.aktivitas}`;
+  $("#fpsr-body").innerHTML = r.riwayat.map(h => `
+    <tr>
+      <td>${fpgKosong(p.tglPermohonan)}</td>
+      <td>${esc(r.mitra)}</td>
+      <td>${fpgKosong(p.cabangMitra)}</td>
+      <td class="t-strong">${esc(r.nama)}</td>
+      <td class="t-strong">${esc(r.ktpa)}</td>
+      <td>${fpgKosong(r.nopens)}</td>
+      <td>${fpgKosong(p.nik)}</td>
+      <td>${fpgKosong(p.noPk)}</td>
+      <td>${esc(h.tgl)}</td>
+      <td>${esc(h.user)}</td>
+      <td class="t-strong" title="${esc(h.ket)}">${esc(h.aksi)}</td>
+    </tr>`).join("");
+  $("#fpsr-count").textContent = `${r.riwayat.length} update tercatat.`;
 }
 
 document.addEventListener("click", e => {
@@ -1476,7 +1801,7 @@ document.addEventListener("click", e => {
   if (bDetail) { fsdIsi(fpsCari(bDetail.dataset.fpsDetail)); go("flagging-persetujuan-detail"); return; }
 
   const bRiwayat = e.target.closest("[data-fps-riwayat]");
-  if (bRiwayat) { fpsShowRiwayat(fpsCari(bRiwayat.dataset.fpsRiwayat)); return; }
+  if (bRiwayat) { fpsrIsi(fpsCari(bRiwayat.dataset.fpsRiwayat), "flagging-persetujuan"); go("flagging-persetujuan-riwayat"); return; }
 
   const bHal = e.target.closest("[data-fps-hal]");
   if (bHal) { fpsPager.hal = +bHal.dataset.fpsHal; renderFps(); }
@@ -1519,7 +1844,6 @@ function renderFfl() {
       const p = r.pinjaman;
       return `
       <tr>
-        <td class="t-strong">${fflKosong(r.ind)}</td>
         <td>${esc(r.mitra)}</td>
         <td class="t-strong">${esc(r.ktpa)}</td>
         <td>${esc(r.nrp)}</td>
@@ -1536,19 +1860,18 @@ function renderFfl() {
         <td>${esc(p.noPk)}</td>
         <td>${fflPill(r.statusPinjaman)}</td>
         <td>${esc(r.statusTagih)}</td>
-        <td>${fflKosong(r.kategori)}</td>
         <td>${fflKosong(r.tglSetuju)}</td>
         <td>${fflKosong(r.pengguna)}</td>
         <td class="stick-r" style="white-space:nowrap">
           <button class="btn btn-info btn-sm" data-ffl-detail="${esc(r.ktpa)}">Detail</button>
           <button class="btn btn-success btn-sm" data-ffl-lunas="${esc(r.ktpa)}" ${aktif(r) ? "" : "disabled"}
             title="${aktif(r) ? "Catat pelunasan" : "Hanya untuk pinjaman berstatus Disetujui"}">Pelunasan</button>
-          <button class="btn btn-danger btn-sm" data-ffl-batal="${esc(r.ktpa)}" ${aktif(r) ? "" : "disabled"}
-            title="${aktif(r) ? "Batalkan flagging" : "Hanya untuk pinjaman berstatus Disetujui"}">Pembatalan</button>
+          <button class="btn btn-gold btn-sm" data-ffl-topup="${esc(r.ktpa)}" ${aktif(r) ? "" : "disabled"}
+            title="${aktif(r) ? "Ajukan top up" : "Hanya untuk pinjaman berstatus Disetujui"}">Top Up</button>
           <button class="btn btn-ghost btn-sm" data-ffl-riwayat="${esc(r.ktpa)}">Riwayat</button>
         </td>
       </tr>`; }).join("")
-    : `<tr><td colspan="21"><div class="empty">Tidak ada pinjaman yang cocok dengan filter.</div></td></tr>`;
+    : `<tr><td colspan="19"><div class="empty">Tidak ada pinjaman yang cocok dengan filter.</div></td></tr>`;
 
   $("#ffl-count").innerHTML = pagerNote(pg, "pinjaman", "");
   $("#ffl-pager").innerHTML = rows.length ? pagerHtml(fflPager, pg, "data-ffl-hal") : "";
@@ -1712,31 +2035,28 @@ function fplIsi(r) {
   $("#fpl-tgl").value    = p.akhirKredit;   /* mengikuti Tanggal Akhir Kredit */
   $("#fpl-ket").value    = "";
   $("#fpl-berkas").value = "";
-  /* Hanya kategori yang boleh dipilih manual yang masuk daftar; Jatuh Tempo
-     ditetapkan sistem lewat fplKategori(). */
-  $("#fpl-kategori").innerHTML =
-    [`<option value="">Pilih kategori pelunasan…</option>`,
-     ...FFL_KATEGORI_PILIHAN.map(k => `<option>${esc(k)}</option>`)].join("");
   fplTinjauKategori();
 }
 
-/* Pelunasan yang tanggalnya sudah mencapai Tanggal Akhir Kredit dihitung
-   sebagai jatuh tempo, apa pun pilihan operatornya. */
+/* Kategori pelunasan sepenuhnya ditetapkan sistem dari tanggalnya: sudah
+   mencapai Tanggal Akhir Kredit berarti jatuh tempo, sebelum itu berarti
+   dilunasi dari angsuran. Operator tidak memilihnya. */
 function fplKategori() {
-  const tgl = $("#fpl-tgl").value;
+  const tgl   = $("#fpl-tgl").value;
   const akhir = fplRow ? fplRow.pinjaman.akhirKredit : "";
-  if (tgl && akhir && tgl >= akhir) return FFL_KATEGORI_JATUH_TEMPO;
-  return $("#fpl-kategori").value;
+  return (tgl && akhir && tgl >= akhir)
+    ? FFL_KATEGORI_JATUH_TEMPO
+    : FFL_KATEGORI_PILIHAN[0];
 }
 
-/* Beri tahu operator lebih dulu kalau tanggalnya membuat kategorinya dikunci
-   sistem, supaya hasilnya tidak mengejutkan saat disimpan. */
+/* Kategorinya tidak lagi punya field sendiri, jadi hasilnya diberitahukan di
+   bawah Tgl Pelunasan supaya operator tahu apa yang akan tercatat. */
 function fplTinjauKategori() {
-  const jatuhTempo = fplKategori() === FFL_KATEGORI_JATUH_TEMPO;
-  $("#fpl-kategori").disabled = jatuhTempo;
-  $("#fpl-kategori-hint").textContent = jatuhTempo
-    ? `Tanggal pelunasan sudah mencapai Tanggal Akhir Kredit (${fplRow.pinjaman.akhirKredit}) — sistem mencatatnya sebagai ${FFL_KATEGORI_JATUH_TEMPO}.`
-    : "Pelunasan sebelum Tanggal Akhir Kredit; pilih kategorinya.";
+  if (!fplRow) return;
+  const akhir = fplRow.pinjaman.akhirKredit;
+  $("#fpl-tgl-hint").textContent =
+    `Terisi mengikuti Tanggal Akhir Kredit (${akhir}), masih bisa diubah. ` +
+    `Dengan tanggal ini kategorinya tercatat sebagai ${fplKategori()}.`;
 }
 $("#fpl-tgl").onchange = fplTinjauKategori;
 
@@ -1747,14 +2067,13 @@ $("#fpl-simpan").onclick = () => {
   const f        = $("#fpl-berkas").files && $("#fpl-berkas").files[0];
   const berkas   = f ? f.name : "";
   if (!tgl)      { toast("Tgl Pelunasan wajib diisi.", "bad"); return; }
-  if (!kategori) { toast("Kategori Pelunasan wajib dipilih.", "bad"); return; }
   if (!berkas)   { toast("Berkas bukti pelunasan wajib diunggah.", "bad"); return; }
   if (!ket)      { toast("Keterangan pelunasan wajib diisi.", "bad"); return; }
 
   /* Pelunasan juga lewat persetujuan — status baru berubah setelah disetujui. */
   const masuk = fpsTambah({
     ktpa: fplRow.ktpa, nrp: fplRow.nrp, mitra: fplRow.mitra, nopens: fplRow.nomorPensiun,
-    nama: fplRow.nama, tglLahir: fplRow.tglLahir, aktivitas: "Pelunasan",
+    nama: fplRow.nama, tglLahir: fplRow.tglLahir, aktivitas: "Pelunasan Flagging",
     perubahan: [
       { label:"Tgl Pelunasan",      dari:"–", ke: tgl },
       { label:"Kategori Pelunasan", dari:"–", ke: kategori },
@@ -1775,55 +2094,6 @@ $("#fpl-simpan").onclick = () => {
   go("flagging-pinjaman-flagging");
   toast(`Pelunasan ${fplRow.nama} diajukan — menunggu Persetujuan.`, "ok");
 };
-
-/* ---- Pembatalan Flagging — modal konfirmasi dengan alasan wajib.
-   Pelunasan punya layar sendiri karena isiannya lebih banyak. */
-function fflPembatalan(r) {
-  $("#modal-title").textContent = "Konfirmasi Pembatalan Flagging";
-  $("#modal-sub").textContent   = `${r.ktpa} — ${r.nama}`;
-  $("#modal-ico").style.display = "";
-  $("#modal-ico").className     = "modal-ico bad";
-  $("#modal-ico").textContent   = "⊗";
-  $("#modal-body").innerHTML = `
-    <div style="font-size:13px;color:var(--body);line-height:1.7;margin-bottom:16px">
-      Pinjaman <b>${esc(r.nama)}</b> di <b>${esc(r.mitra)}</b> akan ditandai
-      <b>Dibatalkan</b>. Flagging pada mitra bayar ikut dilepas.
-    </div>
-    <div class="field">
-      <label class="fl" for="ffl-alasan">Alasan Pembatalan <span class="req">*</span></label>
-      <textarea class="inp" id="ffl-alasan" style="height:74px;padding:9px 10px;resize:vertical"
-        placeholder="Wajib diisi."></textarea>
-    </div>
-    <div class="form-actions" style="justify-content:flex-end">
-      <button class="btn btn-ghost" id="ffl-konfirm-batal">Batal</button>
-      <button class="btn btn-danger-solid" id="ffl-konfirm-ok">✕ Batalkan Flagging</button>
-    </div>`;
-  openModal();
-  $("#ffl-konfirm-batal").onclick = closeModal;
-  $("#ffl-konfirm-ok").onclick = () => {
-    const alasan = $("#ffl-alasan").value.trim();
-    if (!alasan) { toast("Alasan pembatalan wajib diisi.", "bad"); return; }
-
-    /* Sama seperti Perubahan Data dan Pelunasan, pembatalan tidak langsung
-       berlaku — statusnya baru berubah setelah disetujui. */
-    const masuk = fpsTambah({
-      ktpa: r.ktpa, nrp: r.nrp, mitra: r.mitra, nopens: r.nomorPensiun,
-      nama: r.nama, tglLahir: r.tglLahir, aktivitas: "Pengajuan Pembatalan Flagging",
-      perubahan: [{ label:"Alasan Pembatalan", dari:"–", ke: alasan }]
-    }, "Detail Flagging");
-    if (!masuk) {
-      toast(`${r.nama} sudah punya permintaan yang menunggu persetujuan.`, "bad");
-      return;
-    }
-    r.riwayat.push({
-      tgl: fpsHariIni(), user: "operator.mitra",
-      aksi: "Pembatalan flagging diajukan", ket: alasan
-    });
-    renderFps();
-    closeModal();
-    toast(`Pembatalan flagging ${r.nama} diajukan — menunggu Persetujuan.`, "ok");
-  };
-}
 
 /* ---- layar Riwayat Flagging
    Satu baris = satu update. Kolom identitas diambil dari baris pinjamannya,
@@ -1857,8 +2127,8 @@ document.addEventListener("click", e => {
   const bLunas = e.target.closest("[data-ffl-lunas]");
   if (bLunas && !bLunas.disabled) { fplIsi(fflCari(bLunas.dataset.fflLunas)); go("flagging-pelunasan"); return; }
 
-  const bBatal = e.target.closest("[data-ffl-batal]");
-  if (bBatal && !bBatal.disabled) { fflPembatalan(fflCari(bBatal.dataset.fflBatal)); return; }
+  const bTopUp = e.target.closest("[data-ffl-topup]");
+  if (bTopUp && !bTopUp.disabled) { ftutBuka(bTopUp.dataset.fflTopup); return; }
 
   const bRiwayat = e.target.closest("[data-ffl-riwayat]");
   if (bRiwayat) { ffrIsi(fflCari(bRiwayat.dataset.fflRiwayat)); go("flagging-flagging-riwayat"); return; }
@@ -2363,15 +2633,34 @@ function ftuHapus(r) {
 /* ---- Tambahkan Top Up: cari peserta lalu ajukan sebagai permintaan baru. */
 let ftutPeserta = null;
 
-function ftutReset() {
+/* Form Data Top Up hanya boleh tampil sebagai hasil pencarian. Begitu KPA-nya
+   diubah, hasilnya tidak lagi mewakili apa yang tertulis di field — jadi
+   disembunyikan sampai Search ditekan lagi. Isinya ikut dikosongkan supaya
+   nilai peserta sebelumnya tidak sempat terlihat saat form muncul kembali. */
+function ftutSembunyikanHasil() {
   ftutPeserta = null;
-  $("#ftut-kpa").value = "";
   $("#ftut-hasil").style.display = "none";
+  $$("#ftut-hasil input").forEach(el => { el.value = ""; });
+}
+$("#ftut-kpa").oninput = ftutSembunyikanHasil;
+
+function ftutReset() {
+  $("#ftut-kpa").value = "";
+  ftutSembunyikanHasil();
+}
+
+/* Dipanggil tombol Top Up di tabel Flagging: buka layarnya, isikan KPA-nya,
+   lalu jalankan pencarian supaya formnya langsung terbuka. `go()` mereset
+   layar lebih dulu, jadi pengisian harus terjadi sesudahnya. */
+function ftutBuka(ktpa) {
+  go("flagging-topup-tambah");
+  $("#ftut-kpa").value = ktpa;
+  $("#ftut-search").click();
 }
 
 $("#ftut-search").onclick = () => {
   const kpa = $("#ftut-kpa").value.trim();
-  $("#ftut-hasil").style.display = "none";
+  ftutSembunyikanHasil();
   if (!kpa) { toast("Nomor KPA belum diisi.", "bad"); return; }
 
   /* Top up hanya masuk akal untuk pinjaman yang flagging-nya masih berjalan —
@@ -2482,7 +2771,8 @@ $("#ftut-simpan").onclick = () => {
     return;
   }
 
-  go("flagging-pinjaman-topup");
+  renderFpt2();   /* antrean Persetujuan » Top Up ikut menyesuaikan */
+  go("flagging-pinjaman-flagging");
   toast(`Pengajuan top up ${p.nama} disubmit — menunggu Persetujuan.`, "ok");
 };
 
@@ -2521,18 +2811,7 @@ const fpnKosong = v => v ? esc(v) : `<span style="color:var(--faint)">–</span>
 });
 $("#fpt-status").innerHTML = FPN_STATUS_PESERTA.map(s => `<option>${esc(s)}</option>`).join("");
 
-/* ---- tab Mitra / Peserta */
-function fpnGotoTab(tab) {
-  $$("[data-fpn-tab]").forEach(b => b.classList.toggle("active", b.dataset.fpnTab === tab));
-  $("#fpn-panel-mitra").style.display   = tab === "mitra"   ? "" : "none";
-  $("#fpn-panel-peserta").style.display = tab === "peserta" ? "" : "none";
-}
-document.addEventListener("click", e => {
-  const b = e.target.closest("[data-fpn-tab]");
-  if (b) fpnGotoTab(b.dataset.fpnTab);
-});
-
-/* ---- tab Mitra */
+/* ---- Mitra: batch penagihan per mitra bayar */
 function fpnDaftar() {
   const f = fpnFilter;
   return fpnRows.filter(r =>
@@ -2575,7 +2854,7 @@ $("#fpn-cari").onclick = () => {
 
 const fpnCari = id => fpnRows.find(r => r.id === id);
 
-/* ---- tab Peserta: seluruh peserta dari semua batch, dengan asal mitra dan
+/* ---- Peserta: seluruh peserta dari semua batch, dengan asal mitra dan
    tanggal tagihannya ikut dibawa supaya barisnya berdiri sendiri. */
 let fppPager  = { hal: 1, per: 10 };
 let fppFilter = { cari: "", status: "Semua Status" };
@@ -2754,7 +3033,6 @@ $("#fpt-simpan").onclick = () => {
   renderFpn();
   renderFpp();
   go("flagging-pinjaman-penagihan");
-  fpnGotoTab("mitra");
   toast(`Penagihan ${mitra} dibuat untuk ${jumlah} peserta.`, "ok");
 };
 
@@ -2771,6 +3049,195 @@ document.addEventListener("click", e => {
 
 renderFpn();
 renderFpp();
+
+/* ================================================ FLAGGING » PERSETUJUAN » TOP UP
+   Antrean khusus pengajuan top up. Sumber datanya sama dengan antrean umum
+   (`fpsRows`), hanya disaring pada aktivitas "Pengajuan Top Up" — dan aktivitas
+   itu sengaja dikeluarkan dari antrean umum lewat FPS_AKTIVITAS_TOPUP supaya
+   satu permintaan tidak muncul di dua halaman sekaligus. */
+
+let fpt2Pager  = { hal: 1, per: 10 };
+let fpt2Filter = { cari: "", status: "Semua Status" };
+
+$("#fpt2-f-status").innerHTML =
+  ["Semua Status", ...FPS_STATUS].map(s => `<option>${esc(s)}</option>`).join("");
+
+const fpt2Kosong = v => (v || v === 0) ? esc(String(v)) : `<span style="color:var(--faint)">–</span>`;
+
+function fpt2Daftar() {
+  const f = fpt2Filter;
+  return fpsRows.filter(r =>
+    r.aktivitas === FPS_AKTIVITAS_TOPUP &&
+    (f.status === "Semua Status" || r.status === f.status) &&
+    (!f.cari || [r.ktpa, r.nrp, r.nama].some(v => String(v).toLowerCase().includes(f.cari)))
+  );
+}
+
+function renderFpt2() {
+  const rows = fpt2Daftar();
+  const pg   = pagerPotong(rows, fpt2Pager);
+
+  $("#fpt2-body").innerHTML = pg.hal.length
+    ? pg.hal.map(r => {
+      const t = r.topupBaru;
+      return `
+      <tr>
+        <td class="t-strong">${esc(r.ktpa)}</td>
+        <td>${esc(r.nrp)}</td>
+        <td>${esc(r.mitra)}</td>
+        <td>${fpt2Kosong(r.nopens)}</td>
+        <td class="t-strong">${esc(r.nama)}</td>
+        <td>${fpsAktivitasPill(r.aktivitas)}</td>
+        <td class="num">${t ? esc(String(t.topUpKe)) : `<span style="color:var(--faint)">–</span>`}</td>
+        <td class="num">${t ? t.pinjaman.plafon.toLocaleString("id-ID") : `<span style="color:var(--faint)">–</span>`}</td>
+        <td>${fpsPill(r.status)}</td>
+        <td>${fpt2Kosong(r.tglProses)}</td>
+        <td style="white-space:nowrap">
+          <button class="btn btn-info btn-sm" data-fpt2-detail="${esc(r.ktpa)}">Detail</button>
+        </td>
+      </tr>`; }).join("")
+    : `<tr><td colspan="11"><div class="empty">Tidak ada pengajuan top up yang cocok dengan filter.</div></td></tr>`;
+
+  $("#fpt2-count").innerHTML = pagerNote(pg, "pengajuan top up", "");
+  $("#fpt2-pager").innerHTML = rows.length ? pagerHtml(fpt2Pager, pg, "data-fpt2-hal") : "";
+}
+
+$("#fpt2-cari").onclick = () => {
+  fpt2Filter.cari   = $("#fpt2-f-cari").value.trim().toLowerCase();
+  fpt2Filter.status = $("#fpt2-f-status").value;
+  fpt2Pager.hal = 1;
+  renderFpt2();
+};
+
+const fpt2Cari = ktpa =>
+  fpsRows.find(r => r.ktpa === ktpa && r.aktivitas === FPS_AKTIVITAS_TOPUP);
+
+/* ---- Detail Pengajuan Top Up
+   Rinciannya diambil dari muatan `topupBaru` yang dibawa layar Tambahkan Top
+   Up. Setujui/Tolak hanya muncul selama statusnya masih Pending. */
+let fptdRow = null;
+
+function fptdField(label, nilai) {
+  return `<div class="field">
+    <label class="fl">${esc(label)}</label>
+    <input class="inp" value="${esc(nilai || nilai === 0 ? String(nilai) : "–")}" disabled>
+  </div>`;
+}
+
+function fptdIsi(r) {
+  fptdRow = r;
+  const t = r.topupBaru;
+  $("#fptd-sub").textContent = `${r.ktpa} — ${r.nama} · ${r.status}`;
+
+  $("#fptd-peserta").innerHTML = [
+    fptdField("KPA",           r.ktpa),
+    fptdField("NRP/NIP",       r.nrp),
+    fptdField("Nama",          r.nama),
+    fptdField("NOPENS",        r.nopens),
+    fptdField("Tanggal Lahir", r.tglLahir),
+    fptdField("Mitra Bayar",   r.mitra)
+  ].join("");
+
+  const j = t && t.pinjaman;
+  $("#fptd-topup").innerHTML = j ? [
+    fptdField("Tgl Permohonan",          j.tglPermohonan),
+    fptdField("NOPENS",                  r.nopens),
+    fptdField("Nama",                    t.nama),
+    fptdField("Awal Kredit",             j.awalKredit),
+    fptdField("Plafon",                  rp(j.plafon)),
+    fptdField("Nomor Rekening Kredit",   j.norekKredit),
+    fptdField("Mitra Bayar",             t.mitra),
+    fptdField("Jenis Tabungan",          j.jnsTab),
+    fptdField("NIK",                     j.nik || t.nik),
+    fptdField("Tgl Lahir",               t.tglLahir),
+    fptdField("Tanggal Akhir Kredit",    j.akhirKredit),
+    fptdField("Nomor Rekening Tabungan", j.norekTab),
+    fptdField("Nomor Perjanjian Kredit", j.noPk),
+    fptdField("Cabang Mitra Bayar",      j.cabangMitra),
+    fptdField("Top Up Ke",               t.topUpKe),
+    fptdField("Besaran Angsuran",        rp(j.angsuran)),
+    fptdField("Sub Kredit",              j.subKredit),
+    fptdField("Lampiran SP3R",           j.lampiranSp3r),
+    fptdField("Lampiran Surat Pernyataan Kredit Mitra Bayar", j.lampiranPernyataan)
+  ].join("") : "";
+  $("#fptd-tanpa-muatan").style.display = j ? "none" : "";
+
+  const pending = r.status === "Pending";
+  $("#fptd-aksi").style.display      = pending ? "" : "none";
+  $("#fptd-keputusan").style.display = pending ? "none" : "";
+  if (!pending) {
+    const akhir = r.riwayat[r.riwayat.length - 1];
+    $("#fptd-keputusan-teks").textContent =
+      `Pengajuan sudah ${r.status.toLowerCase()} pada ${r.tglProses || akhir.tgl} — ${akhir.ket}.`;
+  }
+
+  $("#fptd-riwayat").innerHTML = r.riwayat.map(h => `
+    <tr>
+      <td>${esc(h.tgl)}</td>
+      <td>${esc(h.user)}</td>
+      <td class="t-strong">${esc(h.aksi)}</td>
+      <td>${esc(h.ket)}</td>
+    </tr>`).join("");
+}
+
+/* Pop-up alasan dipakai bersama tombol Setujui dan Tolak; untuk Tolak
+   alasannya wajib karena itu yang dibaca mitra pengaju. */
+function fptdKonfirmasi(mode) {
+  const setuju = mode === "setuju";
+  $("#modal-title").textContent = setuju ? "Setujui Pengajuan Top Up" : "Tolak Pengajuan Top Up";
+  $("#modal-sub").textContent   = `${fptdRow.ktpa} — ${fptdRow.nama}`;
+  $("#modal-ico").style.display = "";
+  $("#modal-ico").className     = "modal-ico " + (setuju ? "" : "bad");
+  $("#modal-ico").textContent   = setuju ? "✓" : "⊗";
+  $("#modal-body").innerHTML = `
+    <div class="field">
+      <label class="fl" for="fptd-alasan">Alasan ${setuju ? "" : `<span class="req">*</span>`}</label>
+      <textarea class="inp" id="fptd-alasan" style="height:74px;padding:9px 10px;resize:vertical"
+        placeholder="${setuju ? "Catatan persetujuan (opsional)..." : "Tuliskan alasan penolakan..."}"></textarea>
+    </div>
+    <div class="form-actions" style="justify-content:flex-end">
+      <button class="btn btn-ghost" id="fptd-alasan-batal">Batal</button>
+      <button class="btn ${setuju ? "btn-success" : "btn-danger-solid"}" id="fptd-alasan-ok">
+        ${setuju ? "Setujui" : "Tolak"}</button>
+    </div>`;
+  openModal();
+  $("#fptd-alasan-batal").onclick = closeModal;
+  $("#fptd-alasan-ok").onclick = () => {
+    const alasan = $("#fptd-alasan").value.trim();
+    if (!setuju && !alasan) { toast("Alasan penolakan wajib diisi.", "bad"); return; }
+
+    const r = fptdRow;
+    r.status    = setuju ? "Disetujui" : "Ditolak";
+    r.tglProses = fpsHariIni();
+    r.riwayat.push({
+      tgl: r.tglProses, user: "verifikator.kep",
+      aksi: setuju ? "Disetujui" : "Ditolak",
+      ket: alasan || "Tanpa catatan tambahan"
+    });
+
+    /* Barisnya baru dibuat di daftar Top Up setelah disetujui. */
+    if (setuju) fpsTerapkan(r);
+
+    renderFpt2();
+    renderFps();
+    fptdIsi(r);
+    closeModal();
+    toast(`Pengajuan top up ${r.nama} berhasil ${setuju ? "disetujui" : "ditolak"}.`, setuju ? "ok" : "");
+  };
+}
+
+$("#fptd-setujui").onclick = () => fptdKonfirmasi("setuju");
+$("#fptd-tolak").onclick   = () => fptdKonfirmasi("tolak");
+
+document.addEventListener("click", e => {
+  const bDetail = e.target.closest("[data-fpt2-detail]");
+  if (bDetail) { fptdIsi(fpt2Cari(bDetail.dataset.fpt2Detail)); go("flagging-persetujuan-topup-detail"); return; }
+
+  const bHal = e.target.closest("[data-fpt2-hal]");
+  if (bHal) { fpt2Pager.hal = +bHal.dataset.fpt2Hal; renderFpt2(); }
+});
+
+renderFpt2();
 
 /* ============================================== NOTIFIKASI DI NAVBAR (LONCENG)
    Isinya dirakit dari antrean yang sedang berjalan, bukan daftar statis — jadi
