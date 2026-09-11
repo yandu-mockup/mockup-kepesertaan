@@ -2510,26 +2510,31 @@ const NONDAPEM_DATA = [
 ];
 
 /* ---------------------------------------------------------------------------
-   20. PENGELOLAAN ALIH STATUS PESERTA — Daftar Pengajuan Alih Status
-   Satu baris tabel = satu PENGAJUAN, bukan satu peserta. Pengajuan mekanisme
-   Perorangan selalu berisi tepat satu peserta; mekanisme Kolektif berisi
-   sebanyak baris yang diunggah lewat template Excel. Kolom "Jumlah Berkas"
-   pada tabel diturunkan dari panjang `peserta`, jadi tidak pernah bisa beda.
+   20. PENGELOLAAN ALIH STATUS PESERTA — Data Alih Status per Pengajuan
+   Data dikelompokkan per PENGAJUAN supaya sesuai kenyataannya: mekanisme
+   Perorangan selalu berisi tepat satu peserta, mekanisme Kolektif berisi
+   sebanyak baris yang diunggah lewat template Excel. Tabel di layar menampilkan
+   satu baris per PESERTA — app.js meratakan kelompok ini saat halaman dimuat,
+   dan tiap baris ikut membawa tanggal pengajuan & tipe pengajuannya.
 
    Struktur satu pengajuan:
-     { tglPengajuan, mekanisme, tipePeserta, tipe, peserta:[ …data peserta… ] }
+     { tglPengajuan, mekanisme, tipe, peserta:[ …data peserta… ] }
      mekanisme : "Perorangan" | "Kolektif"
-     tipe      : "Masuk" | "Batal" | "Kembali"
+     tipe      : "Batal" | "Kembali"
 
    Data peserta memakai 19 kolom yang sama dengan Template Alih Status
-   Kolektif, ditambah `buktiBayar` yang hanya terisi lewat form Perorangan.
-   `nrpLama` boleh null kalau peserta belum pernah punya NRP/NIP sebelumnya —
-   di tabel nilainya ditampilkan sebagai "—". Semua tanggal disimpan format ISO
-   (yyyy-mm-dd) dan diformat ke dd-mm-yyyy oleh asFmtTgl() di app.js.
+   Kolektif, ditambah:
+     kta        — nomor Kartu Tanda Anggota, dipakai pencarian filter "Peserta"
+     tglDps     — tanggal DPS; terbit otomatis saat data pertama kali disimpan
+     buktiBayar — nama berkas, hanya terisi lewat form Perorangan
+   `nrpLama` / `kta` boleh null — di tabel nilainya ditampilkan sebagai "—".
+   Semua tanggal disimpan format ISO (yyyy-mm-dd) dan diformat ke dd-mm-yyyy
+   oleh asFmtTgl() di app.js.
 
-   Tiga pengajuan pertama adalah contoh nyata dari FSD; sisanya dibuat massal
-   lewat buatPengajuanAlihStatus() supaya paginasi & pencarian bisa didemokan
-   dengan data yang banyak — ubah angka jumlahnya kalau mau daftar lebih pendek.
+   Tiga pengajuan pertama (lima peserta, No DPS 000133–000129) adalah contoh
+   nyata dari FSD; sisanya dibuat massal lewat buatPengajuanAlihStatus()
+   dengan No DPS berlanjut turun sampai 000001 — ubah angka jumlah pesertanya
+   kalau mau daftar lebih pendek.
    --------------------------------------------------------------------------- */
 const ALIH_STATUS_GOL = [
   "GOL.I/A","GOL.I/B","GOL.I/C","GOL.I/D",
@@ -2538,11 +2543,10 @@ const ALIH_STATUS_GOL = [
   "GOL.IV/A","GOL.IV/B","GOL.IV/C","GOL.IV/D","GOL.IV/E"
 ];
 
-/* Pilihan-pilihan dropdown pada filter dan Form Alih Status Peserta. Daftar
-   yang sama dipakai generator di bawah supaya data contoh selalu cocok. */
+/* Pilihan-pilihan dropdown pada Form Alih Status Peserta. Daftar yang sama
+   dipakai generator di bawah supaya data contoh selalu cocok dengan opsinya. */
 const ALIH_STATUS_MEKANISME    = ["Perorangan", "Kolektif"];
-const ALIH_STATUS_TIPE_PESERTA = ["Peserta Baru", "Peserta Lama"];
-const ALIH_STATUS_TIPE         = ["Masuk", "Batal", "Kembali"];
+const ALIH_STATUS_TIPE         = ["Batal", "Kembali"];
 const ALIH_STATUS_ANGKATAN     = ["TNI AD", "TNI AL", "TNI AU", "Polri", "PNS Kemhan"];
 const ALIH_STATUS_UNOR         = ["Mabes TNI", "Mabes TNI AD", "Mabes TNI AL", "Mabes TNI AU",
                                   "Mabes Polri", "Kementerian Pertahanan"];
@@ -2551,29 +2555,21 @@ const ALIH_STATUS_MENIKAH      = ["Belum Menikah", "Menikah", "Duda", "Janda"];
 const ALIH_STATUS_SATKER       = ["KOREM 084/BJ", "KODIM 0827", "KODIM 0830", "LANTAMAL V",
                                   "LANUD ISWAHJUDI", "POLDA JATIM", "SETJEN KEMHAN", "RSPAD GATOT SOEBROTO"];
 
-/* Kolom detail peserta — dipakai bersama oleh tabel detail pengajuan Kolektif
-   dan ringkasan detail pengajuan Perorangan di app.js. */
-const ALIH_STATUS_KOLOM_PESERTA = [
-  { key:"nrpBaru",         label:"NRP/NIP Baru" },
-  { key:"nrpLama",         label:"NRP/NIP Lama" },
-  { key:"nama",            label:"Nama Peserta" },
-  { key:"tglLahir",        label:"Tanggal Lahir",       tipe:"tanggal" },
-  { key:"angkatan",        label:"Angkatan" },
-  { key:"unor",            label:"Unor" },
-  { key:"statusPersonil",  label:"Status Personil" },
-  { key:"gol",             label:"Pangkat/Gol" },
-  { key:"tmtPangkat",      label:"TMT Pengangkatan",    tipe:"tanggal" },
-  { key:"gajiPokok",       label:"Gaji Pokok",          tipe:"rupiah" },
-  { key:"statusMenikah",   label:"Status Menikah" },
-  { key:"satkerLama",      label:"Satker Lama" },
-  { key:"satkerBaru",      label:"Satker Baru" },
-  { key:"tglPindah",       label:"Tanggal Pindah",      tipe:"tanggal" },
-  { key:"noSkep",          label:"No Skep" },
-  { key:"tglSkep",         label:"Tanggal Skep",        tipe:"tanggal" },
-  { key:"jumlahDiizinkan", label:"Jumlah Yang Diizinkan" },
-  { key:"tglBayar",        label:"Tanggal Pembayaran",  tipe:"tanggal" },
-  { key:"noDpb",           label:"Nomor DPB" }
-];
+/* Lookup KPA → data kepesertaan untuk autofill Form Alih Status Peserta
+   mekanisme Perorangan (pola yang sama dengan BUM_KPA_LOOKUP). Pesertanya
+   diambil dari data induk DATA_PESERTA_KELOLA (KPA = `ktpa`, NRP/NIP, nama,
+   tanggal lahir, TMT, pangkat akhir) supaya konsisten dengan layar Data
+   Peserta; nilainya sudah diselaraskan dengan pilihan dropdown di form, dan
+   UNOR / Status Personil / Status Menikah dilengkapi karena tidak ada di data
+   induk. Semua tanggal format ISO (yyyy-mm-dd). */
+const ALIH_STATUS_KPA_LOOKUP = {
+  "BZ111369": { nrpBaru:"196105061981011001", nama:"SURIPTO",         tglLahir:"1961-05-06", angkatan:"TNI AD",     unor:"Mabes TNI AD",          statusPersonil:"PNS",          gol:"GOL.II/D",  tmtPangkat:"1981-01-01", statusMenikah:"Duda" },
+  "AY105460": { nrpBaru:"196807191990031001", nama:"JUWANDI",         tglLahir:"1968-07-19", angkatan:"PNS Kemhan", unor:"Kementerian Pertahanan", statusPersonil:"PNS",          gol:"GOL.III/B", tmtPangkat:"1990-03-01", statusMenikah:"Menikah" },
+  "EY101086": { nrpBaru:"196807291992031002", nama:"WARDI",           tglLahir:"1968-07-29", angkatan:"Polri",      unor:"Mabes Polri",           statusPersonil:"PNS",          gol:"GOL.III/A", tmtPangkat:"1992-03-01", statusMenikah:"Menikah" },
+  "CB163890": { nrpBaru:"163890",             nama:"MARIA CHRISTINA", tglLahir:"1963-12-05", angkatan:"TNI AL",     unor:"Mabes TNI AL",          statusPersonil:"Purnawirawan", gol:"GOL.III/A", tmtPangkat:"1988-02-01", statusMenikah:"Janda" },
+  "AD500667": { nrpBaru:"199003152015031002", nama:"JOKO WIDIYANTO",  tglLahir:"1990-03-15", angkatan:"TNI AD",     unor:"Mabes TNI AD",          statusPersonil:"PNS",          gol:"GOL.III/B", tmtPangkat:"2015-03-01", statusMenikah:"Belum Menikah" },
+  "AL600334": { nrpBaru:"198502102010121004", nama:"DEWI ANGGRAINI",  tglLahir:"1985-02-10", angkatan:"TNI AL",     unor:"Mabes TNI AL",          statusPersonil:"PNS",          gol:"GOL.III/A", tmtPangkat:"2010-12-01", statusMenikah:"Menikah" }
+};
 
 const ALIH_STATUS_NAMA_DEPAN = [
   "SUPRIYADI","ENDANG","HARTONO","SRI WAHYUNI","AGUS SALIM","NURHAYATI","JOKO SUSILO",
@@ -2586,12 +2582,16 @@ const ALIH_STATUS_NAMA_DEPAN = [
 const asPutar = (arr, n) => arr[n % arr.length];
 const asTgl   = (thn, m, d) => `${thn}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 
+/* `n` sekaligus jadi No DPS peserta, jadi harus unik — itu yang menjamin
+   NRP, KTA, dan nomor-nomor lain hasil generator juga tidak pernah kembar. */
 function buatPesertaAlihStatus(n) {
-  const thnLahir = 1962 + (n % 22);
-  const thnCpns  = thnLahir + 22 + (n % 5);
+  const thnLahir  = 1962 + (n % 22);
+  const thnCpns   = thnLahir + 22 + (n % 5);
+  const thnPindah = 1999 + (n % 22);
   return {
     nrpBaru:  `${thnLahir}${String((n % 12) + 1).padStart(2, "0")}${String((n % 28) + 1).padStart(2, "0")}${thnCpns}${String((n % 12) + 1).padStart(2, "0")}${n % 2 === 0 ? "1" : "2"}${String((n % 900) + 1).padStart(3, "0")}`,
     nrpLama:  n % 3 === 0 ? `${8600000 + n * 7}` : null,
+    kta:      `${asPutar(["CD","CE","CC","CY"], n)}${String(300000 + n * 37).padStart(6, "0")}`,
     nama:     asPutar(ALIH_STATUS_NAMA_DEPAN, n),
     tglLahir: asTgl(thnLahir, (n % 12) + 1, (n % 28) + 1),
     angkatan: asPutar(ALIH_STATUS_ANGKATAN, n),
@@ -2603,83 +2603,84 @@ function buatPesertaAlihStatus(n) {
     statusMenikah: asPutar(ALIH_STATUS_MENIKAH, n),
     satkerLama: asPutar(ALIH_STATUS_SATKER, n),
     satkerBaru: asPutar(ALIH_STATUS_SATKER, n + 3),
-    tglPindah:  asTgl(1999 + (n % 22), (n % 11) + 1, (n % 26) + 2),
-    noSkep:     `SKEP/${1200 + n}/${asPutar(["III","VI","IX","XII"], n)}/${1999 + (n % 22)}`,
-    tglSkep:    asTgl(1999 + (n % 22), (n % 11) + 1, (n % 25) + 1),
+    tglPindah:  asTgl(thnPindah, (n % 11) + 1, (n % 26) + 2),
+    noSkep:     `SKEP/${1200 + n}/${asPutar(["III","VI","IX","XII"], n)}/${thnPindah}`,
+    tglSkep:    asTgl(thnPindah, (n % 11) + 1, (n % 25) + 1),
     jumlahDiizinkan: 1 + (n % 4),
-    tglBayar:   asTgl(2000 + (n % 22), (n % 12) + 1, (n % 26) + 2),
-    noDpb:      `DPB-${String(4100 + n).padStart(6, "0")}`,
+    tglBayar:   asTgl(Math.min(thnPindah + 1 + (n % 6), 2025), (n % 12) + 1, (n % 26) + 2),
+    noDps:      String(n).padStart(6, "0"),
+    tglDps:     asTgl(Math.min(thnPindah + 1 + (n % 6), 2025), (n % 12) + 1, (n % 27) + 1),
     buktiBayar: null
   };
 }
 
-/* Tanggal pengajuan mundur satu per satu dari tanggal terbaru, jadi daftar
-   selalu tampil urut dari pengajuan paling baru. */
-function buatPengajuanAlihStatus(jumlah, mulai) {
+/* Membuat pengajuan sampai jatah `jumlahPeserta` habis. No DPS diambil dari
+   jatah yang tersisa sehingga turun berurutan (…, 000002, 000001), dan tanggal
+   pengajuan mundur dua hari per pengajuan dari tanggal terbaru. */
+function buatPengajuanAlihStatus(jumlahPeserta) {
   const terbaru = new Date(2026, 7, 24);   /* 24 Agustus 2026 */
   const baris = [];
-  for (let i = 0; i < jumlah; i++) {
-    const n = mulai + i;
+  let sisa = jumlahPeserta;
+  for (let i = 0; sisa > 0; i++) {
+    const n = i + 1;
     const kolektif = n % 3 === 0;
+    const banyak = Math.min(sisa, kolektif ? 3 + (n % 9) : 1);
     const tgl = new Date(terbaru);
     tgl.setDate(terbaru.getDate() - i * 2);
     baris.push({
       tglPengajuan: asTgl(tgl.getFullYear(), tgl.getMonth() + 1, tgl.getDate()),
       mekanisme:    kolektif ? "Kolektif" : "Perorangan",
-      tipePeserta:  asPutar(ALIH_STATUS_TIPE_PESERTA, n),
       tipe:         asPutar(ALIH_STATUS_TIPE, n),
-      peserta: kolektif
-        ? Array.from({ length: 3 + (n % 9) }, (_, k) => buatPesertaAlihStatus(n * 13 + k))
-        : [buatPesertaAlihStatus(n)]
+      peserta:      Array.from({ length: banyak }, () => buatPesertaAlihStatus(sisa--))
     });
   }
   return baris;
 }
 
 const DATA_ALIH_STATUS_PENGAJUAN = [
-  { tglPengajuan:"2026-08-27", mekanisme:"Perorangan", tipePeserta:"Peserta Baru", tipe:"Masuk",
+  { tglPengajuan:"2026-08-27", mekanisme:"Perorangan", tipe:"Kembali",
     peserta:[
-      { nrpBaru:"196805091987031001", nrpLama:null, nama:"MULYONO", tglLahir:"1968-05-09",
+      { nrpBaru:"196805091987031001", nrpLama:null, kta:"CD317133", nama:"MULYONO", tglLahir:"1968-05-09",
         angkatan:"PNS Kemhan", unor:"Kementerian Pertahanan", statusPersonil:"PNS", gol:"GOL.III/C",
         tmtPangkat:"2011-04-01", gajiPokok:4350000, statusMenikah:"Menikah",
         satkerLama:"KODIM 0827", satkerBaru:"KOREM 084/BJ", tglPindah:"2000-05-31",
         noSkep:"SKEP/1187/V/2000", tglSkep:"2000-05-02", jumlahDiizinkan:1,
-        tglBayar:"2013-02-11", noDpb:"DPB-004133", buktiBayar:"bukti-bayar-004133.pdf" }
+        tglBayar:"2013-02-11", noDps:"000133", tglDps:"2013-01-08", buktiBayar:"bukti-bayar-000133.pdf" }
     ] },
 
-  { tglPengajuan:"2026-08-26", mekanisme:"Kolektif", tipePeserta:"Peserta Baru", tipe:"Masuk",
+  { tglPengajuan:"2026-08-26", mekanisme:"Kolektif", tipe:"Kembali",
     peserta:[
-      { nrpBaru:"196804081991032001", nrpLama:null, nama:"ASIH SURANI", tglLahir:"1968-04-08",
+      { nrpBaru:"196804081991032001", nrpLama:null, kta:"CE360132", nama:"ASIH SURANI", tglLahir:"1968-04-08",
         angkatan:"PNS Kemhan", unor:"Kementerian Pertahanan", statusPersonil:"PNS", gol:"GOL.IV/A",
         tmtPangkat:"2002-04-01", gajiPokok:4875000, statusMenikah:"Menikah",
         satkerLama:"LANTAMAL V", satkerBaru:"KOREM 084/BJ", tglPindah:"2000-05-31",
         noSkep:"SKEP/1188/V/2000", tglSkep:"2000-05-02", jumlahDiizinkan:2,
-        tglBayar:"2002-10-14", noDpb:"DPB-004132", buktiBayar:null },
-      { nrpBaru:"196804181994031004", nrpLama:null, nama:"SAMIN", tglLahir:"1968-04-18",
+        tglBayar:"2002-10-14", noDps:"000132", tglDps:"2002-09-26", buktiBayar:null },
+      { nrpBaru:"196804181994031004", nrpLama:null, kta:"CC306131", nama:"SAMIN", tglLahir:"1968-04-18",
         angkatan:"TNI AD", unor:"Mabes TNI AD", statusPersonil:"Prajurit", gol:"GOL.III/C",
         tmtPangkat:"2018-10-01", gajiPokok:4120000, statusMenikah:"Menikah",
         satkerLama:"KODIM 0830", satkerBaru:"KOREM 084/BJ", tglPindah:"2000-05-31",
         noSkep:"SKEP/1189/V/2000", tglSkep:"2000-05-02", jumlahDiizinkan:1,
-        tglBayar:"2022-10-05", noDpb:"DPB-004131", buktiBayar:null },
-      { nrpBaru:"196630519920132003", nrpLama:null, nama:"DRG. RIA BRILLIANTARI", tglLahir:"1966-03-05",
+        tglBayar:"2022-10-05", noDps:"000131", tglDps:"2022-09-13", buktiBayar:null },
+      { nrpBaru:"196630519920132003", nrpLama:null, kta:"CY104130", nama:"DRG. RIA BRILLIANTARI", tglLahir:"1966-03-05",
         angkatan:"PNS Kemhan", unor:"Kementerian Pertahanan", statusPersonil:"PNS", gol:"GOL.IV/D",
         tmtPangkat:"2007-04-01", gajiPokok:5460000, statusMenikah:"Menikah",
         satkerLama:"RSPAD GATOT SOEBROTO", satkerBaru:"KOREM 084/BJ", tglPindah:"2006-06-30",
         noSkep:"SKEP/1190/VI/2006", tglSkep:"2006-06-05", jumlahDiizinkan:3,
-        tglBayar:"2007-12-03", noDpb:"DPB-004130", buktiBayar:null }
+        tglBayar:"2007-12-03", noDps:"000130", tglDps:"2007-11-08", buktiBayar:null }
     ] },
 
-  { tglPengajuan:"2026-08-25", mekanisme:"Perorangan", tipePeserta:"Peserta Lama", tipe:"Kembali",
+  { tglPengajuan:"2026-08-25", mekanisme:"Perorangan", tipe:"Kembali",
     peserta:[
-      { nrpBaru:"197001121990031002", nrpLama:"8801120", nama:"BAMBANG SUTRISNO", tglLahir:"1970-01-12",
+      { nrpBaru:"197001121990031002", nrpLama:"8801120", kta:"CD319129", nama:"BAMBANG SUTRISNO", tglLahir:"1970-01-12",
         angkatan:"Polri", unor:"Mabes Polri", statusPersonil:"Prajurit", gol:"GOL.III/B",
         tmtPangkat:"2016-10-01", gajiPokok:3980000, statusMenikah:"Duda",
         satkerLama:"POLDA JATIM", satkerBaru:"KOREM 084/BJ", tglPindah:"2005-04-01",
         noSkep:"SKEP/1191/III/2005", tglSkep:"2005-03-14", jumlahDiizinkan:2,
-        tglBayar:"2018-04-02", noDpb:"DPB-004129", buktiBayar:"bukti-bayar-004129.pdf" }
+        tglBayar:"2018-04-02", noDps:"000129", tglDps:"2018-03-15", buktiBayar:"bukti-bayar-000129.pdf" }
     ] },
 
-  ...buatPengajuanAlihStatus(61, 1)
+  ...buatPengajuanAlihStatus(128)
 ];
 
 /* ---------------------------------------------------------------------------

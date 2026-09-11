@@ -2298,12 +2298,12 @@
       <section class="screen" id="s-alih-status">
         <div class="crumb" id="as-crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><b>Pengelolaan Alih Status Peserta</b></div>
 
-        <!-- ===== Daftar Pengajuan Alih Status (tampilan awal) ===== -->
+        <!-- ===== Daftar Alih Status Peserta (tampilan awal) ===== -->
         <div id="as-list-view">
           <div class="page-head">
             <div>
               <h1 class="page-title">Pengelolaan Alih Status Peserta</h1>
-              <div class="page-sub">Daftar pengajuan alih status peserta, baik yang diinput perorangan maupun diunggah kolektif.</div>
+              <div class="page-sub">Daftar peserta alih status, baik yang diinput perorangan maupun diunggah kolektif.</div>
             </div>
           </div>
 
@@ -2311,33 +2311,20 @@
             <h3 class="card-title">Filter</h3>
             <div class="grid4">
               <div class="field" style="margin-bottom:0">
-                <label class="fl">Tanggal Pengajuan</label>
-                <input class="inp" type="date" id="as-f-tanggal">
+                <label class="fl">Peserta</label>
+                <input class="inp" id="as-f-peserta" placeholder="Nama, KTA, NRP">
               </div>
               <div class="field" style="margin-bottom:0">
-                <label class="fl">Mekanisme Alih Status Peserta</label>
-                <select class="inp" id="as-f-mekanisme">
-                  <option value="all">Semua Mekanisme</option>
-                  <option>Perorangan</option>
-                  <option>Kolektif</option>
-                </select>
+                <label class="fl">Tanggal Pindah</label>
+                <input class="inp" type="date" id="as-f-tgl-pindah">
               </div>
               <div class="field" style="margin-bottom:0">
-                <label class="fl">Tipe Peserta</label>
-                <select class="inp" id="as-f-tipe-peserta">
-                  <option value="all">Semua Tipe Peserta</option>
-                  <option>Peserta Baru</option>
-                  <option>Peserta Lama</option>
-                </select>
+                <label class="fl">Tanggal Pengajuan Dari</label>
+                <input class="inp" type="date" id="as-f-pengajuan-dari">
               </div>
               <div class="field" style="margin-bottom:0">
-                <label class="fl">Tipe Alih Status Peserta</label>
-                <select class="inp" id="as-f-tipe">
-                  <option value="all">Semua Tipe Alih Status</option>
-                  <option>Masuk</option>
-                  <option>Batal</option>
-                  <option>Kembali</option>
-                </select>
+                <label class="fl">Tanggal Pengajuan Sampai</label>
+                <input class="inp" type="date" id="as-f-pengajuan-sampai">
               </div>
             </div>
             <div class="form-actions">
@@ -2363,52 +2350,6 @@
           </div>
         </div>
 
-        <!-- ===== Detail Pengajuan Alih Status ===== -->
-        <div id="as-detail-view" style="display:none">
-          <div class="head-row">
-            <button class="link-back" id="as-detail-kembali">← Kembali</button>
-            <div class="head-divider"></div>
-            <div>
-              <h1 class="page-title" style="font-size:18px;margin:0">Detail Pengajuan Alih Status</h1>
-              <div class="hint" id="as-detail-sub" style="margin:2px 0 0"></div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="review-card">
-              <div class="review-card-head">Data Pengajuan</div>
-              <div class="review-card-body">
-                <div class="grid4">
-                  <div class="review-row"><div class="fl">Tanggal Pengajuan</div><div class="val" id="as-d-tanggal">—</div></div>
-                  <div class="review-row"><div class="fl">Mekanisme Alih Status Peserta</div><div class="val" id="as-d-mekanisme">—</div></div>
-                  <div class="review-row"><div class="fl">Tipe Peserta</div><div class="val" id="as-d-tipe-peserta">—</div></div>
-                  <div class="review-row"><div class="fl">Tipe Alih Status Peserta</div><div class="val" id="as-d-tipe">—</div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Perorangan: ringkasan satu peserta -->
-          <div class="card" id="as-detail-perorangan" style="display:none">
-            <h2 class="section-title">Detail Input Alih Status Peserta</h2>
-            <div id="as-detail-ringkas"></div>
-          </div>
-
-          <!-- Kolektif: tabel seluruh peserta pada berkas -->
-          <div class="card" id="as-detail-kolektif" style="display:none">
-            <div class="toolbar" style="justify-content:space-between">
-              <h2 class="section-title" style="margin:0" id="as-detail-kolektif-judul">Daftar Peserta pada Berkas</h2>
-              <button class="btn btn-ghost btn-sm" id="as-detail-export">▤ Export Excel</button>
-            </div>
-            <div class="tbl-wrap">
-              <table class="wide-table">
-                <thead><tr id="as-detail-head"></tr></thead>
-                <tbody id="as-detail-body"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
         <!-- ===== Tambah / Ubah Alih Status Peserta ===== -->
         <div id="as-form-view" style="display:none">
           <div class="page-head">
@@ -2423,8 +2364,8 @@
           <!-- ===== langkah 1: Data Pengajuan ===== -->
           <div class="card" id="asf-step-1">
             <h2 class="section-title">Data Pengajuan</h2>
-            <div class="alert alert-info"><span>ⓘ</span><span>Mekanisme <b>Perorangan</b> mengisi data satu peserta lewat form, sedangkan <b>Kolektif</b> mengunggah banyak peserta sekaligus lewat template Excel.</span></div>
-            <div class="grid3">
+            <div class="alert alert-info"><span>ⓘ</span><span>Mekanisme <b>Perorangan</b> memilih satu peserta lewat KPA — data kepesertaannya terisi otomatis di form — sedangkan <b>Kolektif</b> mengunggah banyak peserta sekaligus lewat template Excel.</span></div>
+            <div class="grid2">
               <div class="field">
                 <label class="fl">Pilih Mekanisme Alih Status Peserta <span class="req">*</span></label>
                 <select class="inp" id="asf-mekanisme">
@@ -2434,21 +2375,21 @@
                 </select>
               </div>
               <div class="field">
-                <label class="fl">Tipe Peserta <span class="req">*</span></label>
-                <select class="inp" id="asf-tipe-peserta">
-                  <option value="">— Silahkan Pilih Tipe Peserta —</option>
-                  <option>Peserta Baru</option>
-                  <option>Peserta Lama</option>
-                </select>
-              </div>
-              <div class="field">
                 <label class="fl">Tipe Alih Status Peserta <span class="req">*</span></label>
                 <select class="inp" id="asf-tipe">
                   <option value="">— Silahkan Pilih Tipe Alih Status —</option>
-                  <option>Masuk</option>
                   <option>Batal</option>
                   <option>Kembali</option>
                 </select>
+              </div>
+              <!-- Cari Peserta (lewat KPA/nama/NRP) hanya untuk mekanisme Perorangan -->
+              <div class="field" id="asf-kpa-field" style="display:none">
+                <label class="fl" for="asf-kpa">Cari Peserta <span class="req">*</span></label>
+                <div style="position:relative">
+                  <input class="inp" type="search" id="asf-kpa" placeholder="⌕ Cari KPA, nama, atau NRP/NIP" autocomplete="off">
+                  <div class="autocomplete-list" id="asf-kpa-list"></div>
+                </div>
+                <div class="hint" id="asf-kpa-hint">Ketik KPA, nama, atau NRP/NIP lalu pilih peserta dari daftar.</div>
               </div>
             </div>
             <div class="form-actions split">
@@ -2465,25 +2406,26 @@
               <div class="review-card-body">
                 <div class="grid3">
                   <div class="review-row"><div class="fl">Mekanisme</div><div class="val" id="asf-rekap-mekanisme">—</div></div>
-                  <div class="review-row"><div class="fl">Tipe Peserta</div><div class="val" id="asf-rekap-tipe-peserta">—</div></div>
                   <div class="review-row"><div class="fl">Tipe Alih Status</div><div class="val" id="asf-rekap-tipe">—</div></div>
+                  <div class="review-row"><div class="fl">KPA</div><div class="val" id="asf-rekap-kpa">—</div></div>
                 </div>
               </div>
             </div>
 
             <div class="subsection-title">Data Peserta</div>
+            <div class="hint" style="margin:-6px 0 14px">Terisi otomatis dari data kepesertaan sesuai KPA. NRP/NIP dan Nama Peserta terkunci; field lain boleh dikoreksi.</div>
             <div class="grid2">
               <div class="field">
                 <label class="fl">NRP/NIP Baru <span class="req">*</span></label>
-                <input class="inp" id="asf-nrp-baru" placeholder="NRP Baru">
+                <input class="inp" id="asf-nrp-baru" readonly placeholder="Otomatis terisi dari KPA">
               </div>
               <div class="field">
                 <label class="fl">NRP/NIP Lama</label>
-                <input class="inp" id="asf-nrp-lama" placeholder="NRP Lama">
+                <input class="inp" id="asf-nrp-lama" readonly placeholder="Tidak terisi">
               </div>
               <div class="field span2">
                 <label class="fl">Nama Peserta <span class="req">*</span></label>
-                <input class="inp" id="asf-nama" placeholder="Masukkan Nama">
+                <input class="inp" id="asf-nama" readonly placeholder="Otomatis terisi dari KPA">
               </div>
               <div class="field">
                 <label class="fl">Tanggal Lahir <span class="req">*</span></label>
@@ -2523,7 +2465,7 @@
                 </select>
               </div>
               <div class="field">
-                <label class="fl">Pangkat/Gol</label>
+                <label class="fl">Pangkat/Golongan</label>
                 <select class="inp" id="asf-gol">
                   <option value="">— Silahkan Pilih Pangkat —</option>
                 </select>
@@ -2583,8 +2525,8 @@
                 <input class="inp" type="date" id="asf-tgl-bayar">
               </div>
               <div class="field">
-                <label class="fl">Nomor DPB</label>
-                <input class="inp" id="asf-no-dpb" placeholder="Masukkan Nomor DPB">
+                <label class="fl">Nomor DPS</label>
+                <input class="inp" id="asf-no-dps" placeholder="Masukkan Nomor DPS">
               </div>
               <div class="field">
                 <label class="fl">Bukti Pembayaran</label>
