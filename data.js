@@ -3080,6 +3080,65 @@ const DATA_BUP = [
 ];
 
 /* ---------------------------------------------------------------------------
+   23D. SUB MODUL SATUAN KERJA & DAERAH
+   Dua daftar referensi yang kolomnya sama dengan template unggah di sub
+   Kolektif (REF_KOLEKTIF_JENIS), supaya entri manual dan entri hasil unggah
+   berbentuk sama. Kode yang dianggap "baru" oleh simulasi Kolektif sengaja
+   tidak ada di sini, sedangkan 35.78.09 ada — Kolektif menolaknya sebagai
+   kode yang sudah terdaftar.
+   `berlaku` disimpan dd/mm/yyyy.
+   --------------------------------------------------------------------------- */
+
+/* Satuan Kerja: `unor` = nama pada DATA_UNOR, `kppn` = kode KPPN pada
+   DATA_REFERENSI (jenis "KPPN"). `kode` unik. */
+const DATA_SATUAN_KERJA = [
+  { kode:"0401", nama:"KOREM 084/BHASKARA JAYA",       unor:"Komando Daerah Militer V/Brawijaya (KODAM V/BRW)",            kppn:"084", berlaku:"01/01/2020", oleh:"Lojita — R. Prasetyo",
+    keterangan:"Komando resor militer wilayah Surabaya dan Madura." },
+  { kode:"0412", nama:"KODIM 0827/SUMENEP",            unor:"Komando Daerah Militer V/Brawijaya (KODAM V/BRW)",            kppn:"084", berlaku:"01/01/2020", oleh:"Lojita — R. Prasetyo",
+    keterangan:"Komando distrik militer di bawah KOREM 084/BHASKARA JAYA." },
+  { kode:"0415", nama:"KODIM 0829/BANGKALAN",          unor:"Komando Daerah Militer V/Brawijaya (KODAM V/BRW)",            kppn:"084", berlaku:"01/07/2026", oleh:"Lojita — S. Wijayanti",
+    keterangan:"Pemekaran Kodim sesuai Perkasad Nomor 12/IV/2026." },
+  { kode:"0655", nama:"POLRES SIDOARJO",               unor:"Kepolisian Daerah Jawa Timur (POLDA JATIM)",                  kppn:"084", berlaku:"01/01/2020", oleh:"Lojita — S. Wijayanti",
+    keterangan:"Kepolisian resor wilayah Kabupaten Sidoarjo." },
+  { kode:"0920", nama:"SKADRON UDARA 3 LANUD ISWAHJUDI", unor:"Pangkalan TNI AU Iswahjudi (LANUD IWJ)",                    kppn:"084", berlaku:"01/07/2022", oleh:"Lojita — R. Prasetyo",
+    keterangan:"Satuan skadron tempur yang berpangkalan di Lanud Iswahjudi." },
+  { kode:"0501", nama:"KODIM 0501/JAKARTA PUSAT",      unor:"Komando Daerah Militer Jayakarta (KODAM JAYA)",               kppn:"019", berlaku:"01/01/2019", oleh:"Lojita — A. Nurcahyo",
+    keterangan:"Komando distrik militer wilayah Jakarta Pusat." },
+  { kode:"0620", nama:"POLRES METRO JAKARTA PUSAT",    unor:"Kepolisian Daerah Metro Jaya (POLDA METRO JAYA)",             kppn:"019", berlaku:"01/01/2019", oleh:"Lojita — A. Nurcahyo",
+    keterangan:"Kepolisian resor metropolitan wilayah Jakarta Pusat." },
+  { kode:"0801", nama:"BIRO KEUANGAN SETJEN KEMHAN",   unor:"Sekretariat Jenderal Kementerian Pertahanan (SETJEN KEMHAN)", kppn:"019", berlaku:"01/01/2021", oleh:"Lojita — A. Nurcahyo",
+    keterangan:"Biro pengelola keuangan di lingkungan Sekretariat Jenderal Kemhan." },
+  { kode:"0618", nama:"KODIM 0618/KOTA BANDUNG",       unor:"Komando Daerah Militer III/Siliwangi (KODAM III/SLW)",        kppn:"137", berlaku:"01/01/2020", oleh:"Lojita — S. Wijayanti",
+    keterangan:"Komando distrik militer wilayah Kota Bandung." },
+  { kode:"0633", nama:"POLRESTABES BANDUNG",           unor:"Kepolisian Daerah Jawa Barat (POLDA JABAR)",                  kppn:"137", berlaku:"01/01/2020", oleh:"Lojita — S. Wijayanti",
+    keterangan:"Kepolisian resor kota besar wilayah Bandung." }
+];
+
+/* Daerah: kode bergaya BPS — provinsi 2 digit, kabupaten/kota "35.78",
+   kecamatan "35.78.09". `induk` = kode daerah satu tingkat di atasnya
+   (kosong untuk Provinsi). */
+const DAERAH_TINGKAT = ["Provinsi", "Kabupaten/Kota", "Kecamatan"];
+
+const DATA_DAERAH = [
+  { kode:"31",       nama:"DKI JAKARTA",          tingkat:"Provinsi",       induk:"",      berlaku:"01/01/2015", oleh:"Lojita — R. Prasetyo" },
+  { kode:"32",       nama:"JAWA BARAT",           tingkat:"Provinsi",       induk:"",      berlaku:"01/01/2015", oleh:"Lojita — R. Prasetyo" },
+  { kode:"33",       nama:"JAWA TENGAH",          tingkat:"Provinsi",       induk:"",      berlaku:"01/01/2015", oleh:"Lojita — R. Prasetyo" },
+  { kode:"35",       nama:"JAWA TIMUR",           tingkat:"Provinsi",       induk:"",      berlaku:"01/01/2015", oleh:"Lojita — R. Prasetyo" },
+
+  { kode:"31.71",    nama:"KOTA JAKARTA PUSAT",   tingkat:"Kabupaten/Kota", induk:"31",    berlaku:"01/01/2015", oleh:"Lojita — S. Wijayanti" },
+  { kode:"32.73",    nama:"KOTA BANDUNG",         tingkat:"Kabupaten/Kota", induk:"32",    berlaku:"01/01/2015", oleh:"Lojita — S. Wijayanti" },
+  { kode:"33.74",    nama:"KOTA SEMARANG",        tingkat:"Kabupaten/Kota", induk:"33",    berlaku:"01/01/2015", oleh:"Lojita — S. Wijayanti" },
+  { kode:"35.15",    nama:"KABUPATEN SIDOARJO",   tingkat:"Kabupaten/Kota", induk:"35",    berlaku:"01/01/2015", oleh:"Lojita — S. Wijayanti" },
+  { kode:"35.78",    nama:"KOTA SURABAYA",        tingkat:"Kabupaten/Kota", induk:"35",    berlaku:"01/01/2015", oleh:"Lojita — S. Wijayanti" },
+
+  { kode:"31.71.01", nama:"KEC. GAMBIR",          tingkat:"Kecamatan",      induk:"31.71", berlaku:"01/01/2020", oleh:"Lojita — A. Nurcahyo" },
+  { kode:"32.73.27", nama:"KEC. GEDEBAGE",        tingkat:"Kecamatan",      induk:"32.73", berlaku:"01/04/2026", oleh:"Lojita — A. Nurcahyo" },
+  { kode:"33.74.01", nama:"KEC. SEMARANG TENGAH", tingkat:"Kecamatan",      induk:"33.74", berlaku:"01/01/2020", oleh:"Lojita — A. Nurcahyo" },
+  { kode:"35.15.01", nama:"KEC. SIDOARJO",        tingkat:"Kecamatan",      induk:"35.15", berlaku:"01/01/2020", oleh:"Lojita — A. Nurcahyo" },
+  { kode:"35.78.09", nama:"KEC. SUKOMANUNGGAL",   tingkat:"Kecamatan",      induk:"35.78", berlaku:"01/01/2020", oleh:"Lojita — A. Nurcahyo" }
+];
+
+/* ---------------------------------------------------------------------------
    24. SPP DATA PESERTA
    Permohonan penambahan data peserta yang Nomor Kartu Peserta ASABRI (KPA)-nya
    sudah terbit namun data kepesertaannya belum tersedia di YANDU — sisa migrasi

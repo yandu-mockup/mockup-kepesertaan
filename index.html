@@ -74,6 +74,8 @@
       <button class="nav-item nav-child" data-go="ref-kolektif">Kolektif <span class="tag">New</span></button>
       <button class="nav-item nav-child" data-go="status-peserta">Status Peserta <span class="tag">New</span></button>
       <button class="nav-item nav-child" data-go="batas-usia-pensiun">Batas Usia Pensiun <span class="tag">New</span></button>
+      <button class="nav-item nav-child" data-go="satuan-kerja">Satuan Kerja <span class="tag">New</span></button>
+      <button class="nav-item nav-child" data-go="daerah">Daerah <span class="tag">New</span></button>
     </div>
     <button class="nav-item nav-parent" id="nav-spp" aria-expanded="true">
       <span>SPP Data Peserta</span><span class="chevron">⌄</span>
@@ -3075,6 +3077,108 @@
             </table>
           </div>
           <div class="tbl-note" id="bup-count"></div>
+        </div>
+      </section>
+
+      <!-- ---------- REFERENSI DATA KEPESERTAAN — SATUAN KERJA ---------- -->
+      <section class="screen" id="s-satuan-kerja">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pengelolaan Referensi Data Kepesertaan</span><span>›</span><b>Satuan Kerja</b></div>
+
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Satuan Kerja</h1>
+            <div class="page-sub">Pemeliharaan daftar satuan kerja beserta unit organisasi induk dan KPPN pembayarnya.</div>
+          </div>
+          <button class="btn btn-primary" id="skr-tambah">+ Tambah Satuan Kerja</button>
+        </div>
+
+        <div class="card">
+          <div class="grid3">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="skr-f-cari">Kode / Nama Satuan Kerja</label>
+              <input class="inp" id="skr-f-cari" placeholder="Masukkan kata kunci pencarian...">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="skr-f-unor">Unit Organisasi</label>
+              <select class="inp" id="skr-f-unor">
+                <option value="all">Semua Unit Organisasi</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" id="skr-cari">Cari</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:10px">
+              <h2 class="card-title" style="margin:0">Daftar Satuan Kerja</h2>
+              <span class="pill pill-info" id="skr-badge">0 entri</span>
+            </div>
+            <button class="btn btn-ghost" id="skr-export">⭳ Export Excel</button>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>No</th><th>Kode Satuan Kerja</th><th>Nama Satuan Kerja</th><th>Unit Organisasi</th>
+                <th>Kode KPPN</th><th>Berlaku Sejak</th><th>Aksi</th>
+              </tr></thead>
+              <tbody id="skr-body"></tbody>
+            </table>
+          </div>
+          <div class="tbl-note" id="skr-count"></div>
+        </div>
+      </section>
+
+      <!-- ---------- REFERENSI DATA KEPESERTAAN — DAERAH ---------- -->
+      <section class="screen" id="s-daerah">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pengelolaan Referensi Data Kepesertaan</span><span>›</span><b>Daerah</b></div>
+
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Daerah</h1>
+            <div class="page-sub">Pemeliharaan daftar daerah bertingkat (provinsi, kabupaten/kota, kecamatan) untuk alamat peserta.</div>
+          </div>
+          <button class="btn btn-primary" id="drh-tambah">+ Tambah Daerah</button>
+        </div>
+
+        <div class="card">
+          <div class="grid3">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="drh-f-cari">Kode / Nama Daerah</label>
+              <input class="inp" id="drh-f-cari" placeholder="Masukkan kata kunci pencarian...">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="drh-f-tingkat">Tingkat</label>
+              <select class="inp" id="drh-f-tingkat">
+                <option value="all">Semua Tingkat</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" id="drh-cari">Cari</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:10px">
+              <h2 class="card-title" style="margin:0">Daftar Daerah</h2>
+              <span class="pill pill-info" id="drh-badge">0 entri</span>
+            </div>
+            <button class="btn btn-ghost" id="drh-export">⭳ Export Excel</button>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>No</th><th>Kode Daerah</th><th>Nama Daerah</th><th>Tingkat</th>
+                <th>Induk Daerah</th><th>Berlaku Sejak</th><th>Aksi</th>
+              </tr></thead>
+              <tbody id="drh-body"></tbody>
+            </table>
+          </div>
+          <div class="tbl-note" id="drh-count"></div>
         </div>
       </section>
 

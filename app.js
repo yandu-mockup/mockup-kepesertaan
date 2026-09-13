@@ -6620,7 +6620,7 @@ $("#s-data-peserta").addEventListener("keydown", e => {
 /* ====================================================================== INIT */
 /* Ganti role = ganti kewenangan, jadi layar yang tombolnya dibatasi role
    (UNOR, Referensi Kolektif, Status Peserta, Batas Usia Pensiun, SPP Data
-   Peserta, Daftar Nominatif) digambar ulang. */
+   Peserta, Daftar Nominatif, Satuan Kerja, Daerah) digambar ulang. */
 $("#top-role").onchange = () => {
   toast(`Role diubah ke: ${roleSaatIni()}.`);
   renderHome();
@@ -6629,6 +6629,8 @@ $("#top-role").onchange = () => {
   renderRefKolektif();
   renderStatusPeserta();
   renderBup();
+  renderSatuanKerja();
+  renderDaerah();
   renderRuKategori();
   renderSppApproval();
   renderSppBersih();
@@ -9363,6 +9365,389 @@ document.addEventListener("click", e => {
   if (bHapus) { bupHapus(bupRows.find(b => b._id === +bHapus.dataset.bupHapus)); return; }
 });
 
+/* ========== PENGELOLAAN REFERENSI DATA KEPESERTAAN » SATUAN KERJA
+   Kolom sama dengan template Satuan Kerja di sub Kolektif. Unit Organisasi
+   dipilih dari daftar UNOR yang sedang berlaku (unorRows), KPPN dari kode
+   KPPN di DATA_REFERENSI. Kode Satuan Kerja harus unik. */
+let skrRows = DATA_SATUAN_KERJA.map((s, i) => ({ ...s, _id: i }));
+
+const REF_KPPN = DATA_REFERENSI.filter(r => r.jenis === "KPPN");
+
+function skrBolehKelola() { return roleSaatIni() === ROLE_DIVISI; }
+
+/* "2026-07-01" (input date) → "01/07/2026" */
+function refTglDariInput(v) { return v.split("-").reverse().join("/"); }
+
+function skrNamaKppn(kode) {
+  const k = REF_KPPN.find(r => r.kode === kode);
+  return k ? k.uraian : "";
+}
+
+function skrIsiFilter() {
+  const sel = $("#skr-f-unor");
+  const dipilih = sel.value || "all";
+  const daftar = [...new Set(skrRows.map(s => s.unor))].sort();
+  sel.innerHTML = `<option value="all">Semua Unit Organisasi</option>`
+    + daftar.map(u => `<option>${esc(u)}</option>`).join("");
+  sel.value = daftar.includes(dipilih) ? dipilih : "all";
+}
+
+function skrBarisTersaring() {
+  const cari = ($("#skr-f-cari").value || "").trim().toLowerCase();
+  const unor = $("#skr-f-unor").value;
+  return skrRows.filter(s =>
+    (unor === "all" || s.unor === unor) &&
+    (!cari || s.kode.toLowerCase().includes(cari) || s.nama.toLowerCase().includes(cari)));
+}
+
+function renderSatuanKerja() {
+  skrIsiFilter();
+  const boleh = skrBolehKelola();
+  const rows  = skrBarisTersaring();
+
+  $("#skr-body").innerHTML = rows.length ? rows.map((s, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td class="t-name">${esc(s.kode)}</td>
+      <td class="t-strong">${esc(s.nama)}</td>
+      <td class="truncate-cell" title="${esc(s.unor)}">${esc(s.unor)}</td>
+      <td title="${esc(skrNamaKppn(s.kppn))}">${esc(s.kppn)}</td>
+      <td style="white-space:nowrap">${esc(s.berlaku)}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-info btn-sm" data-skr-detail="${s._id}">👁 Detail</button>
+        ${boleh ? `<button class="btn btn-danger btn-sm" data-skr-hapus="${s._id}" title="Hapus Satuan Kerja">⌫</button>` : ""}
+      </td>
+    </tr>`).join("")
+    : `<tr><td colspan="7"><div class="empty"><h4>Tidak ada satuan kerja</h4><p>Ubah kata kunci atau filter Unit Organisasi, atau tambahkan lewat tombol Tambah Satuan Kerja.</p></div></td></tr>`;
+
+  $("#skr-tambah").style.display = boleh ? "" : "none";
+  $("#skr-badge").textContent    = `${rows.length} entri`;
+  $("#skr-count").textContent    = `Menampilkan ${rows.length} dari ${skrRows.length} satuan kerja.`;
+}
+
+$("#skr-tambah").onclick = () => {
+  $("#modal-title").textContent = "Tambah Satuan Kerja";
+  $("#modal-sub").textContent   = "Kode Satuan Kerja harus unik.";
+  $("#modal-body").innerHTML = `
+    <div class="grid2">
+      <div class="field">
+        <label class="fl">Kode Satuan Kerja <span class="req">*</span></label>
+        <input class="inp" id="skr-m-kode" placeholder="Contoh: 0416">
+      </div>
+      <div class="field">
+        <label class="fl">Berlaku Sejak <span class="req">*</span></label>
+        <input class="inp" type="date" id="skr-m-berlaku">
+      </div>
+    </div>
+    <div class="field">
+      <label class="fl">Nama Satuan Kerja <span class="req">*</span></label>
+      <input class="inp" id="skr-m-nama" placeholder="Contoh: KODIM 0830/SAMPANG">
+    </div>
+    <div class="field">
+      <label class="fl">Unit Organisasi <span class="req">*</span></label>
+      <select class="inp" id="skr-m-unor">
+        <option value="">Pilih Unit Organisasi</option>
+        ${unorRows.map(u => `<option>${esc(u.nama)}</option>`).join("")}
+      </select>
+    </div>
+    <div class="field" style="margin-bottom:0">
+      <label class="fl">Kode KPPN <span class="req">*</span></label>
+      <select class="inp" id="skr-m-kppn">
+        <option value="">Pilih KPPN</option>
+        ${REF_KPPN.map(k => `<option value="${esc(k.kode)}">${esc(k.kode)} — ${esc(k.uraian)}</option>`).join("")}
+      </select>
+    </div>
+    <div class="form-actions" style="justify-content:flex-end">
+      <button class="btn btn-ghost" id="skr-m-batal">Batal</button>
+      <button class="btn btn-primary" id="skr-m-simpan">Simpan</button>
+    </div>`;
+  openModal();
+  $("#skr-m-batal").onclick  = closeModal;
+  $("#skr-m-simpan").onclick = () => {
+    const kode    = $("#skr-m-kode").value.trim().toUpperCase();
+    const nama    = $("#skr-m-nama").value.trim().toUpperCase();
+    const unor    = $("#skr-m-unor").value;
+    const kppn    = $("#skr-m-kppn").value;
+    const berlaku = $("#skr-m-berlaku").value;
+    if (!kode || !nama || !unor || !kppn || !berlaku) { toast("Seluruh field wajib diisi.", "bad"); return; }
+    if (skrRows.some(s => s.kode.toUpperCase() === kode)) {
+      toast(`Kode ${kode} sudah terdaftar pada daftar Satuan Kerja.`, "bad");
+      return;
+    }
+    skrRows.unshift({
+      kode, nama, unor, kppn, berlaku: refTglDariInput(berlaku),
+      oleh: PENGATURAN.namaUser, keterangan: "Belum ada keterangan.",
+      _id: skrRows.length ? Math.max(...skrRows.map(s => s._id)) + 1 : 0
+    });
+    renderSatuanKerja();
+    closeModal();
+    toast("Satuan kerja baru berhasil disimpan.", "ok");
+  };
+};
+
+function skrDetail(s) {
+  $("#modal-title").textContent = "Detail Satuan Kerja";
+  $("#modal-sub").textContent   = `${s.kode} · ${s.nama}`;
+  $("#modal-body").innerHTML = `
+    <div class="review-card">
+      <div class="review-card-head">Data Satuan Kerja</div>
+      <div class="review-card-body">
+        <div class="review-row"><div class="fl">Kode Satuan Kerja</div><div class="val">${esc(s.kode)}</div></div>
+        <div class="review-row"><div class="fl">Nama Satuan Kerja</div><div class="val">${esc(s.nama)}</div></div>
+        <div class="review-row"><div class="fl">Unit Organisasi</div><div class="val">${esc(s.unor)}</div></div>
+        <div class="review-row"><div class="fl">KPPN</div><div class="val">${esc(s.kppn)} — ${esc(skrNamaKppn(s.kppn) || "-")}</div></div>
+        <div class="review-row"><div class="fl">Berlaku Sejak</div><div class="val">${esc(unorTanggal(s.berlaku).panjang)}</div></div>
+        <div class="review-row"><div class="fl">Dibuat Oleh</div><div class="val">${esc(s.oleh)}</div></div>
+        <div class="review-row"><div class="fl">Keterangan</div><div class="val">${esc(s.keterangan)}</div></div>
+      </div>
+    </div>
+    <div class="form-actions" style="justify-content:flex-end">
+      <button class="btn btn-ghost" id="skr-d-tutup">Tutup</button>
+    </div>`;
+  openModal();
+  $("#skr-d-tutup").onclick = closeModal;
+}
+
+function skrHapus(s) {
+  $("#modal-title").textContent = "Hapus Satuan Kerja";
+  $("#modal-sub").textContent   = `${s.kode} · ${s.nama}`;
+  $("#modal-body").innerHTML = `
+    <div class="alert alert-bad"><span>⚠</span><span>Satuan kerja yang dihapus tidak lagi tersedia sebagai pilihan pada pengisian data peserta. Pastikan tidak ada peserta aktif yang masih terhubung ke satuan kerja ini.</span></div>
+    <div class="form-actions" style="justify-content:flex-end">
+      <button class="btn btn-ghost" id="skr-h-batal">Batal</button>
+      <button class="btn btn-danger-solid" id="skr-h-ya">Hapus</button>
+    </div>`;
+  openModal();
+  $("#skr-h-batal").onclick = closeModal;
+  $("#skr-h-ya").onclick    = () => {
+    skrRows = skrRows.filter(x => x._id !== s._id);
+    renderSatuanKerja();
+    closeModal();
+    toast(`Satuan kerja ${s.kode} berhasil dihapus.`, "ok");
+  };
+}
+
+$("#skr-cari").onclick   = () => renderSatuanKerja();
+$("#skr-export").onclick = () => toast("Daftar satuan kerja diekspor ke Excel.");
+
+document.addEventListener("click", e => {
+  const bDetail = e.target.closest("[data-skr-detail]");
+  if (bDetail) { skrDetail(skrRows.find(s => s._id === +bDetail.dataset.skrDetail)); return; }
+
+  const bHapus = e.target.closest("[data-skr-hapus]");
+  if (bHapus) { skrHapus(skrRows.find(s => s._id === +bHapus.dataset.skrHapus)); return; }
+});
+
+/* ================= PENGELOLAAN REFERENSI DATA KEPESERTAAN » DAERAH
+   Daerah bertingkat Provinsi → Kabupaten/Kota → Kecamatan. Induk Daerah
+   selalu satu tingkat di atasnya, dan kode anak wajib diawali kode induk +
+   "." (pola BPS), supaya struktur pohonnya tidak pernah rusak. Daerah yang
+   masih punya turunan tidak bisa dihapus. */
+let drhRows = DATA_DAERAH.map((d, i) => ({ ...d, _id: i }));
+
+function drhBolehKelola() { return roleSaatIni() === ROLE_DIVISI; }
+
+function drhCariKode(kode) { return drhRows.find(d => d.kode === kode); }
+function drhLabelInduk(d) {
+  if (!d.induk) return "-";
+  const induk = drhCariKode(d.induk);
+  return induk ? `${induk.kode} — ${induk.nama}` : d.induk;
+}
+/* Tingkat induk yang sah = satu tingkat di atas; Provinsi tidak punya induk. */
+function drhTingkatInduk(tingkat) {
+  const i = DAERAH_TINGKAT.indexOf(tingkat);
+  return i > 0 ? DAERAH_TINGKAT[i - 1] : null;
+}
+
+function drhIsiFilter() {
+  const sel = $("#drh-f-tingkat");
+  const dipilih = sel.value || "all";
+  sel.innerHTML = `<option value="all">Semua Tingkat</option>`
+    + DAERAH_TINGKAT.map(t => `<option>${esc(t)}</option>`).join("");
+  sel.value = dipilih;
+}
+
+function drhBarisTersaring() {
+  const cari    = ($("#drh-f-cari").value || "").trim().toLowerCase();
+  const tingkat = $("#drh-f-tingkat").value;
+  return drhRows
+    .filter(d =>
+      (tingkat === "all" || d.tingkat === tingkat) &&
+      (!cari || d.kode.toLowerCase().includes(cari) || d.nama.toLowerCase().includes(cari)))
+    /* Urut kode supaya anak selalu tampil tepat di bawah induknya. */
+    .sort((a, b) => a.kode.localeCompare(b.kode, "id", { numeric: true }));
+}
+
+function renderDaerah() {
+  drhIsiFilter();
+  const boleh = drhBolehKelola();
+  const rows  = drhBarisTersaring();
+
+  $("#drh-body").innerHTML = rows.length ? rows.map((d, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td class="t-name">${esc(d.kode)}</td>
+      <td class="t-strong">${esc(d.nama)}</td>
+      <td><span class="pill pill-info">${esc(d.tingkat)}</span></td>
+      <td>${esc(drhLabelInduk(d))}</td>
+      <td style="white-space:nowrap">${esc(d.berlaku)}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-info btn-sm" data-drh-detail="${d._id}">👁 Detail</button>
+        ${boleh ? `<button class="btn btn-danger btn-sm" data-drh-hapus="${d._id}" title="Hapus Daerah">⌫</button>` : ""}
+      </td>
+    </tr>`).join("")
+    : `<tr><td colspan="7"><div class="empty"><h4>Tidak ada daerah</h4><p>Ubah kata kunci atau filter Tingkat, atau tambahkan lewat tombol Tambah Daerah.</p></div></td></tr>`;
+
+  $("#drh-tambah").style.display = boleh ? "" : "none";
+  $("#drh-badge").textContent    = `${rows.length} entri`;
+  $("#drh-count").textContent    = `Menampilkan ${rows.length} dari ${drhRows.length} daerah.`;
+}
+
+$("#drh-tambah").onclick = () => {
+  $("#modal-title").textContent = "Tambah Daerah";
+  $("#modal-sub").textContent   = "Kode Daerah harus unik dan diawali kode Induk Daerah.";
+  $("#modal-body").innerHTML = `
+    <div class="grid2">
+      <div class="field">
+        <label class="fl">Tingkat <span class="req">*</span></label>
+        <select class="inp" id="drh-m-tingkat">
+          <option value="">Pilih Tingkat</option>
+          ${DAERAH_TINGKAT.map(t => `<option>${esc(t)}</option>`).join("")}
+        </select>
+      </div>
+      <div class="field" id="drh-m-induk-field">
+        <label class="fl">Induk Daerah <span class="req">*</span></label>
+        <select class="inp" id="drh-m-induk" disabled>
+          <option value="">Pilih Tingkat lebih dulu</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <label class="fl">Kode Daerah <span class="req">*</span></label>
+        <input class="inp" id="drh-m-kode" placeholder="Contoh: 35.78.11">
+        <div class="hint" id="drh-m-kode-hint">Pola BPS: 35 → 35.78 → 35.78.11</div>
+      </div>
+      <div class="field">
+        <label class="fl">Berlaku Sejak <span class="req">*</span></label>
+        <input class="inp" type="date" id="drh-m-berlaku">
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:0">
+      <label class="fl">Nama Daerah <span class="req">*</span></label>
+      <input class="inp" id="drh-m-nama" placeholder="Contoh: KEC. TANDES">
+    </div>
+    <div class="form-actions" style="justify-content:flex-end">
+      <button class="btn btn-ghost" id="drh-m-batal">Batal</button>
+      <button class="btn btn-primary" id="drh-m-simpan">Simpan</button>
+    </div>`;
+  openModal();
+
+  /* Induk Daerah hanya menawarkan daerah satu tingkat di atas; untuk
+     Provinsi fieldnya disembunyikan. */
+  $("#drh-m-tingkat").onchange = () => {
+    const tingkatInduk = drhTingkatInduk($("#drh-m-tingkat").value);
+    const sel = $("#drh-m-induk");
+    const calon = tingkatInduk ? drhRows.filter(d => d.tingkat === tingkatInduk)
+      .sort((a, b) => a.kode.localeCompare(b.kode, "id", { numeric: true })) : [];
+    $("#drh-m-induk-field").style.display = $("#drh-m-tingkat").value === "Provinsi" ? "none" : "";
+    sel.disabled  = !tingkatInduk;
+    sel.innerHTML = tingkatInduk
+      ? `<option value="">Pilih ${esc(tingkatInduk)}</option>` + calon.map(d => `<option value="${esc(d.kode)}">${esc(d.kode)} — ${esc(d.nama)}</option>`).join("")
+      : `<option value="">Pilih Tingkat lebih dulu</option>`;
+  };
+  $("#drh-m-induk").onchange = () => {
+    const induk = $("#drh-m-induk").value;
+    $("#drh-m-kode-hint").textContent = induk ? `Kode harus diawali ${induk}.` : "Pola BPS: 35 → 35.78 → 35.78.11";
+  };
+
+  $("#drh-m-batal").onclick  = closeModal;
+  $("#drh-m-simpan").onclick = () => {
+    const tingkat = $("#drh-m-tingkat").value;
+    const induk   = tingkat === "Provinsi" ? "" : $("#drh-m-induk").value;
+    const kode    = $("#drh-m-kode").value.trim();
+    const nama    = $("#drh-m-nama").value.trim().toUpperCase();
+    const berlaku = $("#drh-m-berlaku").value;
+    if (!tingkat || (tingkat !== "Provinsi" && !induk) || !kode || !nama || !berlaku) {
+      toast("Seluruh field wajib diisi.", "bad");
+      return;
+    }
+    if (drhCariKode(kode)) { toast(`Kode ${kode} sudah terdaftar pada daftar Daerah.`, "bad"); return; }
+    if (induk ? !/^\d+$/.test(kode.slice(induk.length + 1)) || !kode.startsWith(induk + ".")
+              : !/^\d+$/.test(kode)) {
+      toast(induk ? `Kode Daerah harus berpola ${induk}.<angka>.` : "Kode Provinsi harus berupa angka.", "bad");
+      return;
+    }
+    drhRows.push({
+      kode, nama, tingkat, induk, berlaku: refTglDariInput(berlaku), oleh: PENGATURAN.namaUser,
+      _id: drhRows.length ? Math.max(...drhRows.map(d => d._id)) + 1 : 0
+    });
+    renderDaerah();
+    closeModal();
+    toast("Daerah baru berhasil disimpan.", "ok");
+  };
+};
+
+function drhDetail(d) {
+  const turunan = drhRows.filter(x => x.induk === d.kode).length;
+  $("#modal-title").textContent = "Detail Daerah";
+  $("#modal-sub").textContent   = `${d.kode} · ${d.nama}`;
+  $("#modal-body").innerHTML = `
+    <div class="review-card">
+      <div class="review-card-head">Data Daerah</div>
+      <div class="review-card-body">
+        <div class="review-row"><div class="fl">Kode Daerah</div><div class="val">${esc(d.kode)}</div></div>
+        <div class="review-row"><div class="fl">Nama Daerah</div><div class="val">${esc(d.nama)}</div></div>
+        <div class="review-row"><div class="fl">Tingkat</div><div class="val">${esc(d.tingkat)}</div></div>
+        <div class="review-row"><div class="fl">Induk Daerah</div><div class="val">${esc(drhLabelInduk(d))}</div></div>
+        <div class="review-row"><div class="fl">Jumlah Daerah Turunan</div><div class="val">${turunan}</div></div>
+        <div class="review-row"><div class="fl">Berlaku Sejak</div><div class="val">${esc(unorTanggal(d.berlaku).panjang)}</div></div>
+        <div class="review-row"><div class="fl">Dibuat Oleh</div><div class="val">${esc(d.oleh)}</div></div>
+      </div>
+    </div>
+    <div class="form-actions" style="justify-content:flex-end">
+      <button class="btn btn-ghost" id="drh-d-tutup">Tutup</button>
+    </div>`;
+  openModal();
+  $("#drh-d-tutup").onclick = closeModal;
+}
+
+function drhHapus(d) {
+  const turunan = drhRows.filter(x => x.induk === d.kode).length;
+  $("#modal-title").textContent = "Hapus Daerah";
+  $("#modal-sub").textContent   = `${d.kode} · ${d.nama}`;
+  $("#modal-body").innerHTML = turunan ? `
+    <div class="alert alert-bad"><span>⚠</span><span>Daerah ini masih memiliki ${turunan} daerah turunan. Hapus seluruh daerah turunannya lebih dulu.</span></div>
+    <div class="form-actions" style="justify-content:flex-end">
+      <button class="btn btn-ghost" id="drh-h-batal">Tutup</button>
+    </div>` : `
+    <div class="alert alert-bad"><span>⚠</span><span>Daerah yang dihapus tidak lagi tersedia sebagai pilihan alamat peserta. Pastikan tidak ada peserta yang masih memakai daerah ini.</span></div>
+    <div class="form-actions" style="justify-content:flex-end">
+      <button class="btn btn-ghost" id="drh-h-batal">Batal</button>
+      <button class="btn btn-danger-solid" id="drh-h-ya">Hapus</button>
+    </div>`;
+  openModal();
+  $("#drh-h-batal").onclick = closeModal;
+  if (turunan) return;
+  $("#drh-h-ya").onclick = () => {
+    drhRows = drhRows.filter(x => x._id !== d._id);
+    renderDaerah();
+    closeModal();
+    toast(`Daerah ${d.kode} berhasil dihapus.`, "ok");
+  };
+}
+
+$("#drh-cari").onclick   = () => renderDaerah();
+$("#drh-export").onclick = () => toast("Daftar daerah diekspor ke Excel.");
+
+document.addEventListener("click", e => {
+  const bDetail = e.target.closest("[data-drh-detail]");
+  if (bDetail) { drhDetail(drhRows.find(d => d._id === +bDetail.dataset.drhDetail)); return; }
+
+  const bHapus = e.target.closest("[data-drh-hapus]");
+  if (bHapus) { drhHapus(drhRows.find(d => d._id === +bHapus.dataset.drhHapus)); return; }
+});
+
 /* ============================================================ SPP DATA PESERTA
    Tiga layar berbagi satu daftar `sppRows`:
      Pengajuan     — officer merekam data peserta lewat form tambah.
@@ -9438,6 +9823,8 @@ isiPilihanRefKolektif();
 renderRefKolektif();
 renderStatusPeserta();
 renderBup();
+renderSatuanKerja();
+renderDaerah();
 
 /* ------------------------ Layar Pengajuan + form "+ Tambah SPP Data Peserta"
    Officer Kantor Cabang merekam data peserta lewat form lima section, lalu
