@@ -3165,35 +3165,35 @@ const DAERAH_KOLEKTIF_CONTOH = {
    kolom tabel daftar permohonan; `pangkat` sendiri berisi pangkat terakhir.
    --------------------------------------------------------------------------- */
 const DATA_SPP = [
-  { no:"SPP-2026-00117", tgl:"19/06/2026", kpa:"ASB-1993-006845", nama:"Sunarto Wibowo", nrp:"196705121988031003",
+  { no:"SPP-2026-00117", tgl:"19/06/2026", kpa:"LA930358", nama:"Sunarto Wibowo", nrp:"196705121988031003",
     nik:"3578141205670004", tglLahir:"12/05/1967", pangkat:"SERSAN MAYOR", kesatuan:"KODIM 0827/SUMENEP",
     tmt:"01/03/1988", noSkep:"KEP/1204/III/1988", tglSkep:"12/02/1988", pangkatAwal:"PRAJURIT DUA",
     cabang:"KC Surabaya", pengaju:"Officer KC — D. Ramadhan", noRequest:"REQ-2026-00891",
     dokumen:["Surat Permohonan KC Surabaya.pdf", "Fotokopi KPA.pdf", "SKEP Pensiun.pdf", "KTP & KK.pdf"],
     status:"Tertunda", tindakan:"", catatan:"",
     rekomendasi:[
-      { nama:"SUNARTO WIBOWO", nrp:"196705121988031003", kpa:"ASB-1993-006845", tglLahir:"12/05/1967",
+      { nama:"SUNARTO WIBOWO", nrp:"196705121988031003", kpa:"LA930358", tglLahir:"12/05/1967",
         satker:"KODIM 0827/SUMENEP",        sumber:"Belum Termigrasi",  skor:96 },
-      { nama:"SUNARTO WIBOWO", nrp:"196705121988031030", kpa:"ASB-1993-006901", tglLahir:"12/05/1967",
+      { nama:"SUNARTO WIBOWO", nrp:"196705121988031030", kpa:"LA930391", tglLahir:"12/05/1967",
         satker:"KOREM 084/BHASKARA JAYA",   sumber:"Arsip Yandu Lama",  skor:78 },
-      { nama:"SUNARTA WIBAWA", nrp:"196706121988031007", kpa:"ASB-1993-007122", tglLahir:"12/06/1967",
+      { nama:"SUNARTA WIBAWA", nrp:"196706121988031007", kpa:"LA930412", tglLahir:"12/06/1967",
         satker:"KODIM 0812/LAMONGAN",       sumber:"Arsip Yandu Lama",  skor:61 }
     ] },
 
-  { no:"SPP-2026-00116", tgl:"18/06/2026", kpa:"ASB-1989-005219", nama:"Marsudi Hartanto", nrp:"146732",
+  { no:"SPP-2026-00116", tgl:"18/06/2026", kpa:"PB890219", nama:"Marsudi Hartanto", nrp:"146732",
     nik:"3374110809630002", tglLahir:"08/09/1963", pangkat:"AJUN KOMISARIS POLISI", kesatuan:"POLRES SIDOARJO",
     tmt:"01/04/1985", noSkep:"KEP/882/IV/1985",   tglSkep:"18/03/1985", pangkatAwal:"BHARADA",
     cabang:"KC Malang", pengaju:"Officer KC — L. Anggraeni", noRequest:"REQ-2026-00877",
     dokumen:["Surat Permohonan KC Malang.pdf", "Fotokopi KPA.pdf", "SKEP Pensiun.pdf"],
     status:"Tertunda", tindakan:"", catatan:"",
     rekomendasi:[
-      { nama:"MARSUDI HARTANTO", nrp:"146732", kpa:"ASB-1989-005219", tglLahir:"08/09/1963",
+      { nama:"MARSUDI HARTANTO", nrp:"146732", kpa:"PB890219", tglLahir:"08/09/1963",
         satker:"POLRES SIDOARJO",  sumber:"Data Terhapus",    skor:93 },
-      { nama:"MARSUDI HARTONO",  nrp:"146723", kpa:"ASB-1989-005281", tglLahir:"08/09/1963",
+      { nama:"MARSUDI HARTONO",  nrp:"146723", kpa:"PB890281", tglLahir:"08/09/1963",
         satker:"POLRESTA MALANG",  sumber:"Arsip Yandu Lama", skor:64 }
     ] },
 
-  { no:"SPP-2026-00115", tgl:"17/06/2026", kpa:"ASB-2004-031180", nama:"Yuliana Kusumastuti", nrp:"197907142003122002",
+  { no:"SPP-2026-00115", tgl:"17/06/2026", kpa:"CD040118", nama:"Yuliana Kusumastuti", nrp:"197907142003122002",
     nik:"3273125407790006", tglLahir:"14/07/1979", pangkat:"PENATA MUDA", kesatuan:"ASN MABES TNI",
     tmt:"01/12/2003", noSkep:"KEP/2117/XII/2003", tglSkep:"20/11/2003", pangkatAwal:"GOL.III/A",
     cabang:"KC Bandung", pengaju:"Officer KC — F. Kurniawan", noRequest:"REQ-2026-00860",
@@ -3201,7 +3201,7 @@ const DATA_SPP = [
     status:"Tertunda", tindakan:"", catatan:"",
     rekomendasi:[] },
 
-  { no:"SPP-2026-00114", tgl:"16/06/2026", kpa:"ASB-1997-013522", nama:"Teguh Priyanto", nrp:"197203201995031004",
+  { no:"SPP-2026-00114", tgl:"16/06/2026", kpa:"AD970522", nama:"Teguh Priyanto", nrp:"197203201995031004",
     nik:"3372012003720003", tglLahir:"20/03/1972", pangkat:"SERSAN KEPALA", kesatuan:"KODIM 0733/SURAKARTA",
     tmt:"01/03/1995", noSkep:"KEP/1533/III/1995", tglSkep:"14/02/1995", pangkatAwal:"PRAJURIT DUA",
     cabang:"KC Solo", pengaju:"Officer KC — H. Prabowo", noRequest:"REQ-2026-00842",
@@ -3209,11 +3209,11 @@ const DATA_SPP = [
     status:"Tertunda", tindakan:"Restore Data",
     catatan:"Data ditemukan pada arsip belum termigrasi, diaktifkan kembali sesuai dokumen persyaratan.",
     rekomendasi:[
-      { nama:"TEGUH PRIYANTO", nrp:"197203201995031004", kpa:"ASB-1997-013522", tglLahir:"20/03/1972",
+      { nama:"TEGUH PRIYANTO", nrp:"197203201995031004", kpa:"AD970522", tglLahir:"20/03/1972",
         satker:"KODIM 0733/SURAKARTA", sumber:"Belum Termigrasi", skor:98 }
     ] },
 
-  { no:"SPP-2026-00113", tgl:"15/06/2026", kpa:"ASB-2011-064882", nama:"Rizal Maulana", nrp:"198806112011011003",
+  { no:"SPP-2026-00113", tgl:"15/06/2026", kpa:"UA110482", nama:"Rizal Maulana", nrp:"198806112011011003",
     nik:"3175061106880004", tglLahir:"11/06/1988", pangkat:"LETNAN DUA", kesatuan:"LANUD ISWAHJUDI",
     tmt:"01/01/2011", noSkep:"KEP/318/I/2011",    tglSkep:"09/12/2010", pangkatAwal:"LETNAN DUA",
     cabang:"KC Madiun", pengaju:"Officer KC — T. Wibisono", noRequest:"REQ-2026-00830",
@@ -3222,7 +3222,7 @@ const DATA_SPP = [
     catatan:"Tidak ditemukan pada rekomendasi sistem, data diinput baru sesuai dokumen persyaratan.",
     rekomendasi:[] },
 
-  { no:"SPP-2026-00112", tgl:"12/06/2026", kpa:"ASB-1986-004910", nama:"Sri Wahyuni", nrp:"196204251985032001",
+  { no:"SPP-2026-00112", tgl:"12/06/2026", kpa:"CD860410", nama:"Sri Wahyuni", nrp:"196204251985032001",
     nik:"3374116504620009", tglLahir:"25/04/1962", pangkat:"PENATA MUDA", kesatuan:"ASN KODAM IV/DIPONEGORO",
     tmt:"01/03/1985", noSkep:"KEP/704/III/1985",  tglSkep:"21/02/1985", pangkatAwal:"GOL.II/A",
     cabang:"KC Semarang", pengaju:"Officer KC — N. Safitri", noRequest:"REQ-2026-00815",
@@ -3230,11 +3230,11 @@ const DATA_SPP = [
     status:"Disetujui", tindakan:"Restore Data",
     catatan:"Disetujui — data peserta aktif kembali dan siap dipakai Kantor Cabang untuk proses klaim.",
     rekomendasi:[
-      { nama:"SRI WAHYUNI", nrp:"196204251985032001", kpa:"ASB-1986-004910", tglLahir:"25/04/1962",
+      { nama:"SRI WAHYUNI", nrp:"196204251985032001", kpa:"CD860410", tglLahir:"25/04/1962",
         satker:"ASN KODAM IV/DIPONEGORO", sumber:"Data Terhapus", skor:97 }
     ] },
 
-  { no:"SPP-2026-00111", tgl:"10/06/2026", kpa:"ASB-2013-077304", nama:"Andi Firmansyah", nrp:"199001152013021005",
+  { no:"SPP-2026-00111", tgl:"10/06/2026", kpa:"AD130704", nama:"Andi Firmansyah", nrp:"199001152013021005",
     nik:"3273121501900002", tglLahir:"15/01/1990", pangkat:"SERSAN MAYOR", kesatuan:"KODIM 0610/SUMEDANG",
     tmt:"01/02/2013", noSkep:"KEP/995/II/2013",   tglSkep:"15/01/2013", pangkatAwal:"PRAJURIT DUA",
     cabang:"KC Bandung", pengaju:"Officer KC — F. Kurniawan", noRequest:"REQ-2026-00802",
