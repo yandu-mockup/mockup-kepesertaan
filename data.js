@@ -3026,7 +3026,7 @@ const DATA_BUP = [
    Dua daftar referensi yang bisa ditambah lewat dua mekanisme: Satuan (form)
    atau Kolektif (unggah template Excel). `mekanisme` mencatat jalur yang
    dipakai dan menjadi filter "Mekanisme Tambah Referensi" di layar.
-   `berlaku` disimpan dd/mm/yyyy.
+   `tgl` = Tanggal Buat (dd/mm/yyyy), diisi sistem saat entri disimpan.
    --------------------------------------------------------------------------- */
 
 /* Satuan Kerja: `tgl` = Tanggal Buat (dd/mm/yyyy, diisi sistem saat entri
@@ -3088,26 +3088,26 @@ const DAERAH_TINGKAT = ["Provinsi", "Kota", "Kecamatan", "Kelurahan"];
 const DAERAH_INDUK   = { "Kota":"Provinsi", "Kecamatan":"Kota", "Kelurahan":"Kota" };
 
 const DATA_DAERAH = [
-  { kode:"31",            nama:"DKI JAKARTA",          tingkat:"Provinsi",  induk:"",      berlaku:"01/01/2015", mekanisme:"Satuan", oleh:"Lojita — R. Prasetyo" },
-  { kode:"32",            nama:"JAWA BARAT",           tingkat:"Provinsi",  induk:"",      berlaku:"01/01/2015", mekanisme:"Satuan", oleh:"Lojita — R. Prasetyo" },
-  { kode:"33",            nama:"JAWA TENGAH",          tingkat:"Provinsi",  induk:"",      berlaku:"01/01/2015", mekanisme:"Satuan", oleh:"Lojita — R. Prasetyo" },
-  { kode:"35",            nama:"JAWA TIMUR",           tingkat:"Provinsi",  induk:"",      berlaku:"01/01/2015", mekanisme:"Satuan", oleh:"Lojita — R. Prasetyo" },
+  { kode:"31",            nama:"DKI JAKARTA",          tingkat:"Provinsi",  induk:"",      tgl:"04/07/2026", mekanisme:"Satuan", oleh:"Lojita — R. Prasetyo" },
+  { kode:"32",            nama:"JAWA BARAT",           tingkat:"Provinsi",  induk:"",      tgl:"04/07/2026", mekanisme:"Satuan", oleh:"Lojita — R. Prasetyo" },
+  { kode:"33",            nama:"JAWA TENGAH",          tingkat:"Provinsi",  induk:"",      tgl:"04/07/2026", mekanisme:"Satuan", oleh:"Lojita — R. Prasetyo" },
+  { kode:"35",            nama:"JAWA TIMUR",           tingkat:"Provinsi",  induk:"",      tgl:"04/07/2026", mekanisme:"Satuan", oleh:"Lojita — R. Prasetyo" },
 
-  { kode:"31.71",         nama:"KOTA JAKARTA PUSAT",   tingkat:"Kota",      induk:"31",    berlaku:"01/01/2015", mekanisme:"Satuan", oleh:"Lojita — S. Wijayanti" },
-  { kode:"32.73",         nama:"KOTA BANDUNG",         tingkat:"Kota",      induk:"32",    berlaku:"01/01/2015", mekanisme:"Satuan", oleh:"Lojita — S. Wijayanti" },
-  { kode:"33.74",         nama:"KOTA SEMARANG",        tingkat:"Kota",      induk:"33",    berlaku:"01/01/2015", mekanisme:"Satuan", oleh:"Lojita — S. Wijayanti" },
-  { kode:"35.15",         nama:"KABUPATEN SIDOARJO",   tingkat:"Kota",      induk:"35",    berlaku:"01/01/2015", mekanisme:"Satuan", oleh:"Lojita — S. Wijayanti" },
-  { kode:"35.78",         nama:"KOTA SURABAYA",        tingkat:"Kota",      induk:"35",    berlaku:"01/01/2015", mekanisme:"Satuan", oleh:"Lojita — S. Wijayanti" },
+  { kode:"31.71",         nama:"KOTA JAKARTA PUSAT",   tingkat:"Kota",      induk:"31",    tgl:"12/07/2026", mekanisme:"Satuan", oleh:"Lojita — S. Wijayanti" },
+  { kode:"32.73",         nama:"KOTA BANDUNG",         tingkat:"Kota",      induk:"32",    tgl:"12/07/2026", mekanisme:"Satuan", oleh:"Lojita — S. Wijayanti" },
+  { kode:"33.74",         nama:"KOTA SEMARANG",        tingkat:"Kota",      induk:"33",    tgl:"12/07/2026", mekanisme:"Satuan", oleh:"Lojita — S. Wijayanti" },
+  { kode:"35.15",         nama:"KABUPATEN SIDOARJO",   tingkat:"Kota",      induk:"35",    tgl:"12/07/2026", mekanisme:"Satuan", oleh:"Lojita — S. Wijayanti" },
+  { kode:"35.78",         nama:"KOTA SURABAYA",        tingkat:"Kota",      induk:"35",    tgl:"12/07/2026", mekanisme:"Satuan", oleh:"Lojita — S. Wijayanti" },
 
-  { kode:"31.71.01",      nama:"KEC. GAMBIR",          tingkat:"Kecamatan", induk:"31.71", berlaku:"01/01/2020", mekanisme:"Satuan", oleh:"Lojita — A. Nurcahyo" },
-  { kode:"32.73.27",      nama:"KEC. GEDEBAGE",        tingkat:"Kecamatan", induk:"32.73", berlaku:"01/04/2026", mekanisme:"Satuan", oleh:"Lojita — A. Nurcahyo" },
-  { kode:"33.74.01",      nama:"KEC. SEMARANG TENGAH", tingkat:"Kecamatan", induk:"33.74", berlaku:"01/01/2020", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo" },
-  { kode:"35.15.01",      nama:"KEC. SIDOARJO",        tingkat:"Kecamatan", induk:"35.15", berlaku:"01/01/2020", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo" },
-  { kode:"35.78.09",      nama:"KEC. SUKOMANUNGGAL",   tingkat:"Kecamatan", induk:"35.78", berlaku:"01/01/2020", mekanisme:"Satuan", oleh:"Lojita — A. Nurcahyo" },
+  { kode:"31.71.01",      nama:"KEC. GAMBIR",          tingkat:"Kecamatan", induk:"31.71", tgl:"21/07/2026", mekanisme:"Satuan", oleh:"Lojita — A. Nurcahyo" },
+  { kode:"32.73.27",      nama:"KEC. GEDEBAGE",        tingkat:"Kecamatan", induk:"32.73", tgl:"28/07/2026", mekanisme:"Satuan", oleh:"Lojita — A. Nurcahyo" },
+  { kode:"33.74.01",      nama:"KEC. SEMARANG TENGAH", tingkat:"Kecamatan", induk:"33.74", tgl:"21/07/2026", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo" },
+  { kode:"35.15.01",      nama:"KEC. SIDOARJO",        tingkat:"Kecamatan", induk:"35.15", tgl:"21/07/2026", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo" },
+  { kode:"35.78.09",      nama:"KEC. SUKOMANUNGGAL",   tingkat:"Kecamatan", induk:"35.78", tgl:"21/07/2026", mekanisme:"Satuan", oleh:"Lojita — A. Nurcahyo" },
 
-  { kode:"31.71.01.1001", nama:"KEL. GAMBIR",          tingkat:"Kelurahan", induk:"31.71", berlaku:"01/01/2020", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo" },
-  { kode:"35.15.01.1001", nama:"KEL. SIDOKARE",        tingkat:"Kelurahan", induk:"35.15", berlaku:"01/01/2020", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo" },
-  { kode:"35.78.09.1001", nama:"KEL. SUKOMANUNGGAL",   tingkat:"Kelurahan", induk:"35.78", berlaku:"01/01/2020", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo" }
+  { kode:"31.71.01.1001", nama:"KEL. GAMBIR",          tingkat:"Kelurahan", induk:"31.71", tgl:"18/08/2026", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo" },
+  { kode:"35.15.01.1001", nama:"KEL. SIDOKARE",        tingkat:"Kelurahan", induk:"35.15", tgl:"18/08/2026", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo" },
+  { kode:"35.78.09.1001", nama:"KEL. SUKOMANUNGGAL",   tingkat:"Kelurahan", induk:"35.78", tgl:"18/08/2026", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo" }
 ];
 
 /* Isi berkas contoh yang "terbaca" saat Tambah Daerah mekanisme Kolektif,

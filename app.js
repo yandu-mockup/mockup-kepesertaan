@@ -8717,7 +8717,6 @@ function renderUnor() {
   $("#unor-tambah").style.display = boleh ? "" : "none";
   $("#unor-count").textContent    = `Menampilkan ${shownFrom}-${shownTo} dari ${rows.length} unit organisasi`;
   $("#unor-pagination").innerHTML = unorPaginationHtml(totalPages);
-  $("#unor-badge").textContent    = `${rows.length} entri`;
 }
 
 /* ------------------------------------------------------- Tambah / Ubah UNOR */
@@ -8818,7 +8817,7 @@ document.addEventListener("click", e => {
 
 /* ============ PENGELOLAAN REFERENSI DATA KEPESERTAAN » STATUS PESERTA
    Daftar nilai Status Peserta yang boleh dipakai layar lain. Tanggal Buat
-   diisi sistem saat entri dibuat, jadi tidak bisa diketik pengguna. Format
+   diisi sistem saat entri dibuat dan tidak berubah saat entri diubah. Format
    tanggalnya sama dengan layar UNOR — helper unorTanggal()/unorTglHariIni()
    di atas dipakai ulang supaya tampilannya seragam satu sub modul. */
 let stpRows = DATA_STATUS_PESERTA.map((s, i) => ({ ...s, _id: i }));
@@ -8850,27 +8849,26 @@ function renderStatusPeserta() {
       <td>${i + 1}</td>
       <td>${esc(unorTanggal(s.tgl).panjang)}</td>
       <td class="t-strong">${esc(s.status)}</td>
-      <td style="white-space:nowrap">
-        <button class="btn btn-info btn-sm" data-stp-detail="${s._id}">👁 Detail</button>
-        ${boleh ? `<button class="btn btn-danger btn-sm" data-stp-hapus="${s._id}" title="Hapus Status Peserta">⌫</button>` : ""}
+      <td style="white-space:nowrap">${boleh ? `
+        <button class="btn btn-info btn-sm" data-stp-ubah="${s._id}">✎ Ubah</button>
+        <button class="btn btn-danger btn-sm" data-stp-hapus="${s._id}" title="Hapus Status Peserta">⌫</button>` : "—"}
       </td>
     </tr>`).join("")
     : `<tr><td colspan="4"><div class="empty"><h4>Tidak ada status peserta</h4><p>Ubah filter Status Peserta, atau tambahkan lewat tombol Tambah Status Peserta.</p></div></td></tr>`;
 
   $("#stp-tambah").style.display = boleh ? "" : "none";
-  $("#stp-badge").textContent    = `${rows.length} entri`;
   $("#stp-count").textContent    = `Menampilkan ${rows.length} dari ${stpRows.length} status peserta.`;
 }
 
-/* Tanggal Buat ditampilkan readonly — nilainya selalu tanggal hari ini. */
-$("#stp-tambah").onclick = () => {
-  const hariIni = unorTglHariIni();
-  $("#modal-title").textContent = "Tambah Status Peserta";
-  $("#modal-sub").textContent   = "Status Peserta yang ditambahkan langsung tersedia sebagai pilihan di layar lain.";
+/* Modal Tambah dan Ubah memakai form yang sama (pola unorForm). Entri yang
+   sedang diubah dikecualikan dari cek duplikat. */
+function stpForm(judul, sub, awal, simpan) {
+  $("#modal-title").textContent = judul;
+  $("#modal-sub").textContent   = sub;
   $("#modal-body").innerHTML = `
     <div class="field" style="margin-bottom:0">
       <label class="fl">Status Peserta <span class="req">*</span></label>
-      <input class="inp" id="stp-m-status" placeholder="Contoh: Cuti di Luar Tanggungan Negara">
+      <input class="inp" id="stp-m-status" value="${esc(awal.status || "")}" placeholder="Contoh: Cuti di Luar Tanggungan Negara">
     </div>
     <div class="form-actions" style="justify-content:flex-end">
       <button class="btn btn-ghost" id="stp-m-batal">Batal</button>
@@ -8881,39 +8879,33 @@ $("#stp-tambah").onclick = () => {
   $("#stp-m-simpan").onclick = () => {
     const status = $("#stp-m-status").value.trim();
     if (!status) { toast("Status Peserta wajib diisi.", "bad"); return; }
-    if (stpRows.some(s => s.status.toLowerCase() === status.toLowerCase())) {
+    if (stpRows.some(s => s._id !== awal._id && s.status.toLowerCase() === status.toLowerCase())) {
       toast(`Status Peserta ${status} sudah terdaftar.`, "bad");
       return;
     }
+    simpan(status);
+  };
+}
+
+$("#stp-tambah").onclick = () => stpForm("Tambah Status Peserta",
+  "Status Peserta yang ditambahkan langsung tersedia sebagai pilihan di layar lain.", {}, status => {
     stpRows.unshift({
-      tgl: hariIni, status, oleh: PENGATURAN.namaUser,
+      tgl: unorTglHariIni(), status, oleh: PENGATURAN.namaUser,
       keterangan: "Belum ada keterangan.",
       _id: stpRows.length ? Math.max(...stpRows.map(s => s._id)) + 1 : 0
     });
     renderStatusPeserta();
     closeModal();
     toast("Status peserta baru berhasil disimpan.", "ok");
-  };
-};
+  });
 
-function stpDetail(s) {
-  $("#modal-title").textContent = "Detail Status Peserta";
-  $("#modal-sub").textContent   = s.status;
-  $("#modal-body").innerHTML = `
-    <div class="review-card">
-      <div class="review-card-head">Data Status Peserta</div>
-      <div class="review-card-body">
-        <div class="review-row"><div class="fl">Tanggal Buat</div><div class="val">${esc(unorTanggal(s.tgl).panjang)}</div></div>
-        <div class="review-row"><div class="fl">Status Peserta</div><div class="val">${esc(s.status)}</div></div>
-        <div class="review-row"><div class="fl">Dibuat Oleh</div><div class="val">${esc(s.oleh)}</div></div>
-        <div class="review-row"><div class="fl">Keterangan</div><div class="val">${esc(s.keterangan)}</div></div>
-      </div>
-    </div>
-    <div class="form-actions" style="justify-content:flex-end">
-      <button class="btn btn-ghost" id="stp-d-tutup">Tutup</button>
-    </div>`;
-  openModal();
-  $("#stp-d-tutup").onclick = closeModal;
+function stpUbah(s) {
+  stpForm("Ubah Status Peserta", "Tanggal Buat tidak berubah saat status peserta diubah.", s, status => {
+    s.status = status;
+    renderStatusPeserta();
+    closeModal();
+    toast(`Perubahan status peserta ${status} berhasil disimpan.`, "ok");
+  });
 }
 
 function stpHapus(s) {
@@ -8939,16 +8931,16 @@ $("#stp-cari").onclick   = () => renderStatusPeserta();
 $("#stp-export").onclick = () => toast("Daftar status peserta diekspor ke Excel.");
 
 document.addEventListener("click", e => {
-  const bDetail = e.target.closest("[data-stp-detail]");
-  if (bDetail) { stpDetail(stpRows.find(s => s._id === +bDetail.dataset.stpDetail)); return; }
+  const bUbah = e.target.closest("[data-stp-ubah]");
+  if (bUbah) { stpUbah(stpRows.find(s => s._id === +bUbah.dataset.stpUbah)); return; }
 
   const bHapus = e.target.closest("[data-stp-hapus]");
   if (bHapus) { stpHapus(stpRows.find(s => s._id === +bHapus.dataset.stpHapus)); return; }
 });
 
 /* ====== PENGELOLAAN REFERENSI DATA KEPESERTAAN » BATAS USIA PENSIUN
-   Bentuknya sama persis dengan layar Status Peserta di atas: daftar nilai
-   referensi dengan Tanggal Buat dari sistem, ditambah/dihapus lewat modal. */
+   Bentuknya sama dengan layar Status Peserta di atas: daftar nilai referensi
+   dengan Tanggal Buat dari sistem, ditambah/diubah/dihapus lewat modal. */
 let bupRows = DATA_BUP.map((b, i) => ({ ...b, _id: i }));
 
 function bupBolehKelola() { return roleSaatIni() === ROLE_DIVISI; }
@@ -8976,9 +8968,9 @@ function renderBup() {
       <td>${i + 1}</td>
       <td>${esc(unorTanggal(b.tgl).panjang)}</td>
       <td class="t-strong">${esc(b.bup)}</td>
-      <td style="white-space:nowrap">
-        <button class="btn btn-info btn-sm" data-bup-detail="${b._id}">👁 Detail</button>
-        ${boleh ? `<button class="btn btn-danger btn-sm" data-bup-hapus="${b._id}" title="Hapus Batas Usia Pensiun">⌫</button>` : ""}
+      <td style="white-space:nowrap">${boleh ? `
+        <button class="btn btn-info btn-sm" data-bup-ubah="${b._id}">✎ Ubah</button>
+        <button class="btn btn-danger btn-sm" data-bup-hapus="${b._id}" title="Hapus Batas Usia Pensiun">⌫</button>` : "—"}
       </td>
     </tr>`).join("")
     : `<tr><td colspan="4"><div class="empty"><h4>Tidak ada batas usia pensiun</h4><p>Ubah filter Batas Usia Pensiun, atau tambahkan lewat tombol Tambah Batas Usia Pensiun.</p></div></td></tr>`;
@@ -8987,17 +8979,24 @@ function renderBup() {
   $("#bup-count").textContent    = `Menampilkan ${rows.length} dari ${bupRows.length} batas usia pensiun.`;
 }
 
-$("#bup-tambah").onclick = () => {
-  const hariIni = unorTglHariIni();
-  $("#modal-title").textContent = "Tambah Batas Usia Pensiun";
-  $("#modal-sub").textContent   = "Batas usia pensiun dipakai sebagai acuan perhitungan hak peserta.";
+/* Modal Tambah dan Ubah memakai form yang sama. Data contoh lama hanya
+   menyimpan teks (mis. "BUP Perwira TNI — 58 Tahun") tanpa Angkatan dan
+   Golongan: angka tahunnya diambil dari teks itu, dan Angkatan/Golongan
+   diminta dilengkapi sebelum disimpan. */
+function bupForm(judul, sub, awal, simpan) {
+  const usiaAwal = ((awal.bup || "").match(/(\d+)\s*Tahun/) || [])[1] || "";
+  const dataLama = awal._id !== undefined && !awal.angkatan;
+
+  $("#modal-title").textContent = judul;
+  $("#modal-sub").textContent   = sub;
   $("#modal-body").innerHTML = `
+    ${dataLama ? `<div class="alert alert-info"><span>ⓘ</span><span>Entri ini belum mencatat Angkatan dan Golongan. Lengkapi keduanya sebelum menyimpan.</span></div>` : ""}
     <div class="grid2">
       <div class="field">
         <label class="fl">Angkatan <span class="req">*</span></label>
         <select class="inp" id="bup-m-angkatan">
           <option value="">Pilih Angkatan</option>
-          ${BUP_ANGKATAN.map(a => `<option>${esc(a)}</option>`).join("")}
+          ${BUP_ANGKATAN.map(a => `<option${a === awal.angkatan ? " selected" : ""}>${esc(a)}</option>`).join("")}
         </select>
       </div>
       <div class="field" id="bup-m-gol-field">
@@ -9010,7 +9009,7 @@ $("#bup-tambah").onclick = () => {
     <div class="field" style="margin-bottom:0">
       <label class="fl">Batas Usia Pensiun <span class="req">*</span></label>
       <div style="display:flex;align-items:center;gap:8px">
-        <input class="inp" type="number" id="bup-m-nilai" min="1" max="99" placeholder="Contoh: 58">
+        <input class="inp" type="number" id="bup-m-nilai" min="1" max="99" value="${esc(usiaAwal)}" placeholder="Contoh: 58">
         <span style="color:var(--muted)">Tahun</span>
       </div>
     </div>
@@ -9021,17 +9020,18 @@ $("#bup-tambah").onclick = () => {
   openModal();
 
   /* Golongan mengikuti Angkatan; ASN tidak punya Golongan sehingga fieldnya
-     disembunyikan. */
-  $("#bup-m-angkatan").onchange = () => {
-    const angkatan = $("#bup-m-angkatan").value;
-    const daftar   = BUP_GOLONGAN[angkatan];
-    const sel      = $("#bup-m-gol");
-    $("#bup-m-gol-field").style.display = daftar ? "" : "none";
+     disembunyikan. Sebelum Angkatan dipilih, field tetap tampil tapi mati. */
+  const isiGolongan = (angkatan, dipilih) => {
+    const daftar = BUP_GOLONGAN[angkatan];
+    const sel    = $("#bup-m-gol");
+    $("#bup-m-gol-field").style.display = !angkatan || daftar ? "" : "none";
     sel.disabled  = !daftar;
     sel.innerHTML = daftar
-      ? `<option value="">Pilih Golongan</option>` + daftar.map(g => `<option>${esc(g)}</option>`).join("")
+      ? `<option value="">Pilih Golongan</option>` + daftar.map(g => `<option${g === dipilih ? " selected" : ""}>${esc(g)}</option>`).join("")
       : `<option value="">Pilih Angkatan lebih dulu</option>`;
   };
+  isiGolongan(awal.angkatan || "", awal.golongan || "");
+  $("#bup-m-angkatan").onchange = () => isiGolongan($("#bup-m-angkatan").value, "");
 
   $("#bup-m-batal").onclick  = closeModal;
   $("#bup-m-simpan").onclick = () => {
@@ -9044,42 +9044,33 @@ $("#bup-tambah").onclick = () => {
     if (!/^\d+$/.test(usia) || +usia < 1) { toast("Batas Usia Pensiun harus berupa angka tahun.", "bad"); return; }
     const nilai = `${+usia} Tahun`;
     const gol   = BUP_GOLONGAN[angkatan] ? golongan : "";
-    if (bupRows.some(b => b.angkatan === angkatan && (b.golongan || "") === gol && b.bup.toLowerCase() === nilai.toLowerCase())) {
+    if (bupRows.some(b => b._id !== awal._id && b.angkatan === angkatan && (b.golongan || "") === gol && b.bup.toLowerCase() === nilai.toLowerCase())) {
       toast("Batas usia pensiun tersebut sudah terdaftar.", "bad");
       return;
     }
+    simpan({ angkatan, golongan: gol, bup: nilai });
+  };
+}
+
+$("#bup-tambah").onclick = () => bupForm("Tambah Batas Usia Pensiun",
+  "Batas usia pensiun dipakai sebagai acuan perhitungan hak peserta.", {}, nilai => {
     bupRows.unshift({
-      tgl: hariIni, angkatan, golongan: gol,
-      bup: nilai, oleh: PENGATURAN.namaUser,
+      tgl: unorTglHariIni(), ...nilai, oleh: PENGATURAN.namaUser,
       keterangan: "Belum ada keterangan.",
       _id: bupRows.length ? Math.max(...bupRows.map(b => b._id)) + 1 : 0
     });
     renderBup();
     closeModal();
     toast("Batas usia pensiun baru berhasil disimpan.", "ok");
-  };
-};
+  });
 
-function bupDetail(b) {
-  $("#modal-title").textContent = "Detail Batas Usia Pensiun";
-  $("#modal-sub").textContent   = b.bup;
-  $("#modal-body").innerHTML = `
-    <div class="review-card">
-      <div class="review-card-head">Data Batas Usia Pensiun</div>
-      <div class="review-card-body">
-        <div class="review-row"><div class="fl">Tanggal Buat</div><div class="val">${esc(unorTanggal(b.tgl).panjang)}</div></div>
-        <div class="review-row"><div class="fl">Angkatan</div><div class="val">${esc(b.angkatan || "-")}</div></div>
-        <div class="review-row"><div class="fl">Golongan</div><div class="val">${esc(b.golongan || "-")}</div></div>
-        <div class="review-row"><div class="fl">Batas Usia Pensiun</div><div class="val">${esc(b.bup)}</div></div>
-        <div class="review-row"><div class="fl">Dibuat Oleh</div><div class="val">${esc(b.oleh)}</div></div>
-        <div class="review-row"><div class="fl">Keterangan</div><div class="val">${esc(b.keterangan)}</div></div>
-      </div>
-    </div>
-    <div class="form-actions" style="justify-content:flex-end">
-      <button class="btn btn-ghost" id="bup-d-tutup">Tutup</button>
-    </div>`;
-  openModal();
-  $("#bup-d-tutup").onclick = closeModal;
+function bupUbah(b) {
+  bupForm("Ubah Batas Usia Pensiun", "Tanggal Buat tidak berubah saat batas usia pensiun diubah.", b, nilai => {
+    Object.assign(b, nilai);
+    renderBup();
+    closeModal();
+    toast("Perubahan batas usia pensiun berhasil disimpan.", "ok");
+  });
 }
 
 function bupHapus(b) {
@@ -9105,8 +9096,8 @@ $("#bup-cari").onclick   = () => renderBup();
 $("#bup-export").onclick = () => toast("Daftar batas usia pensiun diekspor ke Excel.");
 
 document.addEventListener("click", e => {
-  const bDetail = e.target.closest("[data-bup-detail]");
-  if (bDetail) { bupDetail(bupRows.find(b => b._id === +bDetail.dataset.bupDetail)); return; }
+  const bUbah = e.target.closest("[data-bup-ubah]");
+  if (bUbah) { bupUbah(bupRows.find(b => b._id === +bUbah.dataset.bupUbah)); return; }
 
   const bHapus = e.target.closest("[data-bup-hapus]");
   if (bHapus) { bupHapus(bupRows.find(b => b._id === +bHapus.dataset.bupHapus)); return; }
@@ -9119,16 +9110,10 @@ document.addEventListener("click", e => {
    entri baru belum merekamnya, jadi tampil "-". Kode Satuan Kerja unik. */
 let skrRows = DATA_SATUAN_KERJA.map((s, i) => ({ ...s, _id: i }));
 
-const REF_KPPN = DATA_REFERENSI.filter(r => r.jenis === "KPPN");
-
 let skrForm = { mekanisme:"", berkas:false };
 
 function skrBolehKelola() { return roleSaatIni() === ROLE_DIVISI; }
 
-function skrNamaKppn(kode) {
-  const k = kode ? REF_KPPN.find(r => r.kode === kode) : null;
-  return k ? k.uraian : "";
-}
 function skrKodeTerpakai(kode) { return skrRows.some(s => s.kode.toUpperCase() === kode.toUpperCase()); }
 
 /* Entri baru tanpa Unit Organisasi tidak ikut jadi pilihan filter. */
@@ -9162,13 +9147,14 @@ function renderSatuanKerja() {
       <td class="t-name">${esc(s.kode)}</td>
       <td class="t-strong">${esc(s.nama)}</td>
       <td class="truncate-cell" title="${esc(s.unor || "")}">${esc(s.unor || "-")}</td>
+      <td>${esc(s.mekanisme || "-")}</td>
       <td style="white-space:nowrap">${esc(unorTanggal(s.tgl).panjang)}</td>
-      <td style="white-space:nowrap">
-        <button class="btn btn-info btn-sm" data-skr-detail="${s._id}">👁 Detail</button>
-        ${boleh ? `<button class="btn btn-danger btn-sm" data-skr-hapus="${s._id}" title="Hapus Satuan Kerja">⌫</button>` : ""}
+      <td style="white-space:nowrap">${boleh ? `
+        <button class="btn btn-info btn-sm" data-skr-ubah="${s._id}">✎ Ubah</button>
+        <button class="btn btn-danger btn-sm" data-skr-hapus="${s._id}" title="Hapus Satuan Kerja">⌫</button>` : "—"}
       </td>
     </tr>`).join("")
-    : `<tr><td colspan="6"><div class="empty"><h4>Tidak ada satuan kerja</h4><p>Ubah kata kunci atau filter pencarian, atau tambahkan lewat tombol Tambah Satuan Kerja.</p></div></td></tr>`;
+    : `<tr><td colspan="7"><div class="empty"><h4>Tidak ada satuan kerja</h4><p>Ubah kata kunci atau filter pencarian, atau tambahkan lewat tombol Tambah Satuan Kerja.</p></div></td></tr>`;
 
   $("#skr-tambah").style.display = boleh ? "" : "none";
   $("#skr-count").textContent    = `Menampilkan ${rows.length} dari ${skrRows.length} satuan kerja.`;
@@ -9276,30 +9262,47 @@ $("#skrf-simpan").onclick = () => {
   if (skrForm.mekanisme === "Satuan") skrSimpanSatuan(); else skrSimpanKolektif();
 };
 
-/* --------------------------------------------------- Detail & Hapus */
-function skrDetail(s) {
-  $("#modal-title").textContent = "Detail Satuan Kerja";
-  $("#modal-sub").textContent   = `${s.kode} · ${s.nama}`;
+/* ----------------------------------------------------- Ubah & Hapus */
+/* Ubah memakai field yang sama dengan mekanisme Satuan. Tanggal Buat dan
+   Mekanisme Tambah Referensi tidak berubah. */
+function skrUbah(s) {
+  $("#modal-title").textContent = "Ubah Satuan Kerja";
+  $("#modal-sub").textContent   = "Kode Satuan harus unik. Tanggal Buat tidak berubah.";
   $("#modal-body").innerHTML = `
-    <div class="review-card">
-      <div class="review-card-head">Data Satuan Kerja</div>
-      <div class="review-card-body">
-        <div class="review-row"><div class="fl">Tanggal Buat</div><div class="val">${esc(unorTanggal(s.tgl).panjang)}</div></div>
-        <div class="review-row"><div class="fl">Kode Satuan Kerja</div><div class="val">${esc(s.kode)}</div></div>
-        <div class="review-row"><div class="fl">Nama Satuan Kerja</div><div class="val">${esc(s.nama)}</div></div>
-        <div class="review-row"><div class="fl">Alamat Satuan Kerja</div><div class="val">${esc(s.alamat || "-")}</div></div>
-        <div class="review-row"><div class="fl">Mekanisme Tambah</div><div class="val">${esc(s.mekanisme || "-")}</div></div>
-        <div class="review-row"><div class="fl">Unit Organisasi</div><div class="val">${esc(s.unor || "-")}</div></div>
-        <div class="review-row"><div class="fl">KPPN</div><div class="val">${s.kppn ? `${esc(s.kppn)} — ${esc(skrNamaKppn(s.kppn) || "-")}` : "-"}</div></div>
-        <div class="review-row"><div class="fl">Dibuat Oleh</div><div class="val">${esc(s.oleh)}</div></div>
-        <div class="review-row"><div class="fl">Keterangan</div><div class="val">${esc(s.keterangan)}</div></div>
+    <div class="grid2">
+      <div class="field">
+        <label class="fl" for="skr-u-kode">Kode Satuan <span class="req">*</span></label>
+        <input class="inp" id="skr-u-kode" value="${esc(s.kode)}">
+      </div>
+      <div class="field">
+        <label class="fl" for="skr-u-nama">Nama Satuan <span class="req">*</span></label>
+        <input class="inp" id="skr-u-nama" value="${esc(s.nama)}">
       </div>
     </div>
+    <div class="field" style="margin-bottom:0">
+      <label class="fl" for="skr-u-alamat">Alamat Satuan <span class="req">*</span></label>
+      <textarea class="inp" id="skr-u-alamat" rows="3">${esc(s.alamat || "")}</textarea>
+    </div>
     <div class="form-actions" style="justify-content:flex-end">
-      <button class="btn btn-ghost" id="skr-d-tutup">Tutup</button>
+      <button class="btn btn-ghost" id="skr-u-batal">Batal</button>
+      <button class="btn btn-primary" id="skr-u-simpan">Simpan</button>
     </div>`;
   openModal();
-  $("#skr-d-tutup").onclick = closeModal;
+  $("#skr-u-batal").onclick  = closeModal;
+  $("#skr-u-simpan").onclick = () => {
+    const kode   = $("#skr-u-kode").value.trim().toUpperCase();
+    const nama   = $("#skr-u-nama").value.trim().toUpperCase();
+    const alamat = $("#skr-u-alamat").value.trim();
+    if (!kode || !nama || !alamat) { toast("Seluruh field bertanda * wajib diisi.", "bad"); return; }
+    if (skrRows.some(x => x._id !== s._id && x.kode.toUpperCase() === kode)) {
+      toast(`Kode ${kode} sudah terdaftar pada daftar Satuan Kerja.`, "bad");
+      return;
+    }
+    Object.assign(s, { kode, nama, alamat });
+    renderSatuanKerja();
+    closeModal();
+    toast(`Perubahan satuan kerja ${nama} berhasil disimpan.`, "ok");
+  };
 }
 
 function skrHapus(s) {
@@ -9325,8 +9328,8 @@ $("#skr-cari").onclick   = () => renderSatuanKerja();
 $("#skr-export").onclick = () => toast("Daftar satuan kerja diekspor ke Excel.");
 
 document.addEventListener("click", e => {
-  const bDetail = e.target.closest("[data-skr-detail]");
-  if (bDetail) { skrDetail(skrRows.find(s => s._id === +bDetail.dataset.skrDetail)); return; }
+  const bUbah = e.target.closest("[data-skr-ubah]");
+  if (bUbah) { skrUbah(skrRows.find(s => s._id === +bUbah.dataset.skrUbah)); return; }
 
   const bHapus = e.target.closest("[data-skr-hapus]");
   if (bHapus) { skrHapus(skrRows.find(s => s._id === +bHapus.dataset.skrHapus)); return; }
@@ -9354,11 +9357,6 @@ let drhForm = { mekanisme:"", tingkat:"", berkas:false };
 function drhBolehKelola() { return roleSaatIni() === ROLE_DIVISI; }
 
 function drhCariKode(kode) { return kode ? drhRows.find(d => d.kode === kode) : null; }
-function drhLabelInduk(d) {
-  if (!d.induk) return "-";
-  const induk = drhCariKode(d.induk);
-  return induk ? `${induk.kode} — ${induk.nama}` : d.induk;
-}
 /* Kelurahan tanpa kode tidak mungkin punya turunan — tanpa penjaga ini,
    kode kosong akan "mencocokkan" seluruh Provinsi yang induknya juga kosong. */
 function drhJumlahTurunan(d) { return d.kode ? drhRows.filter(x => x.induk === d.kode).length : 0; }
@@ -9415,13 +9413,14 @@ function renderDaerah() {
       <td class="t-name">${esc(d.kode || "-")}</td>
       <td class="t-strong">${esc(d.nama)}</td>
       <td><span class="pill pill-info">${esc(d.tingkat)}</span></td>
-      <td style="white-space:nowrap">${esc(d.berlaku)}</td>
-      <td style="white-space:nowrap">
-        <button class="btn btn-info btn-sm" data-drh-detail="${d._id}">👁 Detail</button>
-        ${boleh ? `<button class="btn btn-danger btn-sm" data-drh-hapus="${d._id}" title="Hapus Daerah">⌫</button>` : ""}
+      <td>${esc(d.mekanisme || "-")}</td>
+      <td style="white-space:nowrap">${esc(unorTanggal(d.tgl).panjang)}</td>
+      <td style="white-space:nowrap">${boleh ? `
+        <button class="btn btn-info btn-sm" data-drh-ubah="${d._id}">✎ Ubah</button>
+        <button class="btn btn-danger btn-sm" data-drh-hapus="${d._id}" title="Hapus Daerah">⌫</button>` : "—"}
       </td>
     </tr>`).join("")
-    : `<tr><td colspan="6"><div class="empty"><h4>Tidak ada daerah</h4><p>Ubah kata kunci atau filter pencarian, atau tambahkan lewat tombol Tambah Daerah.</p></div></td></tr>`;
+    : `<tr><td colspan="7"><div class="empty"><h4>Tidak ada daerah</h4><p>Ubah kata kunci atau filter pencarian, atau tambahkan lewat tombol Tambah Daerah.</p></div></td></tr>`;
 
   $("#drh-tambah").style.display = boleh ? "" : "none";
   $("#drh-count").textContent    = `Menampilkan ${rows.length} dari ${drhRows.length} daerah.`;
@@ -9540,7 +9539,7 @@ $("#drhf-dropzone").onclick = () => {
 
 function drhTambahBaris(baris) {
   drhRows.push({
-    ...baris, berlaku: unorTglHariIni(), oleh: PENGATURAN.namaUser,
+    ...baris, tgl: unorTglHariIni(), oleh: PENGATURAN.namaUser,
     _id: drhRows.length ? Math.max(...drhRows.map(d => d._id)) + 1 : 0
   });
 }
@@ -9600,29 +9599,90 @@ $("#drhf-simpan").onclick = () => {
   if (drhForm.mekanisme === "Satuan") drhSimpanSatuan(); else drhSimpanKolektif();
 };
 
-/* --------------------------------------------------- Detail & Hapus */
-function drhDetail(d) {
-  $("#modal-title").textContent = "Detail Daerah";
+/* ----------------------------------------------------- Ubah & Hapus */
+/* Ubah memakai field yang sama dengan mekanisme Satuan untuk tingkatnya.
+   Tingkat, Tanggal Buat, dan Mekanisme Tambah Referensi tidak berubah.
+   Daerah yang masih punya turunan dikunci Kode dan Induknya, supaya kode
+   anak-anaknya tetap diawali kode induk yang benar. */
+function drhUbah(d) {
+  const t       = d.tingkat;
+  const cfg     = DRH_FORM[t];
+  const tInduk  = DAERAH_INDUK[t];
+  const turunan = drhJumlahTurunan(d);
+  const kunci   = turunan > 0;
+  const calon   = tInduk ? drhRows.filter(x => x.tingkat === tInduk).sort(drhBandingkan) : [];
+  const hintAwal = d.induk ? `Kode harus diawali ${d.induk}.` : "Kode Provinsi berupa angka.";
+
+  $("#modal-title").textContent = `Ubah ${t}`;
   $("#modal-sub").textContent   = `${d.kode || "-"} · ${d.nama}`;
   $("#modal-body").innerHTML = `
-    <div class="review-card">
-      <div class="review-card-head">Data Daerah</div>
-      <div class="review-card-body">
-        <div class="review-row"><div class="fl">Kode Daerah</div><div class="val">${esc(d.kode || "-")}</div></div>
-        <div class="review-row"><div class="fl">Nama Daerah</div><div class="val">${esc(d.nama)}</div></div>
-        <div class="review-row"><div class="fl">Tingkat</div><div class="val">${esc(d.tingkat)}</div></div>
-        <div class="review-row"><div class="fl">Mekanisme Tambah</div><div class="val">${esc(d.mekanisme || "-")}</div></div>
-        <div class="review-row"><div class="fl">Induk Daerah</div><div class="val">${esc(drhLabelInduk(d))}</div></div>
-        <div class="review-row"><div class="fl">Jumlah Daerah Turunan</div><div class="val">${drhJumlahTurunan(d)}</div></div>
-        <div class="review-row"><div class="fl">Berlaku Sejak</div><div class="val">${esc(unorTanggal(d.berlaku).panjang)}</div></div>
-        <div class="review-row"><div class="fl">Dibuat Oleh</div><div class="val">${esc(d.oleh)}</div></div>
+    ${kunci ? `<div class="alert alert-info"><span>ⓘ</span><span>${esc(t)} ini masih memiliki ${turunan} daerah turunan, jadi Kode${tInduk ? ` dan Nama ${esc(tInduk)}` : ""} tidak bisa diubah.</span></div>` : ""}
+    <div class="grid2">
+      <div class="field">
+        <label class="fl">Tingkat</label>
+        <input class="inp" value="${esc(t)}" readonly>
+      </div>
+      ${tInduk ? `
+      <div class="field">
+        <label class="fl" for="drh-u-induk">Nama ${esc(tInduk)} <span class="req">*</span></label>
+        <select class="inp" id="drh-u-induk"${kunci ? " disabled" : ""}>
+          <option value="">— Pilih ${esc(tInduk)} —</option>
+          ${calon.map(x => `<option value="${esc(x.kode)}"${x.kode === d.induk ? " selected" : ""}>${esc(x.nama)} (${esc(x.kode)})</option>`).join("")}
+        </select>
+      </div>` : ""}
+    </div>
+    <div class="grid2">
+      <div class="field" style="margin-bottom:0">
+        <label class="fl" for="drh-u-nama">Nama ${esc(t)} <span class="req">*</span></label>
+        <input class="inp" id="drh-u-nama" value="${esc(d.nama)}">
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label class="fl" for="drh-u-kode">Kode ${esc(t)}${cfg.kodeWajib ? ` <span class="req">*</span>` : ""}</label>
+        <input class="inp" id="drh-u-kode" value="${esc(d.kode)}"${kunci ? " readonly" : ""} placeholder="Contoh: ${esc(cfg.contohKode)}">
+        <div class="hint" id="drh-u-kode-hint">${esc(hintAwal)}</div>
       </div>
     </div>
     <div class="form-actions" style="justify-content:flex-end">
-      <button class="btn btn-ghost" id="drh-d-tutup">Tutup</button>
+      <button class="btn btn-ghost" id="drh-u-batal">Batal</button>
+      <button class="btn btn-primary" id="drh-u-simpan">Simpan</button>
     </div>`;
   openModal();
-  $("#drh-d-tutup").onclick = closeModal;
+
+  if (tInduk && !kunci) {
+    $("#drh-u-induk").onchange = () => {
+      const k = $("#drh-u-induk").value;
+      $("#drh-u-kode-hint").textContent = k ? `Kode harus diawali ${k}.` : `Pilih Nama ${tInduk} lebih dulu untuk melihat awalan kodenya.`;
+    };
+  }
+
+  $("#drh-u-batal").onclick  = closeModal;
+  $("#drh-u-simpan").onclick = () => {
+    const induk = tInduk ? $("#drh-u-induk").value : "";
+    const nama  = $("#drh-u-nama").value.trim().toUpperCase();
+    const kode  = $("#drh-u-kode").value.trim();
+
+    if ((tInduk && !induk) || !nama || (cfg.kodeWajib && !kode)) {
+      toast("Seluruh field bertanda * wajib diisi.", "bad");
+      return;
+    }
+    if (kode && drhRows.some(x => x._id !== d._id && x.kode === kode)) {
+      toast(`Kode ${kode} sudah terdaftar pada daftar Daerah.`, "bad");
+      return;
+    }
+    if (kode && !drhKodeSah(kode, induk)) {
+      toast(induk ? `Kode ${t} harus diawali ${induk}. lalu angka, mis. ${induk}.01.` : "Kode Provinsi harus berupa angka.", "bad");
+      return;
+    }
+    if (drhRows.some(x => x._id !== d._id && x.tingkat === t && x.induk === induk && x.nama === nama)) {
+      toast(`${t} ${nama} sudah terdaftar.`, "bad");
+      return;
+    }
+
+    Object.assign(d, { induk, nama, kode });
+    renderDaerah();
+    closeModal();
+    toast(`Perubahan ${t} ${nama} berhasil disimpan.`, "ok");
+  };
 }
 
 function drhHapus(d) {
@@ -9654,8 +9714,8 @@ $("#drh-cari").onclick   = () => renderDaerah();
 $("#drh-export").onclick = () => toast("Daftar daerah diekspor ke Excel.");
 
 document.addEventListener("click", e => {
-  const bDetail = e.target.closest("[data-drh-detail]");
-  if (bDetail) { drhDetail(drhRows.find(d => d._id === +bDetail.dataset.drhDetail)); return; }
+  const bUbah = e.target.closest("[data-drh-ubah]");
+  if (bUbah) { drhUbah(drhRows.find(d => d._id === +bUbah.dataset.drhUbah)); return; }
 
   const bHapus = e.target.closest("[data-drh-hapus]");
   if (bHapus) { drhHapus(drhRows.find(d => d._id === +bHapus.dataset.drhHapus)); return; }
