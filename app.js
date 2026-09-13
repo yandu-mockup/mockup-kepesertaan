@@ -109,7 +109,6 @@ function go(id) {
   if (id === "spp-pengajuan") sppPengajuanIntro();
   if (id === "spp-approval") sppaTampilkanDaftar();
   if (id === "spp-bersih")   renderSppBersih();
-  if (id === "ref-kolektif") refKolektifGotoView("list");
   if (id === "daerah") daerahGotoView("list");
   if (id === "satuan-kerja") skrGotoView("list");
   if (id === "pendaftaran-nominatif") nominatifGotoView("list");
@@ -6625,14 +6624,13 @@ $("#s-data-peserta").addEventListener("keydown", e => {
 
 /* ====================================================================== INIT */
 /* Ganti role = ganti kewenangan, jadi layar yang tombolnya dibatasi role
-   (UNOR, Referensi Kolektif, Status Peserta, Batas Usia Pensiun, SPP Data
+   (UNOR, Status Peserta, Batas Usia Pensiun, SPP Data
    Peserta, Daftar Nominatif, Satuan Kerja, Daerah) digambar ulang. */
 $("#top-role").onchange = () => {
   toast(`Role diubah ke: ${roleSaatIni()}.`);
   renderHome();
   renderTopNotif();
   renderUnor();
-  renderRefKolektif();
   renderStatusPeserta();
   renderBup();
   renderSatuanKerja();
@@ -8818,252 +8816,6 @@ document.addEventListener("click", e => {
   if (bHapus) { unorHapus(unorRows.find(u => u._id === +bHapus.dataset.unorHapus)); return; }
 });
 
-/* ==================== PENGELOLAAN REFERENSI DATA KEPESERTAAN » KOLEKTIF
-   Penambahan referensi lewat berkas Excel. Daftar awal merekap berapa berkas
-   yang sudah pernah diunggah per Jenis Referensi; tombol Tambah membuka alur
-   dua langkah: Unggah Referensi → Validasi dan Submit. Tombol Simpan baru
-   aktif kalau seluruh baris berkas lolos validasi. */
-let rkRows = DATA_REF_KOLEKTIF.map((r, i) => ({ ...r, berkas: r.berkas.map(b => ({ ...b })), _id: i }));
-
-const RK_LANGKAH = ["Unggah Referensi", "Validasi dan Submit"];
-let rkfStep   = 1;
-let rkfJenis  = null;     // entri REF_KOLEKTIF_JENIS yang sedang dipilih
-let rkfBerkas = false;    // berkas contoh sudah "terunggah" atau belum
-let rkDetail  = null;     // jenis referensi yang sedang dibuka detailnya
-
-/* Pemeliharaan referensi adalah kewenangan Bidang Lojita di Divisi
-   Kepesertaan; role lain hanya melihat daftarnya. */
-function rkBolehKelola() { return roleSaatIni() === ROLE_DIVISI; }
-
-function refKolektifGotoView(view) {
-  $("#rk-list-view").style.display   = view === "list"   ? "" : "none";
-  $("#rk-detail-view").style.display = view === "detail" ? "" : "none";
-  $("#rk-form-view").style.display   = view === "form"   ? "" : "none";
-  const ujung = view === "detail" ? `Detail ${rkDetail ? rkDetail.jenis : ""}`.trim()
-              : view === "form"   ? "Tambah Referensi Kolektif"
-              : null;
-  $("#rk-crumb").innerHTML =
-    `<span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pengelolaan Referensi Data Kepesertaan</span>`
-    + (ujung ? `<span>›</span><span>Kolektif</span><span>›</span><b>${esc(ujung)}</b>`
-             : `<span>›</span><b>Kolektif</b>`);
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-/* Pilihan filter diambil dari daftar yang ada supaya jenis baru hasil unggahan
-   ikut muncul; nilai yang sedang dipilih dipertahankan. */
-function rkIsiFilterJenis() {
-  const sel = $("#rk-f-jenis");
-  const dipilih = sel.value || "all";
-  sel.innerHTML = `<option value="all">Semua Jenis Referensi</option>`
-    + rkRows.map(r => `<option>${esc(r.jenis)}</option>`).join("");
-  sel.value = rkRows.some(r => r.jenis === dipilih) ? dipilih : "all";
-}
-
-function rkBarisTersaring() {
-  const fJenis = $("#rk-f-jenis").value;
-  return rkRows.filter(r => fJenis === "all" || r.jenis === fJenis);
-}
-
-function renderRefKolektif() {
-  rkIsiFilterJenis();
-  const rows  = rkBarisTersaring();
-  const total = rows.reduce((n, r) => n + r.berkas.length, 0);
-
-  $("#rk-body").innerHTML = rows.length ? rows.map((r, i) => `
-    <tr>
-      <td>${i + 1}</td>
-      <td class="t-strong">${esc(r.jenis)}</td>
-      <td>${r.berkas.length} berkas</td>
-      <td style="white-space:nowrap">
-        <button class="btn btn-info btn-sm" data-rk-detail="${r._id}">👁 Detail</button>
-      </td>
-    </tr>`).join("")
-    : `<tr><td colspan="4"><div class="empty"><h4>Belum ada referensi kolektif</h4><p>Ubah filter Jenis Referensi, atau unggah berkas lewat tombol Tambah Referensi Kolektif.</p></div></td></tr>`;
-
-  $("#rk-tambah").style.display = rkBolehKelola() ? "" : "none";
-  $("#rk-badge").textContent    = `${rows.length} jenis`;
-  $("#rk-count").textContent    = `${total} berkas referensi terunggah dari ${rows.length} jenis referensi.`;
-}
-
-/* --------------------------------------------- Detail berkas per jenis */
-function rkShowDetail(r) {
-  rkDetail = r;
-  $("#rkd-title").textContent = `Referensi Kolektif — ${r.jenis}`;
-  $("#rkd-sub").textContent   = `${r.berkas.length} berkas pernah diunggah untuk jenis referensi ${r.jenis}.`;
-  $("#rkd-body").innerHTML = r.berkas.length ? r.berkas.map((b, i) => `
-    <tr>
-      <td>${i + 1}</td>
-      <td class="t-name">${esc(b.nama)}</td>
-      <td>${esc(b.tgl)}</td>
-      <td>${b.baris} baris</td>
-      <td>${esc(b.oleh)}</td>
-      <td><span class="pill pill-ok">${esc(b.status)}</span></td>
-    </tr>`).join("")
-    : `<tr><td colspan="6"><div class="empty"><h4>Belum ada berkas</h4><p>Jenis referensi ini belum pernah menerima unggahan kolektif.</p></div></td></tr>`;
-  refKolektifGotoView("detail");
-}
-
-$("#rkd-kembali").onclick = () => refKolektifGotoView("list");
-
-/* ------------------------------------------- Tambah Referensi Kolektif */
-function rkRenderStepper() {
-  $("#rkf-stepper").innerHTML = RK_LANGKAH.map((l, i) => {
-    const n = i + 1;
-    const kelas = n === rkfStep ? "step active" : n < rkfStep ? "step done" : "step";
-    return `<button class="${kelas}" data-rkf-step="${n}" ${n > rkfStep ? "disabled" : ""}>${n}. ${esc(l)}</button>`;
-  }).join("");
-}
-
-function rkGotoStep(n) {
-  rkfStep = n;
-  $("#rkf-step-1").style.display = n === 1 ? "" : "none";
-  $("#rkf-step-2").style.display = n === 2 ? "" : "none";
-  rkRenderStepper();
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-function isiPilihanRefKolektif() {
-  $("#rkf-jenis").innerHTML = `<option value="">— Silahkan Pilih Jenis Referensi —</option>`
-    + REF_KOLEKTIF_JENIS.map(j => `<option value="${j.key}">${esc(j.label)}</option>`).join("");
-}
-
-/* Berkas ikut direset setiap Jenis Referensi berubah — kolom templatenya
-   berbeda, jadi berkas lama tidak lagi cocok untuk divalidasi. */
-function rkResetUnggah() {
-  rkfBerkas = false;
-  $("#rkf-dropzone").classList.remove("has-file");
-  $("#rkf-file-title").textContent = "Tarik file ke sini atau klik untuk memilih";
-  $("#rkf-file-sub").textContent   = "Format .xlsx, maksimal 5 MB";
-  $("#rkf-lanjut").disabled        = true;
-}
-
-function rkShowForm() {
-  rkfJenis = null;
-  $("#rkf-jenis").value               = "";
-  $("#rkf-template").value            = "";
-  $("#rkf-btn-template").disabled     = true;
-  $("#rkf-template-hint").textContent = "Pilih Jenis Referensi lebih dulu untuk mengunduh templatenya.";
-  rkResetUnggah();
-  rkGotoStep(1);
-  refKolektifGotoView("form");
-}
-
-$("#rk-tambah").onclick = rkShowForm;
-$("#rk-cari").onclick   = () => renderRefKolektif();
-$("#rk-export").onclick = () => toast("Daftar referensi kolektif diekspor ke Excel.");
-$("#rkf-batal").onclick = () => refKolektifGotoView("list");
-
-/* Field Template Referensi menyesuaikan Jenis Referensi yang dipilih. */
-$("#rkf-jenis").onchange = () => {
-  rkfJenis = REF_KOLEKTIF_JENIS.find(j => j.key === $("#rkf-jenis").value) || null;
-  $("#rkf-template").value            = rkfJenis ? `${rkfJenis.templateNama}.xlsx` : "";
-  $("#rkf-btn-template").disabled     = !rkfJenis;
-  $("#rkf-template-hint").textContent = rkfJenis
-    ? `Kolom template: ${rkfJenis.kolom.join(", ")}.`
-    : "Pilih Jenis Referensi lebih dulu untuk mengunduh templatenya.";
-  rkResetUnggah();
-};
-
-$("#rkf-btn-template").onclick = () => {
-  if (!rkfJenis) return;
-  toast(`${rkfJenis.templateNama} diunduh.`);
-};
-
-$("#rkf-dropzone").onclick = () => {
-  if (!rkfJenis) { toast("Pilih Jenis Referensi lebih dulu.", "bad"); return; }
-  rkfBerkas = true;
-  $("#rkf-dropzone").classList.add("has-file");
-  $("#rkf-file-title").textContent = rkfJenis.namaBerkas;
-  $("#rkf-file-sub").textContent   = `${rkfJenis.rows.length} baris terbaca — siap divalidasi`;
-  $("#rkf-lanjut").disabled        = false;
-};
-
-/* Tabel hasil validasi mengikuti kolom berkas yang diunggah, ditambah kolom
-   Status dan Keterangan supaya baris bermasalah langsung terlihat. */
-function rkRenderValidasi() {
-  const j       = rkfJenis;
-  const total   = j.rows.length;
-  const ditolak = j.rows.filter(r => r.status === "ditolak").length;
-  const valid   = total - ditolak;
-
-  $("#rkf-metrics").innerHTML = `
-    <div class="metric">
-      <div class="metric-lbl">TOTAL BARIS</div>
-      <div class="metric-val navy">${total}</div>
-    </div>
-    <div class="metric">
-      <div class="metric-lbl">VALID</div>
-      <div class="metric-val ok">${valid}</div>
-    </div>
-    <div class="metric">
-      <div class="metric-lbl">ERROR</div>
-      <div class="metric-val bad">${ditolak}</div>
-    </div>`;
-
-  $("#rkf-alert-bad").style.display = ditolak ? "" : "none";
-  $("#rkf-alert-ok").style.display  = ditolak ? "none" : "";
-  $("#rkf-tabel-judul").textContent = `Hasil Validasi — ${j.namaBerkas}`;
-
-  $("#rkf-hasil-head").innerHTML = `<th>No</th>`
-    + j.kolom.map(k => `<th>${esc(k)}</th>`).join("")
-    + `<th>Status</th><th>Keterangan</th>`;
-
-  $("#rkf-hasil-body").innerHTML = j.rows.map((r, i) => {
-    const gagal = r.status === "ditolak";
-    return `
-      <tr>
-        <td>${i + 1}</td>
-        ${j.kolom.map((_, c) => `<td>${esc(r.nilai[c] || "-")}</td>`).join("")}
-        <td><span class="pill ${gagal ? "pill-bad" : "pill-ok"}">${gagal ? "Error" : "Valid"}</span></td>
-        <td class="${gagal ? "bad-txt" : ""}">${gagal ? r.alasan.map(a => `• ${esc(a)}`).join("<br>") : "—"}</td>
-      </tr>`;
-  }).join("");
-
-  /* Simpan hanya boleh ditekan kalau tidak ada satu pun baris error. */
-  $("#rkf-simpan").disabled = ditolak > 0;
-}
-
-$("#rkf-lanjut").onclick = () => {
-  if (!rkfJenis || !rkfBerkas) { toast("Jenis Referensi dan berkas wajib diisi.", "bad"); return; }
-  rkRenderValidasi();
-  rkGotoStep(2);
-  const ditolak = rkfJenis.rows.filter(r => r.status === "ditolak").length;
-  toast(ditolak
-    ? `Validasi selesai — ${ditolak} baris masih error.`
-    : `Validasi selesai — seluruh ${rkfJenis.rows.length} baris valid.`, ditolak ? "bad" : "ok");
-};
-
-$("#rkf-validasi-kembali").onclick = () => rkGotoStep(1);
-$("#rkf-export").onclick           = () => toast("Hasil validasi diekspor ke Excel.");
-
-$("#rkf-simpan").onclick = () => {
-  if ($("#rkf-simpan").disabled) return;
-  const jenis = rkfJenis;
-  let entri = rkRows.find(r => r.jenis === jenis.label);
-  if (!entri) {
-    entri = { jenis: jenis.label, berkas: [], _id: rkRows.length ? Math.max(...rkRows.map(r => r._id)) + 1 : 0 };
-    rkRows.push(entri);
-  }
-  entri.berkas.unshift({
-    nama:   jenis.namaBerkas,
-    tgl:    unorTglHariIni(),
-    baris:  jenis.rows.length,
-    oleh:   PENGATURAN.namaUser,
-    status: "Selesai"
-  });
-  renderRefKolektif();
-  refKolektifGotoView("list");
-  toast(`${jenis.rows.length} baris referensi ${jenis.label} berhasil disimpan.`, "ok");
-};
-
-document.addEventListener("click", e => {
-  const bDetail = e.target.closest("[data-rk-detail]");
-  if (bDetail) { rkShowDetail(rkRows.find(r => r._id === +bDetail.dataset.rkDetail)); return; }
-
-  const bStep = e.target.closest("[data-rkf-step]");
-  if (bStep && !bStep.disabled) rkGotoStep(+bStep.dataset.rkfStep);
-});
-
 /* ============ PENGELOLAAN REFERENSI DATA KEPESERTAAN » STATUS PESERTA
    Daftar nilai Status Peserta yang boleh dipakai layar lain. Tanggal Buat
    diisi sistem saat entri dibuat, jadi tidak bisa diketik pengguna. Format
@@ -9116,11 +8868,6 @@ $("#stp-tambah").onclick = () => {
   $("#modal-title").textContent = "Tambah Status Peserta";
   $("#modal-sub").textContent   = "Status Peserta yang ditambahkan langsung tersedia sebagai pilihan di layar lain.";
   $("#modal-body").innerHTML = `
-    <div class="field">
-      <label class="fl">Tanggal Buat</label>
-      <input class="inp" id="stp-m-tgl" readonly value="${esc(unorTanggal(hariIni).panjang)}">
-      <div class="hint">Terisi otomatis oleh sistem saat entri disimpan.</div>
-    </div>
     <div class="field" style="margin-bottom:0">
       <label class="fl">Status Peserta <span class="req">*</span></label>
       <input class="inp" id="stp-m-status" placeholder="Contoh: Cuti di Luar Tanggungan Negara">
@@ -9237,7 +8984,6 @@ function renderBup() {
     : `<tr><td colspan="4"><div class="empty"><h4>Tidak ada batas usia pensiun</h4><p>Ubah filter Batas Usia Pensiun, atau tambahkan lewat tombol Tambah Batas Usia Pensiun.</p></div></td></tr>`;
 
   $("#bup-tambah").style.display = boleh ? "" : "none";
-  $("#bup-badge").textContent    = `${rows.length} entri`;
   $("#bup-count").textContent    = `Menampilkan ${rows.length} dari ${bupRows.length} batas usia pensiun.`;
 }
 
@@ -9246,11 +8992,6 @@ $("#bup-tambah").onclick = () => {
   $("#modal-title").textContent = "Tambah Batas Usia Pensiun";
   $("#modal-sub").textContent   = "Batas usia pensiun dipakai sebagai acuan perhitungan hak peserta.";
   $("#modal-body").innerHTML = `
-    <div class="field">
-      <label class="fl">Tanggal Buat</label>
-      <input class="inp" id="bup-m-tgl" readonly value="${esc(unorTanggal(hariIni).panjang)}">
-      <div class="hint">Terisi otomatis oleh sistem saat entri disimpan.</div>
-    </div>
     <div class="grid2">
       <div class="field">
         <label class="fl">Angkatan <span class="req">*</span></label>
@@ -9403,8 +9144,10 @@ function skrIsiFilter() {
 function skrBarisTersaring() {
   const cari = ($("#skr-f-cari").value || "").trim().toLowerCase();
   const unor = $("#skr-f-unor").value;
+  const mekanisme = $("#skr-f-mekanisme").value;
   return skrRows.filter(s =>
     (unor === "all" || s.unor === unor) &&
+    (mekanisme === "all" || s.mekanisme === mekanisme) &&
     (!cari || s.kode.toLowerCase().includes(cari) || s.nama.toLowerCase().includes(cari)));
 }
 
@@ -9419,17 +9162,15 @@ function renderSatuanKerja() {
       <td class="t-name">${esc(s.kode)}</td>
       <td class="t-strong">${esc(s.nama)}</td>
       <td class="truncate-cell" title="${esc(s.unor || "")}">${esc(s.unor || "-")}</td>
-      <td title="${esc(skrNamaKppn(s.kppn))}">${esc(s.kppn || "-")}</td>
       <td style="white-space:nowrap">${esc(unorTanggal(s.tgl).panjang)}</td>
       <td style="white-space:nowrap">
         <button class="btn btn-info btn-sm" data-skr-detail="${s._id}">👁 Detail</button>
         ${boleh ? `<button class="btn btn-danger btn-sm" data-skr-hapus="${s._id}" title="Hapus Satuan Kerja">⌫</button>` : ""}
       </td>
     </tr>`).join("")
-    : `<tr><td colspan="7"><div class="empty"><h4>Tidak ada satuan kerja</h4><p>Ubah kata kunci atau filter Unit Organisasi, atau tambahkan lewat tombol Tambah Satuan Kerja.</p></div></td></tr>`;
+    : `<tr><td colspan="6"><div class="empty"><h4>Tidak ada satuan kerja</h4><p>Ubah kata kunci atau filter pencarian, atau tambahkan lewat tombol Tambah Satuan Kerja.</p></div></td></tr>`;
 
   $("#skr-tambah").style.display = boleh ? "" : "none";
-  $("#skr-badge").textContent    = `${rows.length} entri`;
   $("#skr-count").textContent    = `Menampilkan ${rows.length} dari ${skrRows.length} satuan kerja.`;
 }
 
@@ -9501,6 +9242,7 @@ function skrTambahBaris(b) {
 function skrSelesaiSimpan(pesan) {
   $("#skr-f-cari").value = "";
   $("#skr-f-unor").value = "all";
+  $("#skr-f-mekanisme").value = "all";
   renderSatuanKerja();
   skrGotoView("list");
   toast(pesan, "ok");
@@ -9512,7 +9254,7 @@ function skrSimpanSatuan() {
   const alamat = $("#skrf-alamat").value.trim();
   if (!kode || !nama || !alamat) { toast("Seluruh field bertanda * wajib diisi.", "bad"); return; }
   if (skrKodeTerpakai(kode)) { toast(`Kode ${kode} sudah terdaftar pada daftar Satuan Kerja.`, "bad"); return; }
-  skrTambahBaris({ kode, nama, alamat });
+  skrTambahBaris({ kode, nama, alamat, mekanisme: "Satuan" });
   skrSelesaiSimpan(`Satuan kerja ${nama} berhasil disimpan.`);
 }
 
@@ -9523,7 +9265,7 @@ function skrSimpanKolektif() {
   const rows  = SATUAN_KERJA_KOLEKTIF_CONTOH.rows;
   const masuk = rows.filter(r => !skrKodeTerpakai(r.kode));
   if (!masuk.length) { toast("Tidak ada satuan kerja baru — seluruh kode di berkas sudah terdaftar.", "bad"); return; }
-  masuk.slice().reverse().forEach(r => skrTambahBaris({ ...r }));
+  masuk.slice().reverse().forEach(r => skrTambahBaris({ ...r, mekanisme: "Kolektif" }));
   const dilewati = rows.length - masuk.length;
   skrSelesaiSimpan(`${masuk.length} satuan kerja berhasil disimpan`
     + (dilewati ? `, ${dilewati} dilewati karena kode sudah terdaftar.` : "."));
@@ -9546,6 +9288,7 @@ function skrDetail(s) {
         <div class="review-row"><div class="fl">Kode Satuan Kerja</div><div class="val">${esc(s.kode)}</div></div>
         <div class="review-row"><div class="fl">Nama Satuan Kerja</div><div class="val">${esc(s.nama)}</div></div>
         <div class="review-row"><div class="fl">Alamat Satuan Kerja</div><div class="val">${esc(s.alamat || "-")}</div></div>
+        <div class="review-row"><div class="fl">Mekanisme Tambah</div><div class="val">${esc(s.mekanisme || "-")}</div></div>
         <div class="review-row"><div class="fl">Unit Organisasi</div><div class="val">${esc(s.unor || "-")}</div></div>
         <div class="review-row"><div class="fl">KPPN</div><div class="val">${s.kppn ? `${esc(s.kppn)} — ${esc(skrNamaKppn(s.kppn) || "-")}` : "-"}</div></div>
         <div class="review-row"><div class="fl">Dibuat Oleh</div><div class="val">${esc(s.oleh)}</div></div>
@@ -9645,11 +9388,20 @@ function drhIsiFilter() {
 function drhBarisTersaring() {
   const cari    = ($("#drh-f-cari").value || "").trim().toLowerCase();
   const tingkat = $("#drh-f-tingkat").value;
+  const mekanisme = $("#drh-f-mekanisme").value;
   return drhRows
     .filter(d =>
       (tingkat === "all" || d.tingkat === tingkat) &&
+      (mekanisme === "all" || d.mekanisme === mekanisme) &&
       (!cari || d.kode.toLowerCase().includes(cari) || d.nama.toLowerCase().includes(cari)))
     .sort(drhBandingkan);
+}
+
+/* Dipanggil setelah simpan supaya baris yang baru disimpan pasti terlihat. */
+function drhResetFilter() {
+  $("#drh-f-cari").value      = "";
+  $("#drh-f-tingkat").value   = "all";
+  $("#drh-f-mekanisme").value = "all";
 }
 
 function renderDaerah() {
@@ -9663,17 +9415,15 @@ function renderDaerah() {
       <td class="t-name">${esc(d.kode || "-")}</td>
       <td class="t-strong">${esc(d.nama)}</td>
       <td><span class="pill pill-info">${esc(d.tingkat)}</span></td>
-      <td>${esc(drhLabelInduk(d))}</td>
       <td style="white-space:nowrap">${esc(d.berlaku)}</td>
       <td style="white-space:nowrap">
         <button class="btn btn-info btn-sm" data-drh-detail="${d._id}">👁 Detail</button>
         ${boleh ? `<button class="btn btn-danger btn-sm" data-drh-hapus="${d._id}" title="Hapus Daerah">⌫</button>` : ""}
       </td>
     </tr>`).join("")
-    : `<tr><td colspan="7"><div class="empty"><h4>Tidak ada daerah</h4><p>Ubah kata kunci atau filter Tingkat, atau tambahkan lewat tombol Tambah Daerah.</p></div></td></tr>`;
+    : `<tr><td colspan="6"><div class="empty"><h4>Tidak ada daerah</h4><p>Ubah kata kunci atau filter pencarian, atau tambahkan lewat tombol Tambah Daerah.</p></div></td></tr>`;
 
   $("#drh-tambah").style.display = boleh ? "" : "none";
-  $("#drh-badge").textContent    = `${rows.length} entri`;
   $("#drh-count").textContent    = `Menampilkan ${rows.length} dari ${drhRows.length} daerah.`;
 }
 
@@ -9816,7 +9566,8 @@ function drhSimpanSatuan() {
     return;
   }
 
-  drhTambahBaris({ kode, nama, tingkat: t, induk });
+  drhTambahBaris({ kode, nama, tingkat: t, induk, mekanisme: "Satuan" });
+  drhResetFilter();
   renderDaerah();
   daerahGotoView("list");
   toast(`${t} ${nama} berhasil disimpan.`, "ok");
@@ -9835,8 +9586,9 @@ function drhSimpanKolektif() {
     return;
   }
 
-  masuk.forEach(r => drhTambahBaris({ ...r, tingkat: t }));
+  masuk.forEach(r => drhTambahBaris({ ...r, tingkat: t, mekanisme: "Kolektif" }));
   const dilewati = rows.length - masuk.length;
+  drhResetFilter();
   renderDaerah();
   daerahGotoView("list");
   toast(`${masuk.length} daerah ${t} berhasil disimpan`
@@ -9859,6 +9611,7 @@ function drhDetail(d) {
         <div class="review-row"><div class="fl">Kode Daerah</div><div class="val">${esc(d.kode || "-")}</div></div>
         <div class="review-row"><div class="fl">Nama Daerah</div><div class="val">${esc(d.nama)}</div></div>
         <div class="review-row"><div class="fl">Tingkat</div><div class="val">${esc(d.tingkat)}</div></div>
+        <div class="review-row"><div class="fl">Mekanisme Tambah</div><div class="val">${esc(d.mekanisme || "-")}</div></div>
         <div class="review-row"><div class="fl">Induk Daerah</div><div class="val">${esc(drhLabelInduk(d))}</div></div>
         <div class="review-row"><div class="fl">Jumlah Daerah Turunan</div><div class="val">${drhJumlahTurunan(d)}</div></div>
         <div class="review-row"><div class="fl">Berlaku Sejak</div><div class="val">${esc(unorTanggal(d.berlaku).panjang)}</div></div>
@@ -9979,8 +9732,6 @@ sppRows.filter(r => r.status === "Disetujui").forEach(sppDaftarkanPeserta);
 
 isiPilihanUnor();
 renderUnor();
-isiPilihanRefKolektif();
-renderRefKolektif();
 renderStatusPeserta();
 renderBup();
 renderSatuanKerja();

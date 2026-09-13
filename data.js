@@ -2969,64 +2969,6 @@ const DATA_UNOR = [
 ];
 
 /* ---------------------------------------------------------------------------
-   23B. SUB MODUL REFERENSI KOLEKTIF — UNGGAH REFERENSI LEWAT BERKAS EXCEL
-   Penambahan data referensi secara kolektif: satu berkas Excel berisi banyak
-   baris referensi untuk satu Jenis Referensi. `REF_KOLEKTIF_JENIS` memegang
-   template + isi berkas contoh yang "terbaca" saat berkas diunggah, dipakai
-   untuk mensimulasikan langkah Validasi dan Submit (bentuknya sengaja sama
-   dengan DATA_ALIH_STATUS_KOLEKTIF supaya pola rendernya bisa diikuti).
-   Satuan Kerja sengaja dibuat lolos semua, Daerah menyisakan baris bermasalah,
-   supaya tombol Simpan bisa didemokan dalam dua keadaan.
-   status: "valid" | "ditolak" (yang ditolak wajib `alasan`)
-   --------------------------------------------------------------------------- */
-const REF_KOLEKTIF_JENIS = [
-  {
-    key:"satuan-kerja", label:"Satuan Kerja",
-    templateNama:"Template Referensi Satuan Kerja",
-    namaBerkas:  "referensi_satuan_kerja_pemekaran_2026.xlsx",
-    kolom:       ["Kode Satuan Kerja", "Nama Satuan Kerja", "Unit Organisasi", "Kode KPPN", "Berlaku Sejak"],
-    rows: [
-      { nilai:["0416", "KODIM 0830/SAMPANG",        "KOREM 084/BHASKARA JAYA", "084", "01/07/2026"], status:"valid" },
-      { nilai:["0417", "KODIM 0831/PAMEKASAN",      "KOREM 084/BHASKARA JAYA", "084", "01/07/2026"], status:"valid" },
-      { nilai:["0418", "KODIM 0832/SUMENEP KOTA",   "KOREM 084/BHASKARA JAYA", "084", "01/07/2026"], status:"valid" },
-      { nilai:["0921", "LANUD SULTAN HASANUDDIN",   "KOOPSUD II",              "019", "01/07/2026"], status:"valid" },
-      { nilai:["0656", "POLRES SIDOARJO KOTA",      "POLDA JAWA TIMUR",        "084", "01/07/2026"], status:"valid" },
-      { nilai:["0745", "KODIM 0745/SALATIGA KOTA",  "KOREM 073/MAKUTARAMA",    "137", "01/08/2026"], status:"valid" }
-    ]
-  },
-  {
-    key:"daerah", label:"Daerah",
-    templateNama:"Template Referensi Daerah",
-    namaBerkas:  "referensi_daerah_pemekaran_2026.xlsx",
-    kolom:       ["Kode Daerah", "Nama Daerah", "Tingkat", "Induk Daerah", "Berlaku Sejak"],
-    rows: [
-      { nilai:["35.78.11", "KEC. TANDES",       "Kecamatan", "KOTA SURABAYA", "01/07/2026"], status:"valid" },
-      { nilai:["35.78.12", "KEC. ASEMROWO",     "Kecamatan", "KOTA SURABAYA", "01/07/2026"], status:"valid" },
-      { nilai:["32.73.31", "KEC. CIBIRU HILIR", "Kecamatan", "KOTA BANDUNG",  "01/07/2026"], status:"valid" },
-      { nilai:["33.74.09", "KEC. GAYAMSARI",    "Kecamatan", "KOTA SEMARANG", "01/07/2026"], status:"valid" },
-      { nilai:["35.78.09", "KEC. SUKOMANUNGGAL", "Kecamatan", "KOTA SURABAYA", "01/07/2026"],
-        status:"ditolak", alasan:["Kode 35.78.09 sudah terdaftar pada referensi Daerah"] },
-      { nilai:["", "KEC. GEDEBAGE BARU", "Kelurahan", "KOTA BANDUNG", "31/06/2026"],
-        status:"ditolak", alasan:["Kode Daerah wajib diisi", "Berlaku Sejak bukan tanggal yang sah"] }
-    ]
-  }
-];
-
-/* Riwayat berkas referensi kolektif yang sudah pernah disubmit, dikelompokkan
-   per Jenis Referensi. Jumlah Berkas di tabel daftar = panjang `berkas`. */
-const DATA_REF_KOLEKTIF = [
-  { jenis:"Satuan Kerja", berkas:[
-    { nama:"referensi_satuan_kerja_kodam_v_2026.xlsx", tgl:"12/08/2026", baris:24, oleh:"Lojita — R. Prasetyo",  status:"Selesai" },
-    { nama:"referensi_satuan_kerja_polda_jatim.xlsx",  tgl:"28/07/2026", baris:11, oleh:"Lojita — S. Wijayanti", status:"Selesai" },
-    { nama:"referensi_satuan_kerja_lanud_2026.xlsx",   tgl:"03/07/2026", baris:8,  oleh:"Lojita — A. Nurcahyo",  status:"Selesai" }
-  ] },
-  { jenis:"Daerah", berkas:[
-    { nama:"referensi_daerah_jatim_pemekaran.xlsx", tgl:"18/08/2026", baris:37, oleh:"Lojita — R. Prasetyo",  status:"Selesai" },
-    { nama:"referensi_daerah_jabar_2026.xlsx",      tgl:"05/08/2026", baris:19, oleh:"Lojita — S. Wijayanti", status:"Selesai" }
-  ] }
-];
-
-/* ---------------------------------------------------------------------------
    23C. SUB MODUL STATUS PESERTA & BATAS USIA PENSIUN
    Dua daftar referensi sederhana di bawah Pengelolaan Referensi Data
    Kepesertaan. Bentuk keduanya sama: satu baris = satu nilai referensi, dengan
@@ -3081,11 +3023,9 @@ const DATA_BUP = [
 
 /* ---------------------------------------------------------------------------
    23D. SUB MODUL SATUAN KERJA & DAERAH
-   Dua daftar referensi yang kolomnya sama dengan template unggah di sub
-   Kolektif (REF_KOLEKTIF_JENIS), supaya entri manual dan entri hasil unggah
-   berbentuk sama. Kode yang dianggap "baru" oleh simulasi Kolektif sengaja
-   tidak ada di sini, sedangkan 35.78.09 ada — Kolektif menolaknya sebagai
-   kode yang sudah terdaftar.
+   Dua daftar referensi yang bisa ditambah lewat dua mekanisme: Satuan (form)
+   atau Kolektif (unggah template Excel). `mekanisme` mencatat jalur yang
+   dipakai dan menjadi filter "Mekanisme Tambah Referensi" di layar.
    `berlaku` disimpan dd/mm/yyyy.
    --------------------------------------------------------------------------- */
 
@@ -3096,41 +3036,40 @@ const DATA_BUP = [
    `kode` unik. */
 const DATA_SATUAN_KERJA = [
   { tgl:"04/07/2026", kode:"0401", nama:"KOREM 084/BHASKARA JAYA",         alamat:"Jl. Hayam Wuruk No. 2, Sawunggaling, Wonokromo, Kota Surabaya",
-    unor:"Komando Daerah Militer V/Brawijaya (KODAM V/BRW)",            kppn:"084", oleh:"Lojita — R. Prasetyo",
+    unor:"Komando Daerah Militer V/Brawijaya (KODAM V/BRW)",            kppn:"084", mekanisme:"Satuan", oleh:"Lojita — R. Prasetyo",
     keterangan:"Komando resor militer wilayah Surabaya dan Madura." },
   { tgl:"04/07/2026", kode:"0412", nama:"KODIM 0827/SUMENEP",              alamat:"Jl. Trunojoyo No. 110, Kolor, Kabupaten Sumenep",
-    unor:"Komando Daerah Militer V/Brawijaya (KODAM V/BRW)",            kppn:"084", oleh:"Lojita — R. Prasetyo",
+    unor:"Komando Daerah Militer V/Brawijaya (KODAM V/BRW)",            kppn:"084", mekanisme:"Satuan", oleh:"Lojita — R. Prasetyo",
     keterangan:"Komando distrik militer di bawah KOREM 084/BHASKARA JAYA." },
   { tgl:"12/07/2026", kode:"0415", nama:"KODIM 0829/BANGKALAN",            alamat:"Jl. Soekarno Hatta No. 1, Mlajah, Kabupaten Bangkalan",
-    unor:"Komando Daerah Militer V/Brawijaya (KODAM V/BRW)",            kppn:"084", oleh:"Lojita — S. Wijayanti",
+    unor:"Komando Daerah Militer V/Brawijaya (KODAM V/BRW)",            kppn:"084", mekanisme:"Satuan", oleh:"Lojita — S. Wijayanti",
     keterangan:"Pemekaran Kodim sesuai Perkasad Nomor 12/IV/2026." },
   { tgl:"12/07/2026", kode:"0655", nama:"POLRES SIDOARJO",                 alamat:"Jl. Kombes Pol. M. Duryat No. 1, Kabupaten Sidoarjo",
-    unor:"Kepolisian Daerah Jawa Timur (POLDA JATIM)",                  kppn:"084", oleh:"Lojita — S. Wijayanti",
+    unor:"Kepolisian Daerah Jawa Timur (POLDA JATIM)",                  kppn:"084", mekanisme:"Satuan", oleh:"Lojita — S. Wijayanti",
     keterangan:"Kepolisian resor wilayah Kabupaten Sidoarjo." },
   { tgl:"21/07/2026", kode:"0920", nama:"SKADRON UDARA 3 LANUD ISWAHJUDI", alamat:"Lanud Iswahjudi, Maospati, Kabupaten Magetan",
-    unor:"Pangkalan TNI AU Iswahjudi (LANUD IWJ)",                      kppn:"084", oleh:"Lojita — R. Prasetyo",
+    unor:"Pangkalan TNI AU Iswahjudi (LANUD IWJ)",                      kppn:"084", mekanisme:"Satuan", oleh:"Lojita — R. Prasetyo",
     keterangan:"Satuan skadron tempur yang berpangkalan di Lanud Iswahjudi." },
   { tgl:"21/07/2026", kode:"0501", nama:"KODIM 0501/JAKARTA PUSAT",        alamat:"Jl. Kramat Raya No. 150, Senen, Jakarta Pusat",
-    unor:"Komando Daerah Militer Jayakarta (KODAM JAYA)",               kppn:"019", oleh:"Lojita — A. Nurcahyo",
+    unor:"Komando Daerah Militer Jayakarta (KODAM JAYA)",               kppn:"019", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo",
     keterangan:"Komando distrik militer wilayah Jakarta Pusat." },
   { tgl:"28/07/2026", kode:"0620", nama:"POLRES METRO JAKARTA PUSAT",      alamat:"Jl. Kramat Raya No. 61, Senen, Jakarta Pusat",
-    unor:"Kepolisian Daerah Metro Jaya (POLDA METRO JAYA)",             kppn:"019", oleh:"Lojita — A. Nurcahyo",
+    unor:"Kepolisian Daerah Metro Jaya (POLDA METRO JAYA)",             kppn:"019", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo",
     keterangan:"Kepolisian resor metropolitan wilayah Jakarta Pusat." },
   { tgl:"28/07/2026", kode:"0801", nama:"BIRO KEUANGAN SETJEN KEMHAN",     alamat:"Jl. Medan Merdeka Barat No. 13-14, Gambir, Jakarta Pusat",
-    unor:"Sekretariat Jenderal Kementerian Pertahanan (SETJEN KEMHAN)", kppn:"019", oleh:"Lojita — A. Nurcahyo",
+    unor:"Sekretariat Jenderal Kementerian Pertahanan (SETJEN KEMHAN)", kppn:"019", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo",
     keterangan:"Biro pengelola keuangan di lingkungan Sekretariat Jenderal Kemhan." },
   { tgl:"18/08/2026", kode:"0618", nama:"KODIM 0618/KOTA BANDUNG",         alamat:"Jl. Manado No. 4, Cihapit, Bandung Wetan, Kota Bandung",
-    unor:"Komando Daerah Militer III/Siliwangi (KODAM III/SLW)",        kppn:"137", oleh:"Lojita — S. Wijayanti",
+    unor:"Komando Daerah Militer III/Siliwangi (KODAM III/SLW)",        kppn:"137", mekanisme:"Satuan", oleh:"Lojita — S. Wijayanti",
     keterangan:"Komando distrik militer wilayah Kota Bandung." },
   { tgl:"18/08/2026", kode:"0633", nama:"POLRESTABES BANDUNG",             alamat:"Jl. Merdeka No. 18-20, Babakan Ciamis, Kota Bandung",
-    unor:"Kepolisian Daerah Jawa Barat (POLDA JABAR)",                  kppn:"137", oleh:"Lojita — S. Wijayanti",
+    unor:"Kepolisian Daerah Jawa Barat (POLDA JABAR)",                  kppn:"137", mekanisme:"Satuan", oleh:"Lojita — S. Wijayanti",
     keterangan:"Kepolisian resor kota besar wilayah Bandung." }
 ];
 
 /* Isi berkas contoh yang "terbaca" saat Tambah Satuan Kerja mekanisme
-   Kolektif. Kodenya belum terdaftar (dan berbeda dari kode "baru" pada
-   simulasi sub Kolektif), jadi unggahan pertama masuk seluruhnya; unggahan
-   ulang dilewati karena kodenya sudah ada. */
+   Kolektif. Kodenya belum terdaftar, jadi unggahan pertama masuk seluruhnya;
+   unggahan ulang dilewati karena kodenya sudah ada. */
 const SATUAN_KERJA_KOLEKTIF_CONTOH = {
   namaBerkas: "satuan_kerja_kolektif_2026.xlsx",
   rows: [
@@ -3149,26 +3088,26 @@ const DAERAH_TINGKAT = ["Provinsi", "Kota", "Kecamatan", "Kelurahan"];
 const DAERAH_INDUK   = { "Kota":"Provinsi", "Kecamatan":"Kota", "Kelurahan":"Kota" };
 
 const DATA_DAERAH = [
-  { kode:"31",            nama:"DKI JAKARTA",          tingkat:"Provinsi",  induk:"",      berlaku:"01/01/2015", oleh:"Lojita — R. Prasetyo" },
-  { kode:"32",            nama:"JAWA BARAT",           tingkat:"Provinsi",  induk:"",      berlaku:"01/01/2015", oleh:"Lojita — R. Prasetyo" },
-  { kode:"33",            nama:"JAWA TENGAH",          tingkat:"Provinsi",  induk:"",      berlaku:"01/01/2015", oleh:"Lojita — R. Prasetyo" },
-  { kode:"35",            nama:"JAWA TIMUR",           tingkat:"Provinsi",  induk:"",      berlaku:"01/01/2015", oleh:"Lojita — R. Prasetyo" },
+  { kode:"31",            nama:"DKI JAKARTA",          tingkat:"Provinsi",  induk:"",      berlaku:"01/01/2015", mekanisme:"Satuan", oleh:"Lojita — R. Prasetyo" },
+  { kode:"32",            nama:"JAWA BARAT",           tingkat:"Provinsi",  induk:"",      berlaku:"01/01/2015", mekanisme:"Satuan", oleh:"Lojita — R. Prasetyo" },
+  { kode:"33",            nama:"JAWA TENGAH",          tingkat:"Provinsi",  induk:"",      berlaku:"01/01/2015", mekanisme:"Satuan", oleh:"Lojita — R. Prasetyo" },
+  { kode:"35",            nama:"JAWA TIMUR",           tingkat:"Provinsi",  induk:"",      berlaku:"01/01/2015", mekanisme:"Satuan", oleh:"Lojita — R. Prasetyo" },
 
-  { kode:"31.71",         nama:"KOTA JAKARTA PUSAT",   tingkat:"Kota",      induk:"31",    berlaku:"01/01/2015", oleh:"Lojita — S. Wijayanti" },
-  { kode:"32.73",         nama:"KOTA BANDUNG",         tingkat:"Kota",      induk:"32",    berlaku:"01/01/2015", oleh:"Lojita — S. Wijayanti" },
-  { kode:"33.74",         nama:"KOTA SEMARANG",        tingkat:"Kota",      induk:"33",    berlaku:"01/01/2015", oleh:"Lojita — S. Wijayanti" },
-  { kode:"35.15",         nama:"KABUPATEN SIDOARJO",   tingkat:"Kota",      induk:"35",    berlaku:"01/01/2015", oleh:"Lojita — S. Wijayanti" },
-  { kode:"35.78",         nama:"KOTA SURABAYA",        tingkat:"Kota",      induk:"35",    berlaku:"01/01/2015", oleh:"Lojita — S. Wijayanti" },
+  { kode:"31.71",         nama:"KOTA JAKARTA PUSAT",   tingkat:"Kota",      induk:"31",    berlaku:"01/01/2015", mekanisme:"Satuan", oleh:"Lojita — S. Wijayanti" },
+  { kode:"32.73",         nama:"KOTA BANDUNG",         tingkat:"Kota",      induk:"32",    berlaku:"01/01/2015", mekanisme:"Satuan", oleh:"Lojita — S. Wijayanti" },
+  { kode:"33.74",         nama:"KOTA SEMARANG",        tingkat:"Kota",      induk:"33",    berlaku:"01/01/2015", mekanisme:"Satuan", oleh:"Lojita — S. Wijayanti" },
+  { kode:"35.15",         nama:"KABUPATEN SIDOARJO",   tingkat:"Kota",      induk:"35",    berlaku:"01/01/2015", mekanisme:"Satuan", oleh:"Lojita — S. Wijayanti" },
+  { kode:"35.78",         nama:"KOTA SURABAYA",        tingkat:"Kota",      induk:"35",    berlaku:"01/01/2015", mekanisme:"Satuan", oleh:"Lojita — S. Wijayanti" },
 
-  { kode:"31.71.01",      nama:"KEC. GAMBIR",          tingkat:"Kecamatan", induk:"31.71", berlaku:"01/01/2020", oleh:"Lojita — A. Nurcahyo" },
-  { kode:"32.73.27",      nama:"KEC. GEDEBAGE",        tingkat:"Kecamatan", induk:"32.73", berlaku:"01/04/2026", oleh:"Lojita — A. Nurcahyo" },
-  { kode:"33.74.01",      nama:"KEC. SEMARANG TENGAH", tingkat:"Kecamatan", induk:"33.74", berlaku:"01/01/2020", oleh:"Lojita — A. Nurcahyo" },
-  { kode:"35.15.01",      nama:"KEC. SIDOARJO",        tingkat:"Kecamatan", induk:"35.15", berlaku:"01/01/2020", oleh:"Lojita — A. Nurcahyo" },
-  { kode:"35.78.09",      nama:"KEC. SUKOMANUNGGAL",   tingkat:"Kecamatan", induk:"35.78", berlaku:"01/01/2020", oleh:"Lojita — A. Nurcahyo" },
+  { kode:"31.71.01",      nama:"KEC. GAMBIR",          tingkat:"Kecamatan", induk:"31.71", berlaku:"01/01/2020", mekanisme:"Satuan", oleh:"Lojita — A. Nurcahyo" },
+  { kode:"32.73.27",      nama:"KEC. GEDEBAGE",        tingkat:"Kecamatan", induk:"32.73", berlaku:"01/04/2026", mekanisme:"Satuan", oleh:"Lojita — A. Nurcahyo" },
+  { kode:"33.74.01",      nama:"KEC. SEMARANG TENGAH", tingkat:"Kecamatan", induk:"33.74", berlaku:"01/01/2020", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo" },
+  { kode:"35.15.01",      nama:"KEC. SIDOARJO",        tingkat:"Kecamatan", induk:"35.15", berlaku:"01/01/2020", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo" },
+  { kode:"35.78.09",      nama:"KEC. SUKOMANUNGGAL",   tingkat:"Kecamatan", induk:"35.78", berlaku:"01/01/2020", mekanisme:"Satuan", oleh:"Lojita — A. Nurcahyo" },
 
-  { kode:"31.71.01.1001", nama:"KEL. GAMBIR",          tingkat:"Kelurahan", induk:"31.71", berlaku:"01/01/2020", oleh:"Lojita — A. Nurcahyo" },
-  { kode:"35.15.01.1001", nama:"KEL. SIDOKARE",        tingkat:"Kelurahan", induk:"35.15", berlaku:"01/01/2020", oleh:"Lojita — A. Nurcahyo" },
-  { kode:"35.78.09.1001", nama:"KEL. SUKOMANUNGGAL",   tingkat:"Kelurahan", induk:"35.78", berlaku:"01/01/2020", oleh:"Lojita — A. Nurcahyo" }
+  { kode:"31.71.01.1001", nama:"KEL. GAMBIR",          tingkat:"Kelurahan", induk:"31.71", berlaku:"01/01/2020", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo" },
+  { kode:"35.15.01.1001", nama:"KEL. SIDOKARE",        tingkat:"Kelurahan", induk:"35.15", berlaku:"01/01/2020", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo" },
+  { kode:"35.78.09.1001", nama:"KEL. SUKOMANUNGGAL",   tingkat:"Kelurahan", induk:"35.78", berlaku:"01/01/2020", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo" }
 ];
 
 /* Isi berkas contoh yang "terbaca" saat Tambah Daerah mekanisme Kolektif,

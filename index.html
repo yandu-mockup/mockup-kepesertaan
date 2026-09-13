@@ -71,7 +71,6 @@
     </button>
     <div class="nav-children" id="nav-referensi-children">
       <button class="nav-item nav-child" data-go="unor">Unit Organisasi (UNOR) <span class="tag">New</span></button>
-      <button class="nav-item nav-child" data-go="ref-kolektif">Kolektif <span class="tag">New</span></button>
       <button class="nav-item nav-child" data-go="status-peserta">Status Peserta <span class="tag">New</span></button>
       <button class="nav-item nav-child" data-go="batas-usia-pensiun">Batas Usia Pensiun <span class="tag">New</span></button>
       <button class="nav-item nav-child" data-go="satuan-kerja">Satuan Kerja <span class="tag">New</span></button>
@@ -2844,158 +2843,6 @@
         </div>
       </section>
 
-      <!-- ---------- REFERENSI DATA KEPESERTAAN — KOLEKTIF ---------- -->
-      <section class="screen" id="s-ref-kolektif">
-        <div class="crumb" id="rk-crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pengelolaan Referensi Data Kepesertaan</span><span>›</span><b>Kolektif</b></div>
-
-        <!-- ===== Daftar Referensi Kolektif (tampilan awal) ===== -->
-        <div id="rk-list-view">
-          <div class="page-head">
-            <div>
-              <h1 class="page-title">Kolektif</h1>
-              <div class="page-sub">Penambahan data referensi kepesertaan sekaligus banyak baris lewat unggah berkas Excel.</div>
-            </div>
-            <button class="btn btn-primary" id="rk-tambah">+ Tambah Referensi Kolektif</button>
-          </div>
-
-          <div class="card">
-            <div class="grid3">
-              <div class="field" style="margin-bottom:0">
-                <label class="fl caps" for="rk-f-jenis">Jenis Referensi</label>
-                <select class="inp" id="rk-f-jenis">
-                  <option value="all">Semua Jenis Referensi</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-actions">
-              <button class="btn btn-primary" id="rk-cari">Cari</button>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="toolbar" style="justify-content:space-between">
-              <div style="display:flex;align-items:center;gap:10px">
-                <h2 class="card-title" style="margin:0">Daftar Referensi Kolektif</h2>
-                <span class="pill pill-info" id="rk-badge">0 jenis</span>
-              </div>
-              <button class="btn btn-ghost" id="rk-export">⭳ Export Excel</button>
-            </div>
-            <div class="tbl-wrap">
-              <table>
-                <thead><tr>
-                  <th>No</th><th>Jenis Referensi</th><th>Jumlah Berkas</th><th>Aksi</th>
-                </tr></thead>
-                <tbody id="rk-body"></tbody>
-              </table>
-            </div>
-            <div class="tbl-note" id="rk-count"></div>
-          </div>
-        </div>
-
-        <!-- ===== Detail berkas per Jenis Referensi ===== -->
-        <div id="rk-detail-view" style="display:none">
-          <div class="page-head">
-            <div>
-              <h1 class="page-title" id="rkd-title">Detail Referensi Kolektif</h1>
-              <div class="page-sub" id="rkd-sub">Daftar berkas yang pernah diunggah untuk jenis referensi ini.</div>
-            </div>
-            <button class="btn btn-ghost" id="rkd-kembali">← Kembali</button>
-          </div>
-
-          <div class="card">
-            <h2 class="section-title">Berkas Terunggah</h2>
-            <div class="tbl-wrap">
-              <table>
-                <thead><tr>
-                  <th>No</th><th>Nama Berkas</th><th>Tanggal Unggah</th>
-                  <th>Jumlah Baris</th><th>Diunggah Oleh</th><th>Status</th>
-                </tr></thead>
-                <tbody id="rkd-body"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- ===== Tambah Referensi Kolektif ===== -->
-        <div id="rk-form-view" style="display:none">
-          <div class="page-head">
-            <div>
-              <h1 class="page-title">Tambah Referensi Kolektif</h1>
-              <div class="page-sub">Unggah berkas referensi lebih dulu, lalu periksa hasil validasinya sebelum disimpan.</div>
-            </div>
-          </div>
-
-          <div class="stepper stepper-pill" id="rkf-stepper"></div>
-
-          <!-- ===== langkah 1: Unggah Referensi ===== -->
-          <div class="card" id="rkf-step-1">
-            <h2 class="section-title">Unggah Referensi</h2>
-            <div class="alert alert-info"><span>ⓘ</span><span>Template yang dipakai menyesuaikan <b>Jenis Referensi</b> yang dipilih. Isi berkas di luar kolom template akan diabaikan saat validasi.</span></div>
-
-            <div class="grid2">
-              <div class="field">
-                <label class="fl" for="rkf-jenis">Pilih Jenis Referensi <span class="req">*</span></label>
-                <select class="inp" id="rkf-jenis">
-                  <option value="">— Silahkan Pilih Jenis Referensi —</option>
-                </select>
-              </div>
-              <div class="field">
-                <label class="fl" for="rkf-template">Template Referensi</label>
-                <div style="display:flex;gap:8px">
-                  <input class="inp" id="rkf-template" readonly style="flex:1" placeholder="Menyesuaikan Jenis Referensi">
-                  <button class="btn btn-ghost" id="rkf-btn-template" style="flex-shrink:0" disabled>⤓ Unduh</button>
-                </div>
-                <div class="hint" id="rkf-template-hint">Pilih Jenis Referensi lebih dulu untuk mengunduh templatenya.</div>
-              </div>
-            </div>
-
-            <div class="field">
-              <label class="fl">Unggah Berkas Referensi <span class="req">*</span></label>
-              <div class="dropzone" id="rkf-dropzone">
-                <div style="font-size:26px;color:var(--slate);margin-bottom:10px">☁⬆</div>
-                <div style="font-weight:600;margin-bottom:4px" id="rkf-file-title">Tarik file ke sini atau klik untuk memilih</div>
-                <div class="hint" style="margin:0" id="rkf-file-sub">Format .xlsx, maksimal 5 MB</div>
-              </div>
-            </div>
-
-            <div class="form-actions split">
-              <button class="btn btn-ghost" id="rkf-batal">← Kembali</button>
-              <button class="btn btn-primary" id="rkf-lanjut" disabled>Selanjutnya ›</button>
-            </div>
-          </div>
-
-          <!-- ===== langkah 2: Validasi dan Submit ===== -->
-          <div class="card" id="rkf-step-2" style="display:none">
-            <h2 class="section-title">Validasi dan Submit</h2>
-
-            <div class="metrics m3" id="rkf-metrics"></div>
-
-            <div class="alert alert-bad" id="rkf-alert-bad" style="display:none">
-              <span>⚠</span><span>Masih ada baris yang error. Perbaiki baris tersebut pada berkas Excel lalu unggah ulang — tombol Simpan aktif setelah seluruh baris lolos validasi.</span>
-            </div>
-            <div class="alert alert-ok" id="rkf-alert-ok" style="display:none">
-              <span>✓</span><span>Seluruh baris lolos validasi dan siap disimpan ke referensi data kepesertaan.</span>
-            </div>
-
-            <div class="toolbar" style="justify-content:space-between;margin:22px 0 10px">
-              <h3 style="margin:0;font-size:13px;font-weight:600" id="rkf-tabel-judul">Hasil Validasi Berkas</h3>
-              <button class="btn btn-ghost btn-sm" id="rkf-export">▤ Export Excel</button>
-            </div>
-            <div class="tbl-wrap">
-              <table>
-                <thead><tr id="rkf-hasil-head"></tr></thead>
-                <tbody id="rkf-hasil-body"></tbody>
-              </table>
-            </div>
-
-            <div class="form-actions split">
-              <button class="btn btn-ghost" id="rkf-validasi-kembali">← Kembali</button>
-              <button class="btn btn-primary" id="rkf-simpan">Simpan</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <!-- ---------- REFERENSI DATA KEPESERTAAN — STATUS PESERTA ---------- -->
       <section class="screen" id="s-status-peserta">
         <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pengelolaan Referensi Data Kepesertaan</span><span>›</span><b>Status Peserta</b></div>
@@ -3072,7 +2919,6 @@
           <div class="toolbar" style="justify-content:space-between">
             <div style="display:flex;align-items:center;gap:10px">
               <h2 class="card-title" style="margin:0">Daftar Batas Usia Pensiun</h2>
-              <span class="pill pill-info" id="bup-badge">0 entri</span>
             </div>
             <button class="btn btn-ghost" id="bup-export">⭳ Export Excel</button>
           </div>
@@ -3114,6 +2960,14 @@
                   <option value="all">Semua Unit Organisasi</option>
                 </select>
               </div>
+              <div class="field" style="margin-bottom:0">
+                <label class="fl caps" for="skr-f-mekanisme">Mekanisme Tambah Referensi</label>
+                <select class="inp" id="skr-f-mekanisme">
+                  <option value="all">Semua Mekanisme</option>
+                  <option>Satuan</option>
+                  <option>Kolektif</option>
+                </select>
+              </div>
             </div>
             <div class="form-actions">
               <button class="btn btn-primary" id="skr-cari">Cari</button>
@@ -3124,7 +2978,6 @@
             <div class="toolbar" style="justify-content:space-between">
               <div style="display:flex;align-items:center;gap:10px">
                 <h2 class="card-title" style="margin:0">Daftar Satuan Kerja</h2>
-                <span class="pill pill-info" id="skr-badge">0 entri</span>
               </div>
               <button class="btn btn-ghost" id="skr-export">⭳ Export Excel</button>
             </div>
@@ -3132,7 +2985,7 @@
               <table>
                 <thead><tr>
                   <th>No</th><th>Kode Satuan Kerja</th><th>Nama Satuan Kerja</th><th>Unit Organisasi</th>
-                  <th>Kode KPPN</th><th>Tanggal Buat</th><th>Aksi</th>
+                  <th>Tanggal Buat</th><th>Aksi</th>
                 </tr></thead>
                 <tbody id="skr-body"></tbody>
               </table>
@@ -3236,6 +3089,14 @@
                   <option value="all">Semua Tingkat</option>
                 </select>
               </div>
+              <div class="field" style="margin-bottom:0">
+                <label class="fl caps" for="drh-f-mekanisme">Mekanisme Tambah Referensi</label>
+                <select class="inp" id="drh-f-mekanisme">
+                  <option value="all">Semua Mekanisme</option>
+                  <option>Satuan</option>
+                  <option>Kolektif</option>
+                </select>
+              </div>
             </div>
             <div class="form-actions">
               <button class="btn btn-primary" id="drh-cari">Cari</button>
@@ -3246,7 +3107,6 @@
             <div class="toolbar" style="justify-content:space-between">
               <div style="display:flex;align-items:center;gap:10px">
                 <h2 class="card-title" style="margin:0">Daftar Daerah</h2>
-                <span class="pill pill-info" id="drh-badge">0 entri</span>
               </div>
               <button class="btn btn-ghost" id="drh-export">⭳ Export Excel</button>
             </div>
@@ -3254,7 +3114,7 @@
               <table>
                 <thead><tr>
                   <th>No</th><th>Kode Daerah</th><th>Nama Daerah</th><th>Tingkat</th>
-                  <th>Induk Daerah</th><th>Berlaku Sejak</th><th>Aksi</th>
+                  <th>Berlaku Sejak</th><th>Aksi</th>
                 </tr></thead>
                 <tbody id="drh-body"></tbody>
               </table>
