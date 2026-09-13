@@ -8621,9 +8621,8 @@ initPesertaNd();
 const refRows = DATA_REFERENSI;
 
 /* ========================= PENGELOLAAN REFERENSI DATA KEPESERTAAN » UNOR
-   Pemeliharaan daftar Unit Organisasi. Pencarian memakai pasangan Jenis
-   Pencarian + Nilai Pencarian (bukan satu kotak bebas) supaya sejalan dengan
-   layar pemeliharaan referensi lain, ditambah rentang Tanggal Buat.
+   Pemeliharaan daftar Unit Organisasi. Pencarian memakai Kode dan Nama Unit
+   Organisasi secara terpisah, ditambah rentang Tanggal Buat.
    Kode UNOR harus unik — dicek saat tambah maupun ubah. */
 let unorRows = DATA_UNOR.map((u, i) => ({ ...u, _id: i }));
 
@@ -8649,32 +8648,27 @@ function unorTglInput(v) {
   const [y, m, d] = v.split("-").map(Number);
   return new Date(y, m - 1, d);
 }
+/* Tanggal Buat (dd/mm/yyyy) ada di rentang filter Tanggal Buat (Dari)–(Sampai);
+   batas yang dikosongkan diabaikan. Dipakai UNOR, Status Peserta, dan Batas
+   Usia Pensiun. */
+function refDalamRentang(dmy, dari, sampai) {
+  const t = unorTanggal(dmy).d;
+  return !(dari && t < unorTglInput(dari)) && !(sampai && t > unorTglInput(sampai));
+}
 function unorKodeTerpakai(kode, kecualiId) {
   return unorRows.some(u => u._id !== kecualiId && u.kode.toUpperCase() === kode.toUpperCase());
 }
 
-function isiPilihanUnor() {
-  $("#unor-f-jenis").innerHTML = `<option value="">- Silakan Pilih Jenis Pencarian -</option>`
-    + UNOR_JENIS_CARI.map(j => `<option value="${j.key}">${esc(j.label)}</option>`).join("");
-}
-
 function unorBarisTersaring() {
-  const jenis  = $("#unor-f-jenis").value;
-  const nilai  = ($("#unor-f-nilai").value || "").trim().toLowerCase();
+  const kode   = ($("#unor-f-kode").value || "").trim().toLowerCase();
+  const nama   = ($("#unor-f-nama").value || "").trim().toLowerCase();
   const dari   = $("#unor-f-dari").value;
   const sampai = $("#unor-f-sampai").value;
 
-  return unorRows.filter(u => {
-    if (nilai) {
-      /* Jenis Pencarian kosong = cari di semua kolom. */
-      const kolom = jenis ? [u[jenis]] : [u.kode, u.nama, u.deskripsi];
-      if (!kolom.some(v => (v || "").toLowerCase().includes(nilai))) return false;
-    }
-    const t = unorTanggal(u.tgl).d;
-    if (dari   && t < unorTglInput(dari))   return false;
-    if (sampai && t > unorTglInput(sampai)) return false;
-    return true;
-  });
+  return unorRows.filter(u =>
+    (!kode || u.kode.toLowerCase().includes(kode)) &&
+    (!nama || u.nama.toLowerCase().includes(nama)) &&
+    refDalamRentang(u.tgl, dari, sampai));
 }
 
 function unorPaginationHtml(totalPages) {
@@ -8835,8 +8829,12 @@ function stpIsiFilter() {
 }
 
 function stpBarisTersaring() {
-  const f = $("#stp-f-status").value;
-  return stpRows.filter(s => f === "all" || s.status === f);
+  const status = $("#stp-f-status").value;
+  const dari   = $("#stp-f-dari").value;
+  const sampai = $("#stp-f-sampai").value;
+  return stpRows.filter(s =>
+    (status === "all" || s.status === status) &&
+    refDalamRentang(s.tgl, dari, sampai));
 }
 
 function renderStatusPeserta() {
@@ -8945,17 +8943,39 @@ let bupRows = DATA_BUP.map((b, i) => ({ ...b, _id: i }));
 
 function bupBolehKelola() { return roleSaatIni() === ROLE_DIVISI; }
 
+/* Filter Angkatan dan Pangkat/Golongan. Pilihan Pangkat/Golongan mengikuti
+   Angkatan yang dipilih dan hanya menampilkan yang ada di daftar, berurutan
+   sesuai BUP_GOLONGAN (pangkat terendah lebih dulu). */
 function bupIsiFilter() {
-  const sel = $("#bup-f-nilai");
+  const sel = $("#bup-f-angkatan");
   const dipilih = sel.value || "all";
-  sel.innerHTML = `<option value="all">Semua Batas Usia Pensiun</option>`
-    + bupRows.map(b => `<option>${esc(b.bup)}</option>`).join("");
-  sel.value = bupRows.some(b => b.bup === dipilih) ? dipilih : "all";
+  sel.innerHTML = `<option value="all">Semua Angkatan</option>`
+    + BUP_ANGKATAN.map(a => `<option>${esc(a)}</option>`).join("");
+  sel.value = BUP_ANGKATAN.includes(dipilih) ? dipilih : "all";
+  bupIsiFilterGol();
+}
+
+function bupIsiFilterGol() {
+  const angkatan = $("#bup-f-angkatan").value;
+  const sel      = $("#bup-f-gol");
+  const dipilih  = sel.value || "all";
+  const urutan   = angkatan === "all" ? BUP_ANGKATAN.flatMap(a => BUP_GOLONGAN[a]) : BUP_GOLONGAN[angkatan];
+  const terpakai = new Set(bupRows.filter(b => angkatan === "all" || b.angkatan === angkatan).map(b => b.golongan));
+  const daftar   = [...new Set(urutan)].filter(g => terpakai.has(g));
+  sel.innerHTML = `<option value="all">Semua Pangkat/Golongan</option>`
+    + daftar.map(g => `<option>${esc(g)}</option>`).join("");
+  sel.value = daftar.includes(dipilih) ? dipilih : "all";
 }
 
 function bupBarisTersaring() {
-  const f = $("#bup-f-nilai").value;
-  return bupRows.filter(b => f === "all" || b.bup === f);
+  const angkatan = $("#bup-f-angkatan").value;
+  const golongan = $("#bup-f-gol").value;
+  const dari     = $("#bup-f-dari").value;
+  const sampai   = $("#bup-f-sampai").value;
+  return bupRows.filter(b =>
+    (angkatan === "all" || b.angkatan === angkatan) &&
+    (golongan === "all" || b.golongan === golongan) &&
+    refDalamRentang(b.tgl, dari, sampai));
 }
 
 function renderBup() {
@@ -8967,47 +8987,47 @@ function renderBup() {
     <tr>
       <td>${i + 1}</td>
       <td>${esc(unorTanggal(b.tgl).panjang)}</td>
+      <td>${esc(b.angkatan || "-")}</td>
+      <td>${esc(b.golongan || "-")}</td>
       <td class="t-strong">${esc(b.bup)}</td>
       <td style="white-space:nowrap">${boleh ? `
         <button class="btn btn-info btn-sm" data-bup-ubah="${b._id}">✎ Ubah</button>
         <button class="btn btn-danger btn-sm" data-bup-hapus="${b._id}" title="Hapus Batas Usia Pensiun">⌫</button>` : "—"}
       </td>
     </tr>`).join("")
-    : `<tr><td colspan="4"><div class="empty"><h4>Tidak ada batas usia pensiun</h4><p>Ubah filter Batas Usia Pensiun, atau tambahkan lewat tombol Tambah Batas Usia Pensiun.</p></div></td></tr>`;
+    : `<tr><td colspan="6"><div class="empty"><h4>Tidak ada batas usia pensiun</h4><p>Ubah filter pencarian, atau tambahkan lewat tombol Tambah Batas Usia Pensiun.</p></div></td></tr>`;
 
   $("#bup-tambah").style.display = boleh ? "" : "none";
   $("#bup-count").textContent    = `Menampilkan ${rows.length} dari ${bupRows.length} batas usia pensiun.`;
 }
 
-/* Modal Tambah dan Ubah memakai form yang sama. Data contoh lama hanya
-   menyimpan teks (mis. "BUP Perwira TNI — 58 Tahun") tanpa Angkatan dan
-   Golongan: angka tahunnya diambil dari teks itu, dan Angkatan/Golongan
-   diminta dilengkapi sebelum disimpan. */
+$("#bup-f-angkatan").onchange = () => bupIsiFilterGol();
+
+/* Modal Tambah dan Ubah memakai form yang sama. Field Pangkat/Golongan baru
+   tampil setelah Angkatan dipilih, dan pilihannya mengikuti Angkatan tersebut
+   (BUP_GOLONGAN). Satu Angkatan + Pangkat/Golongan hanya boleh punya satu
+   batas usia pensiun. */
 function bupForm(judul, sub, awal, simpan) {
   const usiaAwal = ((awal.bup || "").match(/(\d+)\s*Tahun/) || [])[1] || "";
-  const dataLama = awal._id !== undefined && !awal.angkatan;
 
   $("#modal-title").textContent = judul;
   $("#modal-sub").textContent   = sub;
   $("#modal-body").innerHTML = `
-    ${dataLama ? `<div class="alert alert-info"><span>ⓘ</span><span>Entri ini belum mencatat Angkatan dan Golongan. Lengkapi keduanya sebelum menyimpan.</span></div>` : ""}
     <div class="grid2">
       <div class="field">
-        <label class="fl">Angkatan <span class="req">*</span></label>
+        <label class="fl" for="bup-m-angkatan">Angkatan <span class="req">*</span></label>
         <select class="inp" id="bup-m-angkatan">
           <option value="">Pilih Angkatan</option>
           ${BUP_ANGKATAN.map(a => `<option${a === awal.angkatan ? " selected" : ""}>${esc(a)}</option>`).join("")}
         </select>
       </div>
-      <div class="field" id="bup-m-gol-field">
-        <label class="fl">Golongan <span class="req">*</span></label>
-        <select class="inp" id="bup-m-gol" disabled>
-          <option value="">Pilih Angkatan lebih dulu</option>
-        </select>
+      <div class="field" id="bup-m-gol-field" style="display:none">
+        <label class="fl" for="bup-m-gol">Pangkat/Golongan <span class="req">*</span></label>
+        <select class="inp" id="bup-m-gol"></select>
       </div>
     </div>
     <div class="field" style="margin-bottom:0">
-      <label class="fl">Batas Usia Pensiun <span class="req">*</span></label>
+      <label class="fl" for="bup-m-nilai">Batas Usia Pensiun <span class="req">*</span></label>
       <div style="display:flex;align-items:center;gap:8px">
         <input class="inp" type="number" id="bup-m-nilai" min="1" max="99" value="${esc(usiaAwal)}" placeholder="Contoh: 58">
         <span style="color:var(--muted)">Tahun</span>
@@ -9019,16 +9039,11 @@ function bupForm(judul, sub, awal, simpan) {
     </div>`;
   openModal();
 
-  /* Golongan mengikuti Angkatan; ASN tidak punya Golongan sehingga fieldnya
-     disembunyikan. Sebelum Angkatan dipilih, field tetap tampil tapi mati. */
   const isiGolongan = (angkatan, dipilih) => {
-    const daftar = BUP_GOLONGAN[angkatan];
-    const sel    = $("#bup-m-gol");
-    $("#bup-m-gol-field").style.display = !angkatan || daftar ? "" : "none";
-    sel.disabled  = !daftar;
-    sel.innerHTML = daftar
-      ? `<option value="">Pilih Golongan</option>` + daftar.map(g => `<option${g === dipilih ? " selected" : ""}>${esc(g)}</option>`).join("")
-      : `<option value="">Pilih Angkatan lebih dulu</option>`;
+    const daftar = BUP_GOLONGAN[angkatan] || [];
+    $("#bup-m-gol-field").style.display = angkatan ? "" : "none";
+    $("#bup-m-gol").innerHTML = `<option value="">Pilih Pangkat/Golongan</option>`
+      + daftar.map(g => `<option${g === dipilih ? " selected" : ""}>${esc(g)}</option>`).join("");
   };
   isiGolongan(awal.angkatan || "", awal.golongan || "");
   $("#bup-m-angkatan").onchange = () => isiGolongan($("#bup-m-angkatan").value, "");
@@ -9039,16 +9054,14 @@ function bupForm(judul, sub, awal, simpan) {
     const golongan = $("#bup-m-gol").value;
     const usia     = $("#bup-m-nilai").value.trim();
     if (!angkatan) { toast("Angkatan wajib dipilih.", "bad"); return; }
-    if (BUP_GOLONGAN[angkatan] && !golongan) { toast("Golongan wajib dipilih.", "bad"); return; }
+    if (!golongan) { toast("Pangkat/Golongan wajib dipilih.", "bad"); return; }
     if (!usia) { toast("Batas Usia Pensiun wajib diisi.", "bad"); return; }
     if (!/^\d+$/.test(usia) || +usia < 1) { toast("Batas Usia Pensiun harus berupa angka tahun.", "bad"); return; }
-    const nilai = `${+usia} Tahun`;
-    const gol   = BUP_GOLONGAN[angkatan] ? golongan : "";
-    if (bupRows.some(b => b._id !== awal._id && b.angkatan === angkatan && (b.golongan || "") === gol && b.bup.toLowerCase() === nilai.toLowerCase())) {
-      toast("Batas usia pensiun tersebut sudah terdaftar.", "bad");
+    if (bupRows.some(b => b._id !== awal._id && b.angkatan === angkatan && b.golongan === golongan)) {
+      toast(`Batas usia pensiun untuk ${angkatan} ${golongan} sudah terdaftar.`, "bad");
       return;
     }
-    simpan({ angkatan, golongan: gol, bup: nilai });
+    simpan({ angkatan, golongan, bup: `${+usia} Tahun` });
   };
 }
 
@@ -9790,7 +9803,6 @@ function sppDaftarkanPeserta(r) {
 sppRows.filter(r => r.status === "Disetujui").forEach(sppDaftarkanPeserta);
 
 
-isiPilihanUnor();
 renderUnor();
 renderStatusPeserta();
 renderBup();

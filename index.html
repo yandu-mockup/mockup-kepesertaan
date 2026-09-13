@@ -2796,14 +2796,12 @@
         <div class="card">
           <div class="grid2">
             <div class="field" style="margin-bottom:0">
-              <label class="fl caps" for="unor-f-jenis">Jenis Pencarian</label>
-              <select class="inp" id="unor-f-jenis">
-                <option value="">- Silakan Pilih Jenis Pencarian -</option>
-              </select>
+              <label class="fl caps" for="unor-f-kode">Kode Unit Organisasi</label>
+              <input class="inp" id="unor-f-kode" placeholder="Masukkan kode unit organisasi...">
             </div>
             <div class="field" style="margin-bottom:0">
-              <label class="fl caps" for="unor-f-nilai">Nilai Pencarian</label>
-              <input class="inp" id="unor-f-nilai" placeholder="Masukkan kata kunci pencarian...">
+              <label class="fl caps" for="unor-f-nama">Nama Unit Organisasi</label>
+              <input class="inp" id="unor-f-nama" placeholder="Masukkan nama unit organisasi...">
             </div>
             <div class="field" style="margin-bottom:0">
               <label class="fl caps" for="unor-f-dari">Tanggal Buat (Dari)</label>
@@ -2862,6 +2860,14 @@
                 <option value="all">Semua Status Peserta</option>
               </select>
             </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="stp-f-dari">Tanggal Buat (Dari)</label>
+              <input class="inp" type="date" id="stp-f-dari">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="stp-f-sampai">Tanggal Buat (Sampai)</label>
+              <input class="inp" type="date" id="stp-f-sampai">
+            </div>
           </div>
           <div class="form-actions">
             <button class="btn btn-primary" id="stp-cari">Cari</button>
@@ -2900,12 +2906,26 @@
         </div>
 
         <div class="card">
-          <div class="grid3">
+          <div class="grid2">
             <div class="field" style="margin-bottom:0">
-              <label class="fl caps" for="bup-f-nilai">Batas Usia Pensiun</label>
-              <select class="inp" id="bup-f-nilai">
-                <option value="all">Semua Batas Usia Pensiun</option>
+              <label class="fl caps" for="bup-f-angkatan">Angkatan</label>
+              <select class="inp" id="bup-f-angkatan">
+                <option value="all">Semua Angkatan</option>
               </select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="bup-f-gol">Pangkat/Golongan</label>
+              <select class="inp" id="bup-f-gol">
+                <option value="all">Semua Pangkat/Golongan</option>
+              </select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="bup-f-dari">Tanggal Buat (Dari)</label>
+              <input class="inp" type="date" id="bup-f-dari">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="bup-f-sampai">Tanggal Buat (Sampai)</label>
+              <input class="inp" type="date" id="bup-f-sampai">
             </div>
           </div>
           <div class="form-actions">
@@ -2923,7 +2943,7 @@
           <div class="tbl-wrap">
             <table>
               <thead><tr>
-                <th>No</th><th>Tanggal Buat</th><th>Batas Usia Pensiun</th><th>Aksi</th>
+                <th>No</th><th>Tanggal Buat</th><th>Angkatan</th><th>Pangkat/Golongan</th><th>Batas Usia Pensiun</th><th>Aksi</th>
               </tr></thead>
               <tbody id="bup-body"></tbody>
             </table>

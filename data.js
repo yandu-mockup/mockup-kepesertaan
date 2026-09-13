@@ -2909,12 +2909,6 @@ const DATA_REFERENSI_BULK = {
    satu unit organisasi; `kode` unik dan memakai pola UNOR-<matra>-<urut>.
    `tgl` disimpan dd/mm/yyyy lalu ditampilkan panjang ("Sabtu, 4 Juli 2026").
    --------------------------------------------------------------------------- */
-const UNOR_JENIS_CARI = [
-  { key:"kode",      label:"Kode Unit Organisasi" },
-  { key:"nama",      label:"Nama Unit Organisasi" },
-  { key:"deskripsi", label:"Deskripsi Unit Organisasi" }
-];
-
 const DATA_UNOR = [
   { tgl:"04/07/2026", kode:"UNOR-AD-001", nama:"Markas Besar TNI Angkatan Darat (MABESAD)",                          deskripsi:"Markas Komando Utama pembinaan kekuatan dan kemampuan TNI Angkatan Darat." },
   { tgl:"04/07/2026", kode:"UNOR-KH-002", nama:"Biro Kepegawaian Sekretariat Jenderal Kemhan (ROPEG SETJEN KEMHAN)", deskripsi:"Biro pembinaan administrasi kepegawaian ASN di lingkungan Kementerian Pertahanan." },
@@ -2994,31 +2988,52 @@ const DATA_STATUS_PESERTA = [
     keterangan:"Peserta cuti di luar tanggungan negara; iuran premi dihentikan sementara." }
 ];
 
-/* Pilihan Angkatan & Golongan pada form Tambah Batas Usia Pensiun. Golongan
-   mengikuti Angkatan yang dipilih; Angkatan "ASN" tidak memakai Golongan. */
-const BUP_ANGKATAN = ["TNI-AD", "TNI-AL", "TNI-AU", "POLRI", "ASN"];
+/* Pilihan Angkatan & Pangkat/Golongan pada form Tambah Batas Usia Pensiun.
+   Pangkat/Golongan mengikuti Angkatan yang dipilih: pangkat militer/Polri
+   untuk TNI dan POLRI, golongan ruang untuk PNS (daftar yang sama dengan
+   ALIH_STATUS_GOL). Urutan dari yang terendah. */
+const BUP_ANGKATAN = ["TNI-AD", "TNI-AL", "TNI-AU", "POLRI", "PNS"];
 const BUP_GOLONGAN = {
-  "TNI-AD": ["TAMTAMA", "BINTARA", "PAMA", "PAMEN", "PATI"],
-  "TNI-AL": ["TAMTAMA", "BINTARA", "PAMA", "PAMEN", "PATI"],
-  "TNI-AU": ["TAMTAMA", "BINTARA", "PAMA", "PAMEN", "PATI"],
-  "POLRI":  ["TAMTAMA", "BINTARA", "PAMA", "PAMEN", "PATI"]
+  "TNI-AD": ["PRADA", "PRATU", "PRAKA", "KOPDA", "KOPTU", "KOPKA",
+             "SERDA", "SERTU", "SERKA", "SERMA", "PELDA", "PELTU",
+             "LETDA", "LETTU", "KAPTEN", "MAYOR", "LETKOL", "KOLONEL",
+             "BRIGJEN", "MAYJEN", "LETJEN", "JENDERAL"],
+  "TNI-AL": ["KLD", "KLS", "KLK", "KOPDA", "KOPTU", "KOPKA",
+             "SERDA", "SERTU", "SERKA", "SERMA", "PELDA", "PELTU",
+             "LETDA", "LETTU", "KAPTEN", "MAYOR", "LETKOL", "KOLONEL",
+             "LAKSMA", "LAKSDA", "LAKSDYA", "LAKSAMANA"],
+  "TNI-AU": ["PRADA", "PRATU", "PRAKA", "KOPDA", "KOPTU", "KOPKA",
+             "SERDA", "SERTU", "SERKA", "SERMA", "PELDA", "PELTU",
+             "LETDA", "LETTU", "KAPTEN", "MAYOR", "LETKOL", "KOLONEL",
+             "MARSMA", "MARSDA", "MARSDYA", "MARSEKAL"],
+  "POLRI":  ["BHARADA", "BHARATU", "BHARAKA", "ABRIPDA", "ABRIPTU", "ABRIP",
+             "BRIPDA", "BRIPTU", "BRIGPOL", "BRIPKA", "AIPDA", "AIPTU",
+             "IPDA", "IPTU", "AKP", "KOMPOL", "AKBP", "KOMBES POL",
+             "BRIGJEN POL", "IRJEN POL", "KOMJEN POL", "JENDERAL POL"],
+  "PNS":    ALIH_STATUS_GOL
 };
 
+/* Satu baris = batas usia pensiun untuk satu Pangkat/Golongan pada satu
+   Angkatan; kombinasi `angkatan` + `golongan` unik. `bup` = "<n> Tahun". */
 const DATA_BUP = [
-  { tgl:"04/07/2026", bup:"BUP Tamtama & Bintara TNI — 53 Tahun",                 oleh:"Lojita — A. Nurcahyo",
+  { tgl:"04/07/2026", angkatan:"TNI-AD", golongan:"SERMA",      bup:"53 Tahun", oleh:"Lojita — A. Nurcahyo",
     keterangan:"Dasar: UU No. 34 Tahun 2004 tentang Tentara Nasional Indonesia." },
-  { tgl:"04/07/2026", bup:"BUP Perwira TNI — 58 Tahun",                           oleh:"Lojita — A. Nurcahyo",
+  { tgl:"04/07/2026", angkatan:"TNI-AD", golongan:"KOLONEL",    bup:"58 Tahun", oleh:"Lojita — A. Nurcahyo",
     keterangan:"Dasar: UU No. 34 Tahun 2004 tentang Tentara Nasional Indonesia." },
-  { tgl:"04/07/2026", bup:"BUP Anggota POLRI — 58 Tahun",                         oleh:"Lojita — A. Nurcahyo",
+  { tgl:"04/07/2026", angkatan:"POLRI",  golongan:"BRIPKA",     bup:"58 Tahun", oleh:"Lojita — A. Nurcahyo",
     keterangan:"Dasar: UU No. 2 Tahun 2002 tentang Kepolisian Negara Republik Indonesia." },
-  { tgl:"18/07/2026", bup:"BUP Perwira POLRI Berkeahlian Khusus — 60 Tahun",      oleh:"Lojita — R. Prasetyo",
-    keterangan:"Dasar: UU No. 2 Tahun 2002; berlaku untuk fungsi teknis tertentu atas persetujuan Kapolri." },
-  { tgl:"18/07/2026", bup:"BUP ASN Jabatan Administrasi — 58 Tahun",              oleh:"Lojita — R. Prasetyo",
-    keterangan:"Dasar: UU No. 20 Tahun 2023 tentang Aparatur Sipil Negara." },
-  { tgl:"03/08/2026", bup:"BUP ASN Jabatan Fungsional Madya — 60 Tahun",          oleh:"Lojita — S. Wijayanti",
-    keterangan:"Dasar: UU No. 20 Tahun 2023 tentang Aparatur Sipil Negara." },
-  { tgl:"03/08/2026", bup:"BUP ASN Jabatan Pimpinan Tinggi — 60 Tahun",           oleh:"Lojita — S. Wijayanti",
-    keterangan:"Dasar: UU No. 20 Tahun 2023 tentang Aparatur Sipil Negara." }
+  { tgl:"18/07/2026", angkatan:"POLRI",  golongan:"KOMBES POL", bup:"60 Tahun", oleh:"Lojita — R. Prasetyo",
+    keterangan:"Dasar: UU No. 2 Tahun 2002; perwira berkeahlian khusus atas persetujuan Kapolri." },
+  { tgl:"18/07/2026", angkatan:"PNS",    golongan:"GOL.III/A",  bup:"58 Tahun", oleh:"Lojita — R. Prasetyo",
+    keterangan:"Dasar: UU No. 20 Tahun 2023 tentang Aparatur Sipil Negara (jabatan administrasi)." },
+  { tgl:"21/07/2026", angkatan:"TNI-AL", golongan:"KOPKA",      bup:"53 Tahun", oleh:"Lojita — S. Wijayanti",
+    keterangan:"Dasar: UU No. 34 Tahun 2004 tentang Tentara Nasional Indonesia." },
+  { tgl:"21/07/2026", angkatan:"TNI-AU", golongan:"MAYOR",      bup:"58 Tahun", oleh:"Lojita — S. Wijayanti",
+    keterangan:"Dasar: UU No. 34 Tahun 2004 tentang Tentara Nasional Indonesia." },
+  { tgl:"03/08/2026", angkatan:"PNS",    golongan:"GOL.IV/A",   bup:"60 Tahun", oleh:"Lojita — S. Wijayanti",
+    keterangan:"Dasar: UU No. 20 Tahun 2023 tentang Aparatur Sipil Negara (jabatan fungsional madya)." },
+  { tgl:"03/08/2026", angkatan:"PNS",    golongan:"GOL.IV/E",   bup:"60 Tahun", oleh:"Lojita — S. Wijayanti",
+    keterangan:"Dasar: UU No. 20 Tahun 2023 tentang Aparatur Sipil Negara (jabatan pimpinan tinggi)." }
 ];
 
 /* ---------------------------------------------------------------------------
