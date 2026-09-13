@@ -5009,6 +5009,7 @@ let asRows = DATA_ALIH_STATUS_PENGAJUAN
    Nomor yang tampil selalu 1, 2, 3, … sesuai posisi baris di layar. */
 const AS_KOLOM = [
   { key:"no",        label:"No" },
+  { key:"mekanisme", label:"Mekanisme Alih Status Peserta" },
   { key:"nrpBaru",   label:"NRP/NIP Baru" },
   { key:"nrpLama",   label:"NRP/NIP Lama" },
   { key:"nama",      label:"Nama Peserta" },
@@ -5053,13 +5054,15 @@ function asPaginationHtml(totalPages) {
 
 /* Filter "Peserta" mencocokkan nama, KTA, KPA, maupun NRP/NIP (baru atau lama). */
 function asBarisTersaring() {
-  const fPeserta = ($("#as-f-peserta").value || "").trim().toLowerCase();
-  const fPindah  = $("#as-f-tgl-pindah").value;
-  const fDari    = $("#as-f-pengajuan-dari").value;
-  const fSampai  = $("#as-f-pengajuan-sampai").value;
+  const fPeserta   = ($("#as-f-peserta").value || "").trim().toLowerCase();
+  const fMekanisme = $("#as-f-mekanisme").value;
+  const fPindah    = $("#as-f-tgl-pindah").value;
+  const fDari      = $("#as-f-pengajuan-dari").value;
+  const fSampai    = $("#as-f-pengajuan-sampai").value;
 
   return asRows.filter(r =>
     (!fPeserta || [r.nama, r.kta, r.kpa, r.nrpBaru, r.nrpLama].some(v => (v || "").toLowerCase().includes(fPeserta))) &&
+    (fMekanisme === "all" || r.mekanisme === fMekanisme) &&
     (!fPindah || r.tglPindah === fPindah) &&
     (!fDari   || r.tglPengajuan >= fDari) &&
     (!fSampai || r.tglPengajuan <= fSampai));
@@ -5088,6 +5091,7 @@ function renderAlihStatus() {
   $("#as-body").innerHTML = pageRows.length ? pageRows.map((r, i) => `
     <tr>
       <td>${start + i + 1}</td>
+      <td>${esc(r.mekanisme || "—")}</td>
       <td class="t-strong">${esc(r.nrpBaru)}</td>
       <td>${esc(r.nrpLama || "—")}</td>
       <td>${esc(r.nama)}</td>
@@ -5100,7 +5104,7 @@ function renderAlihStatus() {
         <button class="btn btn-danger btn-sm" data-as-hapus="${r._id}">⌫ Hapus</button>
       </td>
     </tr>`).join("")
-    : `<tr><td colspan="9"><div class="empty"><h4>Tidak ada data</h4><p>Coba ubah filter atau kata kunci pencarian.</p></div></td></tr>`;
+    : `<tr><td colspan="10"><div class="empty"><h4>Tidak ada data</h4><p>Coba ubah filter atau kata kunci pencarian.</p></div></td></tr>`;
 
   const shownFrom = rows.length ? start + 1 : 0;
   const shownTo   = Math.min(start + AS_PAGE_SIZE, rows.length);
