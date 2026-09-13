@@ -938,10 +938,25 @@ const DATA_SPTB = [
    noRequest: Nomor Request Umum — angka urut dari sistem; boleh ada nomor
    yang terlewat (tidak harus bersambung).
    --------------------------------------------------------------------------- */
+/* Data dummy peserta untuk form Tambah Request Umum: KPA yang diketik
+   dicocokkan ke sini untuk mengisi nama, NRP/NIP, Tanggal Lahir, dan cabang.
+   Semua KPA di sini juga muncul sebagai pilihan di field KPA. */
 const RU_KPA_LOOKUP = {
-  "KPA-10023": { nama:"Budi Santoso",    nrp:"19870512001", tglLahir:"1987-05-12", cabang:"KC Jakarta Utama" },
-  "KPA-10031": { nama:"Ratna Dewi",      nrp:"19910304006", tglLahir:"1991-03-04", cabang:"KC Semarang" },
-  "KPA-10045": { nama:"Yusuf Hidayat",   nrp:"19860721007", tglLahir:"1986-07-21", cabang:"KC Palembang" }
+  "KPA-10023": { nama:"Budi Santoso",      nrp:"19870512001", tglLahir:"1987-05-12", cabang:"KC Jakarta Utama" },
+  "KPA-10031": { nama:"Ratna Dewi",        nrp:"19910304009", tglLahir:"1991-03-04", cabang:"KC Balikpapan" },
+  "KPA-10044": { nama:"Agus Setiawan",     nrp:"19880214022", tglLahir:"1988-02-14", cabang:"KC Cimahi" },
+  "KPA-10045": { nama:"Yusuf Hidayat",     nrp:"19860721007", tglLahir:"1986-07-21", cabang:"KC Palembang" },
+  "KPA-10046": { nama:"Siti Aminah",       nrp:"19930918023", tglLahir:"1993-09-18", cabang:"KC Jakarta Pusat" },
+  "KPA-10047": { nama:"Hendro Wibowo",     nrp:"19790603024", tglLahir:"1979-06-03", cabang:"KC Yogyakarta" },
+  "KPA-10048": { nama:"Dian Puspitasari",  nrp:"19920427025", tglLahir:"1992-04-27", cabang:"KC Bandung" },
+  "KPA-10049": { nama:"Rahmat Hidayat",    nrp:"19841111026", tglLahir:"1984-11-11", cabang:"KC Surabaya" },
+  "KPA-10050": { nama:"Kartika Sari",      nrp:"19960705027", tglLahir:"1996-07-05", cabang:"KC Medan" },
+  "KPA-10051": { nama:"Imam Syafii",       nrp:"19810129028", tglLahir:"1981-01-29", cabang:"KC Makassar" },
+  "KPA-10052": { nama:"Novita Anggraeni",  nrp:"19890822029", tglLahir:"1989-08-22", cabang:"KC Semarang" },
+  "KPA-10053": { nama:"Bayu Pratama",      nrp:"19950316030", tglLahir:"1995-03-16", cabang:"KC Denpasar" },
+  "KPA-10054": { nama:"Suryani Lubis",     nrp:"19771208031", tglLahir:"1977-12-08", cabang:"KC Pekanbaru" },
+  "KPA-10055": { nama:"Fajar Nugroho",     nrp:"19900610032", tglLahir:"1990-06-10", cabang:"KC Malang" },
+  "KPA-10056": { nama:"Ayu Lestari",       nrp:"19850930033", tglLahir:"1985-09-30", cabang:"KC Cimahi" }
 };
 
 /* Parameter Kategori Request Umum — daftar kategori per divisi penanggung

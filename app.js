@@ -4774,8 +4774,13 @@ function ruShowTambah() {
   $("#modal-sub").textContent   = "";
   $("#modal-body").innerHTML = `
     <div class="field">
-      <label class="fl">KPA <span class="req">*</span></label>
-      <input class="inp" id="ru-tambah-kpa" placeholder="-- Masukkan KPA --">
+      <label class="fl" for="ru-tambah-kpa">KPA <span class="req">*</span></label>
+      <input class="inp" id="ru-tambah-kpa" list="ru-tambah-kpa-list" autocomplete="off" placeholder="-- Masukkan KPA --">
+      <datalist id="ru-tambah-kpa-list">
+        ${Object.entries(RU_KPA_LOOKUP).map(([kpa, p]) =>
+          `<option value="${esc(kpa)}">${esc(p.nama)} — ${esc(p.cabang)}</option>`).join("")}
+      </datalist>
+      <div class="hint">Ketik atau pilih KPA dari daftar.</div>
     </div>
     <div class="field" id="ru-tambah-lahir-field" style="display:none">
       <label class="fl" for="ru-tambah-lahir">Tanggal Lahir</label>
