@@ -3141,52 +3141,109 @@
 
       <!-- ---------- REFERENSI DATA KEPESERTAAN — DAERAH ---------- -->
       <section class="screen" id="s-daerah">
-        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pengelolaan Referensi Data Kepesertaan</span><span>›</span><b>Daerah</b></div>
+        <div class="crumb" id="drh-crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pengelolaan Referensi Data Kepesertaan</span><span>›</span><b>Daerah</b></div>
 
-        <div class="page-head">
-          <div>
-            <h1 class="page-title">Daerah</h1>
-            <div class="page-sub">Pemeliharaan daftar daerah bertingkat (provinsi, kabupaten/kota, kecamatan) untuk alamat peserta.</div>
+        <!-- ===== Daftar Daerah (tampilan awal) ===== -->
+        <div id="drh-list-view">
+          <div class="page-head">
+            <div>
+              <h1 class="page-title">Daerah</h1>
+              <div class="page-sub">Pemeliharaan daftar daerah bertingkat (provinsi, kota, kecamatan, kelurahan) untuk alamat peserta.</div>
+            </div>
+            <button class="btn btn-primary" id="drh-tambah">+ Tambah Daerah</button>
           </div>
-          <button class="btn btn-primary" id="drh-tambah">+ Tambah Daerah</button>
+
+          <div class="card">
+            <div class="grid3">
+              <div class="field" style="margin-bottom:0">
+                <label class="fl caps" for="drh-f-cari">Kode / Nama Daerah</label>
+                <input class="inp" id="drh-f-cari" placeholder="Masukkan kata kunci pencarian...">
+              </div>
+              <div class="field" style="margin-bottom:0">
+                <label class="fl caps" for="drh-f-tingkat">Tingkat</label>
+                <select class="inp" id="drh-f-tingkat">
+                  <option value="all">Semua Tingkat</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-primary" id="drh-cari">Cari</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="toolbar" style="justify-content:space-between">
+              <div style="display:flex;align-items:center;gap:10px">
+                <h2 class="card-title" style="margin:0">Daftar Daerah</h2>
+                <span class="pill pill-info" id="drh-badge">0 entri</span>
+              </div>
+              <button class="btn btn-ghost" id="drh-export">⭳ Export Excel</button>
+            </div>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr>
+                  <th>No</th><th>Kode Daerah</th><th>Nama Daerah</th><th>Tingkat</th>
+                  <th>Induk Daerah</th><th>Berlaku Sejak</th><th>Aksi</th>
+                </tr></thead>
+                <tbody id="drh-body"></tbody>
+              </table>
+            </div>
+            <div class="tbl-note" id="drh-count"></div>
+          </div>
         </div>
 
-        <div class="card">
-          <div class="grid3">
-            <div class="field" style="margin-bottom:0">
-              <label class="fl caps" for="drh-f-cari">Kode / Nama Daerah</label>
-              <input class="inp" id="drh-f-cari" placeholder="Masukkan kata kunci pencarian...">
+        <!-- ===== Tambah Daerah ===== -->
+        <div id="drh-form-view" style="display:none">
+          <div class="page-head">
+            <div>
+              <h1 class="page-title">Tambah Daerah</h1>
+              <div class="page-sub">Tambahkan satu daerah lewat form, atau banyak daerah sekaligus lewat unggah template Excel.</div>
             </div>
-            <div class="field" style="margin-bottom:0">
-              <label class="fl caps" for="drh-f-tingkat">Tingkat</label>
-              <select class="inp" id="drh-f-tingkat">
-                <option value="all">Semua Tingkat</option>
-              </select>
-            </div>
+            <button class="btn btn-ghost" id="drhf-kembali">← Kembali</button>
           </div>
-          <div class="form-actions">
-            <button class="btn btn-primary" id="drh-cari">Cari</button>
-          </div>
-        </div>
 
-        <div class="card">
-          <div class="toolbar" style="justify-content:space-between">
-            <div style="display:flex;align-items:center;gap:10px">
-              <h2 class="card-title" style="margin:0">Daftar Daerah</h2>
-              <span class="pill pill-info" id="drh-badge">0 entri</span>
+          <div class="card">
+            <h2 class="section-title">Data Daerah</h2>
+            <div class="alert alert-info"><span>ⓘ</span><span>Mekanisme <b>Satuan</b> menambah satu daerah lewat form, sedangkan <b>Kolektif</b> menambah banyak daerah sekaligus lewat template Excel.</span></div>
+
+            <div class="grid2">
+              <div class="field">
+                <label class="fl" for="drhf-mekanisme">Pilih Mekanisme Tambah Daerah <span class="req">*</span></label>
+                <select class="inp" id="drhf-mekanisme">
+                  <option value="">— Silahkan Pilih Mekanisme —</option>
+                  <option>Satuan</option>
+                  <option>Kolektif</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="fl" for="drhf-tingkat">Tingkat <span class="req">*</span></label>
+                <div style="display:flex;gap:8px">
+                  <select class="inp" id="drhf-tingkat" style="flex:1;min-width:0" disabled>
+                    <option value="">Pilih Mekanisme lebih dulu</option>
+                  </select>
+                  <button class="btn btn-ghost" id="drhf-template" style="flex-shrink:0;display:none">⤓ Download Template Excel</button>
+                </div>
+              </div>
             </div>
-            <button class="btn btn-ghost" id="drh-export">⭳ Export Excel</button>
+
+            <!-- Mekanisme Satuan: field menyesuaikan Tingkat, digambar drhRenderSatuan() -->
+            <div id="drhf-satuan" style="display:none"></div>
+
+            <!-- Mekanisme Kolektif: unggah berkas sesuai template tingkat -->
+            <div class="field" id="drhf-kolektif" style="display:none">
+              <label class="fl">Unggah Berkas Daerah <span class="req">*</span></label>
+              <div class="dropzone" id="drhf-dropzone">
+                <div style="font-size:26px;color:var(--slate);margin-bottom:10px">☁⬆</div>
+                <div style="font-weight:600;margin-bottom:4px" id="drhf-file-title">Tarik file ke sini atau klik untuk memilih</div>
+                <div class="hint" style="margin:0" id="drhf-file-sub">Format .xlsx, maksimal 5 MB</div>
+              </div>
+            </div>
+
+            <div class="form-actions" id="drhf-aksi" style="display:none">
+              <button class="btn btn-ghost" id="drhf-batal">Batal</button>
+              <button class="btn btn-primary" id="drhf-simpan">Simpan</button>
+            </div>
           </div>
-          <div class="tbl-wrap">
-            <table>
-              <thead><tr>
-                <th>No</th><th>Kode Daerah</th><th>Nama Daerah</th><th>Tingkat</th>
-                <th>Induk Daerah</th><th>Berlaku Sejak</th><th>Aksi</th>
-              </tr></thead>
-              <tbody id="drh-body"></tbody>
-            </table>
-          </div>
-          <div class="tbl-note" id="drh-count"></div>
         </div>
       </section>
 

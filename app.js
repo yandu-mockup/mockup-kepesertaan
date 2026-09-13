@@ -110,6 +110,7 @@ function go(id) {
   if (id === "spp-approval") sppaTampilkanDaftar();
   if (id === "spp-bersih")   renderSppBersih();
   if (id === "ref-kolektif") refKolektifGotoView("list");
+  if (id === "daerah") daerahGotoView("list");
   if (id === "pendaftaran-nominatif") nominatifGotoView("list");
   if (id === "pendaftaran-approval-surat") { renderApprovalSurat(); apsuGotoView("list"); }
   if (id === "dapem")        { renderDapemMetrics(); renderDapemList(); }
@@ -9543,24 +9544,48 @@ document.addEventListener("click", e => {
 });
 
 /* ================= PENGELOLAAN REFERENSI DATA KEPESERTAAN » DAERAH
-   Daerah bertingkat Provinsi → Kabupaten/Kota → Kecamatan. Induk Daerah
-   selalu satu tingkat di atasnya, dan kode anak wajib diawali kode induk +
-   "." (pola BPS), supaya struktur pohonnya tidak pernah rusak. Daerah yang
-   masih punya turunan tidak bisa dihapus. */
+   Daerah bertingkat Provinsi → Kota → Kecamatan / Kelurahan; induk tiap
+   tingkat ada di DAERAH_INDUK. Kode anak wajib diawali kode induk + "."
+   (pola BPS) supaya struktur pohonnya tidak rusak; Kode Kelurahan boleh
+   kosong. Daerah yang masih punya turunan tidak bisa dihapus.
+   Tambah Daerah berupa halaman dengan dua mekanisme: Satuan (form yang
+   fieldnya menyesuaikan Tingkat) dan Kolektif (unggah template Excel). */
 let drhRows = DATA_DAERAH.map((d, i) => ({ ...d, _id: i }));
+
+/* Placeholder field form Satuan per tingkat. Kode Kelurahan tidak wajib. */
+const DRH_FORM = {
+  Provinsi:  { kodeWajib:true,  contohNama:"DI YOGYAKARTA",     contohKode:"34" },
+  Kota:      { kodeWajib:true,  contohNama:"KOTA MALANG",       contohKode:"35.73" },
+  Kecamatan: { kodeWajib:true,  contohNama:"KEC. BENOWO",       contohKode:"35.78.13" },
+  Kelurahan: { kodeWajib:false, contohNama:"KEL. SONOKWIJENAN", contohKode:"35.78.09.1002" }
+};
+
+let drhForm = { mekanisme:"", tingkat:"", berkas:false };
 
 function drhBolehKelola() { return roleSaatIni() === ROLE_DIVISI; }
 
-function drhCariKode(kode) { return drhRows.find(d => d.kode === kode); }
+function drhCariKode(kode) { return kode ? drhRows.find(d => d.kode === kode) : null; }
 function drhLabelInduk(d) {
   if (!d.induk) return "-";
   const induk = drhCariKode(d.induk);
   return induk ? `${induk.kode} — ${induk.nama}` : d.induk;
 }
-/* Tingkat induk yang sah = satu tingkat di atas; Provinsi tidak punya induk. */
-function drhTingkatInduk(tingkat) {
-  const i = DAERAH_TINGKAT.indexOf(tingkat);
-  return i > 0 ? DAERAH_TINGKAT[i - 1] : null;
+/* Kelurahan tanpa kode tidak mungkin punya turunan — tanpa penjaga ini,
+   kode kosong akan "mencocokkan" seluruh Provinsi yang induknya juga kosong. */
+function drhJumlahTurunan(d) { return d.kode ? drhRows.filter(x => x.induk === d.kode).length : 0; }
+
+/* Urut kode supaya anak tampil tepat di bawah induknya; Kelurahan tanpa kode
+   memakai kode induknya dan diletakkan setelah induk tersebut. */
+function drhBandingkan(a, b) {
+  const ka = a.kode || a.induk, kb = b.kode || b.induk;
+  return ka.localeCompare(kb, "id", { numeric: true }) || (a.kode ? 0 : 1) - (b.kode ? 0 : 1);
+}
+
+/* Provinsi = angka saja; tingkat lain = kode induk + "." + angka (boleh
+   bertitik lagi, mis. kelurahan 35.78.09.1001 di bawah kota 35.78). */
+function drhKodeSah(kode, induk) {
+  if (!induk) return /^\d+$/.test(kode);
+  return kode.startsWith(induk + ".") && /^\d+(\.\d+)*$/.test(kode.slice(induk.length + 1));
 }
 
 function drhIsiFilter() {
@@ -9568,7 +9593,7 @@ function drhIsiFilter() {
   const dipilih = sel.value || "all";
   sel.innerHTML = `<option value="all">Semua Tingkat</option>`
     + DAERAH_TINGKAT.map(t => `<option>${esc(t)}</option>`).join("");
-  sel.value = dipilih;
+  sel.value = DAERAH_TINGKAT.includes(dipilih) ? dipilih : "all";
 }
 
 function drhBarisTersaring() {
@@ -9578,8 +9603,7 @@ function drhBarisTersaring() {
     .filter(d =>
       (tingkat === "all" || d.tingkat === tingkat) &&
       (!cari || d.kode.toLowerCase().includes(cari) || d.nama.toLowerCase().includes(cari)))
-    /* Urut kode supaya anak selalu tampil tepat di bawah induknya. */
-    .sort((a, b) => a.kode.localeCompare(b.kode, "id", { numeric: true }));
+    .sort(drhBandingkan);
 }
 
 function renderDaerah() {
@@ -9590,7 +9614,7 @@ function renderDaerah() {
   $("#drh-body").innerHTML = rows.length ? rows.map((d, i) => `
     <tr>
       <td>${i + 1}</td>
-      <td class="t-name">${esc(d.kode)}</td>
+      <td class="t-name">${esc(d.kode || "-")}</td>
       <td class="t-strong">${esc(d.nama)}</td>
       <td><span class="pill pill-info">${esc(d.tingkat)}</span></td>
       <td>${esc(drhLabelInduk(d))}</td>
@@ -9607,104 +9631,190 @@ function renderDaerah() {
   $("#drh-count").textContent    = `Menampilkan ${rows.length} dari ${drhRows.length} daerah.`;
 }
 
-$("#drh-tambah").onclick = () => {
-  $("#modal-title").textContent = "Tambah Daerah";
-  $("#modal-sub").textContent   = "Kode Daerah harus unik dan diawali kode Induk Daerah.";
-  $("#modal-body").innerHTML = `
-    <div class="grid2">
+function daerahGotoView(view) {
+  $("#drh-list-view").style.display = view === "list" ? "" : "none";
+  $("#drh-form-view").style.display = view === "form" ? "" : "none";
+  $("#drh-crumb").innerHTML =
+    `<span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pengelolaan Referensi Data Kepesertaan</span>`
+    + (view === "form" ? `<span>›</span><span>Daerah</span><span>›</span><b>Tambah Daerah</b>`
+                       : `<span>›</span><b>Daerah</b>`);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* ------------------------------------------------------ Tambah Daerah */
+function drhResetUnggah() {
+  drhForm.berkas = false;
+  $("#drhf-dropzone").classList.remove("has-file");
+  $("#drhf-file-title").textContent = "Tarik file ke sini atau klik untuk memilih";
+  $("#drhf-file-sub").textContent   = "Format .xlsx, maksimal 5 MB";
+}
+
+/* Bagian di bawah Mekanisme + Tingkat digambar ulang setiap salah satunya
+   berubah: form Satuan, atau tombol template + unggah untuk Kolektif. Tombol
+   Batal/Simpan baru muncul setelah Tingkat dipilih. */
+function drhTerapkanPilihan() {
+  const { mekanisme, tingkat } = drhForm;
+  const satuan   = mekanisme === "Satuan"   && !!tingkat;
+  const kolektif = mekanisme === "Kolektif" && !!tingkat;
+  $("#drhf-satuan").style.display   = satuan   ? "" : "none";
+  $("#drhf-kolektif").style.display = kolektif ? "" : "none";
+  $("#drhf-template").style.display = kolektif ? "" : "none";
+  $("#drhf-aksi").style.display     = tingkat  ? "" : "none";
+  if (satuan) drhRenderSatuan(); else $("#drhf-satuan").innerHTML = "";
+  drhResetUnggah();
+}
+
+function drhRenderSatuan() {
+  const t      = drhForm.tingkat;
+  const cfg    = DRH_FORM[t];
+  const tInduk = DAERAH_INDUK[t];
+  const calon  = tInduk ? drhRows.filter(d => d.tingkat === tInduk).sort(drhBandingkan) : [];
+  const hintAwal = tInduk ? `Pilih Nama ${tInduk} lebih dulu untuk melihat awalan kodenya.` : "Kode Provinsi berupa angka.";
+
+  $("#drhf-satuan").innerHTML = `
+    <div class="grid3">
+      ${tInduk ? `
       <div class="field">
-        <label class="fl">Tingkat <span class="req">*</span></label>
-        <select class="inp" id="drh-m-tingkat">
-          <option value="">Pilih Tingkat</option>
-          ${DAERAH_TINGKAT.map(t => `<option>${esc(t)}</option>`).join("")}
+        <label class="fl" for="drhf-induk">Nama ${esc(tInduk)} <span class="req">*</span></label>
+        <select class="inp" id="drhf-induk">
+          <option value="">— Pilih ${esc(tInduk)} —</option>
+          ${calon.map(d => `<option value="${esc(d.kode)}">${esc(d.nama)} (${esc(d.kode)})</option>`).join("")}
         </select>
-      </div>
-      <div class="field" id="drh-m-induk-field">
-        <label class="fl">Induk Daerah <span class="req">*</span></label>
-        <select class="inp" id="drh-m-induk" disabled>
-          <option value="">Pilih Tingkat lebih dulu</option>
-        </select>
-      </div>
-    </div>
-    <div class="grid2">
+      </div>` : ""}
       <div class="field">
-        <label class="fl">Kode Daerah <span class="req">*</span></label>
-        <input class="inp" id="drh-m-kode" placeholder="Contoh: 35.78.11">
-        <div class="hint" id="drh-m-kode-hint">Pola BPS: 35 → 35.78 → 35.78.11</div>
+        <label class="fl" for="drhf-nama">Nama ${esc(t)} <span class="req">*</span></label>
+        <input class="inp" id="drhf-nama" placeholder="Contoh: ${esc(cfg.contohNama)}">
       </div>
       <div class="field">
-        <label class="fl">Berlaku Sejak <span class="req">*</span></label>
-        <input class="inp" type="date" id="drh-m-berlaku">
+        <label class="fl" for="drhf-kode">Kode ${esc(t)}${cfg.kodeWajib ? ` <span class="req">*</span>` : ""}</label>
+        <input class="inp" id="drhf-kode" placeholder="Contoh: ${esc(cfg.contohKode)}">
+        <div class="hint" id="drhf-kode-hint">${esc(hintAwal)}</div>
       </div>
-    </div>
-    <div class="field" style="margin-bottom:0">
-      <label class="fl">Nama Daerah <span class="req">*</span></label>
-      <input class="inp" id="drh-m-nama" placeholder="Contoh: KEC. TANDES">
-    </div>
-    <div class="form-actions" style="justify-content:flex-end">
-      <button class="btn btn-ghost" id="drh-m-batal">Batal</button>
-      <button class="btn btn-primary" id="drh-m-simpan">Simpan</button>
     </div>`;
-  openModal();
 
-  /* Induk Daerah hanya menawarkan daerah satu tingkat di atas; untuk
-     Provinsi fieldnya disembunyikan. */
-  $("#drh-m-tingkat").onchange = () => {
-    const tingkatInduk = drhTingkatInduk($("#drh-m-tingkat").value);
-    const sel = $("#drh-m-induk");
-    const calon = tingkatInduk ? drhRows.filter(d => d.tingkat === tingkatInduk)
-      .sort((a, b) => a.kode.localeCompare(b.kode, "id", { numeric: true })) : [];
-    $("#drh-m-induk-field").style.display = $("#drh-m-tingkat").value === "Provinsi" ? "none" : "";
-    sel.disabled  = !tingkatInduk;
-    sel.innerHTML = tingkatInduk
-      ? `<option value="">Pilih ${esc(tingkatInduk)}</option>` + calon.map(d => `<option value="${esc(d.kode)}">${esc(d.kode)} — ${esc(d.nama)}</option>`).join("")
-      : `<option value="">Pilih Tingkat lebih dulu</option>`;
-  };
-  $("#drh-m-induk").onchange = () => {
-    const induk = $("#drh-m-induk").value;
-    $("#drh-m-kode-hint").textContent = induk ? `Kode harus diawali ${induk}.` : "Pola BPS: 35 → 35.78 → 35.78.11";
-  };
+  if (tInduk) {
+    $("#drhf-induk").onchange = () => {
+      const k = $("#drhf-induk").value;
+      $("#drhf-kode-hint").textContent = k ? `Kode harus diawali ${k}.` : hintAwal;
+    };
+  }
+}
 
-  $("#drh-m-batal").onclick  = closeModal;
-  $("#drh-m-simpan").onclick = () => {
-    const tingkat = $("#drh-m-tingkat").value;
-    const induk   = tingkat === "Provinsi" ? "" : $("#drh-m-induk").value;
-    const kode    = $("#drh-m-kode").value.trim();
-    const nama    = $("#drh-m-nama").value.trim().toUpperCase();
-    const berlaku = $("#drh-m-berlaku").value;
-    if (!tingkat || (tingkat !== "Provinsi" && !induk) || !kode || !nama || !berlaku) {
-      toast("Seluruh field wajib diisi.", "bad");
-      return;
-    }
-    if (drhCariKode(kode)) { toast(`Kode ${kode} sudah terdaftar pada daftar Daerah.`, "bad"); return; }
-    if (induk ? !/^\d+$/.test(kode.slice(induk.length + 1)) || !kode.startsWith(induk + ".")
-              : !/^\d+$/.test(kode)) {
-      toast(induk ? `Kode Daerah harus berpola ${induk}.<angka>.` : "Kode Provinsi harus berupa angka.", "bad");
-      return;
-    }
-    drhRows.push({
-      kode, nama, tingkat, induk, berlaku: refTglDariInput(berlaku), oleh: PENGATURAN.namaUser,
-      _id: drhRows.length ? Math.max(...drhRows.map(d => d._id)) + 1 : 0
-    });
-    renderDaerah();
-    closeModal();
-    toast("Daerah baru berhasil disimpan.", "ok");
-  };
+function drhShowForm() {
+  drhForm = { mekanisme:"", tingkat:"", berkas:false };
+  $("#drhf-mekanisme").value = "";
+  $("#drhf-tingkat").disabled  = true;
+  $("#drhf-tingkat").innerHTML = `<option value="">Pilih Mekanisme lebih dulu</option>`;
+  drhTerapkanPilihan();
+  daerahGotoView("form");
+}
+
+$("#drh-tambah").onclick   = drhShowForm;
+$("#drhf-kembali").onclick = () => daerahGotoView("list");
+$("#drhf-batal").onclick   = () => daerahGotoView("list");
+
+/* Ganti mekanisme = mulai ulang dari pilihan Tingkat. */
+$("#drhf-mekanisme").onchange = () => {
+  drhForm.mekanisme = $("#drhf-mekanisme").value;
+  drhForm.tingkat   = "";
+  $("#drhf-tingkat").disabled  = !drhForm.mekanisme;
+  $("#drhf-tingkat").innerHTML = drhForm.mekanisme
+    ? `<option value="">— Pilih Tingkat —</option>` + DAERAH_TINGKAT.map(t => `<option>${esc(t)}</option>`).join("")
+    : `<option value="">Pilih Mekanisme lebih dulu</option>`;
+  drhTerapkanPilihan();
 };
 
+$("#drhf-tingkat").onchange = () => {
+  drhForm.tingkat = $("#drhf-tingkat").value;
+  drhTerapkanPilihan();
+};
+
+$("#drhf-template").onclick = () => {
+  if (drhForm.tingkat) toast(`Template Daerah ${drhForm.tingkat} diunduh.`);
+};
+
+$("#drhf-dropzone").onclick = () => {
+  const contoh = DAERAH_KOLEKTIF_CONTOH[drhForm.tingkat];
+  if (!contoh) { toast("Pilih Tingkat lebih dulu.", "bad"); return; }
+  drhForm.berkas = true;
+  $("#drhf-dropzone").classList.add("has-file");
+  $("#drhf-file-title").textContent = contoh.namaBerkas;
+  $("#drhf-file-sub").textContent   = `${contoh.rows.length} baris terbaca — siap disimpan`;
+};
+
+function drhTambahBaris(baris) {
+  drhRows.push({
+    ...baris, berlaku: unorTglHariIni(), oleh: PENGATURAN.namaUser,
+    _id: drhRows.length ? Math.max(...drhRows.map(d => d._id)) + 1 : 0
+  });
+}
+
+function drhSimpanSatuan() {
+  const t      = drhForm.tingkat;
+  const tInduk = DAERAH_INDUK[t];
+  const induk  = tInduk ? $("#drhf-induk").value : "";
+  const nama   = $("#drhf-nama").value.trim().toUpperCase();
+  const kode   = $("#drhf-kode").value.trim();
+
+  if ((tInduk && !induk) || !nama || (DRH_FORM[t].kodeWajib && !kode)) {
+    toast("Seluruh field bertanda * wajib diisi.", "bad");
+    return;
+  }
+  if (kode && drhCariKode(kode)) { toast(`Kode ${kode} sudah terdaftar pada daftar Daerah.`, "bad"); return; }
+  if (kode && !drhKodeSah(kode, induk)) {
+    toast(induk ? `Kode ${t} harus diawali ${induk}. lalu angka, mis. ${induk}.01.` : "Kode Provinsi harus berupa angka.", "bad");
+    return;
+  }
+  if (drhRows.some(d => d.tingkat === t && d.induk === induk && d.nama === nama)) {
+    toast(`${t} ${nama} sudah terdaftar.`, "bad");
+    return;
+  }
+
+  drhTambahBaris({ kode, nama, tingkat: t, induk });
+  renderDaerah();
+  daerahGotoView("list");
+  toast(`${t} ${nama} berhasil disimpan.`, "ok");
+}
+
+/* Baris berkas contoh yang kodenya sudah terdaftar, atau induknya sudah
+   tidak ada, dilewati — sisanya masuk ke daftar. */
+function drhSimpanKolektif() {
+  const t = drhForm.tingkat;
+  if (!drhForm.berkas) { toast("Unggah berkas daerah lebih dulu.", "bad"); return; }
+
+  const rows  = DAERAH_KOLEKTIF_CONTOH[t].rows;
+  const masuk = rows.filter(r => !drhCariKode(r.kode) && (!r.induk || drhCariKode(r.induk)));
+  if (!masuk.length) {
+    toast("Tidak ada daerah baru — seluruh kode di berkas sudah terdaftar.", "bad");
+    return;
+  }
+
+  masuk.forEach(r => drhTambahBaris({ ...r, tingkat: t }));
+  const dilewati = rows.length - masuk.length;
+  renderDaerah();
+  daerahGotoView("list");
+  toast(`${masuk.length} daerah ${t} berhasil disimpan`
+    + (dilewati ? `, ${dilewati} dilewati karena kode sudah terdaftar.` : "."), "ok");
+}
+
+$("#drhf-simpan").onclick = () => {
+  if (!drhForm.mekanisme || !drhForm.tingkat) { toast("Pilih Mekanisme dan Tingkat lebih dulu.", "bad"); return; }
+  if (drhForm.mekanisme === "Satuan") drhSimpanSatuan(); else drhSimpanKolektif();
+};
+
+/* --------------------------------------------------- Detail & Hapus */
 function drhDetail(d) {
-  const turunan = drhRows.filter(x => x.induk === d.kode).length;
   $("#modal-title").textContent = "Detail Daerah";
-  $("#modal-sub").textContent   = `${d.kode} · ${d.nama}`;
+  $("#modal-sub").textContent   = `${d.kode || "-"} · ${d.nama}`;
   $("#modal-body").innerHTML = `
     <div class="review-card">
       <div class="review-card-head">Data Daerah</div>
       <div class="review-card-body">
-        <div class="review-row"><div class="fl">Kode Daerah</div><div class="val">${esc(d.kode)}</div></div>
+        <div class="review-row"><div class="fl">Kode Daerah</div><div class="val">${esc(d.kode || "-")}</div></div>
         <div class="review-row"><div class="fl">Nama Daerah</div><div class="val">${esc(d.nama)}</div></div>
         <div class="review-row"><div class="fl">Tingkat</div><div class="val">${esc(d.tingkat)}</div></div>
         <div class="review-row"><div class="fl">Induk Daerah</div><div class="val">${esc(drhLabelInduk(d))}</div></div>
-        <div class="review-row"><div class="fl">Jumlah Daerah Turunan</div><div class="val">${turunan}</div></div>
+        <div class="review-row"><div class="fl">Jumlah Daerah Turunan</div><div class="val">${drhJumlahTurunan(d)}</div></div>
         <div class="review-row"><div class="fl">Berlaku Sejak</div><div class="val">${esc(unorTanggal(d.berlaku).panjang)}</div></div>
         <div class="review-row"><div class="fl">Dibuat Oleh</div><div class="val">${esc(d.oleh)}</div></div>
       </div>
@@ -9717,9 +9827,9 @@ function drhDetail(d) {
 }
 
 function drhHapus(d) {
-  const turunan = drhRows.filter(x => x.induk === d.kode).length;
+  const turunan = drhJumlahTurunan(d);
   $("#modal-title").textContent = "Hapus Daerah";
-  $("#modal-sub").textContent   = `${d.kode} · ${d.nama}`;
+  $("#modal-sub").textContent   = `${d.kode || "-"} · ${d.nama}`;
   $("#modal-body").innerHTML = turunan ? `
     <div class="alert alert-bad"><span>⚠</span><span>Daerah ini masih memiliki ${turunan} daerah turunan. Hapus seluruh daerah turunannya lebih dulu.</span></div>
     <div class="form-actions" style="justify-content:flex-end">
@@ -9737,7 +9847,7 @@ function drhHapus(d) {
     drhRows = drhRows.filter(x => x._id !== d._id);
     renderDaerah();
     closeModal();
-    toast(`Daerah ${d.kode} berhasil dihapus.`, "ok");
+    toast(`Daerah ${d.nama} berhasil dihapus.`, "ok");
   };
 }
 

@@ -3114,29 +3114,62 @@ const DATA_SATUAN_KERJA = [
     keterangan:"Kepolisian resor kota besar wilayah Bandung." }
 ];
 
-/* Daerah: kode bergaya BPS — provinsi 2 digit, kabupaten/kota "35.78",
-   kecamatan "35.78.09". `induk` = kode daerah satu tingkat di atasnya
-   (kosong untuk Provinsi). */
-const DAERAH_TINGKAT = ["Provinsi", "Kabupaten/Kota", "Kecamatan"];
+/* Daerah: kode bergaya BPS — provinsi "35", kota "35.78", kecamatan
+   "35.78.09", kelurahan "35.78.09.1001". `induk` = kode daerah induknya
+   (kosong untuk Provinsi). Kecamatan dan Kelurahan sama-sama berinduk ke
+   Kota, mengikuti field form Tambah Daerah (lihat DAERAH_INDUK). Kode
+   Kelurahan boleh kosong. */
+const DAERAH_TINGKAT = ["Provinsi", "Kota", "Kecamatan", "Kelurahan"];
+const DAERAH_INDUK   = { "Kota":"Provinsi", "Kecamatan":"Kota", "Kelurahan":"Kota" };
 
 const DATA_DAERAH = [
-  { kode:"31",       nama:"DKI JAKARTA",          tingkat:"Provinsi",       induk:"",      berlaku:"01/01/2015", oleh:"Lojita — R. Prasetyo" },
-  { kode:"32",       nama:"JAWA BARAT",           tingkat:"Provinsi",       induk:"",      berlaku:"01/01/2015", oleh:"Lojita — R. Prasetyo" },
-  { kode:"33",       nama:"JAWA TENGAH",          tingkat:"Provinsi",       induk:"",      berlaku:"01/01/2015", oleh:"Lojita — R. Prasetyo" },
-  { kode:"35",       nama:"JAWA TIMUR",           tingkat:"Provinsi",       induk:"",      berlaku:"01/01/2015", oleh:"Lojita — R. Prasetyo" },
+  { kode:"31",            nama:"DKI JAKARTA",          tingkat:"Provinsi",  induk:"",      berlaku:"01/01/2015", oleh:"Lojita — R. Prasetyo" },
+  { kode:"32",            nama:"JAWA BARAT",           tingkat:"Provinsi",  induk:"",      berlaku:"01/01/2015", oleh:"Lojita — R. Prasetyo" },
+  { kode:"33",            nama:"JAWA TENGAH",          tingkat:"Provinsi",  induk:"",      berlaku:"01/01/2015", oleh:"Lojita — R. Prasetyo" },
+  { kode:"35",            nama:"JAWA TIMUR",           tingkat:"Provinsi",  induk:"",      berlaku:"01/01/2015", oleh:"Lojita — R. Prasetyo" },
 
-  { kode:"31.71",    nama:"KOTA JAKARTA PUSAT",   tingkat:"Kabupaten/Kota", induk:"31",    berlaku:"01/01/2015", oleh:"Lojita — S. Wijayanti" },
-  { kode:"32.73",    nama:"KOTA BANDUNG",         tingkat:"Kabupaten/Kota", induk:"32",    berlaku:"01/01/2015", oleh:"Lojita — S. Wijayanti" },
-  { kode:"33.74",    nama:"KOTA SEMARANG",        tingkat:"Kabupaten/Kota", induk:"33",    berlaku:"01/01/2015", oleh:"Lojita — S. Wijayanti" },
-  { kode:"35.15",    nama:"KABUPATEN SIDOARJO",   tingkat:"Kabupaten/Kota", induk:"35",    berlaku:"01/01/2015", oleh:"Lojita — S. Wijayanti" },
-  { kode:"35.78",    nama:"KOTA SURABAYA",        tingkat:"Kabupaten/Kota", induk:"35",    berlaku:"01/01/2015", oleh:"Lojita — S. Wijayanti" },
+  { kode:"31.71",         nama:"KOTA JAKARTA PUSAT",   tingkat:"Kota",      induk:"31",    berlaku:"01/01/2015", oleh:"Lojita — S. Wijayanti" },
+  { kode:"32.73",         nama:"KOTA BANDUNG",         tingkat:"Kota",      induk:"32",    berlaku:"01/01/2015", oleh:"Lojita — S. Wijayanti" },
+  { kode:"33.74",         nama:"KOTA SEMARANG",        tingkat:"Kota",      induk:"33",    berlaku:"01/01/2015", oleh:"Lojita — S. Wijayanti" },
+  { kode:"35.15",         nama:"KABUPATEN SIDOARJO",   tingkat:"Kota",      induk:"35",    berlaku:"01/01/2015", oleh:"Lojita — S. Wijayanti" },
+  { kode:"35.78",         nama:"KOTA SURABAYA",        tingkat:"Kota",      induk:"35",    berlaku:"01/01/2015", oleh:"Lojita — S. Wijayanti" },
 
-  { kode:"31.71.01", nama:"KEC. GAMBIR",          tingkat:"Kecamatan",      induk:"31.71", berlaku:"01/01/2020", oleh:"Lojita — A. Nurcahyo" },
-  { kode:"32.73.27", nama:"KEC. GEDEBAGE",        tingkat:"Kecamatan",      induk:"32.73", berlaku:"01/04/2026", oleh:"Lojita — A. Nurcahyo" },
-  { kode:"33.74.01", nama:"KEC. SEMARANG TENGAH", tingkat:"Kecamatan",      induk:"33.74", berlaku:"01/01/2020", oleh:"Lojita — A. Nurcahyo" },
-  { kode:"35.15.01", nama:"KEC. SIDOARJO",        tingkat:"Kecamatan",      induk:"35.15", berlaku:"01/01/2020", oleh:"Lojita — A. Nurcahyo" },
-  { kode:"35.78.09", nama:"KEC. SUKOMANUNGGAL",   tingkat:"Kecamatan",      induk:"35.78", berlaku:"01/01/2020", oleh:"Lojita — A. Nurcahyo" }
+  { kode:"31.71.01",      nama:"KEC. GAMBIR",          tingkat:"Kecamatan", induk:"31.71", berlaku:"01/01/2020", oleh:"Lojita — A. Nurcahyo" },
+  { kode:"32.73.27",      nama:"KEC. GEDEBAGE",        tingkat:"Kecamatan", induk:"32.73", berlaku:"01/04/2026", oleh:"Lojita — A. Nurcahyo" },
+  { kode:"33.74.01",      nama:"KEC. SEMARANG TENGAH", tingkat:"Kecamatan", induk:"33.74", berlaku:"01/01/2020", oleh:"Lojita — A. Nurcahyo" },
+  { kode:"35.15.01",      nama:"KEC. SIDOARJO",        tingkat:"Kecamatan", induk:"35.15", berlaku:"01/01/2020", oleh:"Lojita — A. Nurcahyo" },
+  { kode:"35.78.09",      nama:"KEC. SUKOMANUNGGAL",   tingkat:"Kecamatan", induk:"35.78", berlaku:"01/01/2020", oleh:"Lojita — A. Nurcahyo" },
+
+  { kode:"31.71.01.1001", nama:"KEL. GAMBIR",          tingkat:"Kelurahan", induk:"31.71", berlaku:"01/01/2020", oleh:"Lojita — A. Nurcahyo" },
+  { kode:"35.15.01.1001", nama:"KEL. SIDOKARE",        tingkat:"Kelurahan", induk:"35.15", berlaku:"01/01/2020", oleh:"Lojita — A. Nurcahyo" },
+  { kode:"35.78.09.1001", nama:"KEL. SUKOMANUNGGAL",   tingkat:"Kelurahan", induk:"35.78", berlaku:"01/01/2020", oleh:"Lojita — A. Nurcahyo" }
 ];
+
+/* Isi berkas contoh yang "terbaca" saat Tambah Daerah mekanisme Kolektif,
+   per tingkat. Semua induknya ada di DATA_DAERAH dan semua kodenya belum
+   terdaftar, jadi unggahan pertama selalu masuk seluruhnya; unggahan ulang
+   akan dilewati karena kodenya sudah ada. */
+const DAERAH_KOLEKTIF_CONTOH = {
+  Provinsi: { namaBerkas:"daerah_kolektif_provinsi_2026.xlsx", rows:[
+    { kode:"34", nama:"DI YOGYAKARTA", induk:"" },
+    { kode:"36", nama:"BANTEN",        induk:"" }
+  ] },
+  Kota: { namaBerkas:"daerah_kolektif_kota_2026.xlsx", rows:[
+    { kode:"32.75", nama:"KOTA BEKASI",    induk:"32" },
+    { kode:"33.72", nama:"KOTA SURAKARTA", induk:"33" },
+    { kode:"35.73", nama:"KOTA MALANG",    induk:"35" }
+  ] },
+  Kecamatan: { namaBerkas:"daerah_kolektif_kecamatan_2026.xlsx", rows:[
+    { kode:"31.71.02", nama:"KEC. SAWAH BESAR",    induk:"31.71" },
+    { kode:"33.74.02", nama:"KEC. SEMARANG UTARA", induk:"33.74" },
+    { kode:"35.78.13", nama:"KEC. BENOWO",         induk:"35.78" }
+  ] },
+  Kelurahan: { namaBerkas:"daerah_kolektif_kelurahan_2026.xlsx", rows:[
+    { kode:"32.73.27.1001", nama:"KEL. CISARANTEN KIDUL", induk:"32.73" },
+    { kode:"35.15.01.1002", nama:"KEL. PUCANG",           induk:"35.15" },
+    { kode:"35.78.09.1002", nama:"KEL. SONOKWIJENAN",     induk:"35.78" }
+  ] }
+};
 
 /* ---------------------------------------------------------------------------
    24. SPP DATA PESERTA
