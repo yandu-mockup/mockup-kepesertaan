@@ -4486,6 +4486,7 @@ const RU_KOLOM = [
   { key:"no",         label:"No" },
   { key:"noRequest",  label:"Nomor Request Umum",  nilai: r => r.noRequest },
   { key:"tglRequest", label:"Tgl. Request",        nilai: r => ruTglKeIso(r.tglRequest) },
+  { key:"kpa",        label:"KPA",                 nilai: r => r.kpa },
   { key:"nama",       label:"Peserta",             nilai: r => r.nama },
   { key:"tglLahir",   label:"Tanggal Lahir",       nilai: r => r.tglLahir || "" },
   { key:"cabang",     label:"Cabang",              nilai: r => r.cabang },
@@ -4561,6 +4562,7 @@ function renderRequestUmum() {
       <td>${start + i + 1}</td>
       <td class="t-strong">${esc(String(r.noRequest))}</td>
       <td>${esc(r.tglRequest)}</td>
+      <td style="white-space:nowrap">${esc(r.kpa)}</td>
       <td><div class="t-strong">${esc(r.nama)}</div><div class="hint" style="margin:1px 0 0">${esc(r.nrp)}</div></td>
       <td style="white-space:nowrap">${esc(ruFmtTglLahir(r.tglLahir))}</td>
       <td>${esc(r.cabang)}</td>
