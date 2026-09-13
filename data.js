@@ -3089,30 +3089,56 @@ const DATA_BUP = [
    `berlaku` disimpan dd/mm/yyyy.
    --------------------------------------------------------------------------- */
 
-/* Satuan Kerja: `unor` = nama pada DATA_UNOR, `kppn` = kode KPPN pada
-   DATA_REFERENSI (jenis "KPPN"). `kode` unik. */
+/* Satuan Kerja: `tgl` = Tanggal Buat (dd/mm/yyyy, diisi sistem saat entri
+   disimpan), `alamat` = alamat satuan. `unor` = nama pada DATA_UNOR dan
+   `kppn` = kode KPPN pada DATA_REFERENSI (jenis "KPPN") hanya ada pada data
+   lama — form Tambah Satuan Kerja tidak merekamnya, jadi entri baru kosong.
+   `kode` unik. */
 const DATA_SATUAN_KERJA = [
-  { kode:"0401", nama:"KOREM 084/BHASKARA JAYA",       unor:"Komando Daerah Militer V/Brawijaya (KODAM V/BRW)",            kppn:"084", berlaku:"01/01/2020", oleh:"Lojita — R. Prasetyo",
+  { tgl:"04/07/2026", kode:"0401", nama:"KOREM 084/BHASKARA JAYA",         alamat:"Jl. Hayam Wuruk No. 2, Sawunggaling, Wonokromo, Kota Surabaya",
+    unor:"Komando Daerah Militer V/Brawijaya (KODAM V/BRW)",            kppn:"084", oleh:"Lojita — R. Prasetyo",
     keterangan:"Komando resor militer wilayah Surabaya dan Madura." },
-  { kode:"0412", nama:"KODIM 0827/SUMENEP",            unor:"Komando Daerah Militer V/Brawijaya (KODAM V/BRW)",            kppn:"084", berlaku:"01/01/2020", oleh:"Lojita — R. Prasetyo",
+  { tgl:"04/07/2026", kode:"0412", nama:"KODIM 0827/SUMENEP",              alamat:"Jl. Trunojoyo No. 110, Kolor, Kabupaten Sumenep",
+    unor:"Komando Daerah Militer V/Brawijaya (KODAM V/BRW)",            kppn:"084", oleh:"Lojita — R. Prasetyo",
     keterangan:"Komando distrik militer di bawah KOREM 084/BHASKARA JAYA." },
-  { kode:"0415", nama:"KODIM 0829/BANGKALAN",          unor:"Komando Daerah Militer V/Brawijaya (KODAM V/BRW)",            kppn:"084", berlaku:"01/07/2026", oleh:"Lojita — S. Wijayanti",
+  { tgl:"12/07/2026", kode:"0415", nama:"KODIM 0829/BANGKALAN",            alamat:"Jl. Soekarno Hatta No. 1, Mlajah, Kabupaten Bangkalan",
+    unor:"Komando Daerah Militer V/Brawijaya (KODAM V/BRW)",            kppn:"084", oleh:"Lojita — S. Wijayanti",
     keterangan:"Pemekaran Kodim sesuai Perkasad Nomor 12/IV/2026." },
-  { kode:"0655", nama:"POLRES SIDOARJO",               unor:"Kepolisian Daerah Jawa Timur (POLDA JATIM)",                  kppn:"084", berlaku:"01/01/2020", oleh:"Lojita — S. Wijayanti",
+  { tgl:"12/07/2026", kode:"0655", nama:"POLRES SIDOARJO",                 alamat:"Jl. Kombes Pol. M. Duryat No. 1, Kabupaten Sidoarjo",
+    unor:"Kepolisian Daerah Jawa Timur (POLDA JATIM)",                  kppn:"084", oleh:"Lojita — S. Wijayanti",
     keterangan:"Kepolisian resor wilayah Kabupaten Sidoarjo." },
-  { kode:"0920", nama:"SKADRON UDARA 3 LANUD ISWAHJUDI", unor:"Pangkalan TNI AU Iswahjudi (LANUD IWJ)",                    kppn:"084", berlaku:"01/07/2022", oleh:"Lojita — R. Prasetyo",
+  { tgl:"21/07/2026", kode:"0920", nama:"SKADRON UDARA 3 LANUD ISWAHJUDI", alamat:"Lanud Iswahjudi, Maospati, Kabupaten Magetan",
+    unor:"Pangkalan TNI AU Iswahjudi (LANUD IWJ)",                      kppn:"084", oleh:"Lojita — R. Prasetyo",
     keterangan:"Satuan skadron tempur yang berpangkalan di Lanud Iswahjudi." },
-  { kode:"0501", nama:"KODIM 0501/JAKARTA PUSAT",      unor:"Komando Daerah Militer Jayakarta (KODAM JAYA)",               kppn:"019", berlaku:"01/01/2019", oleh:"Lojita — A. Nurcahyo",
+  { tgl:"21/07/2026", kode:"0501", nama:"KODIM 0501/JAKARTA PUSAT",        alamat:"Jl. Kramat Raya No. 150, Senen, Jakarta Pusat",
+    unor:"Komando Daerah Militer Jayakarta (KODAM JAYA)",               kppn:"019", oleh:"Lojita — A. Nurcahyo",
     keterangan:"Komando distrik militer wilayah Jakarta Pusat." },
-  { kode:"0620", nama:"POLRES METRO JAKARTA PUSAT",    unor:"Kepolisian Daerah Metro Jaya (POLDA METRO JAYA)",             kppn:"019", berlaku:"01/01/2019", oleh:"Lojita — A. Nurcahyo",
+  { tgl:"28/07/2026", kode:"0620", nama:"POLRES METRO JAKARTA PUSAT",      alamat:"Jl. Kramat Raya No. 61, Senen, Jakarta Pusat",
+    unor:"Kepolisian Daerah Metro Jaya (POLDA METRO JAYA)",             kppn:"019", oleh:"Lojita — A. Nurcahyo",
     keterangan:"Kepolisian resor metropolitan wilayah Jakarta Pusat." },
-  { kode:"0801", nama:"BIRO KEUANGAN SETJEN KEMHAN",   unor:"Sekretariat Jenderal Kementerian Pertahanan (SETJEN KEMHAN)", kppn:"019", berlaku:"01/01/2021", oleh:"Lojita — A. Nurcahyo",
+  { tgl:"28/07/2026", kode:"0801", nama:"BIRO KEUANGAN SETJEN KEMHAN",     alamat:"Jl. Medan Merdeka Barat No. 13-14, Gambir, Jakarta Pusat",
+    unor:"Sekretariat Jenderal Kementerian Pertahanan (SETJEN KEMHAN)", kppn:"019", oleh:"Lojita — A. Nurcahyo",
     keterangan:"Biro pengelola keuangan di lingkungan Sekretariat Jenderal Kemhan." },
-  { kode:"0618", nama:"KODIM 0618/KOTA BANDUNG",       unor:"Komando Daerah Militer III/Siliwangi (KODAM III/SLW)",        kppn:"137", berlaku:"01/01/2020", oleh:"Lojita — S. Wijayanti",
+  { tgl:"18/08/2026", kode:"0618", nama:"KODIM 0618/KOTA BANDUNG",         alamat:"Jl. Manado No. 4, Cihapit, Bandung Wetan, Kota Bandung",
+    unor:"Komando Daerah Militer III/Siliwangi (KODAM III/SLW)",        kppn:"137", oleh:"Lojita — S. Wijayanti",
     keterangan:"Komando distrik militer wilayah Kota Bandung." },
-  { kode:"0633", nama:"POLRESTABES BANDUNG",           unor:"Kepolisian Daerah Jawa Barat (POLDA JABAR)",                  kppn:"137", berlaku:"01/01/2020", oleh:"Lojita — S. Wijayanti",
+  { tgl:"18/08/2026", kode:"0633", nama:"POLRESTABES BANDUNG",             alamat:"Jl. Merdeka No. 18-20, Babakan Ciamis, Kota Bandung",
+    unor:"Kepolisian Daerah Jawa Barat (POLDA JABAR)",                  kppn:"137", oleh:"Lojita — S. Wijayanti",
     keterangan:"Kepolisian resor kota besar wilayah Bandung." }
 ];
+
+/* Isi berkas contoh yang "terbaca" saat Tambah Satuan Kerja mekanisme
+   Kolektif. Kodenya belum terdaftar (dan berbeda dari kode "baru" pada
+   simulasi sub Kolektif), jadi unggahan pertama masuk seluruhnya; unggahan
+   ulang dilewati karena kodenya sudah ada. */
+const SATUAN_KERJA_KOLEKTIF_CONTOH = {
+  namaBerkas: "satuan_kerja_kolektif_2026.xlsx",
+  rows: [
+    { kode:"0421", nama:"KODIM 0833/KOTA MALANG", alamat:"Jl. Kahuripan No. 12, Klojen, Kota Malang" },
+    { kode:"0422", nama:"KODIM 0818/MALANG-BATU", alamat:"Jl. Panglima Sudirman No. 1, Kota Batu" },
+    { kode:"0634", nama:"POLRES CIMAHI",          alamat:"Jl. Jenderal Amir Machmud No. 333, Kota Cimahi" }
+  ]
+};
 
 /* Daerah: kode bergaya BPS — provinsi "35", kota "35.78", kecamatan
    "35.78.09", kelurahan "35.78.09.1001". `induk` = kode daerah induknya

@@ -3090,52 +3090,123 @@
 
       <!-- ---------- REFERENSI DATA KEPESERTAAN — SATUAN KERJA ---------- -->
       <section class="screen" id="s-satuan-kerja">
-        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pengelolaan Referensi Data Kepesertaan</span><span>›</span><b>Satuan Kerja</b></div>
+        <div class="crumb" id="skr-crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pengelolaan Referensi Data Kepesertaan</span><span>›</span><b>Satuan Kerja</b></div>
 
-        <div class="page-head">
-          <div>
-            <h1 class="page-title">Satuan Kerja</h1>
-            <div class="page-sub">Pemeliharaan daftar satuan kerja beserta unit organisasi induk dan KPPN pembayarnya.</div>
+        <!-- ===== Daftar Satuan Kerja (tampilan awal) ===== -->
+        <div id="skr-list-view">
+          <div class="page-head">
+            <div>
+              <h1 class="page-title">Satuan Kerja</h1>
+              <div class="page-sub">Pemeliharaan daftar satuan kerja beserta alamat, unit organisasi induk, dan KPPN pembayarnya.</div>
+            </div>
+            <button class="btn btn-primary" id="skr-tambah">+ Tambah Satuan Kerja</button>
           </div>
-          <button class="btn btn-primary" id="skr-tambah">+ Tambah Satuan Kerja</button>
+
+          <div class="card">
+            <div class="grid3">
+              <div class="field" style="margin-bottom:0">
+                <label class="fl caps" for="skr-f-cari">Kode / Nama Satuan Kerja</label>
+                <input class="inp" id="skr-f-cari" placeholder="Masukkan kata kunci pencarian...">
+              </div>
+              <div class="field" style="margin-bottom:0">
+                <label class="fl caps" for="skr-f-unor">Unit Organisasi</label>
+                <select class="inp" id="skr-f-unor">
+                  <option value="all">Semua Unit Organisasi</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-primary" id="skr-cari">Cari</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="toolbar" style="justify-content:space-between">
+              <div style="display:flex;align-items:center;gap:10px">
+                <h2 class="card-title" style="margin:0">Daftar Satuan Kerja</h2>
+                <span class="pill pill-info" id="skr-badge">0 entri</span>
+              </div>
+              <button class="btn btn-ghost" id="skr-export">⭳ Export Excel</button>
+            </div>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr>
+                  <th>No</th><th>Kode Satuan Kerja</th><th>Nama Satuan Kerja</th><th>Unit Organisasi</th>
+                  <th>Kode KPPN</th><th>Tanggal Buat</th><th>Aksi</th>
+                </tr></thead>
+                <tbody id="skr-body"></tbody>
+              </table>
+            </div>
+            <div class="tbl-note" id="skr-count"></div>
+          </div>
         </div>
 
-        <div class="card">
-          <div class="grid3">
-            <div class="field" style="margin-bottom:0">
-              <label class="fl caps" for="skr-f-cari">Kode / Nama Satuan Kerja</label>
-              <input class="inp" id="skr-f-cari" placeholder="Masukkan kata kunci pencarian...">
+        <!-- ===== Tambah Satuan Kerja ===== -->
+        <div id="skr-form-view" style="display:none">
+          <div class="page-head">
+            <div>
+              <h1 class="page-title">Tambah Satuan Kerja</h1>
+              <div class="page-sub">Tambahkan satu satuan kerja lewat form, atau banyak satuan kerja sekaligus lewat unggah template Excel.</div>
             </div>
-            <div class="field" style="margin-bottom:0">
-              <label class="fl caps" for="skr-f-unor">Unit Organisasi</label>
-              <select class="inp" id="skr-f-unor">
-                <option value="all">Semua Unit Organisasi</option>
-              </select>
-            </div>
+            <button class="btn btn-ghost" id="skrf-kembali">← Kembali</button>
           </div>
-          <div class="form-actions">
-            <button class="btn btn-primary" id="skr-cari">Cari</button>
-          </div>
-        </div>
 
-        <div class="card">
-          <div class="toolbar" style="justify-content:space-between">
-            <div style="display:flex;align-items:center;gap:10px">
-              <h2 class="card-title" style="margin:0">Daftar Satuan Kerja</h2>
-              <span class="pill pill-info" id="skr-badge">0 entri</span>
+          <div class="card">
+            <h2 class="section-title">Data Satuan Kerja</h2>
+            <div class="alert alert-info"><span>ⓘ</span><span>Mekanisme <b>Satuan</b> menambah satu satuan kerja lewat form, sedangkan <b>Kolektif</b> menambah banyak satuan kerja sekaligus lewat template Excel. Tanggal Buat diisi otomatis oleh sistem saat disimpan.</span></div>
+
+            <div class="grid2">
+              <div class="field">
+                <label class="fl" for="skrf-mekanisme">Pilih Mekanisme Tambah Satuan Kerja <span class="req">*</span></label>
+                <select class="inp" id="skrf-mekanisme">
+                  <option value="">— Silahkan Pilih Mekanisme —</option>
+                  <option>Satuan</option>
+                  <option>Kolektif</option>
+                </select>
+              </div>
             </div>
-            <button class="btn btn-ghost" id="skr-export">⭳ Export Excel</button>
+
+            <!-- Mekanisme Satuan -->
+            <div id="skrf-satuan" style="display:none">
+              <div class="grid2">
+                <div class="field">
+                  <label class="fl" for="skrf-kode">Kode Satuan <span class="req">*</span></label>
+                  <input class="inp" id="skrf-kode" placeholder="Contoh: 0421">
+                  <div class="hint">Kode Satuan harus unik.</div>
+                </div>
+                <div class="field">
+                  <label class="fl" for="skrf-nama">Nama Satuan <span class="req">*</span></label>
+                  <input class="inp" id="skrf-nama" placeholder="Contoh: KODIM 0833/KOTA MALANG">
+                </div>
+              </div>
+              <div class="field">
+                <label class="fl" for="skrf-alamat">Alamat Satuan <span class="req">*</span></label>
+                <textarea class="inp" id="skrf-alamat" rows="3" placeholder="Contoh: Jl. Kahuripan No. 12, Klojen, Kota Malang"></textarea>
+              </div>
+            </div>
+
+            <!-- Mekanisme Kolektif -->
+            <div id="skrf-kolektif" style="display:none">
+              <div class="field">
+                <label class="fl">Template Satuan Kerja</label>
+                <div><button class="btn btn-ghost" id="skrf-template">⤓ Download Template Satuan Kerja</button></div>
+                <div class="hint">Isi template lalu unggah kembali pada field di bawah.</div>
+              </div>
+              <div class="field">
+                <label class="fl">Unggah Satuan Kerja <span class="req">*</span></label>
+                <div class="dropzone" id="skrf-dropzone">
+                  <div style="font-size:26px;color:var(--slate);margin-bottom:10px">☁⬆</div>
+                  <div style="font-weight:600;margin-bottom:4px" id="skrf-file-title">Tarik file ke sini atau klik untuk memilih</div>
+                  <div class="hint" style="margin:0" id="skrf-file-sub">Format .xlsx, maksimal 5 MB</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions" id="skrf-aksi" style="display:none">
+              <button class="btn btn-ghost" id="skrf-batal">Batal</button>
+              <button class="btn btn-primary" id="skrf-simpan">Simpan</button>
+            </div>
           </div>
-          <div class="tbl-wrap">
-            <table>
-              <thead><tr>
-                <th>No</th><th>Kode Satuan Kerja</th><th>Nama Satuan Kerja</th><th>Unit Organisasi</th>
-                <th>Kode KPPN</th><th>Berlaku Sejak</th><th>Aksi</th>
-              </tr></thead>
-              <tbody id="skr-body"></tbody>
-            </table>
-          </div>
-          <div class="tbl-note" id="skr-count"></div>
         </div>
       </section>
 

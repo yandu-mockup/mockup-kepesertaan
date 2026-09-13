@@ -111,6 +111,7 @@ function go(id) {
   if (id === "spp-bersih")   renderSppBersih();
   if (id === "ref-kolektif") refKolektifGotoView("list");
   if (id === "daerah") daerahGotoView("list");
+  if (id === "satuan-kerja") skrGotoView("list");
   if (id === "pendaftaran-nominatif") nominatifGotoView("list");
   if (id === "pendaftaran-approval-surat") { renderApprovalSurat(); apsuGotoView("list"); }
   if (id === "dapem")        { renderDapemMetrics(); renderDapemList(); }
@@ -9371,27 +9372,29 @@ document.addEventListener("click", e => {
 });
 
 /* ========== PENGELOLAAN REFERENSI DATA KEPESERTAAN » SATUAN KERJA
-   Kolom sama dengan template Satuan Kerja di sub Kolektif. Unit Organisasi
-   dipilih dari daftar UNOR yang sedang berlaku (unorRows), KPPN dari kode
-   KPPN di DATA_REFERENSI. Kode Satuan Kerja harus unik. */
+   Tambah Satuan Kerja berupa halaman dengan dua mekanisme: Satuan (Kode,
+   Nama, Alamat) dan Kolektif (unggah template Excel). Tanggal Buat diisi
+   sistem saat disimpan. Unit Organisasi dan KPPN hanya ada pada data lama —
+   entri baru belum merekamnya, jadi tampil "-". Kode Satuan Kerja unik. */
 let skrRows = DATA_SATUAN_KERJA.map((s, i) => ({ ...s, _id: i }));
 
 const REF_KPPN = DATA_REFERENSI.filter(r => r.jenis === "KPPN");
 
+let skrForm = { mekanisme:"", berkas:false };
+
 function skrBolehKelola() { return roleSaatIni() === ROLE_DIVISI; }
 
-/* "2026-07-01" (input date) → "01/07/2026" */
-function refTglDariInput(v) { return v.split("-").reverse().join("/"); }
-
 function skrNamaKppn(kode) {
-  const k = REF_KPPN.find(r => r.kode === kode);
+  const k = kode ? REF_KPPN.find(r => r.kode === kode) : null;
   return k ? k.uraian : "";
 }
+function skrKodeTerpakai(kode) { return skrRows.some(s => s.kode.toUpperCase() === kode.toUpperCase()); }
 
+/* Entri baru tanpa Unit Organisasi tidak ikut jadi pilihan filter. */
 function skrIsiFilter() {
   const sel = $("#skr-f-unor");
   const dipilih = sel.value || "all";
-  const daftar = [...new Set(skrRows.map(s => s.unor))].sort();
+  const daftar = [...new Set(skrRows.map(s => s.unor).filter(Boolean))].sort();
   sel.innerHTML = `<option value="all">Semua Unit Organisasi</option>`
     + daftar.map(u => `<option>${esc(u)}</option>`).join("");
   sel.value = daftar.includes(dipilih) ? dipilih : "all";
@@ -9415,9 +9418,9 @@ function renderSatuanKerja() {
       <td>${i + 1}</td>
       <td class="t-name">${esc(s.kode)}</td>
       <td class="t-strong">${esc(s.nama)}</td>
-      <td class="truncate-cell" title="${esc(s.unor)}">${esc(s.unor)}</td>
-      <td title="${esc(skrNamaKppn(s.kppn))}">${esc(s.kppn)}</td>
-      <td style="white-space:nowrap">${esc(s.berlaku)}</td>
+      <td class="truncate-cell" title="${esc(s.unor || "")}">${esc(s.unor || "-")}</td>
+      <td title="${esc(skrNamaKppn(s.kppn))}">${esc(s.kppn || "-")}</td>
+      <td style="white-space:nowrap">${esc(unorTanggal(s.tgl).panjang)}</td>
       <td style="white-space:nowrap">
         <button class="btn btn-info btn-sm" data-skr-detail="${s._id}">👁 Detail</button>
         ${boleh ? `<button class="btn btn-danger btn-sm" data-skr-hapus="${s._id}" title="Hapus Satuan Kerja">⌫</button>` : ""}
@@ -9430,66 +9433,108 @@ function renderSatuanKerja() {
   $("#skr-count").textContent    = `Menampilkan ${rows.length} dari ${skrRows.length} satuan kerja.`;
 }
 
-$("#skr-tambah").onclick = () => {
-  $("#modal-title").textContent = "Tambah Satuan Kerja";
-  $("#modal-sub").textContent   = "Kode Satuan Kerja harus unik.";
-  $("#modal-body").innerHTML = `
-    <div class="grid2">
-      <div class="field">
-        <label class="fl">Kode Satuan Kerja <span class="req">*</span></label>
-        <input class="inp" id="skr-m-kode" placeholder="Contoh: 0416">
-      </div>
-      <div class="field">
-        <label class="fl">Berlaku Sejak <span class="req">*</span></label>
-        <input class="inp" type="date" id="skr-m-berlaku">
-      </div>
-    </div>
-    <div class="field">
-      <label class="fl">Nama Satuan Kerja <span class="req">*</span></label>
-      <input class="inp" id="skr-m-nama" placeholder="Contoh: KODIM 0830/SAMPANG">
-    </div>
-    <div class="field">
-      <label class="fl">Unit Organisasi <span class="req">*</span></label>
-      <select class="inp" id="skr-m-unor">
-        <option value="">Pilih Unit Organisasi</option>
-        ${unorRows.map(u => `<option>${esc(u.nama)}</option>`).join("")}
-      </select>
-    </div>
-    <div class="field" style="margin-bottom:0">
-      <label class="fl">Kode KPPN <span class="req">*</span></label>
-      <select class="inp" id="skr-m-kppn">
-        <option value="">Pilih KPPN</option>
-        ${REF_KPPN.map(k => `<option value="${esc(k.kode)}">${esc(k.kode)} — ${esc(k.uraian)}</option>`).join("")}
-      </select>
-    </div>
-    <div class="form-actions" style="justify-content:flex-end">
-      <button class="btn btn-ghost" id="skr-m-batal">Batal</button>
-      <button class="btn btn-primary" id="skr-m-simpan">Simpan</button>
-    </div>`;
-  openModal();
-  $("#skr-m-batal").onclick  = closeModal;
-  $("#skr-m-simpan").onclick = () => {
-    const kode    = $("#skr-m-kode").value.trim().toUpperCase();
-    const nama    = $("#skr-m-nama").value.trim().toUpperCase();
-    const unor    = $("#skr-m-unor").value;
-    const kppn    = $("#skr-m-kppn").value;
-    const berlaku = $("#skr-m-berlaku").value;
-    if (!kode || !nama || !unor || !kppn || !berlaku) { toast("Seluruh field wajib diisi.", "bad"); return; }
-    if (skrRows.some(s => s.kode.toUpperCase() === kode)) {
-      toast(`Kode ${kode} sudah terdaftar pada daftar Satuan Kerja.`, "bad");
-      return;
-    }
-    skrRows.unshift({
-      kode, nama, unor, kppn, berlaku: refTglDariInput(berlaku),
-      oleh: PENGATURAN.namaUser, keterangan: "Belum ada keterangan.",
-      _id: skrRows.length ? Math.max(...skrRows.map(s => s._id)) + 1 : 0
-    });
-    renderSatuanKerja();
-    closeModal();
-    toast("Satuan kerja baru berhasil disimpan.", "ok");
-  };
+function skrGotoView(view) {
+  $("#skr-list-view").style.display = view === "list" ? "" : "none";
+  $("#skr-form-view").style.display = view === "form" ? "" : "none";
+  $("#skr-crumb").innerHTML =
+    `<span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pengelolaan Referensi Data Kepesertaan</span>`
+    + (view === "form" ? `<span>›</span><span>Satuan Kerja</span><span>›</span><b>Tambah Satuan Kerja</b>`
+                       : `<span>›</span><b>Satuan Kerja</b>`);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* ------------------------------------------------ Tambah Satuan Kerja */
+function skrResetUnggah() {
+  skrForm.berkas = false;
+  $("#skrf-dropzone").classList.remove("has-file");
+  $("#skrf-file-title").textContent = "Tarik file ke sini atau klik untuk memilih";
+  $("#skrf-file-sub").textContent   = "Format .xlsx, maksimal 5 MB";
+}
+
+/* Ganti mekanisme = kosongkan isian mekanisme sebelumnya. Tombol Batal/Simpan
+   baru muncul setelah mekanisme dipilih. */
+function skrTerapkanMekanisme() {
+  const m = skrForm.mekanisme;
+  $("#skrf-satuan").style.display   = m === "Satuan"   ? "" : "none";
+  $("#skrf-kolektif").style.display = m === "Kolektif" ? "" : "none";
+  $("#skrf-aksi").style.display     = m ? "" : "none";
+  $("#skrf-kode").value   = "";
+  $("#skrf-nama").value   = "";
+  $("#skrf-alamat").value = "";
+  skrResetUnggah();
+}
+
+function skrShowForm() {
+  skrForm = { mekanisme:"", berkas:false };
+  $("#skrf-mekanisme").value = "";
+  skrTerapkanMekanisme();
+  skrGotoView("form");
+}
+
+$("#skr-tambah").onclick   = skrShowForm;
+$("#skrf-kembali").onclick = () => skrGotoView("list");
+$("#skrf-batal").onclick   = () => skrGotoView("list");
+
+$("#skrf-mekanisme").onchange = () => {
+  skrForm.mekanisme = $("#skrf-mekanisme").value;
+  skrTerapkanMekanisme();
 };
 
+$("#skrf-template").onclick = () => toast("Template Satuan Kerja diunduh.");
+
+$("#skrf-dropzone").onclick = () => {
+  skrForm.berkas = true;
+  $("#skrf-dropzone").classList.add("has-file");
+  $("#skrf-file-title").textContent = SATUAN_KERJA_KOLEKTIF_CONTOH.namaBerkas;
+  $("#skrf-file-sub").textContent   = `${SATUAN_KERJA_KOLEKTIF_CONTOH.rows.length} baris terbaca — siap disimpan`;
+};
+
+/* Entri baru selalu di atas; filter dikosongkan supaya baris yang baru
+   disimpan pasti terlihat di tabel. */
+function skrTambahBaris(b) {
+  skrRows.unshift({
+    unor:"", kppn:"", keterangan:"Belum ada keterangan.", ...b,
+    tgl: unorTglHariIni(), oleh: PENGATURAN.namaUser,
+    _id: skrRows.length ? Math.max(...skrRows.map(s => s._id)) + 1 : 0
+  });
+}
+function skrSelesaiSimpan(pesan) {
+  $("#skr-f-cari").value = "";
+  $("#skr-f-unor").value = "all";
+  renderSatuanKerja();
+  skrGotoView("list");
+  toast(pesan, "ok");
+}
+
+function skrSimpanSatuan() {
+  const kode   = $("#skrf-kode").value.trim().toUpperCase();
+  const nama   = $("#skrf-nama").value.trim().toUpperCase();
+  const alamat = $("#skrf-alamat").value.trim();
+  if (!kode || !nama || !alamat) { toast("Seluruh field bertanda * wajib diisi.", "bad"); return; }
+  if (skrKodeTerpakai(kode)) { toast(`Kode ${kode} sudah terdaftar pada daftar Satuan Kerja.`, "bad"); return; }
+  skrTambahBaris({ kode, nama, alamat });
+  skrSelesaiSimpan(`Satuan kerja ${nama} berhasil disimpan.`);
+}
+
+/* Baris berkas contoh yang kodenya sudah terdaftar dilewati. Dimasukkan dari
+   baris terakhir supaya urutan berkas tetap terjaga di bagian atas tabel. */
+function skrSimpanKolektif() {
+  if (!skrForm.berkas) { toast("Unggah berkas Satuan Kerja lebih dulu.", "bad"); return; }
+  const rows  = SATUAN_KERJA_KOLEKTIF_CONTOH.rows;
+  const masuk = rows.filter(r => !skrKodeTerpakai(r.kode));
+  if (!masuk.length) { toast("Tidak ada satuan kerja baru — seluruh kode di berkas sudah terdaftar.", "bad"); return; }
+  masuk.slice().reverse().forEach(r => skrTambahBaris({ ...r }));
+  const dilewati = rows.length - masuk.length;
+  skrSelesaiSimpan(`${masuk.length} satuan kerja berhasil disimpan`
+    + (dilewati ? `, ${dilewati} dilewati karena kode sudah terdaftar.` : "."));
+}
+
+$("#skrf-simpan").onclick = () => {
+  if (!skrForm.mekanisme) { toast("Pilih Mekanisme Tambah Satuan Kerja lebih dulu.", "bad"); return; }
+  if (skrForm.mekanisme === "Satuan") skrSimpanSatuan(); else skrSimpanKolektif();
+};
+
+/* --------------------------------------------------- Detail & Hapus */
 function skrDetail(s) {
   $("#modal-title").textContent = "Detail Satuan Kerja";
   $("#modal-sub").textContent   = `${s.kode} · ${s.nama}`;
@@ -9497,11 +9542,12 @@ function skrDetail(s) {
     <div class="review-card">
       <div class="review-card-head">Data Satuan Kerja</div>
       <div class="review-card-body">
+        <div class="review-row"><div class="fl">Tanggal Buat</div><div class="val">${esc(unorTanggal(s.tgl).panjang)}</div></div>
         <div class="review-row"><div class="fl">Kode Satuan Kerja</div><div class="val">${esc(s.kode)}</div></div>
         <div class="review-row"><div class="fl">Nama Satuan Kerja</div><div class="val">${esc(s.nama)}</div></div>
-        <div class="review-row"><div class="fl">Unit Organisasi</div><div class="val">${esc(s.unor)}</div></div>
-        <div class="review-row"><div class="fl">KPPN</div><div class="val">${esc(s.kppn)} — ${esc(skrNamaKppn(s.kppn) || "-")}</div></div>
-        <div class="review-row"><div class="fl">Berlaku Sejak</div><div class="val">${esc(unorTanggal(s.berlaku).panjang)}</div></div>
+        <div class="review-row"><div class="fl">Alamat Satuan Kerja</div><div class="val">${esc(s.alamat || "-")}</div></div>
+        <div class="review-row"><div class="fl">Unit Organisasi</div><div class="val">${esc(s.unor || "-")}</div></div>
+        <div class="review-row"><div class="fl">KPPN</div><div class="val">${s.kppn ? `${esc(s.kppn)} — ${esc(skrNamaKppn(s.kppn) || "-")}` : "-"}</div></div>
         <div class="review-row"><div class="fl">Dibuat Oleh</div><div class="val">${esc(s.oleh)}</div></div>
         <div class="review-row"><div class="fl">Keterangan</div><div class="val">${esc(s.keterangan)}</div></div>
       </div>
