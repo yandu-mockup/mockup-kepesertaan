@@ -77,12 +77,12 @@
       <button class="nav-item nav-child" data-go="daerah">Daerah <span class="tag">New</span></button>
     </div>
     <button class="nav-item nav-parent" id="nav-spp" aria-expanded="true">
-      <span>SPP Data Peserta</span><span class="chevron">⌄</span>
+      <span>Pemulihan Data Peserta</span><span class="chevron">⌄</span>
     </button>
     <div class="nav-children" id="nav-spp-children">
-      <button class="nav-item nav-child" data-go="spp-pengajuan">Pengajuan SPP Data Peserta</button>
-      <button class="nav-item nav-child" data-go="spp-approval">Approval SPP Data Peserta</button>
-      <button class="nav-item nav-child" data-go="spp-bersih">List Bersih SPP Data Peserta</button>
+      <button class="nav-item nav-child" data-go="spp-pengajuan">Pemulihan Data Peserta</button>
+      <button class="nav-item nav-child" data-go="spp-approval">Approval Pemulihan Data Peserta</button>
+      <button class="nav-item nav-child" data-go="spp-bersih">Daftar Nominatif Pemulihan Data Peserta</button>
     </div>
     <button class="nav-item" data-go="data-peserta">Data Peserta</button>
 
@@ -113,7 +113,9 @@
           </div>
         </div>
         <select class="role-chip" id="top-role" aria-label="Pilih role">
-          <option>Divisi Kepesertaan dan Pengembangan Manfaat</option>
+          <option>Officer Bidang Pulminpes</option>
+          <option>Officer Bidang Lojita</option>
+          <option>Officer Bidang Pengembangan Manfaat</option>
           <option>Kepala Divisi Kepesertaan dan Pengembangan Manfaat</option>
           <option>Kepala Bidang Lojita</option>
           <option>Kepala Bidang Pulminpes</option>
@@ -3196,21 +3198,21 @@
         </div>
       </section>
 
-      <!-- ---------- SPP DATA PESERTA » PENGAJUAN ---------- -->
+      <!-- ---------- PEMULIHAN DATA PESERTA ---------- -->
       <section class="screen" id="s-spp-pengajuan">
-        <div class="crumb" id="sppp-crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>SPP Data Peserta</span><span>›</span><b>Pengajuan SPP Data Peserta</b></div>
+        <div class="crumb" id="sppp-crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><b>Pemulihan Data Peserta</b></div>
 
         <!-- ===== Tampilan awal: pintu masuk form ===== -->
         <div id="sppp-intro-view">
           <div class="page-head">
             <div>
-              <h1 class="page-title">Pengajuan SPP Data Peserta</h1>
+              <h1 class="page-title">Pemulihan Data Peserta</h1>
               <div class="page-sub">Perekaman data peserta yang Nomor KPA-nya sudah terbit namun data kepesertaannya belum tersedia di YANDU NextGen.</div>
             </div>
-            <button class="btn btn-primary" id="spp-tambah">+ Tambah SPP Data Peserta</button>
+            <button class="btn btn-primary" id="spp-tambah">+ Tambah Pemulihan Data Peserta</button>
           </div>
 
-          <div class="alert alert-info"><span>ⓘ</span><span>Pengajuan yang disimpan masuk ke tabel di bawah ini dan ke <b>Approval SPP Data Peserta</b> dengan status <b>Tertunda</b>. Setelah disetujui, data peserta muncul di <b>List Bersih SPP Data Peserta</b> dan bisa dibuka lewat halaman Detail Peserta.</span></div>
+          <div class="alert alert-info"><span>ⓘ</span><span>Pengajuan yang disimpan masuk ke tabel di bawah ini dan ke <b>Approval Pemulihan Data Peserta</b> dengan status <b>Tertunda</b>. Setelah disetujui, data peserta muncul di <b>Daftar Nominatif Pemulihan Data Peserta</b> dan bisa dibuka lewat halaman Detail Peserta.</span></div>
 
           <div class="card">
             <h3 class="card-title">Filter</h3>
@@ -3261,7 +3263,7 @@
             <button class="link-back" id="sppp-kembali">← Kembali</button>
             <div class="head-divider"></div>
             <div>
-              <div class="t-strong" style="font-size:15px" id="sppp-d-title">Detail Pengajuan SPP</div>
+              <div class="t-strong" style="font-size:15px" id="sppp-d-title">Detail Pemulihan Data Peserta</div>
               <div class="hint" id="sppp-d-sub" style="margin:2px 0 0"></div>
             </div>
           </div>
@@ -3316,14 +3318,14 @@
           </div>
         </div>
 
-        <!-- ===== Form Tambah SPP Data Peserta ===== -->
+        <!-- ===== Form Tambah Pemulihan Data Peserta ===== -->
         <div id="spp-tambah-view" style="display:none">
           <div class="head-row">
             <button class="link-back" id="spt-kembali">← Kembali</button>
             <div class="head-divider"></div>
             <div>
-              <div class="t-strong" style="font-size:15px">Tambah SPP Data Peserta</div>
-              <div class="hint" style="margin:2px 0 0">Isi seluruh section di bawah ini, lalu simpan untuk masuk ke antrean verifikasi.</div>
+              <div class="t-strong" style="font-size:15px">Tambah Pemulihan Data Peserta</div>
+              <div class="hint" style="margin:2px 0 0">Isi seluruh section di bawah ini, lalu simpan untuk masuk ke antrean persetujuan.</div>
             </div>
           </div>
 
@@ -3363,20 +3365,21 @@
                 <label class="fl" for="spt-nrp">NRP / NIP <span class="req">*</span></label>
                 <input class="inp" id="spt-nrp" placeholder="199204051234">
               </div>
-              <div class="field">
+              <div class="field" style="position:relative">
                 <label class="fl" for="spt-uker">UKER <span class="req">*</span></label>
-                <input class="inp" id="spt-uker" placeholder="Nama unit kerja / kesatuan">
+                <input class="inp" id="spt-uker" placeholder="Cari nama atau kode satuan kerja..." autocomplete="off">
+                <div class="autocomplete-list" id="spt-uker-list"></div>
               </div>
               <div class="field">
-                <label class="fl" for="spt-no-skep">No Skep Pengangkatan</label>
+                <label class="fl" for="spt-no-skep">No SKEP Pengangkatan Awal</label>
                 <input class="inp" id="spt-no-skep" placeholder="KEP/xxx/…/2026">
               </div>
               <div class="field">
-                <label class="fl" for="spt-tgl-skep">Tanggal Skep Pengangkatan</label>
+                <label class="fl" for="spt-tgl-skep">Tanggal Skep Pengangkatan Awal</label>
                 <input class="inp" type="date" id="spt-tgl-skep">
               </div>
               <div class="field">
-                <label class="fl" for="spt-tmt">TMT Pengangkatan <span class="req">*</span></label>
+                <label class="fl" for="spt-tmt">TMT Pengangkatan Awal <span class="req">*</span></label>
                 <input class="inp" type="date" id="spt-tmt">
               </div>
               <div class="field">
@@ -3389,7 +3392,8 @@
               </div>
               <div class="field">
                 <label class="fl" for="spt-kancab">Kancab ASABRI</label>
-                <input class="inp" id="spt-kancab" placeholder="KC Surabaya">
+                <input class="inp" id="spt-kancab" placeholder="Terisi otomatis dari lokasi UKER">
+                <div class="hint">Terisi otomatis sesuai lokasi UKER yang dipilih.</div>
               </div>
               <div class="field span3">
                 <label class="fl" for="spt-bintang-jasa">Bintang Jasa</label>
@@ -3405,10 +3409,6 @@
               <div class="field span2">
                 <label class="fl" for="spt-nama">Nama Peserta <span class="req">*</span></label>
                 <input class="inp" id="spt-nama" placeholder="Sesuai KTP">
-              </div>
-              <div class="field">
-                <label class="fl" for="spt-nama-konfirmasi">Konfirmasi Nama Peserta <span class="req">*</span></label>
-                <input class="inp" id="spt-nama-konfirmasi" placeholder="Ketik ulang nama peserta">
               </div>
               <div class="field">
                 <label class="fl" for="spt-tempat-lahir">Tempat Lahir</label>
@@ -3465,10 +3465,6 @@
                 <label class="fl" for="spt-hp">No Handphone</label>
                 <input class="inp" id="spt-hp" placeholder="081234567890">
               </div>
-              <div class="field span2">
-                <label class="fl" for="spt-ibu">Nama Ibu Kandung</label>
-                <input class="inp" id="spt-ibu" placeholder="Nama lengkap ibu kandung">
-              </div>
               <div class="field">
                 <label class="fl">Status Dokumen</label>
                 <label style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--body);white-space:nowrap;margin:0">
@@ -3502,6 +3498,7 @@
               <h3 class="card-title" style="margin:0">Data Pangkat</h3>
               <button class="btn btn-ghost btn-sm" id="spt-pangkat-tambah">+ Tambah Riwayat Pangkat</button>
             </div>
+            <div class="hint" style="margin:0 0 12px">Pangkat Awal dan Pangkat Akhir terisi otomatis dari section Data Personil; riwayat pangkat di antaranya ditambah lewat tombol di atas.</div>
             <div class="tbl-wrap">
               <table>
                 <thead><tr>
@@ -3530,13 +3527,13 @@
         </div>
       </section>
 
-      <!-- ---------- SPP DATA PESERTA » LIST BERSIH ---------- -->
+      <!-- ---------- PEMULIHAN DATA PESERTA » DAFTAR NOMINATIF ---------- -->
       <section class="screen" id="s-spp-bersih">
-        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>SPP Data Peserta</span><span>›</span><b>List Bersih SPP Data Peserta</b></div>
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pemulihan Data Peserta</span><span>›</span><b>Daftar Nominatif Pemulihan Data Peserta</b></div>
         <div class="page-head">
           <div>
-            <h1 class="page-title">List Bersih SPP Data Peserta</h1>
-            <div class="page-sub">Peserta hasil pengajuan SPP yang sudah disetujui — datanya sudah tersedia di YANDU NextGen.</div>
+            <h1 class="page-title">Daftar Nominatif Pemulihan Data Peserta</h1>
+            <div class="page-sub">Peserta hasil pemulihan data yang sudah disetujui — datanya sudah tersedia di YANDU NextGen.</div>
           </div>
         </div>
 
@@ -3580,16 +3577,16 @@
         </div>
       </section>
 
-      <!-- ---------- APPROVAL SPP DATA PESERTA ---------- -->
+      <!-- ---------- APPROVAL PEMULIHAN DATA PESERTA ---------- -->
       <section class="screen" id="s-spp-approval">
-        <div class="crumb" id="sppa-crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>SPP Data Peserta</span><span>›</span><b>Approval SPP Data Peserta</b></div>
+        <div class="crumb" id="sppa-crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pemulihan Data Peserta</span><span>›</span><b>Approval Pemulihan Data Peserta</b></div>
 
         <!-- ===== Daftar Permohonan Menunggu Persetujuan ===== -->
         <div id="sppa-list-view">
           <div class="page-head">
             <div>
-              <h1 class="page-title">Approval SPP Data Peserta</h1>
-              <div class="page-sub">Persetujuan atas pengajuan SPP yang masuk dari Kantor Cabang, sebelum data peserta tersedia di YANDU NextGen.</div>
+              <h1 class="page-title">Approval Pemulihan Data Peserta</h1>
+              <div class="page-sub">Persetujuan atas pengajuan pemulihan data peserta yang masuk dari Kantor Cabang, sebelum datanya tersedia di YANDU NextGen.</div>
             </div>
           </div>
 
@@ -3646,7 +3643,7 @@
             <button class="link-back" id="sppa-kembali">← Kembali</button>
             <div class="head-divider"></div>
             <div>
-              <div class="t-strong" style="font-size:15px" id="sppa-d-title">Detail Permohonan SPP</div>
+              <div class="t-strong" style="font-size:15px" id="sppa-d-title">Detail Pemulihan Data Peserta</div>
               <div class="hint" id="sppa-d-sub" style="margin:2px 0 0"></div>
             </div>
           </div>

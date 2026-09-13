@@ -803,7 +803,7 @@ const DATA_IURAN_PREMI_PESERTA = [
    --------------------------------------------------------------------------- */
 const DATA_HOME_NOTIFIKASI = [
   /* Satu pengajuan yang sama, dibaca dua divisi dengan konteks berbeda. */
-  { judul:"Pengajuan Request Umum Kantor Cabang Jakarta", untuk:"Divisi Kepesertaan dan Pengembangan Manfaat",
+  { judul:"Pengajuan Request Umum Kantor Cabang Jakarta", untuk:"Officer Bidang Pulminpes",
     detail:"Pengajuan Request Umum terkait dengan Peremajaan Data dengan KPA Peserta KPA-10023 a.n. Budi Santoso dari Kantor Cabang Asabri Jakarta, tenggat waktu Pengajuan tersisa 3 hari kerja tenggat waktu penyelesaian 02-09-2026.",
     tanggal:"29/08/2026", tingkat:"Kritis", go:"request-umum", ruKpa:"KPA-10023" },
   { judul:"Pengajuan Request Umum Kantor Cabang Jakarta", untuk:"Divisi Layanan",
@@ -2798,7 +2798,7 @@ const PESERTA_KELOLA_TAB = [
    kode personil). `induk` = kode/nama tingkat di atasnya. Kombinasi jenis +
    kode harus unik.
    Layar "Daftar Kode Referensi" sudah tidak ada; daftar ini masih dibaca layar
-   lain (mis. SPP Data Peserta) untuk mengisi pilihan Pangkat dan Kesatuan.
+   lain (mis. Pemulihan Data Peserta) untuk mengisi pilihan Pangkat dan Kesatuan.
    `DATA_REFERENSI_USULAN` dan `DATA_REFERENSI_BULK` disimpan sebagai bahan bila
    layar pemeliharaannya dihidupkan kembali.
    status: "Aktif" | "Nonaktif"
@@ -3152,14 +3152,14 @@ const DAERAH_KOLEKTIF_CONTOH = {
 };
 
 /* ---------------------------------------------------------------------------
-   24. SPP DATA PESERTA
+   24. PEMULIHAN DATA PESERTA
    Permohonan penambahan data peserta yang Nomor Kartu Peserta ASABRI (KPA)-nya
    sudah terbit namun data kepesertaannya belum tersedia di YANDU — sisa migrasi
    dari aplikasi Yandu lama. `rekomendasi` adalah data peserta mirip yang
    ditawarkan sistem sebagai bahan verifikasi sebelum data ditambahkan.
    sumber rekomendasi: "Belum Termigrasi" | "Data Terhapus" | "Arsip Yandu Lama"
    status:   "Tertunda" | "Disetujui" | "Ditolak" — pengajuan masuk sebagai
-   "Tertunda" lalu diputuskan di layar Approval SPP Data Peserta.
+   "Tertunda" lalu diputuskan di layar Approval Pemulihan Data Peserta.
    tindakan: "" | "Restore Data" | "Input Data Baru" (peninggalan data contoh)
    tmt / noSkep / tglSkep / pangkatAwal : data pengangkatan yang tampil di
    kolom tabel daftar permohonan; `pangkat` sendiri berisi pangkat terakhir.
@@ -3245,8 +3245,8 @@ const DATA_SPP = [
 ];
 
 /* ---------------------------------------------------------------------------
-   24b. REFERENSI FORM TAMBAH SPP DATA PESERTA
-   Pilihan dropdown pada form "+ Tambah SPP Data Peserta". Nilainya contoh yang
+   24b. REFERENSI FORM TAMBAH PEMULIHAN DATA PESERTA
+   Pilihan dropdown pada form "+ Tambah Pemulihan Data Peserta". Nilainya contoh yang
    mengikuti format referensi ASABRI — Pangkat memakai format "KODE - PANGKAT"
    supaya satu nama pangkat yang dipakai beberapa angkatan tetap bisa dibedakan
    lewat kodenya (mis. BRIGJEN pada TNI AD, AL, AU, dan Marinir).
@@ -3280,7 +3280,24 @@ const SPP_JENIS_KELAMIN = ["Laki-laki", "Perempuan"];
 const SPP_STATUS_KAWIN  = ["BELUM MENIKAH", "MENIKAH", "CERAI HIDUP", "CERAI MATI"];
 const SPP_HUBUNGAN_KELUARGA = ["Istri", "Suami", "Anak", "Ayah", "Ibu", "Wali"];
 
-/* Berkas yang selalu diminta pada form tambah SPP; sisanya dipilih sendiri
+/* Kantor Cabang yang melayani tiap kabupaten/kota. Kuncinya bagian terakhir
+   alamat Satuan Kerja (DATA_SATUAN_KERJA) — dipakai field UKER pada form Tambah
+   Pemulihan Data Peserta untuk mengisi Kancab ASABRI secara otomatis. Lokasi
+   yang belum ada di sini membuat Kancab ASABRI diisi manual. */
+const SPP_KANCAB_LOKASI = {
+  "Kota Surabaya":       "KC Surabaya",
+  "Kabupaten Sidoarjo":  "KC Surabaya",
+  "Kabupaten Sumenep":   "KC Surabaya",
+  "Kabupaten Bangkalan": "KC Surabaya",
+  "Kabupaten Magetan":   "KC Madiun",
+  "Kota Malang":         "KC Malang",
+  "Kota Batu":           "KC Malang",
+  "Jakarta Pusat":       "KC Jakarta Pusat",
+  "Kota Bandung":        "KC Bandung",
+  "Kota Cimahi":         "KC Bandung"
+};
+
+/* Berkas yang selalu diminta pada form tambah pemulihan data; sisanya dipilih sendiri
    oleh officer dari DATA_BERKAS_SARAN lewat tombol "+ Tambah Berkas". */
 const SPP_BERKAS_TETAP = [
   { key:"ktp",          label:"KTP",                       wajib:true,  note:"scan berwarna yang terbaca jelas" },

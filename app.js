@@ -22,16 +22,20 @@ const ukuranBerkas = b => {
 };
 
 /* Role aktif dipilih lewat chip di navbar. Kewenangan yang dibedakan:
-   Divisi Kepesertaan → verifikasi, persetujuan, dan kelola referensi;
+   Officer Bidang     → verifikasi, persetujuan, dan kelola referensi
+                        (Pulminpes, Lojita, dan Pengembangan Manfaat —
+                        ketiganya setara, diperiksa lewat roleOfficer());
    PIC UNOR/Kesatuan  → mengajukan atas nama kesatuannya;
    Kantor Cabang      → mengajukan dan memantau, tanpa hak persetujuan.
 
    Empat role pimpinan di bawah adalah jajaran Divisi Kepesertaan dan
    Pengembangan Manfaat (Kepala Divisi beserta tiga Kepala Bidang). Sampai
    kewenangan tiap layar ditetapkan, role ini membuka modul dalam mode baca:
-   pemeriksaan `=== ROLE_DIVISI` yang menjaga tombol kelola/putuskan belum
-   mencakup mereka. */
-const ROLE_DIVISI = "Divisi Kepesertaan dan Pengembangan Manfaat";
+   roleOfficer() yang menjaga tombol kelola/putuskan belum mencakup mereka. */
+const ROLE_OFFICER_PULMINPES = "Officer Bidang Pulminpes";
+const ROLE_OFFICER_LOJITA    = "Officer Bidang Lojita";
+const ROLE_OFFICER_MANFAAT   = "Officer Bidang Pengembangan Manfaat";
+const ROLE_OFFICER = [ROLE_OFFICER_PULMINPES, ROLE_OFFICER_LOJITA, ROLE_OFFICER_MANFAAT];
 const ROLE_CABANG = "Kantor Cabang";
 const ROLE_PIC    = "PIC UNOR/Kesatuan";
 const ROLE_LAYANAN = "Divisi Layanan";
@@ -40,6 +44,7 @@ const ROLE_KABID_LOJITA    = "Kepala Bidang Lojita";
 const ROLE_KABID_PULMINPES = "Kepala Bidang Pulminpes";
 const ROLE_KABID_MANFAAT   = "Kepala Bidang Pengembangan Manfaat";
 const roleSaatIni = () => $("#top-role").value;
+const roleOfficer = (role = roleSaatIni()) => ROLE_OFFICER.includes(role);
 
 function toast(msg, kind = "") {
   const t = document.createElement("div");
@@ -3407,7 +3412,7 @@ function nominatifBolehCetak() { return roleSaatIni() !== ROLE_PIC; }
    maupun Divisi Kepesertaan — keduanya memerlukan salinan suratnya. */
 function nominatifBolehUnduhSurat() {
   const role = roleSaatIni();
-  return role === ROLE_PIC || role === ROLE_DIVISI;
+  return role === ROLE_PIC || roleOfficer(role);
 }
 
 /* Yang bisa diunduh hanya surat pengantar yang sudah lolos Approval Cetak
@@ -4386,13 +4391,19 @@ const HOME_DOT_COLOR = { kebijakan:"var(--blue-ink)", info:"var(--red)" };
    pada `untuk`. */
 let ruNotifRequestUmum = [];
 
+/* Tiga Officer Bidang memegang antrean yang sama, jadi notifikasi yang
+   dialamatkan ke salah satunya ikut tampil di dua lainnya. */
+function untukRole(untuk, role) {
+  return untuk === role || (ROLE_OFFICER.includes(untuk) && ROLE_OFFICER.includes(role));
+}
+
 function notifikasiUntukRole() {
   const role = roleSaatIni();
-  const sesi = ruNotifRequestUmum.filter(n => n.untuk === role);
+  const sesi = ruNotifRequestUmum.filter(n => untukRole(n.untuk, role));
   /* Entri ber-`untuk` hanya untuk role tersebut. Entri tanpa `untuk` adalah
      tugas umum yang tidak ditampilkan ke Divisi Layanan — role itu hanya
      menerima notifikasi yang memang dialamatkan kepadanya. */
-  const umum = DATA_HOME_NOTIFIKASI.filter(n => n.untuk ? n.untuk === role : role !== ROLE_LAYANAN);
+  const umum = DATA_HOME_NOTIFIKASI.filter(n => n.untuk ? untukRole(n.untuk, role) : role !== ROLE_LAYANAN);
   return [...sesi, ...umum];
 }
 function notifMetaHtml(n) {
@@ -4633,10 +4644,10 @@ function ruShowDetail(r) {
      Layanan hanya hak Divisi Kepesertaan. Begitu request ditandai Selesai,
      semua aksi ditutup dan diganti keterangan. */
   const role   = roleSaatIni();
-  const divisi = role === ROLE_DIVISI || role === ROLE_LAYANAN;
+  const divisi = roleOfficer(role) || role === ROLE_LAYANAN;
   $("#ru-reply").style.display       = r.selesai ? "none" : "";
   $("#ru-selesai").style.display     = !r.selesai && divisi ? "" : "none";
-  $("#ru-alihkan").style.display     = !r.selesai && role === ROLE_DIVISI ? "" : "none";
+  $("#ru-alihkan").style.display     = !r.selesai && roleOfficer(role) ? "" : "none";
   $("#ru-detail-note").style.display = r.selesai ? "" : "none";
   ruOpenDetail();
 }
@@ -4715,7 +4726,7 @@ function ruTglNotif() {
    notifikasi. Nama divisi dipendekkan mengikuti contoh teks notifikasi. */
 function ruNotifUntukCabang(r, jenis) {
   const role   = roleSaatIni();
-  const divisi = role === ROLE_DIVISI ? "Divisi Kepesertaan" : role === ROLE_LAYANAN ? "Divisi Layanan" : null;
+  const divisi = roleOfficer(role) ? "Divisi Kepesertaan" : role === ROLE_LAYANAN ? "Divisi Layanan" : null;
   if (!divisi) return;
   const reply = jenis === "reply";
   ruNotifRequestUmum.unshift({
@@ -4885,7 +4896,7 @@ document.addEventListener("click", e => {
 const RUKAT_SUBJEK = ["Divisi Kepesertaan", "Divisi Layanan"];
 let rukatRows = DATA_RU_KATEGORI.map((k, i) => ({ ...k, _id: i }));
 
-function rukatBolehKelola() { return roleSaatIni() === ROLE_DIVISI; }
+function rukatBolehKelola() { return roleOfficer(); }
 
 /* Pilihan Kategori untuk form Tambah Request Umum: nama unik dari seluruh
    divisi, urut abjad, "Lainnya" selalu paling akhir. */
@@ -5787,7 +5798,7 @@ function dpBukaDetail(migrasiId, asal) {
   dpTabAktif     = "profil";
   dpAsalDetail   = asal || "data-peserta";
   $("#dpd-crumb-asal").textContent = dpAsalDetail === "spp-bersih"
-    ? "List Bersih SPP Data Peserta" : "Data Peserta";
+    ? "Daftar Nominatif Pemulihan Data Peserta" : "Data Peserta";
   renderDetailPeserta();
   go("data-peserta-detail");
 }
@@ -6574,8 +6585,8 @@ function renderPanelDetailPeserta() {
   $("#dpd-mutakhir").onclick = () => go("peremajaan-pemutakhiran");
 }
 
-/* Layar detail dipakai dua pintu masuk — Data Peserta dan List
-   Bersih SPP — jadi tombol Kembali mengingat asalnya. */
+/* Layar detail dipakai dua pintu masuk — Data Peserta dan Daftar Nominatif
+   Pemulihan Data Peserta — jadi tombol Kembali mengingat asalnya. */
 let dpAsalDetail = "data-peserta";
 $("#dpd-kembali").onclick = () => go(dpAsalDetail);
 $("#dpd-tabs").addEventListener("click", e => {
@@ -6624,7 +6635,7 @@ $("#s-data-peserta").addEventListener("keydown", e => {
 
 /* ====================================================================== INIT */
 /* Ganti role = ganti kewenangan, jadi layar yang tombolnya dibatasi role
-   (UNOR, Status Peserta, Batas Usia Pensiun, SPP Data
+   (UNOR, Status Peserta, Batas Usia Pensiun, Pemulihan Data
    Peserta, Daftar Nominatif, Satuan Kerja, Daerah) digambar ulang. */
 $("#top-role").onchange = () => {
   toast(`Role diubah ke: ${roleSaatIni()}.`);
@@ -8616,7 +8627,7 @@ initPesertaNd();
 
 /* ====================================== KODE ACUAN REFERENSI KEPESERTAAN
    Layar "Daftar Kode Referensi" sudah tidak ada, tetapi daftar kodenya masih
-   dibaca layar lain (mis. SPP Data Peserta) untuk mengisi pilihan Pangkat dan
+   dibaca layar lain (mis. Pemulihan Data Peserta) untuk mengisi pilihan Pangkat dan
    Satker/Kesatuan agar konsisten dengan tabel referensi ASABRI. */
 const refRows = DATA_REFERENSI;
 
@@ -8682,7 +8693,7 @@ function unorPaginationHtml(totalPages) {
 
 /* Pemeliharaan kode referensi adalah kewenangan Bidang Lojita di Divisi
    Kepesertaan; Kantor Cabang dan PIC UNOR/Kesatuan hanya melihat daftarnya. */
-function unorBolehKelola() { return roleSaatIni() === ROLE_DIVISI; }
+function unorBolehKelola() { return roleOfficer(); }
 
 function renderUnor() {
   const boleh      = unorBolehKelola();
@@ -8816,7 +8827,7 @@ document.addEventListener("click", e => {
    di atas dipakai ulang supaya tampilannya seragam satu sub modul. */
 let stpRows = DATA_STATUS_PESERTA.map((s, i) => ({ ...s, _id: i }));
 
-function stpBolehKelola() { return roleSaatIni() === ROLE_DIVISI; }
+function stpBolehKelola() { return roleOfficer(); }
 
 /* Pilihan filter mengikuti isi daftar supaya status baru ikut muncul; nilai
    yang sedang dipilih dipertahankan selama masih ada di daftar. */
@@ -8941,7 +8952,7 @@ document.addEventListener("click", e => {
    dengan Tanggal Buat dari sistem, ditambah/diubah/dihapus lewat modal. */
 let bupRows = DATA_BUP.map((b, i) => ({ ...b, _id: i }));
 
-function bupBolehKelola() { return roleSaatIni() === ROLE_DIVISI; }
+function bupBolehKelola() { return roleOfficer(); }
 
 /* Filter Angkatan dan Pangkat/Golongan. Pilihan Pangkat/Golongan mengikuti
    Angkatan yang dipilih dan hanya menampilkan yang ada di daftar, berurutan
@@ -9125,7 +9136,7 @@ let skrRows = DATA_SATUAN_KERJA.map((s, i) => ({ ...s, _id: i }));
 
 let skrForm = { mekanisme:"", berkas:false };
 
-function skrBolehKelola() { return roleSaatIni() === ROLE_DIVISI; }
+function skrBolehKelola() { return roleOfficer(); }
 
 function skrKodeTerpakai(kode) { return skrRows.some(s => s.kode.toUpperCase() === kode.toUpperCase()); }
 
@@ -9367,7 +9378,7 @@ const DRH_FORM = {
 
 let drhForm = { mekanisme:"", tingkat:"", berkas:false };
 
-function drhBolehKelola() { return roleSaatIni() === ROLE_DIVISI; }
+function drhBolehKelola() { return roleOfficer(); }
 
 function drhCariKode(kode) { return kode ? drhRows.find(d => d.kode === kode) : null; }
 /* Kelurahan tanpa kode tidak mungkin punya turunan — tanpa penjaga ini,
@@ -9734,11 +9745,11 @@ document.addEventListener("click", e => {
   if (bHapus) { drhHapus(drhRows.find(d => d._id === +bHapus.dataset.drhHapus)); return; }
 });
 
-/* ============================================================ SPP DATA PESERTA
+/* ======================================================= PEMULIHAN DATA PESERTA
    Tiga layar berbagi satu daftar `sppRows`:
-     Pengajuan     — officer merekam data peserta lewat form tambah.
-     Approval      — pengajuan berstatus "Tertunda" disetujui atau ditolak.
-     List Bersih   — pengajuan yang sudah disetujui, datanya siap dipakai.
+     Pemulihan        — officer merekam data peserta lewat form tambah.
+     Approval         — pengajuan berstatus "Tertunda" disetujui atau ditolak.
+     Daftar Nominatif — pengajuan yang sudah disetujui, datanya siap dipakai.
    Begitu disetujui, barisnya juga dibentuk menjadi satu peserta lengkap di
    DATA_PESERTA_KELOLA supaya tombol Detail membuka halaman Detail Peserta
    yang sama persis dengan Data Peserta. */
@@ -9799,7 +9810,7 @@ function sppDaftarkanPeserta(r) {
 }
 
 /* Data contoh yang sudah berstatus "Disetujui" ikut didaftarkan saat muat
-   supaya List Bersih tidak kosong sejak awal. */
+   supaya Daftar Nominatif tidak kosong sejak awal. */
 sppRows.filter(r => r.status === "Disetujui").forEach(sppDaftarkanPeserta);
 
 
@@ -9809,16 +9820,17 @@ renderBup();
 renderSatuanKerja();
 renderDaerah();
 
-/* ------------------------ Layar Pengajuan + form "+ Tambah SPP Data Peserta"
+/* -------------------- Layar Pemulihan + form "+ Tambah Pemulihan Data Peserta"
    Officer Kantor Cabang merekam data peserta lewat form lima section, lalu
    hasil simpan masuk ke `sppRows` berstatus "Tertunda" dan layar langsung
-   berpindah ke Approval SPP Data Peserta. */
+   berpindah ke Approval Pemulihan Data Peserta. */
 
 let sptKeluarga    = [];
 let sptPangkat     = [];
 let sptBerkasTetap = {};
 let sptBerkasLain  = [];
 let sptNextId      = 1;
+let sptUker        = null;   // Satuan Kerja yang dipilih untuk field UKER
 
 function sptOpsi(list, kosong, terpilih) {
   return `<option value="">${esc(kosong)}</option>`
@@ -9836,6 +9848,47 @@ function isiPilihanSptForm() {
   $("#spt-status-kawin").innerHTML    = sptOpsi(SPP_STATUS_KAWIN, "— Silahkan Pilih Status Kawin —");
 }
 
+/* ------------------------------------------ UKER: pencarian Satuan Kerja
+   Pilihannya diambil dari referensi Satuan Kerja (`skrRows`, termasuk entri
+   yang baru ditambah). Memilih satu UKER langsung mengisi Kancab ASABRI sesuai
+   lokasinya — kabupaten/kota di ujung alamat satuan, dipetakan lewat
+   SPP_KANCAB_LOKASI di data.js. */
+function sptLokasiUker(s) {
+  const bagian = (s.alamat || "").split(",");
+  return bagian[bagian.length - 1].trim();
+}
+
+function sptRenderDaftarUker() {
+  const q = $("#spt-uker").value.trim().toLowerCase();
+  const hits = skrRows
+    .filter(s => !q || s.nama.toLowerCase().includes(q) || s.kode.toLowerCase().includes(q))
+    .slice(0, 8);
+  $("#spt-uker-list").innerHTML = hits.map(s => `
+    <div class="autocomplete-item" data-uker="${esc(s.kode)}">${esc(s.nama)}
+      <small>${esc(s.kode)} · ${esc(sptLokasiUker(s) || "-")}</small>
+    </div>`).join("");
+  $("#spt-uker-list").classList.toggle("open", hits.length > 0);
+}
+
+/* Mengetik ulang membatalkan pilihan sebelumnya, jadi Kancab ikut dikosongkan. */
+$("#spt-uker").oninput = () => { sptUker = null; $("#spt-kancab").value = ""; sptRenderDaftarUker(); };
+$("#spt-uker").onfocus = sptRenderDaftarUker;
+$("#spt-uker").onblur  = () => $("#spt-uker-list").classList.remove("open");
+/* mousedown + preventDefault: input tidak kehilangan fokus sebelum item terpilih */
+$("#spt-uker-list").onmousedown = e => {
+  const item = e.target.closest(".autocomplete-item");
+  if (!item) return;
+  e.preventDefault();
+  sptUker = skrRows.find(s => s.kode === item.dataset.uker);
+  $("#spt-uker").value = sptUker.nama;
+  $("#spt-uker-list").classList.remove("open");
+  const lokasi = sptLokasiUker(sptUker);
+  $("#spt-kancab").value = SPP_KANCAB_LOKASI[lokasi] || "";
+  if (!$("#spt-kancab").value) {
+    toast(`Lokasi ${lokasi || sptUker.nama} belum terpetakan ke Kantor Cabang — isi Kancab ASABRI secara manual.`, "bad");
+  }
+};
+
 /* --------------------------------------------------- section Data Keluarga */
 function renderSptKeluarga() {
   $("#spt-keluarga-body").innerHTML = sptKeluarga.length ? sptKeluarga.map((k, i) => `
@@ -9852,18 +9905,53 @@ function renderSptKeluarga() {
     : `<tr><td colspan="8"><div class="empty"><h4>Belum ada data keluarga</h4><p>Klik "+ Tambah Anggota Keluarga" untuk menambahkan baris.</p></div></td></tr>`;
 }
 
-/* ---------------------------------------------------- section Data Pangkat */
+/* ---------------------------------------------------- section Data Pangkat
+   Pangkat Awal dan Pangkat Akhir yang dipilih di Data Personil langsung tampil
+   di sini sebagai baris baca-saja: Pangkat Awal di urutan pertama beserta TMT
+   dan SKEP pengangkatan awalnya, Pangkat Akhir di urutan terakhir. Riwayat
+   pangkat di antaranya ditambah lewat tombol "+ Tambah Riwayat Pangkat". */
+function sptPangkatDariPersonil() {
+  const awal  = $("#spt-pangkat-awal").value;
+  const akhir = $("#spt-pangkat-akhir").value;
+  return {
+    awal: awal ? {
+      pangkat: awal,
+      tmt:     sptTanggal($("#spt-tmt").value),
+      noSkep:  $("#spt-no-skep").value.trim(),
+      tglSkep: sptTanggal($("#spt-tgl-skep").value)
+    } : null,
+    /* Pangkat Akhir yang sama dengan Pangkat Awal tidak dibuat baris kedua. */
+    akhir: akhir && akhir !== awal ? { pangkat: akhir, tmt: "", noSkep: "", tglSkep: "" } : null
+  };
+}
+
 function renderSptPangkat() {
-  $("#spt-pangkat-body").innerHTML = sptPangkat.length ? sptPangkat.map((p, i) => `
+  const { awal, akhir } = sptPangkatDariPersonil();
+  const barisPersonil = (p, no, label) => `
     <tr>
-      <td>${i + 1}</td>
+      <td>${no}</td>
+      <td class="t-strong">${esc(p.pangkat)}</td>
+      <td>${esc(p.tmt || "—")}</td>
+      <td>${esc(p.noSkep || "—")}</td>
+      <td>${esc(p.tglSkep || "—")}</td>
+      <td><span class="pill pill-info">${esc(label)}</span></td>
+    </tr>`;
+  let no = 0;
+  const html = [
+    awal ? barisPersonil(awal, ++no, "Pangkat Awal") : "",
+    ...sptPangkat.map(p => `
+    <tr>
+      <td>${++no}</td>
       <td><select class="inp" data-spt-pkt="${p.id}" data-spt-pkt-field="pangkat">${sptOpsi(SPP_PANGKAT, "— Pilih Pangkat —", p.pangkat)}</select></td>
       <td><input class="inp" type="date" data-spt-pkt="${p.id}" data-spt-pkt-field="tmt" value="${esc(p.tmt)}"></td>
       <td><input class="inp" data-spt-pkt="${p.id}" data-spt-pkt-field="noSkep" value="${esc(p.noSkep)}" placeholder="KEP/xxx/…"></td>
       <td><input class="inp" type="date" data-spt-pkt="${p.id}" data-spt-pkt-field="tglSkep" value="${esc(p.tglSkep)}"></td>
       <td><button class="btn btn-ghost btn-sm" data-spt-pkt-hapus="${p.id}" title="Hapus baris">🗑</button></td>
-    </tr>`).join("")
-    : `<tr><td colspan="6"><div class="empty"><h4>Belum ada riwayat pangkat</h4><p>Klik "+ Tambah Riwayat Pangkat" untuk menambahkan baris.</p></div></td></tr>`;
+    </tr>`),
+    akhir ? barisPersonil(akhir, ++no, "Pangkat Akhir") : ""
+  ].join("");
+  $("#spt-pangkat-body").innerHTML = html ||
+    `<tr><td colspan="6"><div class="empty"><h4>Belum ada riwayat pangkat</h4><p>Pilih Pangkat Awal dan Pangkat Akhir di Data Personil, atau klik "+ Tambah Riwayat Pangkat".</p></div></td></tr>`;
 }
 
 /* --------------------------------------------------- section Berkas Peserta
@@ -9920,6 +10008,8 @@ function sptReset() {
     if (el.tagName === "SELECT") el.selectedIndex = 0; else el.value = "";
   });
   $("#spt-tanpa-dokumen").checked = false;
+  $("#spt-uker-list").classList.remove("open");
+  sptUker     = null;
   sptKeluarga = [];
   sptPangkat  = [];
   sptBerkasTetap = {};
@@ -9934,7 +10024,7 @@ function sppPengajuanIntro() {
   $("#sppp-intro-view").style.display  = "";
   $("#spp-tambah-view").style.display  = "none";
   $("#sppp-detail-view").style.display = "none";
-  $("#sppp-crumb").innerHTML = `<span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>SPP Data Peserta</span><span>›</span><b>Pengajuan SPP Data Peserta</b>`;
+  $("#sppp-crumb").innerHTML = `<span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><b>Pemulihan Data Peserta</b>`;
   renderSppPengajuan();
 }
 
@@ -9943,7 +10033,7 @@ function sptBukaForm() {
   $("#sppp-intro-view").style.display  = "none";
   $("#sppp-detail-view").style.display = "none";
   $("#spp-tambah-view").style.display = "";
-  $("#sppp-crumb").innerHTML = `<span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pengajuan SPP Data Peserta</span><span>›</span><b>Tambah SPP Data Peserta</b>`;
+  $("#sppp-crumb").innerHTML = `<span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pemulihan Data Peserta</span><span>›</span><b>Tambah Pemulihan Data Peserta</b>`;
   window.scrollTo({ top: 0, behavior: "instant" });
 }
 
@@ -9959,14 +10049,16 @@ function sptSimpan() {
   const wajib = [
     ["#spt-kpa", "KPA"], ["#spt-angkatan", "Angkatan"], ["#spt-status-personil", "Status Personil"],
     ["#spt-pangkat-awal", "Pangkat Awal"], ["#spt-pangkat-akhir", "Pangkat Akhir"],
-    ["#spt-nrp", "NRP / NIP"], ["#spt-uker", "UKER"], ["#spt-tmt", "TMT Pengangkatan"],
-    ["#spt-nama", "Nama Peserta"], ["#spt-nama-konfirmasi", "Konfirmasi Nama Peserta"], ["#spt-nik", "NIK"]
+    ["#spt-nrp", "NRP / NIP"], ["#spt-uker", "UKER"], ["#spt-tmt", "TMT Pengangkatan Awal"],
+    ["#spt-nama", "Nama Peserta"], ["#spt-nik", "NIK"]
   ];
   const kosong = wajib.find(([sel]) => !$(sel).value.trim());
   if (kosong) { toast(`${kosong[1]} wajib diisi.`, "bad"); return; }
 
-  if ($("#spt-nama").value.trim().toUpperCase() !== $("#spt-nama-konfirmasi").value.trim().toUpperCase()) {
-    toast("Konfirmasi Nama Peserta tidak sama dengan Nama Peserta.", "bad"); return;
+  /* UKER wajib dipilih dari daftar supaya nama kesatuan dan Kantor Cabang yang
+     tersimpan konsisten dengan referensi Satuan Kerja. */
+  if (!sptUker || sptUker.nama !== $("#spt-uker").value.trim()) {
+    toast("Pilih UKER dari daftar Satuan Kerja.", "bad"); return;
   }
 
   const berkas = [
@@ -9977,6 +10069,7 @@ function sptSimpan() {
     toast("Unggah minimal satu berkas, atau centang \"Tidak Ada Dokumen\".", "bad"); return;
   }
 
+  const { awal: pangkatAwalRow, akhir: pangkatAkhirRow } = sptPangkatDariPersonil();
   const baris = {
     _id:        sppRows.length ? Math.max(...sppRows.map(r => r._id)) + 1 : 0,
     no:         `SPP-2026-${String(++sppSeq).padStart(5, "0")}`,
@@ -10012,14 +10105,17 @@ function sptSimpan() {
     telp:           $("#spt-telp").value.trim(),
     email:          $("#spt-email").value.trim(),
     hp:             $("#spt-hp").value.trim(),
-    ibuKandung:     $("#spt-ibu").value.trim(),
     tanpaDokumen:   $("#spt-tanpa-dokumen").checked,
     cabang:     $("#spt-kancab").value.trim() || "—",
     pengaju:    `Officer KC — ${PENGATURAN.username}`,
     noRequest:  "—",
     dokumen:    berkas,
     keluarga:   sptKeluarga.map(k => ({ ...k })),
-    riwayatPangkat: sptPangkat.map(p => ({ ...p })),
+    riwayatPangkat: [
+      ...(pangkatAwalRow ? [pangkatAwalRow] : []),
+      ...sptPangkat.map(p => ({ pangkat: p.pangkat, tmt: sptTanggal(p.tmt), noSkep: p.noSkep, tglSkep: sptTanggal(p.tglSkep) })),
+      ...(pangkatAkhirRow ? [pangkatAkhirRow] : [])
+    ],
     status:     "Tertunda",
     tindakan:   "",
     catatan:    "",
@@ -10057,6 +10153,12 @@ $("#spt-berkas-tambah").onclick = () => {
 /* Nilai baris tabel disimpan saat diubah supaya tidak hilang ketika baris
    lain ditambah atau dihapus (kedua tabel digambar ulang seutuhnya). */
 $("#spp-tambah-view").addEventListener("input", e => {
+  /* Isian pangkat & pengangkatan di Data Personil langsung tercermin di tabel
+     Data Pangkat. */
+  if (["spt-pangkat-awal", "spt-pangkat-akhir", "spt-tmt", "spt-no-skep", "spt-tgl-skep"].includes(e.target.id)) {
+    renderSptPangkat();
+    return;
+  }
   const kel = e.target.closest("[data-spt-kel]");
   if (kel) {
     const row = sptKeluarga.find(k => k.id === +kel.dataset.sptKel);
@@ -10114,10 +10216,10 @@ $("#spp-tambah-view").addEventListener("click", e => {
 isiPilihanSptForm();
 sptReset();
 
-/* ============================================ APPROVAL SPP DATA PESERTA
+/* ====================================== APPROVAL PEMULIHAN DATA PESERTA
    Pengajuan masuk berstatus "Tertunda"; officer Divisi menyetujui atau
    menolaknya di sini. Yang disetujui langsung dibentuk jadi peserta lengkap
-   dan muncul di List Bersih SPP Data Peserta. */
+   dan muncul di Daftar Nominatif Pemulihan Data Peserta. */
 
 const SPPA_PAGE_SIZE = 10;
 const SPPA_STATUS    = ["Tertunda", "Disetujui", "Ditolak"];
@@ -10150,7 +10252,7 @@ function sppaPaginationHtml(totalPages) {
   return html + nav(sppaPage + 1, "›", sppaPage >= totalPages);
 }
 
-function sppaBolehPutuskan() { return roleSaatIni() === ROLE_DIVISI; }
+function sppaBolehPutuskan() { return roleOfficer(); }
 
 /* Keputusan setuju/tolak hanya tersedia di halaman detail, supaya officer
    selalu membaca isi pengajuan lebih dulu. */
@@ -10179,7 +10281,7 @@ function renderSppApproval() {
       <td><span class="pill ${sppPillStatus(r.status)}">${esc(r.status)}</span></td>
       <td style="white-space:nowrap">${sppaAksiHtml(r)}</td>
     </tr>`).join("")
-    : `<tr><td colspan="8"><div class="empty"><h4>Tidak ada permohonan</h4><p>Belum ada permohonan SPP yang cocok dengan filter persetujuan ini.</p></div></td></tr>`;
+    : `<tr><td colspan="8"><div class="empty"><h4>Tidak ada permohonan</h4><p>Belum ada pengajuan pemulihan data peserta yang cocok dengan filter persetujuan ini.</p></div></td></tr>`;
 
   const shownFrom = rows.length ? start + 1 : 0;
   const shownTo   = Math.min(start + SPPA_PAGE_SIZE, rows.length);
@@ -10190,7 +10292,7 @@ function renderSppApproval() {
 function sppaTampilkanDaftar() {
   $("#sppa-list-view").style.display   = "";
   $("#sppa-detail-view").style.display = "none";
-  $("#sppa-crumb").innerHTML = `<span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>SPP Data Peserta</span><span>›</span><b>Approval SPP Data Peserta</b>`;
+  $("#sppa-crumb").innerHTML = `<span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pemulihan Data Peserta</span><span>›</span><b>Approval Pemulihan Data Peserta</b>`;
   sppaCurrent = null;
   renderSppApproval();
 }
@@ -10199,7 +10301,7 @@ function sppaBuka(r) {
   sppaCurrent = r;
   $("#sppa-list-view").style.display   = "none";
   $("#sppa-detail-view").style.display = "";
-  $("#sppa-crumb").innerHTML = `<span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Approval SPP Data Peserta</span><span>›</span><b>${esc(r.no)}</b>`;
+  $("#sppa-crumb").innerHTML = `<span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Approval Pemulihan Data Peserta</span><span>›</span><b>${esc(r.no)}</b>`;
   $("#sppa-d-title").textContent = `Persetujuan Pengajuan ${r.no}`;
   $("#sppa-d-sub").textContent   = `${r.nama} · ${r.nrp} · ${r.cabang}`;
 
@@ -10213,7 +10315,7 @@ function sppaBuka(r) {
 }
 
 /* Disetujui = data peserta dibentuk di DATA_PESERTA_KELOLA, sehingga baris
-   ini ikut muncul di List Bersih beserta halaman Detail Peserta-nya. */
+   ini ikut muncul di Daftar Nominatif beserta halaman Detail Peserta-nya. */
 function sppaSetujui(r, alasan) {
   r.status  = "Disetujui";
   r.catatan = alasan || "Disetujui — data peserta tersedia di YANDU NextGen dan siap dipakai Kantor Cabang.";
@@ -10235,7 +10337,7 @@ function sppaTolak(r, alasan) {
 
 /* Dua modal keputusan: alasan persetujuan opsional, alasan penolakan wajib. */
 function sppaSetujuModal(r) {
-  $("#modal-title").textContent = "Konfirmasi Persetujuan Pengajuan SPP";
+  $("#modal-title").textContent = "Konfirmasi Persetujuan Pemulihan Data Peserta";
   $("#modal-sub").textContent   = `${r.no} · ${r.nama} · ${r.cabang}`;
   $("#modal-body").innerHTML = `
     <div class="field">
@@ -10256,7 +10358,7 @@ function sppaSetujuModal(r) {
 }
 
 function sppaTolakModal(r) {
-  $("#modal-title").textContent = "Konfirmasi Penolakan Pengajuan SPP";
+  $("#modal-title").textContent = "Konfirmasi Penolakan Pemulihan Data Peserta";
   $("#modal-sub").textContent   = `${r.no} · ${r.nama} · ${r.cabang}`;
   $("#modal-body").innerHTML = `
     <div class="field">
@@ -10279,7 +10381,7 @@ function sppaTolakModal(r) {
 
 $("#sppa-kembali").onclick    = sppaTampilkanDaftar;
 $("#sppa-cari").onclick       = () => { sppaPage = 1; renderSppApproval(); };
-$("#sppa-export").onclick     = () => toast("Daftar persetujuan SPP diekspor ke Excel.");
+$("#sppa-export").onclick     = () => toast("Daftar approval pemulihan data peserta diekspor ke Excel.");
 $("#sppa-f-status").onchange  = () => { sppaPage = 1; renderSppApproval(); };
 $("#sppa-setuju").onclick     = () => sppaSetujuModal(sppaCurrent);
 $("#sppa-tolak").onclick      = () => sppaTolakModal(sppaCurrent);
@@ -10298,7 +10400,7 @@ document.addEventListener("click", e => {
 isiPilihanSppApproval();
 renderSppApproval();
 
-/* ========================================== LIST BERSIH SPP DATA PESERTA
+/* ========================= DAFTAR NOMINATIF PEMULIHAN DATA PESERTA
    Pengajuan yang sudah disetujui — datanya sudah bersih dan tersedia di
    YANDU NextGen. Tombol Detail memakai halaman Detail Peserta yang sama
    dengan Data Peserta lewat nomor unik hasil
@@ -10360,7 +10462,7 @@ function renderSppBersih() {
       <td>${esc(r.kesatuan)}</td>
       <td><button class="btn btn-info btn-sm" data-sppb-detail="${r._id}">👁 Detail</button></td>
     </tr>`).join("")
-    : `<tr><td colspan="11"><div class="empty"><h4>Belum ada data bersih</h4><p>Data muncul di sini setelah pengajuan SPP disetujui pada layar Approval.</p></div></td></tr>`;
+    : `<tr><td colspan="11"><div class="empty"><h4>Belum ada data bersih</h4><p>Data muncul di sini setelah pengajuan pemulihan data peserta disetujui pada layar Approval.</p></div></td></tr>`;
 
   const shownFrom = rows.length ? start + 1 : 0;
   const shownTo   = Math.min(start + SPPB_PAGE_SIZE, rows.length);
@@ -10369,7 +10471,7 @@ function renderSppBersih() {
 }
 
 $("#sppb-cari").onclick   = () => { sppbPage = 1; renderSppBersih(); };
-$("#sppb-export").onclick = () => toast("List bersih SPP Data Peserta diekspor ke Excel.");
+$("#sppb-export").onclick = () => toast("Daftar nominatif pemulihan data peserta diekspor ke Excel.");
 $("#sppb-reset").onclick  = () => {
   $("#sppb-f-tipe").selectedIndex = 0;
   $("#sppb-f-nilai").value = "";
@@ -10436,7 +10538,7 @@ function renderSppPengajuan() {
       <td><span class="pill ${sppPillStatus(r.status)}">${esc(r.status)}</span></td>
       <td><button class="btn btn-info btn-sm" data-sppp-detail="${r._id}">👁 Detail</button></td>
     </tr>`).join("")
-    : `<tr><td colspan="8"><div class="empty"><h4>Belum ada pengajuan</h4><p>Klik "+ Tambah SPP Data Peserta" untuk merekam pengajuan baru.</p></div></td></tr>`;
+    : `<tr><td colspan="8"><div class="empty"><h4>Belum ada pengajuan</h4><p>Klik "+ Tambah Pemulihan Data Peserta" untuk merekam pengajuan baru.</p></div></td></tr>`;
 
   const shownFrom = rows.length ? start + 1 : 0;
   const shownTo   = Math.min(start + SPPP_PAGE_SIZE, rows.length);
@@ -10481,17 +10583,16 @@ function sppIsiDetail(r, pre) {
     spppBaris("UKER / Kesatuan", r.kesatuan) +
     spppBaris("Pangkat Awal", r.pangkatAwal) +
     spppBaris("Pangkat Akhir", r.pangkat) +
-    spppBaris("TMT Pengangkatan", r.tmt) +
-    spppBaris("No. SKEP Pengangkatan", r.noSkep) +
-    spppBaris("Tanggal SKEP Pengangkatan", r.tglSkep) +
+    spppBaris("TMT Pengangkatan Awal", r.tmt) +
+    spppBaris("No. SKEP Pengangkatan Awal", r.noSkep) +
+    spppBaris("Tanggal SKEP Pengangkatan Awal", r.tglSkep) +
     spppBaris("No. SKEP Pensiun", r.noSkepPensiun) +
     spppBaris("Tanggal SKEP Pensiun", r.tglSkepPensiun) +
     spppBaris("Bintang Jasa", r.bintangJasa) +
     spppBaris("Alamat", [r.alamat, r.rt && `RT ${r.rt}`, r.rw && `RW ${r.rw}`, r.kelurahan, r.kodepos].filter(Boolean).join(", ")) +
     spppBaris("No. Telepon", r.telp) +
     spppBaris("No. Handphone", r.hp) +
-    spppBaris("Email", r.email) +
-    spppBaris("Nama Ibu Kandung", r.ibuKandung);
+    spppBaris("Email", r.email);
 
   const keluarga = r.keluarga || [];
   $(`#${pre}-keluarga`).innerHTML = keluarga.length ? keluarga.map((k, i) => `
@@ -10530,7 +10631,7 @@ function spppBukaDetail(r) {
   $("#sppp-intro-view").style.display  = "none";
   $("#spp-tambah-view").style.display  = "none";
   $("#sppp-detail-view").style.display = "";
-  $("#sppp-crumb").innerHTML = `<span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pengajuan SPP Data Peserta</span><span>›</span><b>${esc(r.no)}</b>`;
+  $("#sppp-crumb").innerHTML = `<span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pemulihan Data Peserta</span><span>›</span><b>${esc(r.no)}</b>`;
   $("#sppp-d-title").textContent = `Detail Pengajuan ${r.no}`;
   $("#sppp-d-sub").textContent   = `${r.nama} · ${r.nrp} · ${r.cabang}`;
   sppIsiDetail(r, "sppp-d");
@@ -10539,7 +10640,7 @@ function spppBukaDetail(r) {
 
 $("#sppp-kembali").onclick   = sppPengajuanIntro;
 $("#sppp-cari").onclick      = () => { spppPage = 1; renderSppPengajuan(); };
-$("#sppp-export").onclick    = () => toast("Daftar pengajuan SPP diekspor ke Excel.");
+$("#sppp-export").onclick    = () => toast("Daftar pemulihan data peserta diekspor ke Excel.");
 $("#sppp-f-status").onchange = () => { spppPage = 1; renderSppPengajuan(); };
 $("#s-spp-pengajuan").addEventListener("keydown", e => {
   if (e.key === "Enter" && e.target.id === "sppp-f-cari") { spppPage = 1; renderSppPengajuan(); }

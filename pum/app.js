@@ -15,13 +15,19 @@ const esc = s => String(s ?? "").replace(/[&<>"]/g,
 const resetFields = ids => ids.forEach(id => { const el = $(`#${id}`); if (el) el.value = ""; });
 
 /* Role aktif dipilih lewat chip di navbar. Kewenangan yang dibedakan:
-   Divisi Kepesertaan → persetujuan pengajuan dan pelunasan;
+   Officer Bidang     → persetujuan pengajuan dan pelunasan
+                        (Pulminpes, Lojita, dan Pengembangan Manfaat —
+                        ketiganya setara, diperiksa lewat roleOfficer());
    PIC UNOR/Kesatuan  → mengajukan serta merevisi pengajuan miliknya;
    Kantor Cabang      → memantau, tanpa hak persetujuan. */
-const ROLE_DIVISI = "Divisi Kepesertaan dan Pengembangan Manfaat";
+const ROLE_OFFICER_PULMINPES = "Officer Bidang Pulminpes";
+const ROLE_OFFICER_LOJITA    = "Officer Bidang Lojita";
+const ROLE_OFFICER_MANFAAT   = "Officer Bidang Pengembangan Manfaat";
+const ROLE_OFFICER = [ROLE_OFFICER_PULMINPES, ROLE_OFFICER_LOJITA, ROLE_OFFICER_MANFAAT];
 const ROLE_CABANG = "Kantor Cabang";
 const ROLE_PIC    = "PIC UNOR/Kesatuan";
 const roleSaatIni = () => $("#top-role").value;
+const roleOfficer = (role = roleSaatIni()) => ROLE_OFFICER.includes(role);
 
 function toast(msg, kind = "") {
   const t = document.createElement("div");
@@ -1822,12 +1828,12 @@ function renderPumDetailPage() {
   $("#pd-crumb-module").textContent = pumDetailContext === "approval" ? "Approval KPR (PUM)" : "Pengelolaan KPR (PUM)";
 
   /* Tombol Setujui/Tolak/Revisi hanya tampil dari halaman Approval, dan
-     dibatasi per role: Divisi Kepesertaan → Tolak/Revisi/Setujui,
+     dibatasi per role: Officer Bidang → Tolak/Revisi/Setujui,
      PIC UNOR/Kesatuan & Kantor Cabang → hanya memantau status pengajuan. */
   if (pumDetailContext === "approval") {
     const role = roleSaatIni();
     $("#pd-actions").innerHTML =
-        role === ROLE_DIVISI ? `<button class="btn btn-danger-solid" id="pd-tolak">✕ Tolak</button>
+        roleOfficer(role) ? `<button class="btn btn-danger-solid" id="pd-tolak">✕ Tolak</button>
                                 <button class="btn btn-gold" id="pd-revisi-divisi">↺ Revisi</button>
                                 <button class="btn btn-success" id="pd-setuju">✓ Setujui</button>`
       :                        `<span class="hint" style="margin:0">Role ${esc(role)} hanya dapat memantau status pengajuan.</span>`;
