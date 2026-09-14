@@ -2126,7 +2126,16 @@ const DATA_PESERTA_KELOLA = [
     tempatLahir:"KLATEN", tglLahir:"14-03-1989", tmt:"01-03-2014",
     noSkep:"KEP/0412/II/2014", tglSkep:"24-02-2014", noSkepPensiun:"-", tglSkepPensiun:"-",
     pangkatAwal:"GOL.II/C", pangkatAkhir:"GOL.III/A", kesatuan:"RUMKIT DR. SUYOTO PUSREHAB KEMHAN", angkatan:"KEMHAN",
-    vip:"TIDAK", statusPeserta:"AKTIF", alihStatus:"-", statusValid:"Valid" }
+    vip:"TIDAK", statusPeserta:"AKTIF", alihStatus:"-", statusValid:"Valid" },
+
+  /* Pensiunan yang isi tab Hak/Produk-nya persis contoh dari user (Tabungan
+     Asuransi yang dipotong pinjaman BUM, lalu PEMBATALAN BUM sebulan kemudian).
+     Isi Hak/Produk-nya ditulis manual di blok 22f-0, bukan dibangkitkan. */
+  { migrasiId:"MG-0000100303", nrp:"196612061988031002", nopens:"DX100303111021", ktpa:"DX100303", nama:"BENG SURYANA, SE.",
+    tempatLahir:"MALANG", tglLahir:"06-12-1966", tmt:"01-03-1988",
+    noSkep:"SKEP/0412/III/1988", tglSkep:"01-03-1988", noSkepPensiun:"KEP/0027/I/2025", tglSkepPensiun:"01-01-2025",
+    pangkatAwal:"GOL.II/A", pangkatAkhir:"GOL.III/D", kesatuan:"KODIM 0833 KOTA MALANG", angkatan:"TNI-AD",
+    vip:"TIDAK", statusPeserta:"PENSIUN", alihStatus:"-", statusValid:"Valid" }
 ];
 
 /* Isi dropdown "Tipe Pencarian". `key` = nama field di DATA_PESERTA_KELOLA. */
@@ -2995,7 +3004,7 @@ DATA_PESERTA_KELOLA.forEach(p => lengkapiSejarahHutang(p));
      - nominal ditulis tanpa "Rp"; nilai nol ditulis 0
      - Nomor SP   : B/013129-AS/THT/II/2025      (bulan romawi = bulan DPS)
      - Kode Bayar : <KPA>THT<urut>               contoh DX100303THT2
-     - Nomor DPS  : <kode mitra>THT10<ddmmyyyy tanggal DPS>211AO0101<n>G
+     - Nomor DPS  : <kode mitra>THT10<ddmmyyyy tanggal DPS>211AO0101<nn>-G
      - Tanggal Axapta = tanggal 1 bulan berikutnya setelah DPS, ditulis
        "Mar 1 2025 10:25:38:000AM"; ID Axapta = "ID - 2025-03-01"
      - Status Axapta 1 = sudah dibukukan, 0 = belum (kolom Axapta lain "-")
@@ -3050,7 +3059,7 @@ function buatHakProdukPeserta(p, n) {
       mitraBayar:    mitra.mitra,
       nomorSP:       `B/${pad((13129 + k * 877) % 100000, 6)}-AS/THT/${HAK_BULAN_ROMAWI[bulan - 1]}/${thn}`,
       kodeBayar:     `${p.ktpa}THT${urut++}`,
-      nomorDPS:      `${mitra.kode}THT10${pad(hDps, 2)}${pad(bulan, 2)}${thn}211AO0101${k % 10}G`,
+      nomorDPS:      `${mitra.kode}THT10${pad(hDps, 2)}${pad(bulan, 2)}${thn}211AO0101${pad(k % 100, 2)}-G`,
       tglDPS:        `${pad(hDps, 2)}-${pad(bulan, 2)}-${thn}`,
       statusAxapta:  sudah ? "1" : "0",
       tglAxapta:     sudah
@@ -3076,6 +3085,59 @@ function buatHakProdukPeserta(p, n) {
 }
 
 DATA_PESERTA_KELOLA.forEach((p, i) => { p.hakProduk = buatHakProdukPeserta(p, i); });
+
+/* ---------------------------------------------------------------------------
+   22f-0. DATA UJI — ISI HAK/PRODUK PERSIS CONTOH DARI USER
+   Peserta BENG SURYANA, SE. (KPA DX100303): Tabungan Asuransi Rp 59.658.700 yang
+   dipotong pinjaman BUM Rp 14.000.000, lalu PEMBATALAN BUM sebulan kemudian yang
+   mengembalikan Rp 14.000.000 tersebut. Semua kolom tabel, surat perintah, dan
+   riwayat DPS-nya mengikuti capture; karena sudah lengkap, lengkapiDetailHak
+   (blok 22f-1) melewati kedua baris ini.
+   --------------------------------------------------------------------------- */
+(function () {
+  const p = DATA_PESERTA_KELOLA.find(x => x.ktpa === "DX100303");
+  p.profil.nomorIdentitas = "3507184612660002";
+
+  const umum = {
+    namaPenerima: p.nama, hubungan: "Diri Sendiri", noIdentitas: "3507184612660002",
+    cabangMitra: "BWS KC MALANG", mitraBayar: "BANK WOORI SAUDARA",
+    statusAxapta: "1", userAxapta: "muhamma1", statusPengambilan: "Belum Di Proses"
+  };
+  const rekening = { noRekAsabri: "091827364", namaRekening: "BENG SURYANA", nomorRekening: "100360089249" };
+
+  p.hakProduk = [
+    { ...umum, dokumen: [],
+      produk: "PEMBATALAN BUM", tglKejadian: "06-02-2025",
+      bruto: 14000000, potongan: 0, potonganPajak: 0, netto: 14000000,
+      nomorSP: "B/013129-AS/THT/II/2025", kodeBayar: "DX100303THT2",
+      nomorDPS: "BWSTHT1007022025211AO010117-G", tglDPS: "07-02-2025",
+      tglAxapta: "Mar 1 2025 10:25:38:000AM", idAxapta: "ID - 2025-03-01",
+      besarProduk: 14000000, tglPengambilan: "06-02-2025",
+      suratPerintah: [{
+        noSP: "B/013129-AS/THT/II/2025", kodeBayar: "DX100303THT2", tglSP: "06-02-2025",
+        mitraBayar: "BANK WOORI SAUDARA", cabangMitra: "BWS KC MALANG", ...rekening, jumlahBayar: 14000000,
+        dps: [{ idDps: "2019412", nomorDps: "BWSTHT1007022025211AO010117-G", nomorReff: "21101180846512",
+                nomorRetur: "-", tglRetur: "-", tglDps: "07-02-2025",
+                namaPemilik: "BENG SURYANA", nomorRekening: "100360089249", jumlah: 14000000 }]
+      }]
+    },
+    { ...umum, dokumen: [],
+      produk: "Tabungan Asuransi", tglKejadian: "01-01-2025",
+      bruto: 59658700, potongan: 14000000, potonganPajak: 0, netto: 45658700,
+      nomorSP: "B/004634-AS/THT/I/2025", kodeBayar: "DX100303THT20",
+      nomorDPS: "BWSTHT1014012025211AO010187-G", tglDPS: "14-01-2025",
+      tglAxapta: "Feb 1 2025 08:30:24:000AM", idAxapta: "ID - 2025-02-01",
+      besarProduk: 59658700, tglPengambilan: "13-01-2025",
+      suratPerintah: [{
+        noSP: "B/004634-AS/THT/I/2025", kodeBayar: "DX100303THT20", tglSP: "13-01-2025",
+        mitraBayar: "BANK WOORI SAUDARA", cabangMitra: "BWS KC MALANG", ...rekening, jumlahBayar: 45658700,
+        dps: [{ idDps: "2018997", nomorDps: "BWSTHT1014012025211AO010187-G", nomorReff: "21101140846345",
+                nomorRetur: "-", tglRetur: "-", tglDps: "14-01-2025",
+                namaPemilik: "BENG SURYANA", nomorRekening: "100360089249", jumlah: 45658700 }]
+      }]
+    }
+  ];
+})();
 
 /* ---------------------------------------------------------------------------
    22f-1. PENGELOLAAN DATA PESERTA — halaman "Detail Hak/Produk"
@@ -3122,6 +3184,7 @@ function lengkapiDetailHak(p) {
     r.noIdentitas    = r.hubungan === "Diri Sendiri" ? nik : "-";
     r.besarProduk    = r.bruto;
     r.tglPengambilan = tglSP;
+    r.statusPengambilan = "Belum Di Proses";   /* aturan status belum ditetapkan — sementara mengikuti contoh user */
     r.dokumen = k % 2 === 0 ? [
       { tgl: r.tglKejadian, nama: "Surat Keterangan Pensiun.pdf" },
       { tgl: tglSP,         nama: "Surat Perintah Bayar.pdf" }
@@ -3474,11 +3537,10 @@ const SATUAN_KERJA_KOLEKTIF_CONTOH = {
 
 /* Daerah: kode bergaya BPS — provinsi "35", kota "35.78", kecamatan
    "35.78.09", kelurahan "35.78.09.1001". `induk` = kode daerah induknya
-   (kosong untuk Provinsi). Kecamatan dan Kelurahan sama-sama berinduk ke
-   Kota, mengikuti field form Tambah Daerah (lihat DAERAH_INDUK). Kode
-   Kelurahan boleh kosong. */
+   (kosong untuk Provinsi). Rantainya Provinsi → Kota → Kecamatan →
+   Kelurahan (lihat DAERAH_INDUK), dan kode semua tingkat wajib diisi. */
 const DAERAH_TINGKAT = ["Provinsi", "Kota", "Kecamatan", "Kelurahan"];
-const DAERAH_INDUK   = { "Kota":"Provinsi", "Kecamatan":"Kota", "Kelurahan":"Kota" };
+const DAERAH_INDUK   = { "Kota":"Provinsi", "Kecamatan":"Kota", "Kelurahan":"Kecamatan" };
 
 const DATA_DAERAH = [
   { kode:"31",            nama:"DKI JAKARTA",          tingkat:"Provinsi",  induk:"",      tgl:"04/07/2026", mekanisme:"Satuan", oleh:"Lojita — R. Prasetyo" },
@@ -3498,34 +3560,41 @@ const DATA_DAERAH = [
   { kode:"35.15.01",      nama:"KEC. SIDOARJO",        tingkat:"Kecamatan", induk:"35.15", tgl:"21/07/2026", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo" },
   { kode:"35.78.09",      nama:"KEC. SUKOMANUNGGAL",   tingkat:"Kecamatan", induk:"35.78", tgl:"21/07/2026", mekanisme:"Satuan", oleh:"Lojita — A. Nurcahyo" },
 
-  { kode:"31.71.01.1001", nama:"KEL. GAMBIR",          tingkat:"Kelurahan", induk:"31.71", tgl:"18/08/2026", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo" },
-  { kode:"35.15.01.1001", nama:"KEL. SIDOKARE",        tingkat:"Kelurahan", induk:"35.15", tgl:"18/08/2026", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo" },
-  { kode:"35.78.09.1001", nama:"KEL. SUKOMANUNGGAL",   tingkat:"Kelurahan", induk:"35.78", tgl:"18/08/2026", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo" }
+  { kode:"31.71.01.1001", nama:"KEL. GAMBIR",          tingkat:"Kelurahan", induk:"31.71.01", tgl:"18/08/2026", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo" },
+  { kode:"35.15.01.1001", nama:"KEL. SIDOKARE",        tingkat:"Kelurahan", induk:"35.15.01", tgl:"18/08/2026", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo" },
+  { kode:"35.78.09.1001", nama:"KEL. SUKOMANUNGGAL",   tingkat:"Kelurahan", induk:"35.78.09", tgl:"18/08/2026", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo" }
 ];
 
-/* Isi berkas contoh yang "terbaca" saat Tambah Daerah mekanisme Kolektif,
-   per tingkat. Semua induknya ada di DATA_DAERAH dan semua kodenya belum
-   terdaftar, jadi unggahan pertama selalu masuk seluruhnya; unggahan ulang
-   akan dilewati karena kodenya sudah ada. */
+/* Tambah Daerah mekanisme Kolektif, per tingkat:
+     templateFile — berkas yang diunduh tombol "⤓ Download Template Excel"
+     kolom        — susunan kolom di template tersebut (ditampilkan di form)
+     namaBerkas / rows — isi berkas contoh yang "terbaca" saat unggah.
+   Semua induknya ada di DATA_DAERAH dan semua kodenya belum terdaftar, jadi
+   unggahan pertama selalu masuk seluruhnya; unggahan ulang akan dilewati
+   karena kodenya sudah ada. */
 const DAERAH_KOLEKTIF_CONTOH = {
-  Provinsi: { namaBerkas:"daerah_kolektif_provinsi_2026.xlsx", rows:[
+  Provinsi: { templateFile:"Template Daerah Provinsi.xlsx", kolom:["Kode Provinsi", "Nama Provinsi"],
+    namaBerkas:"daerah_kolektif_provinsi_2026.xlsx", rows:[
     { kode:"34", nama:"DI YOGYAKARTA", induk:"" },
     { kode:"36", nama:"BANTEN",        induk:"" }
   ] },
-  Kota: { namaBerkas:"daerah_kolektif_kota_2026.xlsx", rows:[
+  Kota: { templateFile:"Template Daerah Kota.xlsx", kolom:["Kode Kota", "Nama Provinsi", "Nama Kota"],
+    namaBerkas:"daerah_kolektif_kota_2026.xlsx", rows:[
     { kode:"32.75", nama:"KOTA BEKASI",    induk:"32" },
     { kode:"33.72", nama:"KOTA SURAKARTA", induk:"33" },
     { kode:"35.73", nama:"KOTA MALANG",    induk:"35" }
   ] },
-  Kecamatan: { namaBerkas:"daerah_kolektif_kecamatan_2026.xlsx", rows:[
+  Kecamatan: { templateFile:"Template Daerah Kecamatan.xlsx", kolom:["Kode Kecamatan", "Nama Kota", "Nama Kecamatan"],
+    namaBerkas:"daerah_kolektif_kecamatan_2026.xlsx", rows:[
     { kode:"31.71.02", nama:"KEC. SAWAH BESAR",    induk:"31.71" },
     { kode:"33.74.02", nama:"KEC. SEMARANG UTARA", induk:"33.74" },
     { kode:"35.78.13", nama:"KEC. BENOWO",         induk:"35.78" }
   ] },
-  Kelurahan: { namaBerkas:"daerah_kolektif_kelurahan_2026.xlsx", rows:[
-    { kode:"32.73.27.1001", nama:"KEL. CISARANTEN KIDUL", induk:"32.73" },
-    { kode:"35.15.01.1002", nama:"KEL. PUCANG",           induk:"35.15" },
-    { kode:"35.78.09.1002", nama:"KEL. SONOKWIJENAN",     induk:"35.78" }
+  Kelurahan: { templateFile:"Template Daerah Kelurahan.xlsx", kolom:["Kode Kelurahan", "Nama Kecamatan", "Nama Kelurahan"],
+    namaBerkas:"daerah_kolektif_kelurahan_2026.xlsx", rows:[
+    { kode:"32.73.27.1001", nama:"KEL. CISARANTEN KIDUL", induk:"32.73.27" },
+    { kode:"35.15.01.1002", nama:"KEL. PUCANG",           induk:"35.15.01" },
+    { kode:"35.78.09.1002", nama:"KEL. SONOKWIJENAN",     induk:"35.78.09" }
   ] }
 };
 

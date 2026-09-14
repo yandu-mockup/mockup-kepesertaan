@@ -38,6 +38,7 @@ strukturnya. Hampir semua pola sudah pernah dipakai di suatu tempat.
 | `Template Pendaftaran Peserta Kolektif.xlsx` | Berkas yang diunduh tombol "⤓ Unduh template" di Upload Kolektif |
 | `Pemutakhiran Data *.xlsx` (3 berkas) | Template per Jenis Pemutakhiran Data; dirujuk lewat `templateFile` di `DATA_PEREMAJAAN` |
 | `Template Alih Status Kolektif.xlsx` | Berkas yang diunduh tombol "⤓ Unduh Template" di Alih Status mekanisme Kolektif; dirujuk lewat `templateFile` di `DATA_ALIH_STATUS_KOLEKTIF` |
+| `Template Daerah *.xlsx` (4 berkas: Provinsi, Kota, Kecamatan, Kelurahan) | Berkas yang diunduh tombol "⤓ Download Template Excel" di Tambah Daerah mekanisme Kolektif, satu per Tingkat; dirujuk lewat `templateFile` di `DAERAH_KOLEKTIF_CONTOH` |
 | `pum/` | **Aplikasi terpisah "KPR (PUM)"** — lihat di bawah |
 | `flagging/` | **Aplikasi terpisah "Flagging Mitra Bayar"** — lihat di bawah |
 

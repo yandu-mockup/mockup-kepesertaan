@@ -7396,7 +7396,8 @@ function renderDetailHak() {
     sel("Mitra Bayar (Default)", r.mitraBayar);
 
   /* 2. Data Pengambilan — terbuka saat halaman dibuka, bisa dilipat lewat kepalanya.
-     Status mengikuti Status Axapta: sudah dibukukan = sudah diproses. */
+     Status diambil apa adanya dari data (statusPengambilan); aturan penentunya
+     belum ditetapkan, jadi sementara mengikuti contoh dari user. */
   $("#hd-pengambilan").innerHTML = `
     <div class="review-card" id="hd-pengambilan-kartu">
       <div class="review-card-head is-toggle" data-hd-toggle>
@@ -7409,7 +7410,7 @@ function renderDetailHak() {
           ${sel("Cabang Mitra Bayar (Default Transaksi)", r.cabangMitra)}
           ${sel("Mitra Bayar (Default Transaksi)", r.mitraBayar)}
           ${sel("Total", hdAngka(r.besarProduk))}
-          ${sel("Status", r.statusAxapta === "1" ? "Sudah Di Proses" : "Belum Di Proses")}
+          ${sel("Status", r.statusPengambilan || "Belum Di Proses")}
         </div>
       </div>
     </div>`;
@@ -10449,20 +10450,21 @@ document.addEventListener("click", e => {
 });
 
 /* ================= PENGELOLAAN REFERENSI DATA KEPESERTAAN » DAERAH
-   Daerah bertingkat Provinsi → Kota → Kecamatan / Kelurahan; induk tiap
+   Daerah bertingkat Provinsi → Kota → Kecamatan → Kelurahan; induk tiap
    tingkat ada di DAERAH_INDUK. Kode anak wajib diawali kode induk + "."
-   (pola BPS) supaya struktur pohonnya tidak rusak; Kode Kelurahan boleh
-   kosong. Daerah yang masih punya turunan tidak bisa dihapus.
+   (pola BPS) supaya struktur pohonnya tidak rusak; kode semua tingkat wajib
+   diisi. Daerah yang masih punya turunan tidak bisa dihapus.
    Tambah Daerah berupa halaman dengan dua mekanisme: Satuan (form yang
-   fieldnya menyesuaikan Tingkat) dan Kolektif (unggah template Excel). */
+   fieldnya menyesuaikan Tingkat) dan Kolektif (unggah template Excel yang
+   berkas & kolomnya berbeda per tingkat, lihat DAERAH_KOLEKTIF_CONTOH). */
 let drhRows = DATA_DAERAH.map((d, i) => ({ ...d, _id: i }));
 
-/* Placeholder field form Satuan per tingkat. Kode Kelurahan tidak wajib. */
+/* Placeholder field form Satuan per tingkat. Kode semua tingkat wajib. */
 const DRH_FORM = {
-  Provinsi:  { kodeWajib:true,  contohNama:"DI YOGYAKARTA",     contohKode:"34" },
-  Kota:      { kodeWajib:true,  contohNama:"KOTA MALANG",       contohKode:"35.73" },
-  Kecamatan: { kodeWajib:true,  contohNama:"KEC. BENOWO",       contohKode:"35.78.13" },
-  Kelurahan: { kodeWajib:false, contohNama:"KEL. SONOKWIJENAN", contohKode:"35.78.09.1002" }
+  Provinsi:  { kodeWajib:true, contohNama:"DI YOGYAKARTA",     contohKode:"34" },
+  Kota:      { kodeWajib:true, contohNama:"KOTA MALANG",       contohKode:"35.73" },
+  Kecamatan: { kodeWajib:true, contohNama:"KEC. BENOWO",       contohKode:"35.78.13" },
+  Kelurahan: { kodeWajib:true, contohNama:"KEL. SONOKWIJENAN", contohKode:"35.78.09.1002" }
 };
 
 let drhForm = { mekanisme:"", tingkat:"", berkas:false };
@@ -10569,7 +10571,23 @@ function drhTerapkanPilihan() {
   $("#drhf-template").style.display = kolektif ? "" : "none";
   $("#drhf-aksi").style.display     = tingkat  ? "" : "none";
   if (satuan) drhRenderSatuan(); else $("#drhf-satuan").innerHTML = "";
+  drhSetTemplate(kolektif ? tingkat : "");
   drhResetUnggah();
+}
+
+/* Tombol template mengunduh berkas milik tingkat terpilih lewat atribut
+   href + download (berkas aslinya ada di folder ini), dan susunan kolom
+   templatenya ditampilkan di bawah area unggah. */
+function drhSetTemplate(tingkat) {
+  const tpl    = DAERAH_KOLEKTIF_CONTOH[tingkat];
+  const tombol = $("#drhf-template");
+  if (tpl) {
+    tombol.href = encodeURIComponent(tpl.templateFile);
+    tombol.setAttribute("download", tpl.templateFile);
+  } else {
+    tombol.removeAttribute("href");
+  }
+  $("#drhf-kolom").textContent = tpl ? `Kolom template: ${tpl.kolom.join(", ")}.` : "";
 }
 
 function drhRenderSatuan() {
