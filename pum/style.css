@@ -17,7 +17,7 @@
   --navy-top:#003180;      /* pangkal gradien navbar */
   --gold:#FFDE24;          /* aksen "NEXTGEN" */
 
-  /* Kartu KTPA fisik — palet cetak kartu ASABRI, terpisah dari palet aplikasi */
+  /* Kartu KPA fisik — palet cetak kartu ASABRI, terpisah dari palet aplikasi */
   --ktpa-navy:#0b2153;     /* dasar kartu */
   --ktpa-navy-2:#16407f;   /* ujung terang gradien kartu */
   --ktpa-gold:#e0a83c;     /* aksen emas kartu */
@@ -637,6 +637,8 @@ textarea.inp{height:auto; padding:9px 12px; line-height:1.5}
   display:flex; justify-content:space-between; align-items:flex-start; gap:12px;
 }
 .modal-body{padding:20px 22px}
+/* Pop up lebar untuk isi berupa tabel; lepas kelasnya saat modal ditutup */
+.modal.modal-lg{width:min(1180px,100%)}
 .modal-x{background:none; border:0; font-size:18px; color:var(--faint); cursor:pointer; line-height:1; padding:4px 8px; border-radius:8px}
 .modal-x:hover{background:var(--line-soft); color:var(--body)}
 .modal-head-l{display:flex; align-items:center; gap:12px; min-width:0}
@@ -703,7 +705,7 @@ textarea.inp{height:auto; padding:9px 12px; line-height:1.5}
 .menu-item span{color:var(--muted); font-size:13px}
 .menu-item:hover span{color:var(--navy)}
 
-/* ---------- Kartu KTPA (pratinjau cetak)
+/* ---------- Kartu KPA (pratinjau cetak)
    Meniru kartu fisik ASABRI: dasar putih, pita navy melengkung di sudut kiri
    atas bergaris emas, serta baji navy + pita emas di sudut kanan bawah.
    Ukuran huruf memakai satuan cqw (relatif lebar kartu) supaya kartu tetap

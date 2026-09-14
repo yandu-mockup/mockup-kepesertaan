@@ -84,7 +84,7 @@
       <button class="nav-item nav-child" data-go="spp-approval">Approval Pemulihan Data Peserta</button>
       <button class="nav-item nav-child" data-go="spp-bersih">Daftar Nominatif Pemulihan Data Peserta</button>
     </div>
-    <button class="nav-item" data-go="data-peserta">Data Peserta</button>
+    <button class="nav-item" data-go="data-peserta">List Peserta</button>
 
   </nav>
 
@@ -1510,7 +1510,7 @@
           <div class="tbl-wrap">
             <table>
               <thead><tr>
-                <th>No</th><th>No. KTPA</th><th>NRP / NIP</th><th>Nama Peserta</th>
+                <th>No</th><th>No. KPA</th><th>NRP / NIP</th><th>Nama Peserta</th>
                 <th>Pangkat</th><th>Kesatuan</th><th>Aksi</th>
               </tr></thead>
               <tbody id="premi-body"></tbody>
@@ -3706,10 +3706,10 @@
 
       <!-- ---------- PENGELOLAAN DATA PESERTA ---------- -->
       <section class="screen" id="s-data-peserta">
-        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><b>Data Peserta</b></div>
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><b>List Peserta</b></div>
         <div class="page-head">
           <div>
-            <h1 class="page-title">Data Peserta</h1>
+            <h1 class="page-title">List Peserta</h1>
             <div class="page-sub">Pencarian data induk peserta untuk dilihat dan dimutakhirkan.</div>
           </div>
         </div>
@@ -3747,7 +3747,7 @@
           <div class="tbl-wrap">
             <table>
               <thead><tr>
-                <th>No</th><th>NRP</th><th>Nopens</th><th>KTPA</th><th>Nama</th>
+                <th>No</th><th>NRP</th><th>Nopens</th><th>KPA</th><th>Nama</th>
                 <th>Tanggal Lahir</th><th>TMT Pengangkatan</th><th>No. Skep</th><th>Tanggal Skep</th>
                 <th>Pangkat Awal</th><th>Kesatuan</th><th>VIP</th><th>Aksi</th>
               </tr></thead>
@@ -3768,7 +3768,7 @@
           <div>
             <h1 class="page-title" id="dpd-nama">—</h1>
             <div class="crumb" style="margin:3px 0 0">
-              <span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span id="dpd-crumb-asal">Data Peserta</span><span>›</span><b id="dpd-crumb">Detail</b>
+              <span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span id="dpd-crumb-asal">List Peserta</span><span>›</span><b id="dpd-crumb">Detail</b>
             </div>
           </div>
         </div>
@@ -3795,7 +3795,7 @@
           <div>
             <h1 class="page-title" id="dkf-judul">Data Keluarga</h1>
             <div class="crumb" style="margin:3px 0 0">
-              <span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Data Peserta</span><span>›</span><span id="dkf-crumb-peserta">—</span><span>›</span><b>Data Keluarga</b>
+              <span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>List Peserta</span><span>›</span><span id="dkf-crumb-peserta">—</span><span>›</span><b>Data Keluarga</b>
             </div>
           </div>
         </div>
@@ -3984,6 +3984,388 @@
           <div class="form-actions" style="border-top:0;padding-top:0;margin-top:0">
             <button class="btn btn-ghost" id="dkf-batal">Batal</button>
             <button class="btn btn-primary" id="dkf-simpan">Simpan</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- UBAH DATA PESERTA ---------- -->
+      <section class="screen" id="s-data-peserta-ubah">
+        <div class="head-row">
+          <button class="link-back" id="dup-kembali">← Kembali</button>
+          <div class="head-divider"></div>
+          <div>
+            <h1 class="page-title">Ubah Data Peserta</h1>
+            <div class="crumb" style="margin:3px 0 0">
+              <span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>List Peserta</span><span>›</span><span id="dup-crumb-peserta">—</span><span>›</span><b>Ubah Data Peserta</b>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="section-title">Data Personil</h3>
+          <div class="grid3">
+            <div class="field">
+              <label class="fl" for="dup-kpa">KPA <span class="req">*</span></label>
+              <input class="inp" id="dup-kpa" disabled>
+              <div class="hint">Mengikuti KPA peserta, tidak bisa diubah.</div>
+            </div>
+            <div class="field">
+              <label class="fl" for="dup-nrp">NRP / NIP</label>
+              <input class="inp" id="dup-nrp" placeholder="NRP atau NIP peserta">
+              <div class="err-msg" id="dup-nrp-err" hidden></div>
+            </div>
+            <div class="field">
+              <label class="fl" for="dup-unor">Unit Organisasi</label>
+              <select class="inp" id="dup-unor"></select>
+            </div>
+
+            <div class="field">
+              <label class="fl" for="dup-status-personil">Status Personil <span class="req">*</span></label>
+              <select class="inp" id="dup-status-personil"></select>
+            </div>
+            <div class="field">
+              <label class="fl" for="dup-unit-kerja">Unit Kerja <span class="req">*</span></label>
+              <input class="inp" id="dup-unit-kerja" placeholder="Nama satuan kerja">
+            </div>
+            <div class="field" style="position:relative">
+              <label class="fl" for="dup-pdw">PDW</label>
+              <input class="inp" id="dup-pdw" placeholder="Cari PDW..." autocomplete="off">
+              <div class="autocomplete-list" id="dup-pdw-list"></div>
+            </div>
+
+            <div class="field">
+              <label class="fl" for="dup-tmt">TMT Pengangkatan Pertama <span class="req">*</span></label>
+              <input class="inp" type="date" id="dup-tmt">
+            </div>
+            <div class="field">
+              <label class="fl" for="dup-tmt-iuran-masuk">TMT Iuran Masuk</label>
+              <input class="inp" type="date" id="dup-tmt-iuran-masuk">
+              <div class="hint">Mengikuti TMT Pengangkatan Pertama sampai diubah sendiri.</div>
+            </div>
+            <div class="field">
+              <label class="fl" for="dup-tmt-iuran-akhir">TMT Iuran Terakhir</label>
+              <input class="inp" type="date" id="dup-tmt-iuran-akhir">
+              <div class="hint">Terisi dari tanggal iuran premi terakhir.</div>
+            </div>
+
+            <div class="field">
+              <label class="fl" for="dup-status-peserta">Status Peserta</label>
+              <select class="inp" id="dup-status-peserta"></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="section-title">Profil Peserta</h3>
+          <div class="grid3">
+            <div class="field">
+              <label class="fl" for="dup-nama">Nama <span class="req">*</span></label>
+              <input class="inp" id="dup-nama" placeholder="Nama lengkap peserta">
+            </div>
+            <div class="field">
+              <label class="fl" for="dup-nama-ktp">Nama Sesuai KTP</label>
+              <input class="inp" id="dup-nama-ktp" placeholder="Nama persis seperti di KTP">
+            </div>
+            <div class="field">
+              <label class="fl" for="dup-tempat-lahir">Tempat Lahir <span class="req">*</span></label>
+              <input class="inp" id="dup-tempat-lahir" placeholder="Kota kelahiran">
+            </div>
+
+            <div class="field">
+              <label class="fl" for="dup-tgl-lahir">Tanggal Lahir <span class="req">*</span></label>
+              <input class="inp" type="date" id="dup-tgl-lahir">
+            </div>
+            <div class="field">
+              <label class="fl" for="dup-tgl-meninggal">Tanggal Meninggal</label>
+              <input class="inp" type="date" id="dup-tgl-meninggal">
+            </div>
+            <div class="field">
+              <label class="fl" for="dup-kelamin">Jenis Kelamin <span class="req">*</span></label>
+              <select class="inp" id="dup-kelamin"></select>
+            </div>
+
+            <div class="field">
+              <label class="fl" for="dup-status-kawin">Status Kawin</label>
+              <select class="inp" id="dup-status-kawin"></select>
+            </div>
+            <div class="field">
+              <label class="fl" for="dup-nik">NIK</label>
+              <input class="inp" id="dup-nik" placeholder="16 digit sesuai KTP">
+            </div>
+            <div class="field">
+              <label class="fl" for="dup-npwp">NPWP</label>
+              <input class="inp" id="dup-npwp" placeholder="00.000.000.0-000.000">
+            </div>
+
+            <div class="field span2">
+              <label class="fl" for="dup-alamat">Alamat</label>
+              <input class="inp" id="dup-alamat" placeholder="Nama jalan, nomor rumah">
+            </div>
+            <div class="field">
+              <label class="fl" for="dup-rt">RT</label>
+              <input class="inp" id="dup-rt" placeholder="000">
+            </div>
+
+            <div class="field">
+              <label class="fl" for="dup-rw">RW</label>
+              <input class="inp" id="dup-rw" placeholder="000">
+            </div>
+            <div class="field">
+              <label class="fl" for="dup-desa">Desa / Kelurahan</label>
+              <input class="inp" id="dup-desa" placeholder="Nama desa atau kelurahan">
+            </div>
+            <div class="field">
+              <label class="fl" for="dup-kodepos">Kode Pos</label>
+              <input class="inp" id="dup-kodepos" placeholder="5 digit">
+            </div>
+
+            <div class="field span2">
+              <label class="fl" for="dup-alamat-ktp">Alamat Sesuai KTP</label>
+              <input class="inp" id="dup-alamat-ktp" placeholder="Alamat persis seperti di KTP">
+            </div>
+            <div class="field">
+              <label class="fl" for="dup-telepon">No Telepon</label>
+              <input class="inp" id="dup-telepon" placeholder="(021) 000000">
+            </div>
+
+            <div class="field">
+              <label class="fl" for="dup-email">Email</label>
+              <input class="inp" id="dup-email" placeholder="nama@contoh.com">
+            </div>
+            <div class="field">
+              <label class="fl" for="dup-hp">No Handphone</label>
+              <input class="inp" id="dup-hp" placeholder="08xxxxxxxxxx">
+            </div>
+            <div class="field">
+              <label class="fl" for="dup-flag">Flag</label>
+              <select class="inp" id="dup-flag"></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:14px">
+            <div>
+              <h3 class="section-title" style="margin-bottom:6px">Data Keluarga</h3>
+              <div class="page-sub" style="margin:0">Perubahan di bagian ini baru tersimpan setelah menekan Simpan.</div>
+            </div>
+            <button class="btn btn-primary" id="dup-tambah-keluarga">+ Tambah Anggota Keluarga</button>
+          </div>
+
+          <div class="subsection-title">Daftar Anggota Keluarga</div>
+          <div class="tbl-wrap">
+            <table class="wide-table" style="min-width:2100px">
+              <thead><tr>
+                <th>NOPENS</th><th>Nama</th><th>Hubungan Keluarga</th><th>Tempat Lahir</th><th>Tgl Lahir</th>
+                <th>Tgl Menikah</th><th>Tgl Mulai Kuliah</th><th>Tgl Selesai Kuliah</th><th>Tgl Meninggal</th>
+                <th>Tgl Mulai Kerja</th><th>Tgl Selesai Kerja</th><th>Tgl Berhenti di Tunjang</th>
+                <th>Tgl di Tunjang Kembali</th><th>Pekerjaan</th><th>NIK</th><th class="stick-r">Aksi</th>
+              </tr></thead>
+              <tbody id="dup-keluarga-body"></tbody>
+            </table>
+          </div>
+
+          <div class="subsection-title" style="margin-top:24px">Data Rekening Keluarga</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>Nama Rekening</th><th>Nomor Rekening</th><th>Mitra Bayar</th><th>Cabang Mitra Bayar</th><th>Aksi</th>
+              </tr></thead>
+              <tbody id="dup-rekening-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="form-actions" style="border-top:0;padding-top:0;margin-top:0">
+            <button class="btn btn-ghost" id="dup-batal">Batal</button>
+            <button class="btn btn-primary" id="dup-simpan">Simpan</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- SEJARAH HUTANG SELAMA INI ---------- -->
+      <section class="screen" id="s-sejarah-hutang">
+        <div class="head-row">
+          <button class="link-back" id="sh-kembali">← Kembali</button>
+          <div class="head-divider"></div>
+          <div>
+            <h1 class="page-title">Sejarah Hutang Selama Ini</h1>
+            <div class="crumb" style="margin:3px 0 0">
+              <span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>List Peserta</span><span>›</span><span id="sh-crumb-peserta">—</span><span>›</span><b>Sejarah Hutang</b>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="section-title" style="margin-bottom:6px">Daftar Pinjaman</h3>
+          <div class="page-sub" style="margin:0 0 14px" id="sh-sub"></div>
+          <div class="tbl-wrap">
+            <!-- wide-table: isi sel tidak dipatahkan; kolom Aksi menempel di kanan saat digeser -->
+            <table class="wide-table" style="min-width:1500px">
+              <thead><tr>
+                <th>TMT</th><th>No Permohonan</th><th>Jenis Pinjaman</th><th>Kategori Jenis Pinjaman</th>
+                <th>Jumlah Angsuran Perbulan</th><th>Jumlah</th><th>Jumlah Yang di bayar</th><th>Jumlah DPS</th><th class="stick-r">Aksi</th>
+              </tr></thead>
+              <tbody id="sh-body"></tbody>
+              <tfoot id="sh-foot" style="white-space:nowrap"></tfoot>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ---------- SEJARAH HUTANG: RIWAYAT TRANSAKSI ---------- -->
+      <section class="screen" id="s-sejarah-hutang-detail">
+        <div class="head-row">
+          <button class="link-back" id="shd-kembali">← Kembali</button>
+          <div class="head-divider"></div>
+          <div>
+            <h1 class="page-title">Riwayat Transaksi</h1>
+            <div class="crumb" style="margin:3px 0 0">
+              <span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>List Peserta</span><span>›</span><span class="sh-crumb-nama">—</span><span>›</span><span>Sejarah Hutang</span><span>›</span><b>Riwayat Transaksi</b>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" id="sh-detail">
+          <h3 class="section-title" style="margin-bottom:6px">Daftar Transaksi</h3>
+          <div class="page-sub" style="margin:0 0 14px" id="sh-detail-sub"></div>
+          <div class="tbl-wrap">
+            <table class="wide-table" style="min-width:1600px">
+              <thead><tr>
+                <th>Tanggal Transaksi</th><th>Tanggal Rekonsiliasi</th><th>Type Transaksi</th><th>Keterangan</th><th>Tanggal Surat</th>
+                <th>No Surat</th><th>Bunga</th><th>Pokok</th><th>Total</th><th>Dokumen Terlampir</th>
+              </tr></thead>
+              <tbody id="sh-detail-body"></tbody>
+              <tfoot id="sh-detail-foot" style="white-space:nowrap"></tfoot>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ---------- SEJARAH HUTANG: UBAH DATA PINJAMAN ---------- -->
+      <section class="screen" id="s-sejarah-hutang-ubah">
+        <div class="head-row">
+          <button class="link-back" id="shu-kembali">← Kembali</button>
+          <div class="head-divider"></div>
+          <div>
+            <h1 class="page-title">Ubah Data Pinjaman</h1>
+            <div class="crumb" style="margin:3px 0 0">
+              <span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>List Peserta</span><span>›</span><span class="sh-crumb-nama">—</span><span>›</span><span>Sejarah Hutang</span><span>›</span><b>Ubah Data Pinjaman</b>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" id="sh-form">
+          <h3 class="section-title" style="margin-bottom:6px">Data Pinjaman</h3>
+          <div class="page-sub" style="margin:0 0 14px" id="sh-form-sub"></div>
+          <div class="grid3">
+            <div class="field">
+              <label class="fl" for="sh-f-objek">Objek Pensiun</label>
+              <input class="inp" id="sh-f-objek" placeholder="Nomor pensiun peserta">
+            </div>
+            <div class="field">
+              <label class="fl" for="sh-f-nomor">Nomer Pinjaman <span class="req">*</span></label>
+              <input class="inp" id="sh-f-nomor" placeholder="Nomor pinjaman">
+              <div class="err-msg" hidden></div>
+            </div>
+            <div class="field">
+              <label class="fl" for="sh-f-jenis">Jenis Pinjaman</label>
+              <select class="inp" id="sh-f-jenis"></select>
+              <div class="hint" id="sh-f-jenis-hint"></div>
+            </div>
+
+            <div class="field">
+              <label class="fl" for="sh-f-kategori">Kategori Pinjaman</label>
+              <select class="inp" id="sh-f-kategori"></select>
+            </div>
+            <div class="field">
+              <label class="fl" for="sh-f-jumlah">Jumlah Pinjaman <span class="req">*</span></label>
+              <div class="money"><span>Rp</span><input id="sh-f-jumlah" inputmode="numeric" placeholder="0"></div>
+              <div class="err-msg" hidden></div>
+            </div>
+            <div class="field">
+              <label class="fl" for="sh-f-bunga">Bunga Perbulan</label>
+              <input class="inp" id="sh-f-bunga" placeholder="Dalam persen, contoh: 0,5">
+            </div>
+
+            <div class="field">
+              <label class="fl" for="sh-f-angsuran">Angsuran Perbulan</label>
+              <div class="money"><span>Rp</span><input id="sh-f-angsuran" inputmode="numeric" placeholder="0"></div>
+            </div>
+            <div class="field">
+              <label class="fl" for="sh-f-tmt">TMT Pinjaman <span class="req">*</span></label>
+              <input class="inp" type="date" id="sh-f-tmt">
+              <div class="err-msg" hidden></div>
+            </div>
+            <div class="field">
+              <label class="fl" for="sh-f-jatuh-tempo">Tanggal Jatuh Tempo</label>
+              <input class="inp" type="date" id="sh-f-jatuh-tempo">
+            </div>
+
+            <div class="field">
+              <label class="fl" for="sh-f-tipe">Tipe Transaksi</label>
+              <select class="inp" id="sh-f-tipe"></select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-ghost" id="sh-form-batal">Batal</button>
+            <button class="btn btn-primary" id="sh-form-simpan">Simpan</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- DETAIL HAK/PRODUK ---------- -->
+      <section class="screen" id="s-hak-detail">
+        <div class="head-row">
+          <button class="link-back" id="hd-kembali">← Kembali</button>
+          <div class="head-divider"></div>
+          <div>
+            <h1 class="page-title">Detail Hak/Produk</h1>
+            <div class="crumb" style="margin:3px 0 0">
+              <span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>List Peserta</span><span>›</span><span id="hd-crumb-peserta">—</span><span>›</span><span>Hak/Produk</span><span>›</span><b>Detail</b>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="section-title" style="margin-bottom:6px">Peserta Hak/Produk</h3>
+          <div class="page-sub" style="margin:0 0 14px" id="hd-sub"></div>
+          <div class="grid3" id="hd-peserta"></div>
+        </div>
+
+        <div class="card">
+          <h3 class="section-title">Data Pengambilan</h3>
+          <!-- Kartu lipat "Pengambilan - mitra - total", digambar renderDetailHak() -->
+          <div id="hd-pengambilan"></div>
+        </div>
+
+        <div class="card">
+          <h3 class="section-title">Dokumen</h3>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Tanggal</th><th>Nama Dokumen</th><th>Aksi</th></tr></thead>
+              <tbody id="hd-dokumen-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px">
+            <h3 class="section-title" style="margin:0">Daftar Surat Perintah</h3>
+            <button class="btn btn-primary" id="hd-sp-baru">+ Surat Perintah Bayar</button>
+          </div>
+          <div class="tbl-wrap">
+            <table class="wide-table" style="min-width:1500px">
+              <thead><tr>
+                <th>No Surat Perintah</th><th>Kode Bayar</th><th>Tanggal Surat Perintah</th><th>Mitra Bayar</th>
+                <th>Cabang Mitra Bayar</th><th>No Rekening Asabri</th><th>Nama Rekening</th><th>Nomor Rekening</th>
+                <th>Jumlah Bayar</th><th class="stick-r">Aksi</th>
+              </tr></thead>
+              <tbody id="hd-sp-body"></tbody>
+            </table>
           </div>
         </div>
       </section>

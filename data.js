@@ -764,7 +764,7 @@ const PENGATURAN = {
    16. PENGELOLAAN IURAN PREMI THT, JKK, DAN JKm — daftar peserta aktif untuk
    simulasi perhitungan premi (SIMPRE). Baris dengan ktpa/pangkat/kesatuan
    kosong merepresentasikan data peserta yang belum lengkap tersinkron dari
-   Data Peserta — tombol "Hitung Premi"-nya nonaktif.
+   List Peserta — tombol "Hitung Premi"-nya nonaktif.
    --------------------------------------------------------------------------- */
 const DATA_IURAN_PREMI_PESERTA = [
   { ktpa:"ED424185", nrp:"74020098",   nik:"3174012702740003", nama:"Mulyadi",
@@ -1183,7 +1183,7 @@ const DAPEM_GATE = [
     param:"TUNJ_CACAT <> master tunjangan cacat", sev:"tinggi", temuan:7 },
   { tahap:"generate", kode:"D-11", nama:"Tunjangan IRJA tanpa provinsi Papua",
     param:"prov_id IN (35,36,37,38,…) AND TUNJ_IRJA = 0", sev:"sedang", temuan:0 },
-  { tahap:"generate", kode:"D-12", nama:"Pensiun bagi PNS — 1 KTPA lebih dari 1 nopens",
+  { tahap:"generate", kode:"D-12", nama:"Pensiun bagi PNS — 1 KPA lebih dari 1 nopens",
     param:"KODE_JIWA IN ('0100','0101','0102','0001','0002') · status personil = 2", sev:"tinggi", temuan:2 },
   { tahap:"generate", kode:"D-13", nama:"Rekening flagging berbeda dengan set dapem",
     param:"status flagging = 3 AND norek dapem = norek flagging", sev:"tinggi", temuan:5 },
@@ -1258,18 +1258,18 @@ const DAPEM_TEMUAN = {
     ]
   },
   "D-12": {
-    aturan:"Satu nomor KTPA memiliki lebih dari satu nomor pensiun dengan status personil PNS. Pensiun pokoknya harus dibagi, bukan diberikan penuh ke masing-masing.",
+    aturan:"Satu nomor KPA memiliki lebih dari satu nomor pensiun dengan status personil PNS. Pensiun pokoknya harus dibagi, bukan diberikan penuh ke masing-masing.",
     aksi:"Bagi pensiun pokok",
-    kolom:["KTPA","Nopens","Nama","Kode Jiwa","Pens. Pokok","Seharusnya"],
+    kolom:["KPA","Nopens","Nama","Kode Jiwa","Pens. Pokok","Seharusnya"],
     baris:[
       { pilih:true, sel:["CZ103326","CZ10332612","SITI AMINAH","0100","1.591.200","795.600"] },
       { pilih:true, sel:["CZ103326","CZ10332613","RIZKY AMANDA","0001","1.591.200","795.600"] }
     ]
   },
   "D-13": {
-    aturan:"Nomor rekening pada calon dapem mengikuti rekening flagging pinjaman milik peserta lain dalam satu KTPA. Rekening yatim seharusnya mengikuti set rekening dapem, bukan rekening flagging.",
+    aturan:"Nomor rekening pada calon dapem mengikuti rekening flagging pinjaman milik peserta lain dalam satu KPA. Rekening yatim seharusnya mengikuti set rekening dapem, bukan rekening flagging.",
     aksi:"Kembalikan ke set dapem",
-    kolom:["KTPA","Nopens","Nama","Norek Dapem","Norek Set Dapem","Mitra"],
+    kolom:["KPA","Nopens","Nama","Norek Dapem","Norek Set Dapem","Mitra"],
     baris:[
       { pilih:true, sel:["EZ109152","EZ10915213","NOVITA SARI","1448****0502","1448****0502","BRI KK ASABRI"] },
       { pilih:true, sel:["BE385294","BE38529413","OKTAVIAN HANIF","0002****4929","0187****1704","SMBC KCP Wonosari"] },
@@ -1984,7 +1984,7 @@ const DATA_ALIH_STATUS_KOLEKTIF = {
 
 /* ---------------------------------------------------------------------------
    22. PENGELOLAAN DATA PESERTA — daftar induk peserta untuk pencarian
-   Dipakai layar "Data Peserta". Semua kolom yang bisa dipilih di
+   Dipakai layar "List Peserta". Semua kolom yang bisa dipilih di
    dropdown "Tipe Pencarian" tersimpan di setiap baris, walau tidak semuanya
    ditampilkan di tabel hasil (sebagian hanya muncul di modal Detail).
    Tanggal disimpan sebagai teks "dd-mm-yyyy" supaya bisa langsung ditampilkan;
@@ -2112,7 +2112,21 @@ const DATA_PESERTA_KELOLA = [
     tempatLahir:"SURABAYA", tglLahir:"10-02-1985", tmt:"01-12-2010",
     noSkep:"KEP/2233/XI/2010", tglSkep:"19-11-2010", noSkepPensiun:"-", tglSkepPensiun:"-",
     pangkatAwal:"GOL.II/C", pangkatAkhir:"GOL.III/A", kesatuan:"LANAL SURABAYA", angkatan:"TNI-AL",
-    vip:"YA", statusPeserta:"AKTIF", alihStatus:"-", statusValid:"Valid" }
+    vip:"YA", statusPeserta:"AKTIF", alihStatus:"-", statusValid:"Valid" },
+
+  /* Pasangan suami-istri yang dua-duanya peserta ASABRI — data uji untuk aksi
+     "Pindahkan" di tab Keluarga. Keluarga keduanya ditulis manual di blok
+     22d-1 (tepat di bawah pemanggilan buatKeluargaPeserta), bukan dibangkitkan. */
+  { migrasiId:"MG-0000310577", nrp:"85061122", nopens:"-", ktpa:"PD310577", nama:"BAGUS HARYANTO",
+    tempatLahir:"SURAKARTA", tglLahir:"11-06-1985", tmt:"01-12-2006",
+    noSkep:"KEP/1874/XI/2006", tglSkep:"20-11-2006", noSkepPensiun:"-", tglSkepPensiun:"-",
+    pangkatAwal:"BRIPDA", pangkatAkhir:"AIPDA", kesatuan:"POLRESTA SURAKARTA", angkatan:"POLRI",
+    vip:"TIDAK", statusPeserta:"AKTIF", alihStatus:"-", statusValid:"Valid" },
+  { migrasiId:"MG-0000420918", nrp:"198903142014032002", nopens:"-", ktpa:"KH420918", nama:"RATNA DEWI ANGGRAENI",
+    tempatLahir:"KLATEN", tglLahir:"14-03-1989", tmt:"01-03-2014",
+    noSkep:"KEP/0412/II/2014", tglSkep:"24-02-2014", noSkepPensiun:"-", tglSkepPensiun:"-",
+    pangkatAwal:"GOL.II/C", pangkatAkhir:"GOL.III/A", kesatuan:"RUMKIT DR. SUYOTO PUSREHAB KEMHAN", angkatan:"KEMHAN",
+    vip:"TIDAK", statusPeserta:"AKTIF", alihStatus:"-", statusValid:"Valid" }
 ];
 
 /* Isi dropdown "Tipe Pencarian". `key` = nama field di DATA_PESERTA_KELOLA. */
@@ -2121,7 +2135,7 @@ const PESERTA_KELOLA_TIPE_CARI = [
   { key:"migrasiId",      label:"MIGRASI ID" },
   { key:"nrp",            label:"NRP" },
   { key:"nopens",         label:"NOPENS" },
-  { key:"ktpa",           label:"KTPA" },
+  { key:"ktpa",           label:"KPA" },
   { key:"angkatan",       label:"ANGKATAN" },
   { key:"tglSkep",        label:"TANGGAL SKEP PENGANGKATAN" },
   { key:"noSkep",         label:"NOMOR SKEP PENGANGKATAN" },
@@ -2290,7 +2304,14 @@ function lengkapiProfilPeserta(p, n) {
 
     /* 6. Data DAPEM */
     tglDapemTerakhir:     pensiun ? tgl(1, 8, 2026) : "-",
-    tglAmbilUangTerakhir: pensiun ? tgl(4 + (n % 12), 8, 2026) : "-"
+    tglAmbilUangTerakhir: pensiun ? tgl(4 + (n % 12), 8, 2026) : "-",
+
+    /* Dipakai form Ubah Data Peserta. Iuran premi terakhir: bulan lalu untuk
+       peserta aktif, bulan terbitnya SKEP pensiun untuk pensiunan. */
+    tglIuranTerakhir: p.statusPeserta === "AKTIF" ? tgl(1, 8, 2026)
+                    : skepPens ? tgl(1, +skepPens[2], skepPens[3])
+                    : tgl(1, (n % 12) + 1, 2021),
+    flag: p.statusValid === "Valid" ? "Aktif" : "Tidak Aktif"
   };
 }
 
@@ -2519,6 +2540,20 @@ const KELUARGA_FIELD_TAMPIL = {
   "ANAK TIRI":   ["akta", "mulaiKerja", "mulaiKuliah", "selesaiKuliah"]
 };
 const KELUARGA_FIELD_BAWAAN = ["mulaiKerja", "berhentiKerja"];
+
+/* Isi dropdown di form Ubah Data Peserta. */
+const UBAH_PESERTA_STATUS = ["Aktif", "Pensiun", "Meninggal Dunia Aktif", "PTDH", "Alih Status", "Tidak Aktif"];
+const UBAH_PESERTA_FLAG   = ["Aktif", "Tidak Aktif"];
+
+/* Unit Organisasi yang terpilih lebih dulu saat form dibuka, dipetakan dari
+   angkatan peserta ke kode di referensi UNOR (DATA_UNOR). */
+const UBAH_PESERTA_UNOR_ANGKATAN = {
+  "TNI-AD": "UNOR-AD-001",
+  "TNI-AL": "UNOR-AL-014",
+  "TNI-AU": "UNOR-AU-022",
+  "POLRI":  "UNOR-PL-030",
+  "KEMHAN": "UNOR-KH-039"
+};
 const KELUARGA_CABANG_MITRA = [
   "KCP SURABAYA DARMO", "KCP BANDUNG ASIA AFRIKA", "KCP SEMARANG PANDANARAN",
   "KCP JAKARTA CIPINANG", "KCP PALANGKARAYA AHMAD YANI", "KCP SURAKARTA SLAMET RIYADI",
@@ -2620,6 +2655,83 @@ function buatKeluargaPeserta(p, n) {
 DATA_PESERTA_KELOLA.forEach((p, i) => { p.keluarga = buatKeluargaPeserta(p, i); });
 
 /* ---------------------------------------------------------------------------
+   22d-1. DATA UJI — PINDAHKAN ANGGOTA KELUARGA
+   Suami (BAGUS HARYANTO, KPA PD310577) dan istri (RATNA DEWI ANGGRAENI,
+   KPA KH420918) sama-sama peserta. Kedua anaknya masih tercatat di KPA ayah;
+   skenario uji: pindahkan RAFA ADITYA HARYANTO ke KPA ibunya.
+
+   SEBELUM dipindah
+     PD310577 BAGUS HARYANTO       : ISTRI     RATNA DEWI ANGGRAENI
+                                     ANAK KE-1 NAYLA PUTRI HARYANTO
+                                     ANAK KE-2 RAFA ADITYA HARYANTO
+     KH420918 RATNA DEWI ANGGRAENI : SUAMI     BAGUS HARYANTO
+
+   SESUDAH RAFA dipindah ke KH420918
+     PD310577 BAGUS HARYANTO       : ISTRI     RATNA DEWI ANGGRAENI
+                                     ANAK KE-1 NAYLA PUTRI HARYANTO
+     KH420918 RATNA DEWI ANGGRAENI : SUAMI     BAGUS HARYANTO
+                                     ANAK KE-1 RAFA ADITYA HARYANTO
+
+   Keluarga keduanya ditulis manual (menimpa hasil buatKeluargaPeserta) supaya
+   isinya selalu sama dengan skenario di atas. Blok ini sengaja jalan sebelum
+   generator Piutang dan Hak/Produk, yang ikut membaca data keluarga.
+   --------------------------------------------------------------------------- */
+const DEMO_PINDAH_KELUARGA = { sumber:"PD310577", tujuan:"KH420918" };
+
+/* Satu anggota keluarga lengkap; kolom yang tidak disebut diisi "-". */
+function anggotaKeluargaDemo(isi) {
+  return Object.assign({
+    tglEntry:"-", nopens:"-", nama:"-", hubungan:"-", tempatLahir:"-", tglLahir:"-",
+    tglMenikah:"-", tglMeninggal:"-", tglMulaiKuliah:"-", tglSelesaiKuliah:"-",
+    tglMulaiKerja:"-", tglSelesaiKerja:"-", pekerjaan:"-",
+    tglBerhentiTunjang:"-", tglTunjangKembali:"-",
+    namaRekening:"-", nomorRekening:"-", mitraBayar:"-", cabangMitraBayar:"-",
+    nomorIdentitas:"-", rekening:[]
+  }, isi);
+}
+
+(function () {
+  const ayah = DATA_PESERTA_KELOLA.find(p => p.ktpa === DEMO_PINDAH_KELUARGA.sumber);
+  const ibu  = DATA_PESERTA_KELOLA.find(p => p.ktpa === DEMO_PINDAH_KELUARGA.tujuan);
+
+  ayah.profil.jenisKelamin = "LAKI-LAKI";  ayah.profil.statusKawin = "KAWIN";
+  ibu.profil.jenisKelamin  = "PEREMPUAN";  ibu.profil.statusKawin  = "KAWIN";
+
+  const rekIstri = { nama:"RATNA DEWI ANGGRAENI", nomor:"0021-01-558301", mitra:"Bank BRI", cabang:"KCP SURAKARTA SLAMET RIYADI" };
+  const rekSuami = { nama:"BAGUS HARYANTO",       nomor:"0021-01-447920", mitra:"Bank BRI", cabang:"KCP SURAKARTA SLAMET RIYADI" };
+
+  ayah.keluarga = [
+    anggotaKeluargaDemo({
+      tglEntry:"05-02-2013", nama:"RATNA DEWI ANGGRAENI", hubungan:"ISTRI", tempatLahir:"KLATEN",
+      tglLahir:"14-03-1989", tglMenikah:"12-01-2013", pekerjaan:"ASN",
+      jenisKelamin:"WANITA", statusKawin:"Menikah", nomorIdentitas:"3310045403890002",
+      namaRekening:rekIstri.nama, nomorRekening:rekIstri.nomor,
+      mitraBayar:rekIstri.mitra, cabangMitraBayar:rekIstri.cabang, rekening:[{ ...rekIstri }]
+    }),
+    anggotaKeluargaDemo({
+      tglEntry:"20-09-2014", nama:"NAYLA PUTRI HARYANTO", hubungan:"ANAK KE-1", tempatLahir:"SURAKARTA",
+      tglLahir:"08-09-2014", pekerjaan:"Pelajar", jenisKelamin:"WANITA", statusKawin:"Belum menikah",
+      orangTua:"BAGUS HARYANTO", nomorIdentitas:"3372014809140001"
+    }),
+    anggotaKeluargaDemo({
+      tglEntry:"11-04-2017", nama:"RAFA ADITYA HARYANTO", hubungan:"ANAK KE-2", tempatLahir:"SURAKARTA",
+      tglLahir:"27-03-2017", pekerjaan:"Pelajar", jenisKelamin:"PRIA", statusKawin:"Belum menikah",
+      orangTua:"BAGUS HARYANTO", nomorIdentitas:"3372012703170003"
+    })
+  ];
+
+  ibu.keluarga = [
+    anggotaKeluargaDemo({
+      tglEntry:"18-03-2014", nama:"BAGUS HARYANTO", hubungan:"SUAMI", tempatLahir:"SURAKARTA",
+      tglLahir:"11-06-1985", tglMenikah:"12-01-2013", pekerjaan:"TNI/POLRI",
+      jenisKelamin:"PRIA", statusKawin:"Menikah", nomorIdentitas:"3372011106850004",
+      namaRekening:rekSuami.nama, nomorRekening:rekSuami.nomor,
+      mitraBayar:rekSuami.mitra, cabangMitraBayar:rekSuami.cabang, rekening:[{ ...rekSuami }]
+    })
+  ];
+})();
+
+/* ---------------------------------------------------------------------------
    22e. PENGELOLAAN DATA PESERTA — isi tab "Hutang"
    Dua daftar terpisah: hutang peserta kepada ASABRI (`p.hutang`) dan hutang
    pada bank/mitra penyalur (`p.hutangMitra`). Sebagian peserta sengaja
@@ -2695,75 +2807,341 @@ DATA_PESERTA_KELOLA.forEach((p, i) => {
   p.hutangMitra = h.hutangMitra;
 });
 
+/* Piutang BUM KPR YKPP PROGSUS (bagian dari blok 22e) — pinjaman uang muka KPR
+   program khusus YKPP dari sistem lama. Contoh dari user:
+     TMT 18-12-2007 · No Permohonan 10120071218DX100303 · Jumlah 14.000.000 ·
+     sudah dibayar 14.000.000 · Angsuran & DPS 0 · Kategori kosong
+   Nomor permohonannya berpola 101 + TMT (yyyymmdd) + KPA. Ditambahkan sebagai
+   baris pertama (paling lama) untuk peserta bernomor urut ganjil yang sudah
+   punya piutang, dan semuanya sudah lunas. Hanya jenis ini yang transaksinya
+   punya Tanggal Rekonsiliasi di halaman Riwayat Transaksi; jenis lain "-".
+   Riwayat transaksinya dibentuk di sini, jadi lengkapiSejarahHutang (blok
+   22e-1) melewati baris ini. Peserta uji Pindahkan (blok 22e-0) ditimpa sesudah
+   blok ini, jadi datanya tetap sesuai skenario di sana. */
+const HUTANG_JENIS_YKPP = "BUM KPR YKPP PROGSUS";
+
+DATA_PESERTA_KELOLA.forEach((p, n) => {
+  if (!(p.hutang || []).length || n % 2 === 0) return;
+  const pad    = v => String(v).padStart(2, "0");
+  const tglStr = (d, m, y) => `${pad(d)}-${pad(m)}-${y}`;
+  const geser  = (t, hari) => {
+    const [d, m, y] = t.split("-").map(Number);
+    const x = new Date(y, m - 1, d + hari);
+    return tglStr(x.getDate(), x.getMonth() + 1, x.getFullYear());
+  };
+  const romawi = ["I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"];
+
+  const thn = 2005 + (n % 8), bln = (n % 12) + 1, hari = 10 + (n % 18);
+  const tmt      = tglStr(hari, bln, thn);
+  const jumlah   = 10000000 + (n % 5) * 1000000;
+  const tglLunas = tglStr(hari, bln, Math.min(thn + 5 + (n % 4), 2025));
+
+  const riwayat = [
+    { tgl: tmt, tipe: "Pengambilan", keterangan: HUTANG_JENIS_YKPP, tglSurat: tmt,
+      noSurat: `${1100 + n * 9}/03/KPR.81/${romawi[bln - 1]}/${String(thn).slice(2)}/PR.AU`,
+      bunga: 0, pokok: jumlah, dokumen: "Surat Persetujuan Pinjaman.pdf" },
+    { tgl: tglLunas, tipe: "Pembayaran", keterangan: "Pelunasan", tglSurat: "-", noSurat: "-",
+      bunga: 0, pokok: -jumlah, dokumen: "Tidak ada dokumen terlampir" }
+  ];
+  let saldo = 0;
+  riwayat.forEach((t, j) => {
+    saldo += t.pokok;
+    t.total = saldo;
+    t.tglRekonsiliasi = geser(t.tgl, 3 + ((n + j * 5) % 10));
+  });
+
+  p.hutang.unshift({
+    tmt, noPiutang: `101${thn}${pad(bln)}${pad(hari)}${p.ktpa}`, jenis: HUTANG_JENIS_YKPP,
+    jumlah, sudahBayar: jumlah, sisa: 0,
+    kategori: "-", angsuranPerbulan: 0, jumlahDps: 0, bungaPerbulan: "0",
+    jatuhTempo: tglStr(hari, bln, thn + 10), tipeTransaksi: "Migrasi",
+    objekPensiun: p.nopens && p.nopens !== "-" ? p.nopens : "-",
+    transaksi: riwayat
+  });
+});
+
+/* ---------------------------------------------------------------------------
+   22e-0. DATA UJI — PINDAHKAN PIUTANG & PIUTANG MITRA
+   Memakai pasangan peserta yang sama dengan uji Pindahkan Anggota Keluarga
+   (blok 22d-1). Dua pinjaman milik istri (RATNA DEWI ANGGRAENI, KPA KH420918)
+   salah tercatat di KPA suaminya (BAGUS HARYANTO, KPA PD310577); skenario uji:
+   pindahkan keduanya ke KH420918.
+
+   SEBELUM dipindah
+     PD310577  Piutang       : PTG/2019/004211  BUM KPR        sisa Rp 18.000.000
+                               PTG/2022/005318  PUM KPR        sisa Rp 48.000.000
+               Piutang Mitra : PK-2020-005102   Bank BRI
+                               PK-2021-006390   Bank BTN
+     KH420918  Piutang       : PTG/2016/003087  Piutang Premi  sisa Rp 0
+               Piutang Mitra : (kosong)
+
+   SESUDAH PTG/2022/005318 dan PK-2021-006390 dipindah ke KH420918
+     PD310577  Piutang       : PTG/2019/004211  BUM KPR
+               Piutang Mitra : PK-2020-005102   Bank BRI
+     KH420918  Piutang       : PTG/2016/003087  Piutang Premi
+                               PTG/2022/005318  PUM KPR
+               Piutang Mitra : PK-2021-006390   Bank BTN
+
+   Ditulis manual (menimpa hasil buatHutangPeserta) dan sengaja berada sebelum
+   lengkapiSejarahHutang di blok 22e-1, supaya pinjaman di sini ikut punya
+   riwayat transaksi di halaman Sejarah Hutang.
+   --------------------------------------------------------------------------- */
+(function () {
+  const ayah = DATA_PESERTA_KELOLA.find(p => p.ktpa === DEMO_PINDAH_KELUARGA.sumber);
+  const ibu  = DATA_PESERTA_KELOLA.find(p => p.ktpa === DEMO_PINDAH_KELUARGA.tujuan);
+  const piutang = (tmt, noPiutang, jenis, jumlah, sudahBayar) =>
+    ({ tmt, noPiutang, jenis, jumlah, sudahBayar, sisa: jumlah - sudahBayar });
+
+  ayah.hutang = [
+    piutang("01-03-2019", "PTG/2019/004211", "BUM KPR", 45000000, 27000000),
+    piutang("01-08-2022", "PTG/2022/005318", "PUM KPR", 60000000, 12000000)
+  ];
+  ayah.hutangMitra = [
+    { mitraBayar:"Bank BRI", tglPengajuan:"14-02-2020", awalKredit:"01-03-2020", akhirKredit:"01-03-2030",
+      plafon:150000000, noRekTab:"0021-01-447920", noRekKredit:"0021-02-610455",
+      noPinjaman:"PK-2020-005102", status:"Aktif", tarif:"11,5%" },
+    { mitraBayar:"Bank BTN", tglPengajuan:"20-07-2021", awalKredit:"01-08-2021", akhirKredit:"01-08-2036",
+      plafon:250000000, noRekTab:"0021-01-558301", noRekKredit:"0041-02-778213",
+      noPinjaman:"PK-2021-006390", status:"Aktif", tarif:"9,8%" }
+  ];
+
+  ibu.hutang      = [ piutang("01-11-2016", "PTG/2016/003087", "Piutang Premi", 8500000, 8500000) ];
+  ibu.hutangMitra = [];
+})();
+
+/* ---------------------------------------------------------------------------
+   22e-1. PENGELOLAAN DATA PESERTA — halaman "Sejarah Hutang Selama Ini"
+   Rincian tambahan untuk tiap baris piutang kepada ASABRI (p.hutang), dibuka
+   dari tautan TMT Awal Kredit / Nomor Piutang di tab Piutang. Nilai yang sudah
+   tampil di tab Piutang (tmt, noPiutang, jenis, jumlah, sudahBayar, sisa) tidak
+   diubah; blok ini hanya menambah kolom baru dan riwayat transaksinya.
+   Riwayat transaksi selalu konsisten dengan barisnya: Pengambilan sebesar
+   Jumlah, lalu Pembayaran yang totalnya sama dengan Jumlah Sudah Bayar
+   (sebagian lewat Potongan DPS untuk pensiunan). Kolom Total = saldo berjalan,
+   jadi saldo akhirnya selalu sama dengan Jumlah Sisa Piutang.
+   --------------------------------------------------------------------------- */
+const HUTANG_JENIS_PINJAMAN = ["Pinjaman Polis", "Alih Status", "Tabungan Dwiguna Taspen Life"];
+const HUTANG_KATEGORI       = ["Reguler", "Khusus", "Take Over"];
+const HUTANG_TIPE_TRANSAKSI = ["Migrasi", "Baru"];
+
+/* Aman dipanggil berulang: baris yang sudah punya riwayat transaksi dilewati.
+   Peserta hasil Pemulihan Data Peserta dibentuk belakangan, jadi layar Sejarah
+   Hutang juga memanggil fungsi ini saat dibuka. */
+function lengkapiSejarahHutang(p) {
+  const pad     = (v, l) => String(v).padStart(l, "0");
+  const tglStr  = (d, m, y) => `${pad(d, 2)}-${pad(m, 2)}-${y}`;
+  const geser   = (t, hari) => {
+    const [d, m, y] = t.split("-").map(Number);
+    const x = new Date(y, m - 1, d + hari);
+    return tglStr(x.getDate(), x.getMonth() + 1, x.getFullYear());
+  };
+  const romawi  = ["I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"];
+  const pensiun = p.statusPeserta === "PENSIUN";
+
+  (p.hutang || []).forEach((h, i) => {
+    if (h.transaksi) return;
+    const [d, m, y] = h.tmt.split("-").map(Number);
+    const k     = +h.noPiutang.replace(/\D/g, "").slice(-6) + i;
+    const tenor = 5 + (k % 10);   /* tahun */
+
+    h.kategori         = HUTANG_KATEGORI[k % HUTANG_KATEGORI.length];
+    h.angsuranPerbulan = Math.round(h.jumlah / (tenor * 12) / 1000) * 1000;
+    h.jumlahDps        = pensiun ? Math.round(h.sudahBayar * 0.4 / 100000) * 100000 : 0;
+    h.bungaPerbulan    = k % 3 === 0 ? "0" : `0,${2 + (k % 6)}`;
+    h.jatuhTempo       = tglStr(d, m, y + tenor);
+    h.tipeTransaksi    = y < 2020 ? "Migrasi" : "Baru";
+    h.objekPensiun     = p.nopens && p.nopens !== "-" ? p.nopens : "-";
+
+    /* Pembayaran ke-j jatuh setahun sekali setelah TMT, tidak lewat Agustus 2026. */
+    const tglBayar = j => {
+      const thn = Math.min(y + j, 2026);
+      return tglStr(Math.min(12 + j, 28), thn === 2026 ? Math.min(m, 8) : m, thn);
+    };
+
+    const riwayat = [{
+      tgl: h.tmt, tipe: "Pengambilan", keterangan: h.jenis,
+      tglSurat: geser(h.tmt, -10),
+      noSurat: `${1100 + (k % 900)}/03/KPR.81/${romawi[m - 1]}/${String(y).slice(2)}/PR.AU`,
+      bunga: 0, pokok: h.jumlah, dokumen: "Surat Persetujuan Pinjaman.pdf"
+    }];
+    const tunai  = h.sudahBayar - h.jumlahDps;
+    const nCicil = tunai > 0 ? 1 + (k % 2) : 0;
+    const bagian = nCicil ? Math.round(tunai / nCicil / 100000) * 100000 : 0;
+    for (let c = 0; c < nCicil; c++) {
+      riwayat.push({
+        tgl: tglBayar(c + 1), tipe: "Pembayaran", keterangan: "Angsuran", tglSurat: "-", noSurat: "-",
+        bunga: 0, pokok: -(c < nCicil - 1 ? bagian : tunai - bagian * (nCicil - 1)),
+        dokumen: "Tidak ada dokumen terlampir"
+      });
+    }
+    if (h.jumlahDps > 0) {
+      riwayat.push({
+        tgl: tglBayar(nCicil + 1), tipe: "Pembayaran", keterangan: "Potongan DPS", tglSurat: "-", noSurat: "-",
+        bunga: 0, pokok: -h.jumlahDps, dokumen: "Tidak ada dokumen terlampir"
+      });
+    }
+    let saldo = 0;
+    riwayat.forEach(t => { saldo += t.pokok; t.total = saldo; });
+    h.transaksi = riwayat;
+  });
+}
+
+DATA_PESERTA_KELOLA.forEach(p => lengkapiSejarahHutang(p));
+
 /* ---------------------------------------------------------------------------
    22f. PENGELOLAAN DATA PESERTA — isi tab "Hak/Produk"
    Transaksi pembayaran hak/produk peserta beserta jejak pembukuannya di
-   Axapta. Penerimanya menyesuaikan produk: manfaat yang dibayarkan semasa
-   hidup jatuh ke peserta sendiri, santunan kematian ke pasangannya. Sama
-   seperti blok 22b–22e: berurutan dari indeks baris, tanpa Math.random.
+   Axapta, mengikuti format data di sistem yang berjalan (contoh dari user):
+     - nominal ditulis tanpa "Rp"; nilai nol ditulis 0
+     - Nomor SP   : B/013129-AS/THT/II/2025      (bulan romawi = bulan DPS)
+     - Kode Bayar : <KPA>THT<urut>               contoh DX100303THT2
+     - Nomor DPS  : <kode mitra>THT10<ddmmyyyy tanggal DPS>211AO0101<n>G
+     - Tanggal Axapta = tanggal 1 bulan berikutnya setelah DPS, ditulis
+       "Mar 1 2025 10:25:38:000AM"; ID Axapta = "ID - 2025-03-01"
+     - Status Axapta 1 = sudah dibukukan, 0 = belum (kolom Axapta lain "-")
+   Skenario per peserta: Tabungan Asuransi dibayar ke peserta sendiri. Kalau
+   saat itu masih ada pinjaman BUM, pinjamannya dipotong dari Tabungan Asuransi
+   lalu dibatalkan sebulan kemudian — pembatalan itu muncul sebagai baris
+   PEMBATALAN BUM yang mengembalikan nominal potongan tadi. Sebagian peserta
+   juga menerima Nilai Tunai Asuransi, satu-satunya produk yang kena pajak.
+   Baris diurutkan dari DPS terbaru. Sama seperti blok 22b–22e: berurutan dari
+   indeks baris, tanpa Math.random.
    --------------------------------------------------------------------------- */
-const HAK_PRODUK = [
-  { nama:"THT — Tabungan Hari Tua",        waris:false },
-  { nama:"Nilai Tunai Tabungan Asuransi",  waris:false },
-  { nama:"JKK — Jaminan Kecelakaan Kerja", waris:false },
-  { nama:"JKm — Jaminan Kematian",         waris:true  },
-  { nama:"Santunan Risiko Kematian Khusus",waris:true  },
-  { nama:"Biaya Pemakaman",                waris:true  }
+const HAK_MITRA = [
+  { kode:"BWS", mitra:"BANK WOORI SAUDARA",    cabang:"BWS KC MALANG" },
+  { kode:"BRI", mitra:"BANK RAKYAT INDONESIA", cabang:"BRI KC SURAKARTA" },
+  { kode:"BNI", mitra:"BANK NEGARA INDONESIA", cabang:"BNI KC SEMARANG" },
+  { kode:"MDR", mitra:"BANK MANDIRI",          cabang:"MANDIRI KC BANDUNG" },
+  { kode:"BTN", mitra:"BANK TABUNGAN NEGARA",  cabang:"BTN KC SURABAYA" },
+  { kode:"POS", mitra:"PT POS INDONESIA",      cabang:"KPRK PALANGKARAYA" }
 ];
-const HAK_STATUS_AXAPTA = ["Posted", "Journalized", "Draft"];
-const HAK_USER_AXAPTA   = [
-  "yandu.batch", "sri.mulyani", "bagus.pratama", "endah.wulandari", "yandu.sync"
-];
+const HAK_USER_AXAPTA   = ["muhamma1", "sitinur2", "agussal1", "dewiang1", "rudihar3"];
+const HAK_BULAN_ROMAWI  = ["I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"];
+const HAK_BULAN_INGGRIS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
 function buatHakProdukPeserta(p, n) {
   const putar = (arr, i) => arr[i % arr.length];
   const pad   = (v, l) => String(v).padStart(l, "0");
-  const tgl   = (d, m, y) => `${pad(d, 2)}-${pad(m, 2)}-${y}`;
+  const rows  = [];
+  if (n % 5 === 0) return rows;
 
-  /* Penerima santunan kematian = pasangan yang terdaftar di tabel Keluarga. */
-  const pasangan = (p.keluarga || []).find(k => k.hubungan === "ISTRI" || k.hubungan === "SUAMI");
-  const rekening = pasangan && pasangan.rekening && pasangan.rekening.length
-    ? pasangan.rekening[pasangan.rekening.length - 1]
-    : null;
+  const mitra = putar(HAK_MITRA, n);
+  const thn   = 2019 + (n % 7);   /* 2019–2025 */
+  const blan  = (n % 10) + 1;     /* Jan–Okt: pembatalan + bulan Axapta tetap di tahun yang sama */
+  let urut    = 2 + (n % 18);     /* nomor urut di belakang Kode Bayar */
 
-  const rows = [];
-  const jumlah = n % 5 === 0 ? 0 : 1 + (n % 3);
-  for (let i = 0; i < jumlah; i++) {
-    const k       = n + i * 7;
-    const produk  = putar(HAK_PRODUK, k);
-    const thn     = 2019 + (k % 8);
-    const hari    = (k % 26) + 1;
-    const blan    = (k % 12) + 1;
-    const bruto   = 18000000 + (k % 26) * 3500000;
-    const potong  = k % 3 === 0 ? Math.round(bruto * 0.12 / 100000) * 100000 : 0;
-    const pajak   = Math.round((bruto - potong) * 0.05 / 1000) * 1000;
-    const keWaris = produk.waris && pasangan;
-
-    rows.push({
-      namaPenerima: keWaris ? pasangan.nama : p.nama,
-      hubungan:     keWaris ? pasangan.hubungan : "SENDIRI",
-      produk:       produk.nama,
-      tglKejadian:  tgl(hari, blan, thn),
+  /* Satu transaksi. DPS terbit beberapa hari setelah tanggal kejadian, lalu
+     dibukukan ke Axapta tanggal 1 bulan berikutnya. */
+  const baris = ({ produk, hari, bulan, bruto, potongan = 0, pajak = 0 }, i) => {
+    const k     = n * 7 + i * 13;
+    const hDps  = Math.min(hari + 6 + (k % 8), 28);
+    const bAx   = bulan + 1;
+    const sudah = k % 6 !== 0;
+    return {
+      namaPenerima:  p.nama,
+      hubungan:      "Diri Sendiri",
+      produk,
+      tglKejadian:   `${pad(hari, 2)}-${pad(bulan, 2)}-${thn}`,
       bruto,
-      potongan:     potong,
+      potongan,
       potonganPajak: pajak,
-      netto:        bruto - potong - pajak,
-      cabangMitra:  keWaris && rekening ? rekening.cabang : putar(KELUARGA_CABANG_MITRA, k),
-      mitraBayar:   keWaris && rekening ? rekening.mitra  : putar(DATA_MITRA_BAYAR, k),
-      nomorSP:      `SP/${thn}/${pad(1200 + k * 9, 6)}`,
-      kodeBayar:    `KB-${pad(45 + (k % 50), 2)}-${pad(700 + k * 3, 4)}`,
-      nomorDPS:     `DPS/${thn}/${pad(3300 + k * 11, 6)}`,
-      tglDPS:       tgl(Math.min(hari + 5, 28), blan, thn),
-      statusAxapta: putar(HAK_STATUS_AXAPTA, k),
-      tglAxapta:    tgl(Math.min(hari + 8, 28), blan, thn),
-      idAxapta:     `AX-${thn}-${pad(88000 + k * 137, 6)}`,
-      userAxapta:   putar(HAK_USER_AXAPTA, k)
-    });
+      netto:         bruto - potongan - pajak,
+      cabangMitra:   mitra.cabang,
+      mitraBayar:    mitra.mitra,
+      nomorSP:       `B/${pad((13129 + k * 877) % 100000, 6)}-AS/THT/${HAK_BULAN_ROMAWI[bulan - 1]}/${thn}`,
+      kodeBayar:     `${p.ktpa}THT${urut++}`,
+      nomorDPS:      `${mitra.kode}THT10${pad(hDps, 2)}${pad(bulan, 2)}${thn}211AO0101${k % 10}G`,
+      tglDPS:        `${pad(hDps, 2)}-${pad(bulan, 2)}-${thn}`,
+      statusAxapta:  sudah ? "1" : "0",
+      tglAxapta:     sudah
+        ? `${HAK_BULAN_INGGRIS[bAx - 1]} 1 ${thn} ${pad(8 + (k % 4), 2)}:${pad((k * 7) % 60, 2)}:${pad((k * 13) % 60, 2)}:000AM`
+        : "-",
+      idAxapta:      sudah ? `ID - ${thn}-${pad(bAx, 2)}-01` : "-",
+      userAxapta:    sudah ? putar(HAK_USER_AXAPTA, k) : "-"
+    };
+  };
+
+  const bruto  = 18000000 + ((n * 1337700) % 42000000);
+  const potBum = n % 2 === 0 ? 5000000 + (n % 10) * 1000000 : 0;
+  rows.push(baris({ produk:"Tabungan Asuransi", hari:1, bulan:blan, bruto, potongan:potBum }, 0));
+  if (potBum) rows.push(baris({ produk:"PEMBATALAN BUM", hari:6, bulan:blan + 1, bruto:potBum }, 1));
+  if (n % 3 === 0) {
+    const nilai = 4000000 + ((n * 211300) % 9000000);
+    rows.push(baris({ produk:"Nilai Tunai Asuransi", hari:15, bulan:blan, bruto:nilai,
+                      pajak:Math.round(nilai * 0.05 / 100) * 100 }, 2));
   }
-  return rows;
+
+  const kunci = t => { const [d, m, y] = t.split("-"); return +(y + m + d); };
+  return rows.sort((a, b) => kunci(b.tglDPS) - kunci(a.tglDPS));
 }
 
 DATA_PESERTA_KELOLA.forEach((p, i) => { p.hakProduk = buatHakProdukPeserta(p, i); });
+
+/* ---------------------------------------------------------------------------
+   22f-1. PENGELOLAAN DATA PESERTA — halaman "Detail Hak/Produk"
+   Rincian tiap transaksi Hak/Produk (p.hakProduk), dibuka dari tautan Nama
+   Penerima / Produk di tab Hak/Produk. Nilai yang sudah tampil di tabel tab
+   Hak/Produk tidak diubah; blok ini hanya menambah:
+     - No Identitas penerima dan Besar Produk (= Bruto)
+     - satu surat perintah bayar per transaksi: Nomor SP & Kode Bayar dari baris
+       itu, terbit sehari sebelum Tanggal DPS, Jumlah Bayar = Netto
+     - riwayat DPS surat perintah itu: satu DPS dengan Nomor & Tanggal DPS baris
+     - dokumen terlampir untuk sebagian transaksi
+   Contoh dari user: SP B/004634-AS/THT/I/2025 · Kode Bayar DX100303THT20 ·
+   13 Jan 2025 · BANK WOORI SAUDARA · BWS KC MALANG · No Rekening Asabri
+   091827364 · BENG SURYANA · 100360089249 · 45.658.700, dengan DPS 2018997 ·
+   BWSTHT1014012025211AO010187-G · Reff 21101140846345 · 14 Jan 2025.
+   Aman dipanggil berulang: transaksi yang sudah punya surat perintah dilewati,
+   jadi peserta hasil Pemulihan Data Peserta juga bisa dilengkapi belakangan.
+   --------------------------------------------------------------------------- */
+/* Rekening penampung ASABRI di tiap mitra bayar (kolom No Rekening Asabri). */
+const HAK_REKENING_ASABRI = {
+  "BANK WOORI SAUDARA":    "091827364",
+  "BANK RAKYAT INDONESIA": "020601000417307",
+  "BANK NEGARA INDONESIA": "0115489302",
+  "BANK MANDIRI":          "1220007766541",
+  "BANK TABUNGAN NEGARA":  "0001301500123456",
+  "PT POS INDONESIA":      "0900112233"
+};
+
+function lengkapiDetailHak(p) {
+  const pad   = (v, l) => String(v).padStart(l, "0");
+  const geser = (t, hari) => {
+    const [d, m, y] = t.split("-").map(Number);
+    const x = new Date(y, m - 1, d + hari);
+    return `${pad(x.getDate(), 2)}-${pad(x.getMonth() + 1, 2)}-${x.getFullYear()}`;
+  };
+  const nik = p.profil && p.profil.nomorIdentitas ? p.profil.nomorIdentitas : "-";
+
+  (p.hakProduk || []).forEach((r, i) => {
+    if (r.suratPerintah) return;
+    const k        = +r.nomorSP.replace(/\D/g, "").slice(0, 6) + i;
+    const rekening = `1003${pad((k * 37) % 100000000, 8)}`;
+    const tglSP    = geser(r.tglDPS, -1);
+
+    r.noIdentitas    = r.hubungan === "Diri Sendiri" ? nik : "-";
+    r.besarProduk    = r.bruto;
+    r.tglPengambilan = tglSP;
+    r.dokumen = k % 2 === 0 ? [
+      { tgl: r.tglKejadian, nama: "Surat Keterangan Pensiun.pdf" },
+      { tgl: tglSP,         nama: "Surat Perintah Bayar.pdf" }
+    ] : [];
+    r.suratPerintah = [{
+      noSP: r.nomorSP, kodeBayar: r.kodeBayar, tglSP,
+      mitraBayar: r.mitraBayar, cabangMitra: r.cabangMitra,
+      noRekAsabri: HAK_REKENING_ASABRI[r.mitraBayar] || "-",
+      namaRekening: p.nama, nomorRekening: rekening, jumlahBayar: r.netto,
+      dps: [{
+        idDps: String(2000000 + (k % 999999)), nomorDps: r.nomorDPS,
+        nomorReff: `2110${pad((k * 7919) % 10000000000, 10)}`,
+        nomorRetur: "-", tglRetur: "-", tglDps: r.tglDPS,
+        namaPemilik: p.nama, nomorRekening: rekening, jumlah: r.netto
+      }]
+    }];
+  });
+}
+
+DATA_PESERTA_KELOLA.forEach(p => lengkapiDetailHak(p));
 
 /* Sub-tab di layar Detail Peserta. Baru "Profil" yang sudah berisi data;
    tab lain menampilkan keadaan kosong sampai rincian FSD-nya tersedia.
@@ -2771,7 +3149,7 @@ DATA_PESERTA_KELOLA.forEach((p, i) => { p.hakProduk = buatHakProdukPeserta(p, i)
 const PESERTA_KELOLA_TAB = [
   { key:"profil",     label:"Profil",                 sub:"Data pokok, kedinasan, dan status kepesertaan." },
   { key:"keluarga",   label:"Keluarga",               sub:"Daftar istri/suami dan anak yang terdaftar sebagai ahli waris." },
-  { key:"hutang",     label:"Hutang",                 sub:"Hutang peserta kepada ASABRI dan pada bank/mitra penyalur." },
+  { key:"hutang",     label:"Piutang",                sub:"Piutang peserta kepada ASABRI dan pada bank/mitra penyalur." },
   { key:"hak",        label:"Hak/Produk",             sub:"Hak manfaat dan produk yang melekat pada peserta." },
   { key:"dapem",      label:"Dapem",                  sub:"Riwayat daftar pembayaran pensiun peserta." },
   { key:"pangkat",    label:"Pangkat",                sub:"Riwayat kepangkatan dari pangkat awal sampai pangkat akhir." },
@@ -3348,7 +3726,7 @@ const DATA_BUM_PELUNASAN = [
      YPPSDP mengirim hardcopy surat pembatalan langsung ke ASABRI, lalu Div.
      Kepesertaan dan Pengembangan Manfaat merekam Status Keterangan
      Pembatalan, No/Tanggal surat pembatalan, dan Nominal pembatalan.
-     Data yang bisa ditarik: Nama, NRP, Nomor KTPA, Nominal, No & Tgl surat.
+     Data yang bisa ditarik: Nama, NRP, Nomor KPA, Nominal, No & Tgl surat.
 
    "Pensiun" — peserta sudah proses klaim THT / sudah pensiun.
      Peserta minta surat pembatalan ke YPPSDP, membawanya ke Kantor Cabang
@@ -3365,7 +3743,7 @@ const DATA_BUM_PELUNASAN = [
            "Selesai"     → peserta pensiun, SP pembayaran sudah terbit
    --------------------------------------------------------------------------- */
 
-/* Status kepesertaan per Nomor KTPA — penentu cara proses pada form
+/* Status kepesertaan per Nomor KPA — penentu cara proses pada form
    pembatalan. "Aktif" langsung dari YPPSDP; "Pensiun" lewat Request Umum
    Kantor Cabang dan ditutup SP pembayaran Divisi Keuangan. */
 const BUM_STATUS_PESERTA = {

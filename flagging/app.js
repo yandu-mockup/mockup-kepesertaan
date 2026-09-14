@@ -1391,7 +1391,7 @@ function showAlertPopupFpd(judul, pesan, tone) {
 const fpdAngka = v => Number(String(v).replace(/[^\d]/g, "")) || 0;
 
 /* ---- layar Riwayat Pengajuan
-   Satu baris = satu update. Kolom identitas (Mitra, Nama, No KTPA, dst) diambil
+   Satu baris = satu update. Kolom identitas (Mitra, Nama, No KPA, dst) diambil
    dari baris pengajuannya, sedangkan grup "Update" berisi jejak per kejadian.
    Keterangan tiap update dipasang sebagai tooltip pada kolom Status karena
    susunan kolomnya tidak menyediakan tempat khusus. */
@@ -2009,7 +2009,7 @@ function fplIsi(r) {
   $("#fpl-sub").textContent = `${r.ktpa} — ${r.nama}`;
 
   $("#fpl-peserta").innerHTML = [
-    fsdField("No. KTPA",      r.ktpa),
+    fsdField("No. KPA",      r.ktpa),
     fsdField("NRP/NIP",       r.nrp),
     fsdField("Nama",          r.nama),
     fsdField("Nomor Pensiun", r.nomorPensiun),

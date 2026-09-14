@@ -176,7 +176,7 @@ dipinjam dari folder induk.
 | Manajemen Dokumen Peserta (E-Dosir) | Rekap digitalisasi dokumen per kantor cabang |
 | Pengelolaan Request Umum | Informasi pemutakhiran data dari Kantor Cabang ke Divisi Kepesertaan |
 | ○ Pengelolaan Alih Status Peserta | — |
-| ○ Pengelolaan Data Peserta | — |
+| ○ List Peserta | — |
 
 Beberapa layar tidak punya menu sendiri karena dibuka dari layar lain (ditandai
 **↳** pada tabel di atas): **Monitoring Distribusi BDN** dari pintasan di

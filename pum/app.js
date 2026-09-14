@@ -596,7 +596,7 @@ function pfGoStep(n) {
 
 /* Semua field teks/tanggal/dropdown wizard yang bisa direkam & dipulihkan
    ulang untuk mode "Ubah" — sengaja tidak termasuk 4 field "Terisi Otomatis"
-   di setiap tipe (KTPA/Pangkat/UKER/Jumlah PUM) karena itu dihitung ulang
+   di setiap tipe (KPA/Pangkat/UKER/Jumlah PUM) karena itu dihitung ulang
    otomatis dari pfFound + Pangkat setiap kali langkah 4 dirender. */
 const PF_TEXT_FIELD_IDS = [
   "pf-ktpa", "pf-nrp", "pf-nama", "pf-tempat-lahir", "pf-tgl-lahir",
@@ -754,7 +754,7 @@ function openEditWizard(row) {
     renderStep5();
   }
 
-  /* Jaring pengaman: identitas peserta (KTPA/NRP-NIP/Nama) tidak boleh
+  /* Jaring pengaman: identitas peserta (KPA/NRP-NIP/Nama) tidak boleh
      kosong sepulang dari "Ubah", walau snapshot-nya tidak lengkap. */
   if (!$("#pf-ktpa").value.trim()) $("#pf-ktpa").value = row.kpa  || "";
   if (!$("#pf-nrp").value.trim())  $("#pf-nrp").value  = row.nrp  || "";
@@ -778,7 +778,7 @@ $("#pf-cek-nik").onclick = () => {
 
 $("#pf-lanjut").onclick = () => {
   if (!$("#pf-ktpa").value.trim() || !$("#pf-nrp").value.trim()) {
-    toast("KTPA dan NRP/NIP wajib diisi.", "bad"); return;
+    toast("KPA dan NRP/NIP wajib diisi.", "bad"); return;
   }
   if (!$("#pf-nik").value.trim()) { toast("NIK wajib diisi.", "bad"); return; }
   if (!$("#pf-pangkat").value) { toast("Pangkat belum dipilih.", "bad"); return; }
@@ -1335,7 +1335,7 @@ function riwayatToGroups() {
 }
 
 /* Riwayat Kepangkatan Peserta dari sistem kepesertaan (read-only), dicocokkan
-   lewat KTPA peserta yang sedang diproses di wizard. */
+   lewat KPA peserta yang sedang diproses di wizard. */
 function kpRiwayatDbRows() {
   return (pfFound && DATA_RIWAYAT_KEPANGKATAN[pfFound.kpa]) || [];
 }

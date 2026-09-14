@@ -132,6 +132,7 @@ $("#burger").onclick = () => $("#sidebar").classList.toggle("open");
 /* ------------------------------------------------------------------- modal */
 function openModal()  { $("#modal-bg").classList.add("open");    document.body.style.overflow = "hidden"; }
 function closeModal() {
+  $("#modal-bg .modal").classList.remove("modal-lg");   /* ukuran pop up lebar kembali normal */
   $("#modal-bg").classList.remove("open"); document.body.style.overflow = "";
   /* Ikon judul bersifat opsional — selalu dikosongkan supaya modal berikutnya
      tidak ikut kebagian ikon milik modal sebelumnya. */
@@ -2136,15 +2137,15 @@ function bumShowPemotongan() {
       </div>
       <div class="field">
         <label class="fl">NRP/NIP <span class="req">*</span></label>
-        <input class="inp" id="bpk-nrp" disabled placeholder="Otomatis terisi dari Nomor KTPA">
+        <input class="inp" id="bpk-nrp" disabled placeholder="Otomatis terisi dari Nomor KPA">
       </div>
       <div class="field">
         <label class="fl">NIK <span class="req">*</span></label>
-        <input class="inp" id="bpk-nik" disabled placeholder="Otomatis terisi dari Nomor KTPA">
+        <input class="inp" id="bpk-nik" disabled placeholder="Otomatis terisi dari Nomor KPA">
       </div>
       <div class="field">
         <label class="fl">Nama <span class="req">*</span></label>
-        <input class="inp" id="bpk-nama" disabled placeholder="Otomatis terisi dari Nomor KTPA">
+        <input class="inp" id="bpk-nama" disabled placeholder="Otomatis terisi dari Nomor KPA">
       </div>
       <div class="field">
         <label class="fl">Tanggal Lahir <span class="req">*</span></label>
@@ -3518,7 +3519,7 @@ function renderNominatifDetail(batch) {
 $("#nominatif-detail-kembali").onclick = () => nominatifGotoView("list");
 
 /* -------- Pratinjau Cetak KPA
-   Peserta hasil upload belum punya nomor KTPA, jadi nomor kartu dan pola
+   Peserta hasil upload belum punya nomor KPA, jadi nomor kartu dan pola
    QR-nya dibangkitkan secara tetap (deterministik) dari NRP + nama — supaya
    kartu yang sama selalu tampil dengan nomor yang sama. */
 function kpaHash(teks, awal) {
@@ -4017,7 +4018,7 @@ function premiShowHasil(r) {
   const manfaat = Math.round(totalPremi * 1.8);
 
   $("#modal-title").textContent = "🖩 Hasil Simulasi Premi";
-  $("#modal-sub").textContent   = `${r.nama} · KTPA ${r.ktpa}`;
+  $("#modal-sub").textContent   = `${r.nama} · KPA ${r.ktpa}`;
   $("#modal-body").innerHTML = `
     <div class="grid2" style="gap:14px">
       <div style="background:var(--blue-soft);border-radius:10px;padding:16px">
@@ -4032,7 +4033,7 @@ function premiShowHasil(r) {
     <div class="grid3" style="margin-top:18px">
       <div class="field"><label class="fl caps">Nama</label><div class="t-strong">${esc(r.nama)}</div></div>
       <div class="field"><label class="fl caps">NRP / NIP</label><div>${esc(r.nrp)}</div></div>
-      <div class="field"><label class="fl caps">No. KTPA</label><div>${esc(r.ktpa)}</div></div>
+      <div class="field"><label class="fl caps">No. KPA</label><div>${esc(r.ktpa)}</div></div>
       <div class="field"><label class="fl caps">Unor</label><div>${esc(r.unor)}</div></div>
       <div class="field"><label class="fl caps">Tanggal Lahir</label><div>${fmtTglSlash(r.tglLahir)}</div></div>
       <div class="field"><label class="fl caps">TMT Masuk</label><div>${fmtTglSlash(r.tmtMasuk)}</div></div>
@@ -5798,7 +5799,7 @@ function dpBukaDetail(migrasiId, asal) {
   dpTabAktif     = "profil";
   dpAsalDetail   = asal || "data-peserta";
   $("#dpd-crumb-asal").textContent = dpAsalDetail === "spp-bersih"
-    ? "Daftar Nominatif Pemulihan Data Peserta" : "Data Peserta";
+    ? "Daftar Nominatif Pemulihan Data Peserta" : "List Peserta";
   renderDetailPeserta();
   go("data-peserta-detail");
 }
@@ -5831,13 +5832,7 @@ function renderDetailPeserta() {
   renderPanelDetailPeserta();
 }
 
-function dpPillStatusAxapta(status) {
-  if (status === "Posted")      return "pill-ok";
-  if (status === "Journalized") return "pill-info";
-  return "pill-warn";
-}
-
-/* Tabelnya 18 kolom, jadi memakai wide-table dengan kolom Nama Penerima
+/* Tabelnya 19 kolom (18 kolom data + Aksi), jadi memakai wide-table dengan kolom Nama Penerima
    menempel di kiri supaya tetap terbaca saat digeser mendatar. */
 function renderTabHakPeserta() {
   const rows = dpPesertaAktif.hakProduk || [];
@@ -5846,36 +5841,37 @@ function renderTabHakPeserta() {
       <h3 class="section-title" style="margin-bottom:6px">Hak / Produk</h3>
       <div class="page-sub" style="margin:0 0 14px">Pembayaran hak dan produk peserta beserta jejak pembukuannya di Axapta.</div>
       <div class="tbl-wrap">
-        <table class="wide-table" style="min-width:2200px">
+        <table class="wide-table" style="min-width:2320px">
           <thead><tr>
             <th class="stick-l">Nama Penerima</th><th>Hubungan Keluarga</th><th>Produk</th><th>Tanggal Kejadian</th>
             <th>Bruto</th><th>Potongan</th><th>Potongan Pajak</th><th>Netto</th>
             <th>Cabang Mitra</th><th>Mitra Bayar</th><th>Nomor SP</th><th>Kode Bayar</th>
             <th>Nomor DPS</th><th>Tanggal DPS</th><th>Status Axapta</th><th>Tanggal Axapta</th>
-            <th>ID Axapta</th><th>User Axapta</th>
+            <th>ID Axapta</th><th>User Axapta</th><th class="stick-r">Aksi</th>
           </tr></thead>
-          <tbody>${rows.length ? rows.map(r => `
+          <tbody>${rows.length ? rows.map((r, i) => `
             <tr>
-              <td class="stick-l t-strong">${esc(r.namaPenerima)}</td>
+              <td class="stick-l"><button class="t-name" data-dpd-hak-detail="${i}">${esc(r.namaPenerima)}</button></td>
               <td>${esc(r.hubungan)}</td>
-              <td>${esc(r.produk)}</td>
+              <td><button class="t-name" data-dpd-hak-detail="${i}">${esc(r.produk)}</button></td>
               <td>${esc(r.tglKejadian)}</td>
-              <td>${esc(rp(r.bruto))}</td>
-              <td>${esc(r.potongan ? rp(r.potongan) : "-")}</td>
-              <td>${esc(rp(r.potonganPajak))}</td>
-              <td class="t-strong">${esc(rp(r.netto))}</td>
+              <td>${esc(r.bruto.toLocaleString("id-ID"))}</td>
+              <td>${esc(r.potongan.toLocaleString("id-ID"))}</td>
+              <td>${esc(r.potonganPajak.toLocaleString("id-ID"))}</td>
+              <td class="t-strong">${esc(r.netto.toLocaleString("id-ID"))}</td>
               <td>${esc(r.cabangMitra)}</td>
               <td>${esc(r.mitraBayar)}</td>
               <td>${esc(r.nomorSP)}</td>
               <td>${esc(r.kodeBayar)}</td>
               <td>${esc(r.nomorDPS)}</td>
               <td>${esc(r.tglDPS)}</td>
-              <td><span class="pill ${dpPillStatusAxapta(r.statusAxapta)}">${esc(r.statusAxapta)}</span></td>
+              <td>${esc(r.statusAxapta)}</td>
               <td>${esc(r.tglAxapta)}</td>
               <td>${esc(r.idAxapta)}</td>
               <td>${esc(r.userAxapta)}</td>
+              <td class="stick-r"><button class="btn btn-ghost btn-sm" data-dpd-pindah-hak="${i}" style="white-space:nowrap">↪ Pindahkan</button></td>
             </tr>`).join("")
-            : `<tr><td colspan="18"><div class="empty"><h4>Belum ada transaksi</h4><p>Peserta ini belum punya pembayaran hak atau produk.</p></div></td></tr>`}
+            : `<tr><td colspan="19"><div class="empty"><h4>Belum ada transaksi</h4><p>Peserta ini belum punya pembayaran hak atau produk.</p></div></td></tr>`}
           </tbody>
         </table>
       </div>
@@ -5888,23 +5884,25 @@ function dpPillStatusHutang(status) {
   return "pill-info";
 }
 
-/* Tab Hutang: dua section (Piutang dan Piutang Mitra), masing-masing kartunya sendiri. */
+/* Tab Piutang: dua section (Piutang dan Piutang Mitra), masing-masing kartunya sendiri. */
 function renderTabHutangPeserta() {
   const hutang = dpPesertaAktif.hutang      || [];
   const mitra  = dpPesertaAktif.hutangMitra || [];
 
-  const barisHutang = hutang.length ? hutang.map(h => `
+  /* TMT Awal Kredit dan Nomor Piutang membuka halaman Sejarah Hutang Selama Ini. */
+  const barisHutang = hutang.length ? hutang.map((h, i) => `
     <tr>
-      <td>${esc(h.tmt)}</td>
-      <td class="t-strong">${esc(h.noPiutang)}</td>
+      <td><button class="t-name" data-dpd-hutang="${i}">${esc(h.tmt)}</button></td>
+      <td><button class="t-name" data-dpd-hutang="${i}">${esc(h.noPiutang)}</button></td>
       <td>${esc(h.jenis)}</td>
       <td>${esc(rp(h.jumlah))}</td>
       <td>${esc(rp(h.sudahBayar))}</td>
       <td class="t-strong">${esc(rp(h.sisa))}</td>
+      <td class="stick-r"><button class="btn btn-ghost btn-sm" data-dpd-pindah-piutang="${i}" style="white-space:nowrap">↪ Pindahkan</button></td>
     </tr>`).join("")
-    : `<tr><td colspan="6"><div class="empty"><h4>Tidak ada piutang</h4><p>Peserta ini tidak punya piutang kepada ASABRI.</p></div></td></tr>`;
+    : `<tr><td colspan="7"><div class="empty"><h4>Tidak ada piutang</h4><p>Peserta ini tidak punya piutang kepada ASABRI.</p></div></td></tr>`;
 
-  const barisMitra = mitra.length ? mitra.map(m => `
+  const barisMitra = mitra.length ? mitra.map((m, i) => `
     <tr>
       <td class="t-strong">${esc(m.mitraBayar)}</td>
       <td>${esc(m.tglPengajuan)}</td>
@@ -5916,8 +5914,9 @@ function renderTabHutangPeserta() {
       <td>${esc(m.noPinjaman)}</td>
       <td><span class="pill ${dpPillStatusHutang(m.status)}">${esc(m.status)}</span></td>
       <td>${esc(m.tarif)}</td>
+      <td class="stick-r"><button class="btn btn-ghost btn-sm" data-dpd-pindah-mitra="${i}" style="white-space:nowrap">↪ Pindahkan</button></td>
     </tr>`).join("")
-    : `<tr><td colspan="10"><div class="empty"><h4>Tidak ada piutang mitra</h4><p>Peserta ini tidak punya pinjaman pada bank/mitra penyalur.</p></div></td></tr>`;
+    : `<tr><td colspan="11"><div class="empty"><h4>Tidak ada piutang mitra</h4><p>Peserta ini tidak punya pinjaman pada bank/mitra penyalur.</p></div></td></tr>`;
 
   $("#dpd-panel").innerHTML = `
     <div class="card">
@@ -5927,9 +5926,16 @@ function renderTabHutangPeserta() {
         <table>
           <thead><tr>
             <th>TMT Awal Kredit</th><th>Nomor Piutang</th><th>Jenis Piutang</th>
-            <th>Jumlah</th><th>Jumlah Sudah Bayar</th><th>Jumlah Sisa Piutang</th>
+            <th>Jumlah</th><th>Jumlah Sudah Bayar</th><th>Jumlah Sisa Piutang</th><th class="stick-r">Aksi</th>
           </tr></thead>
           <tbody>${barisHutang}</tbody>
+          ${hutang.length ? `<tfoot><tr>
+            <td colspan="3" style="text-align:right">Total Hutang</td>
+            <td>${esc(rp(hutang.reduce((s, h) => s + h.jumlah, 0)))}</td>
+            <td>${esc(rp(hutang.reduce((s, h) => s + h.sudahBayar, 0)))}</td>
+            <td>${esc(rp(hutang.reduce((s, h) => s + h.sisa, 0)))}</td>
+            <td class="stick-r"></td>
+          </tr></tfoot>` : ""}
         </table>
       </div>
     </div>
@@ -5942,12 +5948,47 @@ function renderTabHutangPeserta() {
           <thead><tr>
             <th>Mitra Bayar</th><th>Tgl Pengajuan</th><th>Awal Kredit</th><th>Akhir Kredit</th>
             <th>Plafon</th><th>Nomor Rekening Tab</th><th>Nomor Rekening Kredit</th>
-            <th>Nomor Pinjaman Kredit</th><th>Status</th><th>Tarif</th>
+            <th>Nomor Pinjaman Kredit</th><th>Status</th><th>Tarif</th><th class="stick-r">Aksi</th>
           </tr></thead>
           <tbody>${barisMitra}</tbody>
         </table>
       </div>
     </div>`;
+
+  $$("[data-dpd-pindah-piutang]").forEach(b => { b.onclick = () => dpPindahPiutang(+b.dataset.dpdPindahPiutang); });
+  $$("[data-dpd-pindah-mitra]").forEach(b => { b.onclick = () => dpPindahPiutangMitra(+b.dataset.dpdPindahMitra); });
+}
+
+/* Pindahkan piutang ke KPA lain, lewat pop up KPA yang sama dengan tab Keluarga
+   dan Hak/Produk (dpModalPindahKpa). Datanya dipindah utuh — nomor, nominal,
+   sisa, termasuk riwayat transaksinya di halaman Sejarah Hutang; yang berpindah
+   hanya KPA tempat piutang itu tercatat. */
+function dpPindahPiutang(idx) {
+  const piutang = dpPesertaAktif.hutang[idx];
+  dpModalPindahKpa({
+    judul: "Pindahkan Piutang",
+    sub:   `${piutang.noPiutang} · ${piutang.jenis} — saat ini di KPA ${dpPesertaAktif.ktpa}`,
+    pindah: (sumber, tujuan) => {
+      sumber.hutang.splice(idx, 1);
+      tujuan.hutang = (tujuan.hutang || []).concat(piutang);
+      renderTabHutangPeserta();
+      toast(`Piutang ${piutang.noPiutang} dipindahkan ke KPA ${tujuan.ktpa} (${tujuan.nama}).`, "ok");
+    }
+  });
+}
+
+function dpPindahPiutangMitra(idx) {
+  const kredit = dpPesertaAktif.hutangMitra[idx];
+  dpModalPindahKpa({
+    judul: "Pindahkan Piutang Mitra",
+    sub:   `${kredit.noPinjaman} · ${kredit.mitraBayar} — saat ini di KPA ${dpPesertaAktif.ktpa}`,
+    pindah: (sumber, tujuan) => {
+      sumber.hutangMitra.splice(idx, 1);
+      tujuan.hutangMitra = (tujuan.hutangMitra || []).concat(kredit);
+      renderTabHutangPeserta();
+      toast(`Piutang mitra ${kredit.noPinjaman} dipindahkan ke KPA ${tujuan.ktpa} (${tujuan.nama}).`, "ok");
+    }
+  });
 }
 
 /* Tabelnya 22 kolom, jadi memakai wide-table: kolom No menempel di kiri dan
@@ -6014,7 +6055,10 @@ function renderTabKeluargaPeserta() {
               <td>${esc(r.mitraBayar)}</td>
               <td>${esc(r.cabangMitraBayar)}</td>
               <td>${esc(r.nomorIdentitas)}</td>
-              <td class="stick-r"><button class="btn btn-info btn-sm" data-dpd-keluarga="${i}">✎ Ubah</button></td>
+              <td class="stick-r"><div style="display:flex;gap:6px">
+                <button class="btn btn-info btn-sm" data-dpd-keluarga="${i}">✎ Ubah</button>
+                <button class="btn btn-ghost btn-sm" data-dpd-pindah="${i}" style="white-space:nowrap">↪ Pindahkan</button>
+              </div></td>
             </tr>`).join("")
             : `<tr><td colspan="${DPD_KELUARGA_KOLOM.length}"><div class="empty"><h4>Data Keluarga Kosong</h4><p>Belum ada anggota keluarga yang terdaftar untuk peserta ini.</p></div></td></tr>`}
           </tbody>
@@ -6034,6 +6078,9 @@ function renderTabKeluargaPeserta() {
    saat baris ditambah atau dihapus. */
 let dkfIdx      = null;
 let dkfRekening = [];
+/* Form ini dibuka dari tab Keluarga di layar Detail ("detail") atau dari
+   section Data Keluarga di form Ubah Data Peserta ("ubah"). */
+let dkfAsal     = "detail";
 
 /* Hubungan di data contoh ditulis "ANAK KE-1", "ANAK KE-2", dst; dropdown
    hanya mengenal "ANAK". Yang tidak ada padanannya di daftar (misalnya SUAMI)
@@ -6042,6 +6089,119 @@ function dpHubunganTerpilih(hubungan) {
   const h = (hubungan || "").replace(/ KE-\d+$/, "");
   return KELUARGA_HUBUNGAN.includes(h) ? h : "";
 }
+
+/* ------------------------------------------ Pindahkan ke KPA lain
+   Dipakai dua tab di layar Detail: Keluarga (pindah satu anggota keluarga) dan
+   Hak/Produk (pindah satu transaksi hak/produk). Keduanya berbagi pop up yang
+   sama — satu field KPA tujuan beserta pemeriksaannya — dan hanya berbeda di
+   apa yang dipindahkan, yang diserahkan lewat `pindah(sumber, tujuan)`. */
+function dpCariPesertaKpa(kpa) {
+  const k = (kpa || "").trim().toUpperCase();
+  return k ? DATA_PESERTA_KELOLA.find(p => (p.ktpa || "").toUpperCase() === k) : null;
+}
+
+function dpModalPindahKpa({ judul, sub, pindah }) {
+  const sumber = dpPesertaAktif;
+  /* KPA contoh untuk uji coba: pasangan peserta demo di data.js (blok 22d-1). */
+  const contoh = sumber.ktpa === DEMO_PINDAH_KELUARGA.tujuan
+    ? DEMO_PINDAH_KELUARGA.sumber : DEMO_PINDAH_KELUARGA.tujuan;
+
+  $("#modal-title").textContent = judul;
+  $("#modal-sub").textContent   = sub;
+  $("#modal-body").innerHTML = `
+    <div class="field">
+      <label class="fl" for="dpd-pindah-kpa">KPA <span class="req">*</span></label>
+      <input class="inp" id="dpd-pindah-kpa" placeholder="Masukkan KPA tujuan" autocomplete="off">
+      <div class="err-msg" id="dpd-pindah-err" hidden></div>
+      <div class="hint" id="dpd-pindah-tujuan"></div>
+      <div class="hint">Untuk uji coba, KPA tujuan: ${esc(contoh)}</div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" id="dpd-pindah-tutup">Tutup</button>
+      <button class="btn btn-primary" id="dpd-pindah-ok">↪ Pindahkan</button>
+    </div>`;
+  openModal();
+  $("#dpd-pindah-kpa").focus();
+
+  /* Pesan error baru muncul saat mengetik kalau KPA sudah lengkap (8 karakter),
+     supaya tidak berkedip di tengah pengetikan; saat tombol ditekan selalu muncul. */
+  const periksa = paksa => {
+    const kpa    = $("#dpd-pindah-kpa").value.trim();
+    const tujuan = dpCariPesertaKpa(kpa);
+    const pesan  = !kpa              ? "KPA tujuan wajib diisi."
+                 : tujuan === sumber ? "KPA tujuan sama dengan KPA peserta ini."
+                 : !tujuan           ? "KPA tidak ditemukan di List Peserta."
+                 : "";
+    const tampil = !!pesan && (paksa || kpa.length >= 8);
+    $("#dpd-pindah-err").hidden      = !tampil;
+    $("#dpd-pindah-err").textContent = tampil ? pesan : "";
+    $("#dpd-pindah-kpa").closest(".field").classList.toggle("err", tampil);
+    $("#dpd-pindah-tujuan").textContent = pesan ? ""
+      : `Tujuan: ${tujuan.nama} · NRP/NIP ${tujuan.nrp} · ${tujuan.kesatuan}`;
+    return pesan ? null : tujuan;
+  };
+
+  $("#dpd-pindah-kpa").oninput   = () => periksa(false);
+  $("#dpd-pindah-kpa").onkeydown = e => { if (e.key === "Enter") $("#dpd-pindah-ok").click(); };
+  $("#dpd-pindah-tutup").onclick = closeModal;
+  $("#dpd-pindah-ok").onclick = () => {
+    const tujuan = periksa(true);
+    if (!tujuan) return;
+    closeModal();
+    pindah(sumber, tujuan);
+  };
+}
+
+/* Anggota keluarga dipindah utuh, termasuk rekening; yang disesuaikan hanya
+   Tgl Entry (tercatat hari ini di KPA tujuan) dan urutan "ANAK KE-n" di kedua
+   sisi supaya tetap berurutan tanpa lompatan. */
+function dpUrutkanAnak(daftar) {
+  let n = 0;
+  daftar.forEach(k => { if (/^ANAK KE-\d+$/.test(k.hubungan)) k.hubungan = `ANAK KE-${++n}`; });
+}
+
+function dpPindahKeluarga(idx) {
+  const anggota = dpPesertaAktif.keluarga[idx];
+  dpModalPindahKpa({
+    judul: "Pindahkan Anggota Keluarga",
+    sub:   `${anggota.nama} (${anggota.hubungan}) — saat ini di KPA ${dpPesertaAktif.ktpa}`,
+    pindah: (sumber, tujuan) => {
+      sumber.keluarga.splice(idx, 1);
+      anggota.tglEntry = dpTglHariIni();
+      tujuan.keluarga  = (tujuan.keluarga || []).concat(anggota);
+      dpUrutkanAnak(sumber.keluarga);
+      dpUrutkanAnak(tujuan.keluarga);
+      renderTabKeluargaPeserta();
+      toast(`${anggota.nama} dipindahkan ke KPA ${tujuan.ktpa} (${tujuan.nama}).`, "ok");
+    }
+  });
+}
+
+/* Transaksi Hak/Produk dipindah apa adanya — penerima, nominal, dan jejak
+   Axapta tidak diubah, karena transaksinya sendiri tetap sama; yang berpindah
+   hanya KPA tempat transaksi itu tercatat. */
+function dpPindahHak(idx) {
+  const hak = dpPesertaAktif.hakProduk[idx];
+  dpModalPindahKpa({
+    judul: "Pindahkan Hak/Produk",
+    sub:   `${hak.produk} · ${hak.namaPenerima} — saat ini di KPA ${dpPesertaAktif.ktpa}`,
+    pindah: (sumber, tujuan) => {
+      sumber.hakProduk.splice(idx, 1);
+      tujuan.hakProduk = (tujuan.hakProduk || []).concat(hak);
+      renderTabHakPeserta();
+      toast(`${hak.produk} (${hak.namaPenerima}) dipindahkan ke KPA ${tujuan.ktpa} (${tujuan.nama}).`, "ok");
+    }
+  });
+}
+
+/* Tabel Keluarga dan Hak/Produk digambar ulang tiap render, jadi tombol
+   Pindahkan ditangkap lewat panel induknya yang tetap. */
+$("#dpd-panel").addEventListener("click", e => {
+  const bKel = e.target.closest("[data-dpd-pindah]");
+  if (bKel) { dpPindahKeluarga(+bKel.dataset.dpdPindah); return; }
+  const bHak = e.target.closest("[data-dpd-pindah-hak]");
+  if (bHak) dpPindahHak(+bHak.dataset.dpdPindahHak);
+});
 
 /* Tanggal hari ini dalam format "dd-mm-yyyy", sama seperti data contoh. */
 function dpTglHariIni() {
@@ -6138,8 +6298,10 @@ function dkfToggleAkta() {
   $("#dkf-file-akta-lama").hidden = tipe !== "Dokumen Yang Sudah Ada";
 }
 
-/* Buka layar form. `idx` = indeks baris keluarga, atau null untuk menambah. */
-function dpFormKeluarga(idx) {
+/* Buka layar form. `idx` = indeks baris keluarga, atau null untuk menambah;
+   `asal` = "detail" atau "ubah", menentukan layar tujuan Kembali/Simpan. */
+function dpFormKeluarga(idx, asal = "detail") {
+  dkfAsal     = asal;
   dkfIdx      = idx;
   dkfRekening = [{ nama:"", nomor:"", mitra:"", cabang:"" }];
 
@@ -6283,6 +6445,11 @@ $("#s-keluarga-form").addEventListener("click", e => {
 });
 
 function dkfKembali() {
+  if (dkfAsal === "ubah") {
+    go("data-peserta-ubah");
+    renderUbahKeluarga();
+    return;
+  }
   go("data-peserta-detail");
   renderTabKeluargaPeserta();
 }
@@ -6582,10 +6749,10 @@ function renderPanelDetailPeserta() {
       </div>
     </div>`;
 
-  $("#dpd-mutakhir").onclick = () => go("peremajaan-pemutakhiran");
+  $("#dpd-mutakhir").onclick = () => dupBuka(dpPesertaAktif.migrasiId, "data-peserta-detail");
 }
 
-/* Layar detail dipakai dua pintu masuk — Data Peserta dan Daftar Nominatif
+/* Layar detail dipakai dua pintu masuk — List Peserta dan Daftar Nominatif
    Pemulihan Data Peserta — jadi tombol Kembali mengingat asalnya. */
 let dpAsalDetail = "data-peserta";
 $("#dpd-kembali").onclick = () => go(dpAsalDetail);
@@ -6620,17 +6787,939 @@ $("#s-data-peserta").addEventListener("click", e => {
   /* Nama peserta di tabel hasil membuka layar detail. */
   const bDetail = e.target.closest("[data-dp-detail]");
   if (bDetail) { dpBukaDetail(bDetail.dataset.dpDetail); return; }
-  /* Kolom Aksi langsung menuju alur ubah data, sama seperti tombol
-     "Ubah Data" di layar detail. */
+  /* Kolom Aksi membuka form Ubah Data Peserta. */
   const bUbah = e.target.closest("[data-dp-ubah]");
-  if (bUbah) {
-    dpPesertaAktif = DATA_PESERTA_KELOLA.find(x => x.migrasiId === bUbah.dataset.dpUbah);
-    go("peremajaan-pemutakhiran");
-  }
+  if (bUbah) dupBuka(bUbah.dataset.dpUbah, "data-peserta");
 });
 
 $("#s-data-peserta").addEventListener("keydown", e => {
   if (e.key === "Enter" && e.target.matches("[data-dp-k-nilai]")) dpCari();
+});
+
+/* ============================================ UBAH DATA PESERTA
+   Form ubah untuk satu peserta, dibuka dari kolom Aksi di tabel List Peserta
+   atau tombol "Ubah Data" di tab Profil. Semua isian ditampung di salinan
+   kerja (dupDraft) dan baru ditulis ke DATA_PESERTA_KELOLA saat Simpan —
+   Batal membuang semuanya, termasuk anggota keluarga dan rekening yang
+   ditambah atau dihapus di section Data Keluarga.
+   Selama form terbuka, dpPesertaAktif menunjuk ke salinan kerja supaya form
+   Data Keluarga (dpFormKeluarga) ikut menulis ke salinan itu. */
+let dupAsli  = null;
+let dupDraft = null;
+let dupAsal  = "data-peserta";
+/* TMT Iuran Masuk ikut TMT Pengangkatan Pertama sampai petugas mengubahnya sendiri. */
+let dupIuranMasukManual = false;
+/* Isian baris tambah rekening, ditahan supaya tidak hilang saat tabel digambar ulang. */
+let dupRekBaru = { anggota:"", nomor:"", mitra:"", cabang:"" };
+
+const DUP_PDW = [...new Set(PROFIL_PDW)];
+
+const dupOpsi = (arr, kosong, terpilih) =>
+  `<option value="">${esc(kosong)}</option>` +
+  arr.map(v => `<option${v === terpilih ? " selected" : ""}>${esc(v)}</option>`).join("");
+
+/* Data contoh menyimpan kode ("LAKI-LAKI", "KAWIN", "MENINGGAL AKTIF"), form
+   memakai label dropdown; keduanya diterima supaya form yang dibuka ulang
+   setelah disimpan tetap terisi. */
+function dupKelaminLabel(v) {
+  const u = (v || "").toUpperCase();
+  return SPP_JENIS_KELAMIN.find(o => o.toUpperCase() === u) || "";
+}
+function dupStatusKawinLabel(v) {
+  if (KELUARGA_STATUS_KAWIN.includes(v)) return v;
+  return { "KAWIN":"Menikah", "BELUM KAWIN":"Belum menikah",
+           "JANDA":"Janda/Duda Meninggal", "DUDA":"Janda/Duda Meninggal" }[v] || "";
+}
+function dupStatusPesertaLabel(v) {
+  return UBAH_PESERTA_STATUS.find(o => o.toUpperCase() === (v || "").toUpperCase())
+      || { "MENINGGAL AKTIF":"Meninggal Dunia Aktif" }[v] || "";
+}
+
+function dupBuka(migrasiId, asal) {
+  const p = DATA_PESERTA_KELOLA.find(x => x.migrasiId === migrasiId);
+  if (!p) return;
+  dupAsli  = p;
+  dupDraft = JSON.parse(JSON.stringify(p));
+  dupAsal  = asal;
+  dpPesertaAktif = dupDraft;
+  dupRekBaru = { anggota:"", nomor:"", mitra:"", cabang:"" };
+
+  const d = dupDraft, pr = d.profil;
+  $("#dup-crumb-peserta").textContent = d.nama;
+  $$("#s-data-peserta-ubah .field.err").forEach(f => f.classList.remove("err"));
+  $("#dup-nrp-err").hidden = true;
+
+  /* ---- Data Personil ---- */
+  $("#dup-kpa").value = d.ktpa;
+  $("#dup-nrp").value = dkfIsi(d.nrp);
+  /* Unit Organisasi diambil dari referensi UNOR yang sedang berlaku,
+     termasuk entri yang baru ditambah di layar UNOR. */
+  $("#dup-unor").innerHTML = `<option value="">— Silahkan Pilih Unit Organisasi —</option>` +
+    unorRows.map(u => `<option value="${esc(u.kode)}">${esc(u.nama)}</option>`).join("");
+  $("#dup-unor").value = pr.unorKode || UBAH_PESERTA_UNOR_ANGKATAN[d.angkatan] || "";
+  $("#dup-status-personil").innerHTML = dupOpsi(SPP_STATUS_PERSONIL, "— Silahkan Pilih Status Personil —",
+    pr.statusPersonil || (d.angkatan === "KEMHAN" ? "PNS" : "Prajurit"));
+  $("#dup-unit-kerja").value = dkfIsi(d.kesatuan);
+  $("#dup-pdw").value        = dkfIsi(pr.pdw);
+  $("#dup-tmt").value        = dkfKeInput(d.tmt);
+  $("#dup-tmt-iuran-masuk").value = dkfKeInput(pr.tmtIuranMasuk) || dkfKeInput(d.tmt);
+  dupIuranMasukManual = !!pr.tmtIuranMasuk && pr.tmtIuranMasuk !== "-" && pr.tmtIuranMasuk !== d.tmt;
+  $("#dup-tmt-iuran-akhir").value = dkfKeInput(pr.tglIuranTerakhir);
+  $("#dup-status-peserta").innerHTML = dupOpsi(UBAH_PESERTA_STATUS, "— Silahkan Pilih Status Peserta —",
+    dupStatusPesertaLabel(d.statusPeserta));
+
+  /* ---- Profil Peserta ---- */
+  $("#dup-nama").value          = dkfIsi(d.nama);
+  $("#dup-nama-ktp").value      = dkfIsi(pr.namaKtp);
+  $("#dup-tempat-lahir").value  = dkfIsi(d.tempatLahir);
+  $("#dup-tgl-lahir").value     = dkfKeInput(d.tglLahir);
+  $("#dup-tgl-meninggal").value = dkfKeInput(pr.tglMeninggal);
+  $("#dup-kelamin").innerHTML   = dupOpsi(SPP_JENIS_KELAMIN, "— Silahkan Pilih Jenis Kelamin —",
+    dupKelaminLabel(pr.jenisKelamin));
+  $("#dup-status-kawin").innerHTML = dupOpsi(KELUARGA_STATUS_KAWIN, "— Silahkan Pilih Status Kawin —",
+    dupStatusKawinLabel(pr.statusKawin));
+  $("#dup-nik").value        = dkfIsi(pr.nomorIdentitas);
+  $("#dup-npwp").value       = dkfIsi(pr.npwp);
+  $("#dup-alamat").value     = dkfIsi(pr.alamat);
+  $("#dup-rt").value         = dkfIsi(pr.rt);
+  $("#dup-rw").value         = dkfIsi(pr.rw);
+  $("#dup-desa").value       = dkfIsi(pr.desa);
+  $("#dup-kodepos").value    = dkfIsi(pr.kodePos);
+  $("#dup-alamat-ktp").value = dkfIsi(pr.alamatKtp);
+  $("#dup-telepon").value    = dkfIsi(pr.telepon);
+  $("#dup-email").value      = dkfIsi(pr.email);
+  $("#dup-hp").value         = dkfIsi(pr.handphone);
+  $("#dup-flag").innerHTML   = dupOpsi(UBAH_PESERTA_FLAG, "— Silahkan Pilih Flag —", pr.flag);
+
+  renderUbahKeluarga();
+  go("data-peserta-ubah");
+}
+
+/* ------------------------------------------------ section Data Keluarga */
+function renderUbahKeluarga() {
+  const kel = dupDraft.keluarga || [];
+  const t = v => esc(dkfIsi(v) || "-");
+
+  $("#dup-keluarga-body").innerHTML = kel.length ? kel.map((k, i) => `
+    <tr>
+      <td>${t(k.nopens)}</td>
+      <td class="t-strong">${t(k.nama)}</td>
+      <td>${t(k.hubungan)}</td>
+      <td>${t(k.tempatLahir)}</td>
+      <td>${t(k.tglLahir)}</td>
+      <td>${t(k.tglMenikah)}</td>
+      <td>${t(k.tglMulaiKuliah)}</td>
+      <td>${t(k.tglSelesaiKuliah)}</td>
+      <td>${t(k.tglMeninggal)}</td>
+      <td>${t(k.tglMulaiKerja)}</td>
+      <td>${t(k.tglSelesaiKerja)}</td>
+      <td>${t(k.tglBerhentiTunjang)}</td>
+      <td>${t(k.tglTunjangKembali)}</td>
+      <td>${t(k.pekerjaan)}</td>
+      <td>${t(k.nomorIdentitas)}</td>
+      <td class="stick-r"><button class="btn btn-danger btn-sm" data-dup-hapus="${i}">⌫ Hapus</button></td>
+    </tr>`).join("")
+    : `<tr><td colspan="16"><div class="empty"><h4>Data Keluarga Kosong</h4><p>Tambahkan anggota keluarga lewat tombol di atas.</p></div></td></tr>`;
+
+  /* Rekening disimpan per anggota keluarga; tabel ini menjejerkan semuanya.
+     Baris tambah di paling bawah memilih anggotanya lebih dulu, jadi rekening
+     baru langsung menempel ke anggota yang bersangkutan dan ikut tampil di
+     tab Keluarga setelah disimpan. */
+  const rek = kel.flatMap(k => k.rekening || []);
+  const tanpaAnggota = !kel.length;
+  const mati = tanpaAnggota ? " disabled" : "";
+
+  const baris = rek.map(r => `
+    <tr>
+      <td class="t-strong">${esc(r.nama)}</td>
+      <td>${esc(r.nomor)}</td>
+      <td>${esc(r.mitra)}</td>
+      <td>${esc(r.cabang)}</td>
+      <td></td>
+    </tr>`).join("");
+  const kosong = rek.length ? "" : `
+    <tr><td colspan="5"><div class="empty"><h4>Belum ada rekening keluarga</h4><p>${tanpaAnggota
+      ? "Tambahkan anggota keluarga dulu, lalu rekeningnya."
+      : "Tambahkan lewat baris isian di bawah."}</p></div></td></tr>`;
+
+  const optAnggota = `<option value="">— Pilih anggota keluarga —</option>` +
+    kel.map((k, i) => `<option value="${i}"${String(i) === dupRekBaru.anggota ? " selected" : ""}>${esc(k.nama)} (${esc(k.hubungan)})</option>`).join("");
+
+  $("#dup-rekening-body").innerHTML = baris + kosong + `
+    <tr>
+      <td><select class="inp" id="dup-rek-anggota"${mati}>${optAnggota}</select></td>
+      <td><input class="inp" id="dup-rek-nomor" value="${esc(dupRekBaru.nomor)}" placeholder="0000-00-000000"${mati}></td>
+      <td><select class="inp" id="dup-rek-mitra"${mati}>${dupOpsi(DATA_MITRA_BAYAR, "— Pilih mitra bayar —", dupRekBaru.mitra)}</select></td>
+      <td><input class="inp" id="dup-rek-cabang" value="${esc(dupRekBaru.cabang)}" placeholder="Nama kantor cabang mitra"${mati}></td>
+      <td><button class="btn btn-primary btn-sm" id="dup-rek-tambah" style="white-space:nowrap"${mati}>+ Tambah Rekening Keluarga</button></td>
+    </tr>`;
+}
+
+/* Simpan isian baris tambah rekening sebelum tabel digambar ulang. */
+function dupBacaRekBaru() {
+  if (!$("#dup-rek-anggota")) return;
+  dupRekBaru = {
+    anggota: $("#dup-rek-anggota").value,
+    nomor:   $("#dup-rek-nomor").value.trim(),
+    mitra:   $("#dup-rek-mitra").value,
+    cabang:  $("#dup-rek-cabang").value.trim()
+  };
+}
+
+function dupTambahRekening() {
+  dupBacaRekBaru();
+  const r = dupRekBaru;
+  if (r.anggota === "" || !r.nomor || !r.mitra) {
+    toast("Pilih anggota keluarga, isi Nomor Rekening, dan pilih Mitra Bayar.", "bad");
+    return;
+  }
+  const k    = dupDraft.keluarga[+r.anggota];
+  const baru = { nama: k.nama, nomor: r.nomor, mitra: r.mitra, cabang: r.cabang || "-" };
+  k.rekening = (k.rekening || []).concat(baru);
+  /* Kolom rekening di tab Keluarga selalu memperlihatkan entri terakhir. */
+  k.namaRekening     = baru.nama;
+  k.nomorRekening    = baru.nomor;
+  k.mitraBayar       = baru.mitra;
+  k.cabangMitraBayar = baru.cabang;
+  dupRekBaru = { anggota:"", nomor:"", mitra:"", cabang:"" };
+  renderUbahKeluarga();
+  toast(`Rekening ${baru.nomor} ditambahkan untuk ${k.nama}.`, "ok");
+}
+
+$("#dup-tambah-keluarga").onclick = () => { dupBacaRekBaru(); dpFormKeluarga(null, "ubah"); };
+
+$("#s-data-peserta-ubah").addEventListener("click", e => {
+  const bHapus = e.target.closest("[data-dup-hapus]");
+  if (bHapus) {
+    dupBacaRekBaru();
+    const [dihapus] = dupDraft.keluarga.splice(+bHapus.dataset.dupHapus, 1);
+    dupRekBaru.anggota = "";
+    renderUbahKeluarga();
+    toast(`${dihapus.nama} dihapus dari daftar — tersimpan setelah menekan Simpan.`);
+    return;
+  }
+  if (e.target.closest("#dup-rek-tambah")) dupTambahRekening();
+});
+
+/* Isian yang diperbaiki langsung melepas tanda error-nya. NRP/NIP punya
+   pemeriksaan sendiri, jadi tidak ikut dilepas di sini. */
+$("#s-data-peserta-ubah").addEventListener("input", e => {
+  const f = e.target.closest(".field");
+  if (f && e.target.id !== "dup-nrp") f.classList.remove("err");
+});
+
+/* ------------------------------------------------- field Data Personil */
+/* NRP/NIP tidak boleh sama dengan milik peserta lain di List Peserta. */
+function dupCekNrp() {
+  const nrp  = $("#dup-nrp").value.trim();
+  const lain = nrp && DATA_PESERTA_KELOLA.find(x => x !== dupAsli && x.nrp === nrp);
+  $("#dup-nrp-err").hidden      = !lain;
+  $("#dup-nrp-err").textContent = lain ? `NRP/NIP ini sudah terdaftar atas nama ${lain.nama}.` : "";
+  $("#dup-nrp").closest(".field").classList.toggle("err", !!lain);
+  return !lain;
+}
+$("#dup-nrp").oninput = dupCekNrp;
+
+$("#dup-tmt").oninput = () => {
+  if (!dupIuranMasukManual) $("#dup-tmt-iuran-masuk").value = $("#dup-tmt").value;
+};
+$("#dup-tmt-iuran-masuk").oninput = () => { dupIuranMasukManual = true; };
+
+/* PDW: pencarian dari daftar PDW yang dikenal; isian bebas tetap diterima. */
+function dupRenderPdw() {
+  const q    = $("#dup-pdw").value.trim().toLowerCase();
+  const hits = DUP_PDW.filter(v => !q || v.toLowerCase().includes(q));
+  $("#dup-pdw-list").innerHTML = hits.map(v =>
+    `<div class="autocomplete-item" data-pdw="${esc(v)}">${esc(v)}</div>`).join("");
+  $("#dup-pdw-list").classList.toggle("open", hits.length > 0);
+}
+$("#dup-pdw").oninput = dupRenderPdw;
+$("#dup-pdw").onfocus = dupRenderPdw;
+$("#dup-pdw").onblur  = () => $("#dup-pdw-list").classList.remove("open");
+/* mousedown + preventDefault: input tidak kehilangan fokus sebelum item terpilih */
+$("#dup-pdw-list").onmousedown = e => {
+  const item = e.target.closest(".autocomplete-item");
+  if (!item) return;
+  e.preventDefault();
+  $("#dup-pdw").value = item.dataset.pdw;
+  $("#dup-pdw-list").classList.remove("open");
+};
+
+/* ------------------------------------------------------- Batal & Simpan */
+function dupBatal() {
+  dpPesertaAktif = dupAsli;
+  go(dupAsal);
+}
+$("#dup-kembali").onclick = dupBatal;
+$("#dup-batal").onclick   = dupBatal;
+
+$("#dup-simpan").onclick = () => {
+  const wajib = [
+    ["#dup-status-personil", "Status Personil"], ["#dup-unit-kerja", "Unit Kerja"],
+    ["#dup-tmt", "TMT Pengangkatan Pertama"],     ["#dup-nama", "Nama"],
+    ["#dup-tempat-lahir", "Tempat Lahir"],       ["#dup-tgl-lahir", "Tanggal Lahir"],
+    ["#dup-kelamin", "Jenis Kelamin"]
+  ];
+  const kurang = wajib.filter(([id]) => !$(id).value.trim());
+  wajib.forEach(([id]) => $(id).closest(".field").classList.toggle("err", !$(id).value.trim()));
+  if (kurang.length) {
+    toast(`Lengkapi field wajib: ${kurang.map(w => w[1]).join(", ")}.`, "bad");
+    $(kurang[0][0]).focus();
+    return;
+  }
+  if (!dupCekNrp()) {
+    toast("NRP/NIP sudah terdaftar atas nama peserta lain.", "bad");
+    $("#dup-nrp").focus();
+    return;
+  }
+
+  const d = dupDraft, pr = d.profil;
+  const teks = id => $(id).value.trim() || "-";
+
+  /* ---- Data Personil ---- */
+  d.nrp = teks("#dup-nrp");
+  const unor = unorRows.find(u => u.kode === $("#dup-unor").value);
+  if (unor) { pr.unorKode = unor.kode; pr.unor = unor.nama; }
+  pr.statusPersonil   = $("#dup-status-personil").value;
+  d.kesatuan          = teks("#dup-unit-kerja");
+  pr.pdw              = teks("#dup-pdw");
+  d.tmt               = dkfDariInput($("#dup-tmt").value);
+  pr.tmtIuranMasuk    = dkfDariInput($("#dup-tmt-iuran-masuk").value);
+  pr.tglIuranTerakhir = dkfDariInput($("#dup-tmt-iuran-akhir").value);
+  /* Status Peserta disimpan sebagai kode huruf besar, sama seperti yang dipakai
+     filter Status Peserta di layar pencarian. */
+  const status = $("#dup-status-peserta").value;
+  if (status) d.statusPeserta = { "Meninggal Dunia Aktif":"MENINGGAL AKTIF" }[status] || status.toUpperCase();
+
+  /* ---- Profil Peserta ---- */
+  d.nama            = teks("#dup-nama");
+  pr.namaKtp        = teks("#dup-nama-ktp");
+  d.tempatLahir     = teks("#dup-tempat-lahir");
+  d.tglLahir        = dkfDariInput($("#dup-tgl-lahir").value);
+  pr.tglMeninggal   = dkfDariInput($("#dup-tgl-meninggal").value);
+  pr.jenisKelamin   = $("#dup-kelamin").value.toUpperCase();
+  pr.statusKawin    = teks("#dup-status-kawin");
+  pr.nomorIdentitas = teks("#dup-nik");
+  pr.npwp      = teks("#dup-npwp");
+  pr.alamat    = teks("#dup-alamat");
+  pr.rt        = teks("#dup-rt");
+  pr.rw        = teks("#dup-rw");
+  pr.desa      = teks("#dup-desa");
+  pr.kodePos   = teks("#dup-kodepos");
+  pr.alamatKtp = teks("#dup-alamat-ktp");
+  pr.telepon   = teks("#dup-telepon");
+  pr.email     = teks("#dup-email");
+  pr.handphone = teks("#dup-hp");
+  if ($("#dup-flag").value) pr.flag = $("#dup-flag").value;
+
+  /* Tulis balik ke baris aslinya. Objeknya tetap sama, jadi layar lain yang
+     memegang referensi ke peserta ini ikut melihat perubahannya. */
+  Object.assign(dupAsli, dupDraft);
+  dpPesertaAktif = dupAsli;
+  renderDataPeserta();
+  if (dupAsal === "data-peserta-detail") renderDetailPeserta();
+  go(dupAsal);
+  toast(`Data peserta ${dupAsli.nama} diperbarui.`, "ok");
+};
+
+/* ============================================ SEJARAH HUTANG SELAMA INI
+   Dibuka dari tautan TMT Awal Kredit / Nomor Piutang di tab Piutang layar
+   Detail Peserta. Menampilkan semua pinjaman peserta kepada ASABRI (p.hutang)
+   beserta rinciannya, dengan tiga aksi per baris:
+     Detail — pindah ke halaman Riwayat Transaksi pinjaman itu
+     Ubah   — konfirmasi, lalu pindah ke halaman Ubah Data Pinjaman
+     Hapus  — konfirmasi, lalu pinjaman dibatalkan dan keluar dari daftar
+              (ikut hilang dari tab Piutang karena datanya sama). */
+const SH_HARI = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+let shSorot  = null;   /* baris yang diklik dari tab Piutang, disorot */
+let shDetail = null;   /* pinjaman yang riwayat transaksinya sedang dibuka */
+let shUbah   = null;   /* pinjaman yang sedang diubah */
+
+/* "18-12-2007" → "Selasa, 18 Des 2007" */
+function shTglHari(t) {
+  const m = /^(\d{2})-(\d{2})-(\d{4})$/.exec(t || "");
+  if (!m) return t || "-";
+  const d = new Date(+m[3], +m[2] - 1, +m[1]);
+  return `${SH_HARI[d.getDay()]}, ${+m[1]} ${BULAN_ID_SHORT[+m[2] - 1]} ${m[3]}`;
+}
+
+const shAngka = v => String(v || "").replace(/\D/g, "");
+
+/* Kolom Total di riwayat transaksi = saldo berjalan. */
+function shHitungSaldo(h) {
+  let saldo = 0;
+  (h.transaksi || []).forEach(t => { saldo += t.pokok; t.total = saldo; });
+}
+
+function shBuka(idx) {
+  lengkapiSejarahHutang(dpPesertaAktif);
+  shSorot  = (dpPesertaAktif.hutang || [])[idx] || null;
+  shDetail = null;
+  shUbah   = null;
+  /* Nama peserta di remah roti ketiga halaman Sejarah Hutang. */
+  $("#sh-crumb-peserta").textContent = dpPesertaAktif.nama;
+  $$(".sh-crumb-nama").forEach(el => { el.textContent = dpPesertaAktif.nama; });
+  $("#sh-sub").textContent = `${dpPesertaAktif.nama} · KPA ${dpPesertaAktif.ktpa}`;
+  renderSejarahHutang();
+  go("sejarah-hutang");
+}
+
+function renderSejarahHutang() {
+  const rows = dpPesertaAktif.hutang || [];
+  $("#sh-body").innerHTML = rows.length ? rows.map((h, i) => `
+    <tr${h === shSorot ? ' class="row-sorot"' : ""}>
+      <td>${esc(h.tmt)}</td>
+      <td class="t-strong">${esc(h.noPiutang)}</td>
+      <td>${esc(h.jenis)}</td>
+      <td>${esc(h.kategori || "-")}</td>
+      <td>${esc(rp(h.angsuranPerbulan || 0))}</td>
+      <td>${esc(rp(h.jumlah))}</td>
+      <td>${esc(rp(h.sudahBayar))}</td>
+      <td>${esc(rp(h.jumlahDps || 0))}</td>
+      <td class="stick-r"><div style="display:flex;gap:6px">
+        <button class="btn btn-info btn-sm" data-sh-detail="${i}" style="white-space:nowrap">👁 Detail</button>
+        <button class="btn btn-ghost btn-sm" data-sh-ubah="${i}" style="white-space:nowrap">✎ Ubah</button>
+        <button class="btn btn-danger btn-sm" data-sh-hapus="${i}" style="white-space:nowrap">⌫ Hapus</button>
+      </div></td>
+    </tr>`).join("")
+    : `<tr><td colspan="9"><div class="empty"><h4>Tidak ada pinjaman</h4><p>Peserta ini tidak punya pinjaman kepada ASABRI.</p></div></td></tr>`;
+
+  const jml = k => rows.reduce((s, h) => s + (h[k] || 0), 0);
+  $("#sh-foot").innerHTML = rows.length ? `<tr>
+      <td colspan="5" style="text-align:right">Total Hutang</td>
+      <td>${esc(rp(jml("jumlah")))}</td>
+      <td>${esc(rp(jml("sudahBayar")))}</td>
+      <td>${esc(rp(jml("jumlahDps")))}</td>
+      <td class="stick-r"></td>
+    </tr>` : "";
+}
+
+function renderDetailSejarahHutang() {
+  if (!shDetail) return;
+  const h  = shDetail;
+  const tr = h.transaksi || [];
+  $("#sh-detail-sub").textContent = `No Permohonan ${h.noPiutang} · ${h.jenis}`;
+  /* Tanggal Rekonsiliasi hanya dimiliki transaksi piutang BUM KPR YKPP PROGSUS;
+     transaksi jenis lain tidak punya nilainya dan ditulis "-". */
+  $("#sh-detail-body").innerHTML = tr.length ? tr.map(t => `
+    <tr>
+      <td>${esc(shTglHari(t.tgl))}</td>
+      <td>${esc(t.tglRekonsiliasi && t.tglRekonsiliasi !== "-" ? shTglHari(t.tglRekonsiliasi) : "-")}</td>
+      <td>${esc(t.tipe)}</td>
+      <td>${esc(t.keterangan)}</td>
+      <td>${esc(t.tglSurat)}</td>
+      <td>${esc(t.noSurat)}</td>
+      <td>${esc(rp(t.bunga))}</td>
+      <td>${esc(rp(t.pokok))}</td>
+      <td>${esc(rp(t.total))}</td>
+      <td>${esc(t.dokumen)}</td>
+    </tr>`).join("")
+    : `<tr><td colspan="10"><div class="empty"><h4>Belum ada transaksi</h4><p>Pinjaman ini belum punya riwayat transaksi.</p></div></td></tr>`;
+  $("#sh-detail-foot").innerHTML = tr.length ? `<tr>
+      <td colspan="8" style="text-align:right">Total Hutang</td>
+      <td>${esc(rp(tr[tr.length - 1].total))}</td>
+      <td></td>
+    </tr>` : "";
+}
+
+/* Pop up konfirmasi Ya / Batal di modal bersama. */
+function shKonfirmasi(pesan, lanjut, bahaya) {
+  $("#modal-title").textContent = "Konfirmasi";
+  $("#modal-sub").textContent   = "";
+  $("#modal-body").innerHTML = `
+    <div style="font-size:13px;font-weight:600;color:var(--body)">${esc(pesan)}</div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" id="sh-konf-batal">Batal</button>
+      <button class="btn ${bahaya ? "btn-danger-solid" : "btn-primary"}" id="sh-konf-ya">Ya</button>
+    </div>`;
+  openModal();
+  $("#sh-konf-batal").onclick = closeModal;
+  $("#sh-konf-ya").onclick    = () => { closeModal(); lanjut(); };
+}
+
+function shBukaForm(h) {
+  shUbah = h;
+  $("#sh-form-sub").textContent = `No Permohonan ${h.noPiutang}`;
+  $$("#sh-form .field.err").forEach(f => f.classList.remove("err"));
+  $$("#sh-form .err-msg").forEach(e => { e.hidden = true; });
+
+  const opsi = (arr, kosong, pilih) => `<option value="">${esc(kosong)}</option>` +
+    arr.map(v => `<option${v === pilih ? " selected" : ""}>${esc(v)}</option>`).join("");
+  $("#sh-f-objek").value       = dkfIsi(h.objekPensiun);
+  $("#sh-f-nomor").value       = dkfIsi(h.noPiutang);
+  $("#sh-f-jenis").innerHTML   = opsi(HUTANG_JENIS_PINJAMAN, "— Silahkan Pilih Jenis Pinjaman —", h.jenis);
+  /* Jenis pinjaman lama (mis. "PUM KPR") belum tentu ada di pilihan — tampilkan
+     sebagai keterangan supaya petugas tahu nilai sebelumnya. */
+  $("#sh-f-jenis-hint").textContent = HUTANG_JENIS_PINJAMAN.includes(h.jenis) ? "" : `Jenis saat ini: ${h.jenis}`;
+  $("#sh-f-kategori").innerHTML = opsi(HUTANG_KATEGORI, "— Silahkan Pilih Kategori Pinjaman —", h.kategori);
+  $("#sh-f-jumlah").value      = h.jumlah ? h.jumlah.toLocaleString("id-ID") : "";
+  $("#sh-f-bunga").value       = dkfIsi(h.bungaPerbulan);
+  $("#sh-f-angsuran").value    = h.angsuranPerbulan ? h.angsuranPerbulan.toLocaleString("id-ID") : "";
+  $("#sh-f-tmt").value         = dkfKeInput(h.tmt);
+  $("#sh-f-jatuh-tempo").value = dkfKeInput(h.jatuhTempo);
+  $("#sh-f-tipe").innerHTML    = opsi(HUTANG_TIPE_TRANSAKSI, "— Silahkan Pilih Type Transaksi —", h.tipeTransaksi);
+  go("sejarah-hutang-ubah");
+}
+
+$("#s-sejarah-hutang").addEventListener("click", e => {
+  const rows = dpPesertaAktif.hutang || [];
+  const bDetail = e.target.closest("[data-sh-detail]");
+  if (bDetail) {
+    shDetail = rows[+bDetail.dataset.shDetail];
+    renderDetailSejarahHutang();
+    go("sejarah-hutang-detail");
+    return;
+  }
+  const bUbah = e.target.closest("[data-sh-ubah]");
+  if (bUbah) {
+    const h = rows[+bUbah.dataset.shUbah];
+    shKonfirmasi("Apakah Anda yakin ingin mengubah?", () => shBukaForm(h));
+    return;
+  }
+  const bHapus = e.target.closest("[data-sh-hapus]");
+  if (bHapus) {
+    const h = rows[+bHapus.dataset.shHapus];
+    shKonfirmasi("Apakah Anda yakin ingin membatalkan?", () => {
+      rows.splice(rows.indexOf(h), 1);
+      if (shSorot === h) shSorot = null;
+      renderSejarahHutang();
+      toast(`Pinjaman ${h.noPiutang} dibatalkan.`, "ok");
+    }, true);
+  }
+});
+
+/* Halaman Riwayat Transaksi dan Ubah Data Pinjaman sama-sama kembali ke daftar
+   pinjaman; Kembali dan Batal di halaman Ubah tidak menyimpan apa pun. */
+$("#shd-kembali").onclick = () => { shDetail = null; go("sejarah-hutang"); };
+function shTutupForm() {
+  shUbah = null;
+  go("sejarah-hutang");
+}
+$("#shu-kembali").onclick   = shTutupForm;
+$("#sh-form-batal").onclick = shTutupForm;
+
+$("#sh-form-simpan").onclick = () => {
+  const h = shUbah;
+  if (!h) return;
+  const tandai = (id, pesan) => {
+    const f = $(id).closest(".field");
+    const e = f.querySelector(".err-msg");
+    f.classList.toggle("err", !!pesan);
+    e.hidden = !pesan;
+    e.textContent = pesan || "";
+    return !!pesan;
+  };
+  const nomor  = $("#sh-f-nomor").value.trim();
+  const jumlah = +shAngka($("#sh-f-jumlah").value);
+  const tmt    = $("#sh-f-tmt").value;
+  const gagal = [
+    tandai("#sh-f-nomor",  nomor ? "" : "Nomer Pinjaman wajib diisi."),
+    tandai("#sh-f-jumlah", !jumlah ? "Jumlah Pinjaman wajib diisi."
+                         : jumlah < h.sudahBayar ? `Tidak boleh lebih kecil dari yang sudah dibayar (${rp(h.sudahBayar)}).`
+                         : ""),
+    tandai("#sh-f-tmt",    tmt ? "" : "TMT Pinjaman wajib diisi.")
+  ].some(Boolean);
+  if (gagal) { toast("Periksa kembali isian yang ditandai.", "bad"); return; }
+
+  const teks = id => $(id).value.trim() || "-";
+  h.objekPensiun     = teks("#sh-f-objek");
+  h.noPiutang        = nomor;
+  if ($("#sh-f-jenis").value)    h.jenis    = $("#sh-f-jenis").value;
+  if ($("#sh-f-kategori").value) h.kategori = $("#sh-f-kategori").value;
+  h.jumlah           = jumlah;
+  h.sisa             = jumlah - h.sudahBayar;
+  h.bungaPerbulan    = teks("#sh-f-bunga");
+  h.angsuranPerbulan = +shAngka($("#sh-f-angsuran").value) || 0;
+  h.tmt              = dkfDariInput(tmt);
+  h.jatuhTempo       = dkfDariInput($("#sh-f-jatuh-tempo").value);
+  if ($("#sh-f-tipe").value) h.tipeTransaksi = $("#sh-f-tipe").value;
+
+  /* Transaksi Pengambilan mengikuti Jumlah, TMT, dan Jenis yang baru, lalu
+     saldo berjalan dihitung ulang supaya tetap sama dengan Jumlah Sisa Piutang. */
+  const ambil = (h.transaksi || []).find(t => t.tipe === "Pengambilan");
+  if (ambil) { ambil.pokok = h.jumlah; ambil.tgl = h.tmt; ambil.keterangan = h.jenis; }
+  shHitungSaldo(h);
+
+  shUbah = null;
+  renderSejarahHutang();
+  go("sejarah-hutang");
+  toast(`Data pinjaman ${h.noPiutang} diperbarui.`, "ok");
+};
+
+/* Kembali ke tab Piutang — digambar ulang karena isinya bisa berubah lewat Ubah/Hapus. */
+$("#sh-kembali").onclick = () => {
+  renderDetailPeserta();
+  go("data-peserta-detail");
+};
+
+/* Tautan TMT Awal Kredit / Nomor Piutang di tab Piutang. */
+$("#dpd-panel").addEventListener("click", e => {
+  const b = e.target.closest("[data-dpd-hutang]");
+  if (b) shBuka(+b.dataset.dpdHutang);
+});
+
+/* ============================================ DETAIL HAK/PRODUK
+   Dibuka dari tautan Nama Penerima / Produk di tab Hak/Produk layar Detail
+   Peserta. Empat kartu:
+     Peserta Hak/Produk   — identitas penerima dan produknya
+     Data Pengambilan     — kartu lipat "Pengambilan - mitra - total"
+     Dokumen              — Hapus (konfirmasi) dan Edit (pop up)
+     Daftar Surat Perintah — tambah surat perintah bayar; tiap surat perintah
+                            punya pop up Riwayat DPS yang bisa menambah DPS baru. */
+let hdHak = null;   /* transaksi Hak/Produk yang sedang dibuka */
+
+function hdBuka(idx) {
+  lengkapiDetailHak(dpPesertaAktif);
+  hdHak = dpPesertaAktif.hakProduk[idx];
+  $("#hd-crumb-peserta").textContent = dpPesertaAktif.nama;
+  renderDetailHak();
+  go("hak-detail");
+}
+
+const hdAngka = v => Number(v || 0).toLocaleString("id-ID");
+
+function renderDetailHak() {
+  const r = hdHak;
+  if (!r) return;
+  const sel = (label, nilai) => `
+    <div class="review-row"><div class="fl">${esc(label)}</div><div class="val">${esc(nilai)}</div></div>`;
+  $("#hd-sub").textContent = `${r.produk} · ${r.namaPenerima}`;
+
+  /* 1. Peserta Hak/Produk */
+  $("#hd-peserta").innerHTML =
+    sel("Nama Penerima", r.namaPenerima) +
+    sel("Jenis Produk/Klaim", r.produk) +
+    sel("Tanggal Kejadian", shTglHari(r.tglKejadian)) +
+    sel("No Identitas", r.noIdentitas) +
+    sel("Hubungan Keluarga", r.hubungan) +
+    sel("Besar Produk", hdAngka(r.besarProduk)) +
+    sel("Mitra Bayar (Default)", r.mitraBayar);
+
+  /* 2. Data Pengambilan — terbuka saat halaman dibuka, bisa dilipat lewat kepalanya.
+     Status mengikuti Status Axapta: sudah dibukukan = sudah diproses. */
+  $("#hd-pengambilan").innerHTML = `
+    <div class="review-card" id="hd-pengambilan-kartu">
+      <div class="review-card-head is-toggle" data-hd-toggle>
+        <span>Pengambilan - ${esc(r.mitraBayar)} - ${esc(hdAngka(r.besarProduk))}</span>
+        <span class="review-card-caret">⌄</span>
+      </div>
+      <div class="review-card-body">
+        <div class="grid2" style="gap:0 24px">
+          ${sel("Tanggal Pengambilan", shTglHari(r.tglPengambilan))}
+          ${sel("Cabang Mitra Bayar (Default Transaksi)", r.cabangMitra)}
+          ${sel("Mitra Bayar (Default Transaksi)", r.mitraBayar)}
+          ${sel("Total", hdAngka(r.besarProduk))}
+          ${sel("Status", r.statusAxapta === "1" ? "Sudah Di Proses" : "Belum Di Proses")}
+        </div>
+      </div>
+    </div>`;
+
+  /* 3. Dokumen */
+  const dok = r.dokumen || [];
+  $("#hd-dokumen-body").innerHTML = dok.length ? dok.map((d, i) => `
+    <tr>
+      <td>${esc(shTglHari(d.tgl))}</td>
+      <td class="t-strong">${esc(d.nama)}</td>
+      <td><div style="display:flex;gap:6px">
+        <button class="btn btn-danger btn-sm" data-hd-dok-hapus="${i}">⌫ Hapus</button>
+        <button class="btn btn-ghost btn-sm" data-hd-dok-edit="${i}">✎ Edit</button>
+      </div></td>
+    </tr>`).join("")
+    : `<tr><td colspan="3"><div class="empty"><h4>Data Kosong</h4><p>Belum ada dokumen untuk transaksi ini.</p></div></td></tr>`;
+
+  /* 4. Daftar Surat Perintah */
+  const sp = r.suratPerintah || [];
+  $("#hd-sp-body").innerHTML = sp.length ? sp.map((s, i) => `
+    <tr>
+      <td class="t-strong">${esc(s.noSP)}</td>
+      <td>${esc(s.kodeBayar)}</td>
+      <td>${esc(shTglHari(s.tglSP))}</td>
+      <td>${esc(s.mitraBayar)}</td>
+      <td>${esc(s.cabangMitra)}</td>
+      <td>${esc(s.noRekAsabri)}</td>
+      <td>${esc(s.namaRekening)}</td>
+      <td>${esc(s.nomorRekening)}</td>
+      <td>${esc(hdAngka(s.jumlahBayar))}</td>
+      <td class="stick-r"><button class="btn btn-info btn-sm" data-hd-dps="${i}" style="white-space:nowrap">👁 Lihat Riwayat DPS</button></td>
+    </tr>`).join("")
+    : `<tr><td colspan="10"><div class="empty"><h4>Data Kosong</h4><p>Belum ada surat perintah bayar.</p></div></td></tr>`;
+}
+
+/* Isi modal bersama; `lebar` = pop up lebar untuk tabel (closeModal melepasnya). */
+function hdModal(judul, sub, isi, lebar) {
+  $("#modal-title").textContent = judul;
+  $("#modal-sub").textContent   = sub || "";
+  $("#modal-bg .modal").classList.toggle("modal-lg", !!lebar);
+  $("#modal-body").innerHTML = isi;
+  openModal();
+}
+
+/* Tandai isian wajib yang kosong; isian = [[selector, label, apakahAngka]]. */
+function hdWajib(isian) {
+  let lengkap = true;
+  isian.forEach(([id, label, angka]) => {
+    const v      = $(id).value.trim();
+    const kosong = !v || (angka && !+shAngka(v));
+    const f = $(id).closest(".field");
+    const e = f.querySelector(".err-msg");
+    f.classList.toggle("err", kosong);
+    if (e) { e.hidden = !kosong; e.textContent = kosong ? `${label} wajib diisi.` : ""; }
+    if (kosong) lengkap = false;
+  });
+  return lengkap;
+}
+
+/* ------------------------------------------------------------ Dokumen */
+function hdEditDokumen(i) {
+  const d = hdHak.dokumen[i];
+  hdModal("Edit Dokumen", d.nama, `
+    <div style="display:grid;gap:14px">
+    <div class="field">
+      <label class="fl" for="hd-dok-tgl">Tanggal</label>
+      <input class="inp" type="date" id="hd-dok-tgl" value="${esc(dkfKeInput(d.tgl))}">
+    </div>
+    <div class="field">
+      <label class="fl" for="hd-dok-nama">Nama Dokumen <span class="req">*</span></label>
+      <input class="inp" id="hd-dok-nama" value="${esc(d.nama)}">
+      <div class="err-msg" hidden></div>
+    </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" id="hd-dok-batal">Batal</button>
+      <button class="btn btn-primary" id="hd-dok-simpan">Simpan</button>
+    </div>`);
+  $("#hd-dok-batal").onclick  = closeModal;
+  $("#hd-dok-simpan").onclick = () => {
+    if (!hdWajib([["#hd-dok-nama", "Nama Dokumen"]])) return;
+    d.nama = $("#hd-dok-nama").value.trim();
+    if ($("#hd-dok-tgl").value) d.tgl = dkfDariInput($("#hd-dok-tgl").value);
+    closeModal();
+    renderDetailHak();
+    toast(`Dokumen ${d.nama} diperbarui.`, "ok");
+  };
+}
+
+/* ---------------------------------------------------- Riwayat DPS No. SP */
+function hdRiwayatDps(idx) {
+  const s   = hdHak.suratPerintah[idx];
+  const dps = s.dps || (s.dps = []);
+  hdModal("Riwayat DPS No. SP", s.noSP, `
+    <div class="tbl-wrap">
+      <table class="wide-table" style="min-width:1080px">
+        <thead><tr>
+          <th>ID DPS</th><th>Nomor DPS</th><th>Nomor Reff</th><th>Nomor Retur</th><th>Tanggal Retur</th>
+          <th>Tanggal DPS</th><th>Nama Pemilik Rekening</th><th>Nomor Rekening</th><th>Jumlah</th>
+        </tr></thead>
+        <tbody>${dps.length ? dps.map(d => `
+          <tr>
+            <td>${esc(d.idDps)}</td>
+            <td class="t-strong">${esc(d.nomorDps)}</td>
+            <td>${esc(d.nomorReff)}</td>
+            <td>${esc(d.nomorRetur)}</td>
+            <td>${esc(d.tglRetur === "-" ? "-" : shTglHari(d.tglRetur))}</td>
+            <td>${esc(shTglHari(d.tglDps))}</td>
+            <td>${esc(d.namaPemilik)}</td>
+            <td>${esc(d.nomorRekening)}</td>
+            <td>${esc(hdAngka(d.jumlah))}</td>
+          </tr>`).join("")
+          : `<tr><td colspan="9"><div class="empty"><h4>Belum ada DPS</h4><p>Surat perintah ini belum punya DPS.</p></div></td></tr>`}
+        </tbody>
+      </table>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" id="hd-dps-tutup">Tutup</button>
+      <button class="btn btn-primary" id="hd-dps-baru">+ Buat DPS Baru</button>
+    </div>`, true);
+  $("#hd-dps-tutup").onclick = closeModal;
+  $("#hd-dps-baru").onclick  = () => hdBuatDps(idx);
+}
+
+function hdBuatDps(idx) {
+  const s = hdHak.suratPerintah[idx];
+  hdModal("Buat DPS Baru", `No. SP ${s.noSP}`, `
+    <div style="display:grid;gap:14px">
+    <div class="field">
+      <label class="fl" for="hd-f-nomor">Nomor DPS <span class="req">*</span></label>
+      <input class="inp" id="hd-f-nomor" placeholder="Nomor DPS">
+      <div class="err-msg" hidden></div>
+    </div>
+    <div class="field">
+      <label class="fl" for="hd-f-tgl">Tanggal DPS <span class="req">*</span></label>
+      <input class="inp" type="date" id="hd-f-tgl">
+      <div class="err-msg" hidden></div>
+    </div>
+    <div class="field">
+      <label class="fl" for="hd-f-nama">Nama Rekening <span class="req">*</span></label>
+      <input class="inp" id="hd-f-nama" placeholder="Nama pemilik rekening">
+      <div class="err-msg" hidden></div>
+    </div>
+    <div class="field">
+      <label class="fl" for="hd-f-norek">Nomor Rekening <span class="req">*</span></label>
+      <input class="inp" id="hd-f-norek" placeholder="Nomor rekening">
+      <div class="err-msg" hidden></div>
+    </div>
+    <div class="field">
+      <label class="fl" for="hd-f-jumlah">Jumlah Bayar <span class="req">*</span></label>
+      <div class="money"><span>Rp</span><input id="hd-f-jumlah" inputmode="numeric" placeholder="0"></div>
+      <div class="err-msg" hidden></div>
+    </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" id="hd-f-tutup">Tutup</button>
+      <button class="btn btn-primary" id="hd-f-buat">Buat DPS</button>
+    </div>`);
+  /* Tutup kembali ke daftar Riwayat DPS surat perintah yang sama. */
+  $("#hd-f-tutup").onclick = () => hdRiwayatDps(idx);
+  $("#hd-f-buat").onclick  = () => {
+    if (!hdWajib([["#hd-f-nomor", "Nomor DPS"], ["#hd-f-tgl", "Tanggal DPS"], ["#hd-f-nama", "Nama Rekening"],
+                  ["#hd-f-norek", "Nomor Rekening"], ["#hd-f-jumlah", "Jumlah Bayar", true]])) return;
+    /* ID DPS melanjutkan ID terbesar yang sudah ada di seluruh data. */
+    const semuaId = DATA_PESERTA_KELOLA.flatMap(p => (p.hakProduk || [])
+      .flatMap(h => (h.suratPerintah || []).flatMap(x => (x.dps || []).map(d => +d.idDps || 0))));
+    const dps = {
+      idDps:         String(Math.max(2000000, ...semuaId) + 1),
+      nomorDps:      $("#hd-f-nomor").value.trim(),
+      nomorReff:     `2110${String(Date.now()).slice(-10)}`,
+      nomorRetur:    "-",
+      tglRetur:      "-",
+      tglDps:        dkfDariInput($("#hd-f-tgl").value),
+      namaPemilik:   $("#hd-f-nama").value.trim(),
+      nomorRekening: $("#hd-f-norek").value.trim(),
+      jumlah:        +shAngka($("#hd-f-jumlah").value)
+    };
+    s.dps.push(dps);
+    hdRiwayatDps(idx);
+    toast(`DPS ${dps.nomorDps} ditambahkan ke SP ${s.noSP}.`, "ok");
+  };
+}
+
+/* ------------------------------------------------- Surat Perintah Bayar */
+function hdSuratPerintahBaru() {
+  const r      = hdHak;
+  const daftar = r.suratPerintah || (r.suratPerintah = []);
+  const akhir  = daftar[daftar.length - 1] || {};
+  const [, bln, thn] = dpTglHariIni().split("-");
+  /* Nomor SP dan Kode Bayar dibentuk otomatis mengikuti pola data yang ada;
+     Kode Bayar melanjutkan nomor urut terbesar milik peserta ini. */
+  const urut = Math.max(0, ...(dpPesertaAktif.hakProduk || [])
+    .flatMap(h => [h.kodeBayar, ...(h.suratPerintah || []).map(x => x.kodeBayar)])
+    .map(kode => +((String(kode).match(/THT(\d+)$/) || [])[1] || 0))) + 1;
+  const noSP      = `B/${String(Date.now()).slice(-6)}-AS/THT/${HAK_BULAN_ROMAWI[+bln - 1]}/${thn}`;
+  const kodeBayar = `${dpPesertaAktif.ktpa}THT${urut}`;
+  const mitraAwal = akhir.mitraBayar || r.mitraBayar;
+
+  hdModal("Surat Perintah Bayar", `${r.produk} · ${r.namaPenerima}`, `
+    <div style="display:grid;gap:14px">
+    <div class="field">
+      <label class="fl">No Surat Perintah</label>
+      <input class="inp" id="hd-sp-no" value="${esc(noSP)}" disabled>
+    </div>
+    <div class="field">
+      <label class="fl">Kode Bayar</label>
+      <input class="inp" id="hd-sp-kode" value="${esc(kodeBayar)}" disabled>
+    </div>
+    <div class="field">
+      <label class="fl" for="hd-sp-tgl">Tanggal Surat Perintah <span class="req">*</span></label>
+      <input class="inp" type="date" id="hd-sp-tgl" value="${esc(dkfKeInput(dpTglHariIni()))}">
+      <div class="err-msg" hidden></div>
+    </div>
+    <div class="field">
+      <label class="fl" for="hd-sp-mitra">Mitra Bayar</label>
+      <select class="inp" id="hd-sp-mitra">${HAK_MITRA.map(m =>
+        `<option${m.mitra === mitraAwal ? " selected" : ""}>${esc(m.mitra)}</option>`).join("")}</select>
+    </div>
+    <div class="field">
+      <label class="fl" for="hd-sp-cabang">Cabang Mitra Bayar <span class="req">*</span></label>
+      <input class="inp" id="hd-sp-cabang" value="${esc(akhir.cabangMitra || r.cabangMitra)}">
+      <div class="err-msg" hidden></div>
+    </div>
+    <div class="field">
+      <label class="fl" for="hd-sp-rek-asabri">No Rekening Asabri <span class="req">*</span></label>
+      <input class="inp" id="hd-sp-rek-asabri" value="${esc(akhir.noRekAsabri || HAK_REKENING_ASABRI[mitraAwal] || "")}">
+      <div class="err-msg" hidden></div>
+    </div>
+    <div class="field">
+      <label class="fl" for="hd-sp-nama">Nama Rekening <span class="req">*</span></label>
+      <input class="inp" id="hd-sp-nama" value="${esc(akhir.namaRekening || r.namaPenerima)}">
+      <div class="err-msg" hidden></div>
+    </div>
+    <div class="field">
+      <label class="fl" for="hd-sp-norek">Nomor Rekening <span class="req">*</span></label>
+      <input class="inp" id="hd-sp-norek" value="${esc(akhir.nomorRekening || "")}">
+      <div class="err-msg" hidden></div>
+    </div>
+    <div class="field">
+      <label class="fl" for="hd-sp-jumlah">Jumlah Bayar <span class="req">*</span></label>
+      <div class="money"><span>Rp</span><input id="hd-sp-jumlah" inputmode="numeric" value="${esc(hdAngka(r.netto))}"></div>
+      <div class="err-msg" hidden></div>
+    </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" id="hd-sp-batal">Batal</button>
+      <button class="btn btn-primary" id="hd-sp-simpan">Simpan</button>
+    </div>`);
+
+  /* Ganti mitra → cabang dan rekening penampung ASABRI ikut menyesuaikan. */
+  $("#hd-sp-mitra").onchange = () => {
+    const m = HAK_MITRA.find(x => x.mitra === $("#hd-sp-mitra").value);
+    if (!m) return;
+    $("#hd-sp-cabang").value     = m.cabang;
+    $("#hd-sp-rek-asabri").value = HAK_REKENING_ASABRI[m.mitra] || "";
+  };
+  $("#hd-sp-batal").onclick  = closeModal;
+  $("#hd-sp-simpan").onclick = () => {
+    if (!hdWajib([["#hd-sp-tgl", "Tanggal Surat Perintah"], ["#hd-sp-cabang", "Cabang Mitra Bayar"],
+                  ["#hd-sp-rek-asabri", "No Rekening Asabri"], ["#hd-sp-nama", "Nama Rekening"],
+                  ["#hd-sp-norek", "Nomor Rekening"], ["#hd-sp-jumlah", "Jumlah Bayar", true]])) return;
+    daftar.push({
+      noSP, kodeBayar,
+      tglSP:         dkfDariInput($("#hd-sp-tgl").value),
+      mitraBayar:    $("#hd-sp-mitra").value,
+      cabangMitra:   $("#hd-sp-cabang").value.trim(),
+      noRekAsabri:   $("#hd-sp-rek-asabri").value.trim(),
+      namaRekening:  $("#hd-sp-nama").value.trim(),
+      nomorRekening: $("#hd-sp-norek").value.trim(),
+      jumlahBayar:   +shAngka($("#hd-sp-jumlah").value),
+      dps: []
+    });
+    closeModal();
+    renderDetailHak();
+    toast(`Surat perintah ${noSP} ditambahkan.`, "ok");
+  };
+}
+
+$("#s-hak-detail").addEventListener("click", e => {
+  if (e.target.closest("[data-hd-toggle]")) {
+    $("#hd-pengambilan-kartu").classList.toggle("collapsed");
+    return;
+  }
+  const bHapus = e.target.closest("[data-hd-dok-hapus]");
+  if (bHapus) {
+    const d = hdHak.dokumen[+bHapus.dataset.hdDokHapus];
+    shKonfirmasi(`Apakah Anda yakin ingin menghapus dokumen ${d.nama}?`, () => {
+      hdHak.dokumen.splice(hdHak.dokumen.indexOf(d), 1);
+      renderDetailHak();
+      toast(`Dokumen ${d.nama} dihapus.`, "ok");
+    }, true);
+    return;
+  }
+  const bEdit = e.target.closest("[data-hd-dok-edit]");
+  if (bEdit) { hdEditDokumen(+bEdit.dataset.hdDokEdit); return; }
+  const bDps = e.target.closest("[data-hd-dps]");
+  if (bDps) { hdRiwayatDps(+bDps.dataset.hdDps); return; }
+  if (e.target.closest("#hd-sp-baru")) hdSuratPerintahBaru();
+});
+
+/* Kembali ke tab Hak/Produk — digambar ulang karena isinya bisa berubah. */
+$("#hd-kembali").onclick = () => {
+  renderDetailPeserta();
+  go("data-peserta-detail");
+};
+
+/* Tautan Nama Penerima / Produk di tab Hak/Produk. */
+$("#dpd-panel").addEventListener("click", e => {
+  const b = e.target.closest("[data-dpd-hak-detail]");
+  if (b) hdBuka(+b.dataset.dpdHakDetail);
 });
 
 /* ====================================================================== INIT */
@@ -7551,7 +8640,7 @@ function ndAbaikanSelisih() {
     <div class="alert alert-info"><span>ⓘ</span><span>Selisih yang diabaikan tetap tercatat beserta alasannya, dan akan muncul kembali bulan berikutnya bila kondisinya masih sama.</span></div>
     <div class="field">
       <label class="fl" for="nd-alasan">Alasan diabaikan <span class="req">*</span></label>
-      <input class="inp" id="nd-alasan" placeholder="Contoh: PP dan UKP diajukan bersamaan, sudah diverifikasi lewat KTPA">
+      <input class="inp" id="nd-alasan" placeholder="Contoh: PP dan UKP diajukan bersamaan, sudah diverifikasi lewat KPA">
     </div>
     <div class="form-actions">
       <button class="btn btn-ghost" id="nd-alasan-batal">Batal</button>
@@ -9752,7 +10841,7 @@ document.addEventListener("click", e => {
      Daftar Nominatif — pengajuan yang sudah disetujui, datanya siap dipakai.
    Begitu disetujui, barisnya juga dibentuk menjadi satu peserta lengkap di
    DATA_PESERTA_KELOLA supaya tombol Detail membuka halaman Detail Peserta
-   yang sama persis dengan Data Peserta. */
+   yang sama persis dengan List Peserta. */
 let sppRows = DATA_SPP.map((r, i) => ({ ...r, _id: i, rekomendasi: r.rekomendasi.map(k => ({ ...k })) }));
 
 /* Nomor permohonan meneruskan deret data contoh (SPP-2026-00117 terakhir). */
@@ -9766,7 +10855,7 @@ function sppPillStatus(s) {
 function sppTglStrip(t) { return (t || "").replace(/\//g, "-") || "-"; }
 
 /* Bentuk satu baris peserta lengkap dari pengajuan yang disetujui, memakai
-   pembangun data yang sama dengan Data Peserta, lalu simpan
+   pembangun data yang sama dengan List Peserta, lalu simpan
    nomor uniknya di baris SPP sebagai penghubung ke layar detail. */
 function sppDaftarkanPeserta(r) {
   if (r.migrasiId) return r.migrasiId;
@@ -9797,9 +10886,11 @@ function sppDaftarkanPeserta(r) {
   p.profil    = lengkapiProfilPeserta(p, n);
   p.keluarga  = buatKeluargaPeserta(p, n);
   p.hakProduk = buatHakProdukPeserta(p, n);
+  lengkapiDetailHak(p);
   const h = buatHutangPeserta(p, n);
   p.hutang      = h.hutang;
   p.hutangMitra = h.hutangMitra;
+  lengkapiSejarahHutang(p);
   const s = buatRiwayatSptbPeserta(p, n);
   p.sptb      = s.sptb;
   p.perubahan = s.perubahan;
@@ -10403,7 +11494,7 @@ renderSppApproval();
 /* ========================= DAFTAR NOMINATIF PEMULIHAN DATA PESERTA
    Pengajuan yang sudah disetujui — datanya sudah bersih dan tersedia di
    YANDU NextGen. Tombol Detail memakai halaman Detail Peserta yang sama
-   dengan Data Peserta lewat nomor unik hasil
+   dengan List Peserta lewat nomor unik hasil
    sppDaftarkanPeserta(). */
 
 const SPPB_PAGE_SIZE = 10;
@@ -11213,31 +12304,31 @@ function bagShowUpload() {
       </div>
       <div class="field">
         <label class="fl">NRP/NIP</label>
-        <input class="inp" id="bag-nrp" disabled placeholder="Otomatis terisi dari Nomor KTPA">
+        <input class="inp" id="bag-nrp" disabled placeholder="Otomatis terisi dari Nomor KPA">
       </div>
       <div class="field">
         <label class="fl">Nama</label>
-        <input class="inp" id="bag-nama" disabled placeholder="Otomatis terisi dari Nomor KTPA">
+        <input class="inp" id="bag-nama" disabled placeholder="Otomatis terisi dari Nomor KPA">
       </div>
       <div class="field">
         <label class="fl">Kantor Cabang</label>
-        <input class="inp" id="bag-cabang" disabled placeholder="Otomatis terisi dari Nomor KTPA">
+        <input class="inp" id="bag-cabang" disabled placeholder="Otomatis terisi dari Nomor KPA">
       </div>
       <div class="field">
         <label class="fl">Nomor Pinjaman</label>
-        <input class="inp" id="bag-pinjaman" disabled placeholder="Otomatis terisi dari Nomor KTPA">
+        <input class="inp" id="bag-pinjaman" disabled placeholder="Otomatis terisi dari Nomor KPA">
       </div>
       <div class="field">
         <label class="fl">Jenis Pinjaman</label>
-        <input class="inp" id="bag-jenis" disabled placeholder="Otomatis terisi dari Nomor KTPA">
+        <input class="inp" id="bag-jenis" disabled placeholder="Otomatis terisi dari Nomor KPA">
       </div>
       <div class="field">
         <label class="fl">Sisa Hutang</label>
-        <input class="inp" id="bag-sisa" disabled placeholder="Otomatis terisi dari Nomor KTPA">
+        <input class="inp" id="bag-sisa" disabled placeholder="Otomatis terisi dari Nomor KPA">
       </div>
       <div class="field">
         <label class="fl">Angsuran Ke- <span class="req">*</span></label>
-        <input class="inp" type="number" min="1" id="bag-angsuran-ke" placeholder="Otomatis terisi dari Nomor KTPA">
+        <input class="inp" type="number" min="1" id="bag-angsuran-ke" placeholder="Otomatis terisi dari Nomor KPA">
         <div class="hint">Terisi dari setoran terakhir peserta; boleh diubah.</div>
       </div>
       <div class="field">

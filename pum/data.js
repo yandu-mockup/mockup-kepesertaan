@@ -472,7 +472,7 @@ const DATA_NRP_TERDAFTAR_DEMO = [
 DATA_MASTER_PESERTA.push(...DATA_NRP_TERDAFTAR_DEMO);
 
 /* Riwayat kepangkatan peserta dari sistem kepesertaan (dipakai di Kepangkatan
-   pengajuan KPR (PUM) — ditampilkan otomatis saat KTPA cocok, hanya sebagian
+   pengajuan KPR (PUM) — ditampilkan otomatis saat KPA cocok, hanya sebagian
    Nomor KPA di DATA_MASTER_PESERTA yang punya riwayat untuk simulasi). */
 const DATA_RIWAYAT_KEPANGKATAN = {
   CD317049: [
