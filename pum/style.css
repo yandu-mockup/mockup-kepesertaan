@@ -685,6 +685,9 @@ textarea.inp{height:auto; padding:9px 12px; line-height:1.5}
 .toast.bad{background:var(--red)}
 
 .empty{text-align:center; padding:44px 20px; color:var(--muted)}
+/* Di tabel lebar, sel kosong selebar seluruh tabel — teks di tengahnya jatuh di
+   luar area yang terlihat, jadi pesannya dirapatkan ke kiri. */
+.wide-table .empty{text-align:left}
 .empty h4{margin:0 0 6px; color:var(--body); font-size:14px; font-weight:800}
 .empty p{margin:0; font-size:12px; font-weight:500}
 

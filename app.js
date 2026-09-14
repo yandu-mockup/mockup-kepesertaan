@@ -5797,6 +5797,8 @@ function dpBukaDetail(migrasiId, asal) {
   if (!p) return;
   dpPesertaAktif = p;
   dpTabAktif     = "profil";
+  dapemCari      = "";
+  dapemPager.hal = 1;
   dpAsalDetail   = asal || "data-peserta";
   $("#dpd-crumb-asal").textContent = dpAsalDetail === "spp-bersih"
     ? "Daftar Nominatif Pemulihan Data Peserta" : "List Peserta";
@@ -6650,6 +6652,202 @@ document.addEventListener("click", e => {
   if (b) dpBukaDetailPerubahan(+b.dataset.dpUbahDetail);
 });
 
+/* Tab DAPEM: ringkasan + rekening pembayaran (satu kartu) dan riwayat
+   pembayaran dapem yang bisa dicari & dipaginasi (kartu kedua). */
+let dapemCari  = "";
+let dapemPager = { hal: 1, per: 10 };
+
+function renderTabDapemPeserta() {
+  const d = dpPesertaAktif.dapem;
+  if (!d) {
+    $("#dpd-panel").innerHTML = `
+      <div class="card">
+        <h3 class="section-title">Data DAPEM</h3>
+        <div class="empty">
+          <h4>Belum ada dapem</h4>
+          <p>Peserta berstatus ${esc(dpPesertaAktif.statusPeserta)} belum menerima pembayaran pensiun.</p>
+        </div>
+      </div>`;
+    return;
+  }
+
+  const sel = (label, nilai) => `
+    <div class="review-row"><div class="fl">${esc(label)}</div><div class="val">${esc(nilai)}</div></div>`;
+
+  $("#dpd-panel").innerHTML = `
+    <div class="card">
+      <h3 class="section-title">Data DAPEM</h3>
+      <div class="grid3">
+        ${sel("Tanggal Terakhir SPTB", d.info.tglSptb)}
+        ${sel("Tanggal Terakhir Pembayaran", d.info.tglBayar)}
+        ${sel("Jenis Pembayaran", d.info.jenisBayar)}
+        ${sel("Flag Mitra", d.info.flagMitra)}
+        ${sel("Data Dapem", d.info.dataDapem)}
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin:16px 0 10px">
+        <button class="btn btn-ghost" id="dpd-dapem-export">⤓ Download Excel</button>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>Nopens</th><th>Bank (Pembayaran Bulan Depan)</th><th>Jenis Pembayaran</th>
+            <th>Tanggal Dapem Berhenti</th><th>Alasan Berhenti</th><th>Tanggal Batas Hak</th>
+          </tr></thead>
+          <tbody>${d.rekening.map((r, i) => `
+            <tr>
+              <td class="t-strong">${esc(r.nopens)}</td>
+              <td>${esc(r.bank)}</td>
+              <td>${esc(r.jenisBayar)}</td>
+              <td style="white-space:nowrap">${r.tglBerhenti ? `${esc(r.tglBerhenti)} ` : ""}<button class="btn btn-ghost btn-sm" data-dapem-berhenti="${i}" title="Ubah Tanggal Dapem Berhenti">✎ Edit</button></td>
+              <td>${esc(r.alasan)}</td>
+              <td>${esc(r.tglBatasHak)}</td>
+            </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 class="section-title">Riwayat Pembayaran DAPEM</h3>
+      <div class="field" style="position:relative;max-width:360px;margin-bottom:14px">
+        <span style="position:absolute;left:14px;top:9px;color:var(--muted)">⌕</span>
+        <input class="inp" id="dpd-dapem-cari" style="padding-left:36px" placeholder="Cari riwayat pembayaran..." value="${esc(dapemCari)}">
+      </div>
+      <div class="tbl-wrap">
+        <table class="wide-table" style="min-width:1700px">
+          <thead><tr>
+            <th>Aksi</th><th>Jenis Pensiun</th><th>Tanggal Dapem</th><th>Jenis Dapem</th><th>No Pensiun</th>
+            <th>Nama Penerima</th><th>Kode Jiwa</th><th>Bank</th><th>Nomor Rekening</th><th>Penspok</th>
+            <th>Tunj. Total</th><th>Pot. Total</th><th>Nilai Dapem</th><th>Kode Oten</th><th>Tgl Flag</th><th>Status</th>
+          </tr></thead>
+          <tbody id="dpd-dapem-body"></tbody>
+        </table>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+        <div class="tbl-note" id="dpd-dapem-count" style="margin:0"></div>
+        <div id="dpd-dapem-pager" style="display:flex;gap:4px"></div>
+      </div>
+    </div>`;
+
+  $("#dpd-dapem-export").onclick = () =>
+    toast(`Data DAPEM ${dpPesertaAktif.nama} diunduh ke Excel.`);
+  renderRiwayatDapem();
+}
+
+/* Hanya isi tabel riwayat yang dirender ulang, supaya kolom cari tidak
+   kehilangan fokus saat diketik. */
+function renderRiwayatDapem() {
+  const semua = dpPesertaAktif.dapem.riwayat;
+  const angka = v => v.toLocaleString("id-ID");
+  const q     = dapemCari.trim().toLowerCase();
+  const rows  = q ? semua.filter(r => [
+    r.aksi, r.jenisPensiun, r.tglDapem, r.jenisDapem, r.noPensiun, r.namaPenerima, r.kodeJiwa, r.bank,
+    r.noRekening, angka(r.penspok), angka(r.tunjTotal), angka(r.potTotal), angka(r.nilaiDapem),
+    r.kodeOten, r.tglFlag, r.status
+  ].join(" ").toLowerCase().includes(q)) : semua;
+
+  const pg = pagerPotong(rows, dapemPager);
+  $("#dpd-dapem-body").innerHTML = pg.hal.length ? pg.hal.map(r => `
+    <tr>
+      <td style="color:var(--muted)">${esc(r.aksi)}</td>
+      <td>${esc(r.jenisPensiun)}</td>
+      <td>${esc(r.tglDapem)}</td>
+      <td>${esc(r.jenisDapem)}</td>
+      <td><button class="t-name" data-dapem-rincian="${semua.indexOf(r)}">${esc(r.noPensiun)}</button></td>
+      <td>${esc(r.namaPenerima)}</td>
+      <td>${esc(r.kodeJiwa)}</td>
+      <td>${esc(r.bank)}</td>
+      <td>${esc(r.noRekening)}</td>
+      <td>${esc(angka(r.penspok))}</td>
+      <td>${esc(angka(r.tunjTotal))}</td>
+      <td>${esc(angka(r.potTotal))}</td>
+      <td class="t-strong">${esc(angka(r.nilaiDapem))}</td>
+      <td>${esc(r.kodeOten)}</td>
+      <td style="white-space:nowrap">${esc(r.tglFlag)}</td>
+      <td>${esc(r.status)}</td>
+    </tr>`).join("")
+    : `<tr><td colspan="16"><div class="empty"><h4>Tidak ada data</h4><p>Tidak ada riwayat pembayaran yang cocok dengan pencarian.</p></div></td></tr>`;
+
+  $("#dpd-dapem-count").innerHTML = pagerNote(pg, "pembayaran", "");
+  $("#dpd-dapem-pager").innerHTML = pagerHtml(dapemPager, pg, "data-dapem-hal");
+}
+
+/* Popup Tanggal Dapem Berhenti dari tombol Edit di tabel rekening dapem. */
+function dapemEditBerhenti(i) {
+  const r = dpPesertaAktif.dapem.rekening[i];
+  const hariIni = new Date();
+  const pad = v => String(v).padStart(2, "0");
+  const awal = dkfKeInput(r.tglBerhenti)
+    || `${hariIni.getFullYear()}-${pad(hariIni.getMonth() + 1)}-${pad(hariIni.getDate())}`;
+
+  hdModal("Tanggal Dapem Berhenti", `Nopens ${r.nopens}`, `
+    <div style="display:grid;gap:14px">
+      <div class="field">
+        <label class="fl" for="dapem-tgl-berhenti">Tanggal Dapem Berhenti <span class="req">*</span></label>
+        <input class="inp" type="date" id="dapem-tgl-berhenti" value="${esc(awal)}">
+        <div class="err-msg" hidden></div>
+      </div>
+      <div class="field">
+        <label class="fl" for="dapem-alasan">Alasan Berhenti</label>
+        <textarea class="inp" id="dapem-alasan" rows="3" placeholder="Tuliskan alasan dapem berhenti">${esc(r.alasan)}</textarea>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" id="dapem-tutup">Tutup</button>
+      <button class="btn btn-primary" id="dapem-simpan">Simpan</button>
+    </div>`);
+
+  $("#dapem-tutup").onclick = closeModal;
+  $("#dapem-simpan").onclick = () => {
+    if (!hdWajib([["#dapem-tgl-berhenti", "Tanggal Dapem Berhenti"]])) return;
+    r.tglBerhenti = dkfDariInput($("#dapem-tgl-berhenti").value);
+    r.alasan      = $("#dapem-alasan").value.trim();
+    closeModal();
+    renderTabDapemPeserta();
+    toast("Tanggal Dapem Berhenti disimpan.", "ok");
+  };
+}
+
+/* Tautan No Pensiun: rincian komponen satu bulan dapem. */
+function dapemRincian(i) {
+  const r = dpPesertaAktif.dapem.riwayat[i];
+  const angka = v => v.toLocaleString("id-ID");
+  const sel = (label, nilai) => `
+    <div class="review-row"><div class="fl">${esc(label)}</div><div class="val">${esc(nilai)}</div></div>`;
+  hdModal("Rincian Dapem", `${r.noPensiun} · ${r.jenisDapem} ${r.tglDapem}`, `
+    <div class="grid2">
+      ${sel("Nama Penerima", r.namaPenerima)}
+      ${sel("Jenis Pensiun", r.jenisPensiun)}
+      ${sel("Bank", r.bank)}
+      ${sel("Nomor Rekening", r.noRekening)}
+      ${sel("Penspok", angka(r.penspok))}
+      ${sel("Tunj. Total", angka(r.tunjTotal))}
+      ${sel("Pot. Total", angka(r.potTotal))}
+      ${sel("Nilai Dapem", angka(r.nilaiDapem))}
+      ${sel("Kode Oten", r.kodeOten)}
+      ${sel("Status", r.status || "-")}
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" id="dapem-rincian-tutup">Tutup</button>
+    </div>`);
+  $("#dapem-rincian-tutup").onclick = closeModal;
+}
+
+$("#dpd-panel").addEventListener("click", e => {
+  const edit = e.target.closest("[data-dapem-berhenti]");
+  if (edit) return dapemEditBerhenti(+edit.dataset.dapemBerhenti);
+  const rinci = e.target.closest("[data-dapem-rincian]");
+  if (rinci) return dapemRincian(+rinci.dataset.dapemRincian);
+  const hal = e.target.closest("[data-dapem-hal]");
+  if (hal) { dapemPager.hal = +hal.dataset.dapemHal; renderRiwayatDapem(); }
+});
+$("#dpd-panel").addEventListener("input", e => {
+  if (e.target.id !== "dpd-dapem-cari") return;
+  dapemCari = e.target.value;
+  dapemPager.hal = 1;
+  renderRiwayatDapem();
+});
+
 function renderPanelDetailPeserta() {
   const p   = dpPesertaAktif;
   const tab = PESERTA_KELOLA_TAB.find(t => t.key === dpTabAktif);
@@ -6657,6 +6855,7 @@ function renderPanelDetailPeserta() {
   if (dpTabAktif === "keluarga")  return renderTabKeluargaPeserta();
   if (dpTabAktif === "hutang")    return renderTabHutangPeserta();
   if (dpTabAktif === "hak")       return renderTabHakPeserta();
+  if (dpTabAktif === "dapem")     return renderTabDapemPeserta();
   if (dpTabAktif === "sptb")      return renderTabSptbPeserta();
   if (dpTabAktif === "perubahan") return renderTabPerubahanPeserta();
 
@@ -10912,6 +11111,7 @@ function sppDaftarkanPeserta(r) {
   const s = buatRiwayatSptbPeserta(p, n);
   p.sptb      = s.sptb;
   p.perubahan = s.perubahan;
+  p.dapem     = buatDapemPeserta(p, n);
 
   DATA_PESERTA_KELOLA.push(p);
   r.migrasiId = p.migrasiId;

@@ -2131,7 +2131,7 @@ const DATA_PESERTA_KELOLA = [
   /* Pensiunan yang isi tab Hak/Produk-nya persis contoh dari user (Tabungan
      Asuransi yang dipotong pinjaman BUM, lalu PEMBATALAN BUM sebulan kemudian).
      Isi Hak/Produk-nya ditulis manual di blok 22f-0, bukan dibangkitkan. */
-  { migrasiId:"MG-0000100303", nrp:"196612061988031002", nopens:"DX100303111021", ktpa:"DX100303", nama:"BENG SURYANA, SE.",
+  { migrasiId:"MG-0000100303", nrp:"196612061988031002", nopens:"DX100303110042", ktpa:"DX100303", nama:"BENG SURYANA, SE.",
     tempatLahir:"MALANG", tglLahir:"06-12-1966", tmt:"01-03-1988",
     noSkep:"SKEP/0412/III/1988", tglSkep:"01-03-1988", noSkepPensiun:"KEP/0027/I/2025", tglSkepPensiun:"01-01-2025",
     pangkatAwal:"GOL.II/A", pangkatAkhir:"GOL.III/D", kesatuan:"KODIM 0833 KOTA MALANG", angkatan:"TNI-AD",
@@ -3032,7 +3032,6 @@ function buatHakProdukPeserta(p, n) {
   const putar = (arr, i) => arr[i % arr.length];
   const pad   = (v, l) => String(v).padStart(l, "0");
   const rows  = [];
-  if (n % 5 === 0) return rows;
 
   const mitra = putar(HAK_MITRA, n);
   const thn   = 2019 + (n % 7);   /* 2019–2025 */
@@ -3205,6 +3204,132 @@ function lengkapiDetailHak(p) {
 }
 
 DATA_PESERTA_KELOLA.forEach(p => lengkapiDetailHak(p));
+
+/* ---------------------------------------------------------------------------
+   22g. PENGELOLAAN DATA PESERTA — isi tab "DAPEM"
+   Daftar pembayaran pensiun (dapem) bulanan peserta, dua bagian:
+     - info   : Tanggal Terakhir SPTB, Tanggal Terakhir Pembayaran, Jenis
+                Pembayaran, Flag Mitra, Data Dapem (ringkasan, hanya dibaca)
+     - rekening : satu baris per Nopens — bank pembayaran bulan depan, jenis
+                pembayaran, dan Tanggal Dapem Berhenti yang bisa diubah
+     - riwayat : satu baris per bulan dapem, dari terbaru
+   Semua peserta diberi contoh dapem supaya tab ini selalu terisi saat demo.
+   MENINGGAL AKTIF dibayar sebagai pensiun janda/duda ke istri/suami, peserta
+   lain ke dirinya sendiri; mulai TMT pensiun kalau ada, selain itu 24 bulan.
+   Rumus mengikuti contoh dari user (Penspok 3.935.800):
+     - Dapem Induk   : Tunj. 1,84% dibulatkan puluhan (72.420), Pot. 2% (78.716)
+     - Gaji ke-13 (Juni): Tunj. 2,9342% (115.484), Pot. 1,09416% (43.064)
+     - Nilai Dapem = Penspok + Tunj. − Pot., dibulatkan ke atas ratusan
+       (3.929.600 dan 4.008.300)
+     - Penspok sebelum 2026 lebih rendah 5% (kenaikan pensiun Januari 2026)
+   Dapem bulan berjalan (September 2026) belum diotentikasi: Tgl Flag "- -"
+   dan Status kosong. Bulan sebelumnya OTENTIKASI, Kode Oten 31 (induk) atau
+   30 (gaji ke-13), flag tanggal 1 (induk) atau 5 (gaji ke-13).
+   Berurutan dari indeks baris, tanpa Math.random.
+   --------------------------------------------------------------------------- */
+const DAPEM_BULAN_BERJALAN = { bulan: 9, tahun: 2026 };
+const DAPEM_BULAN_ID = ["Januari","Februari","Maret","April","Mei","Juni","Juli",
+                        "Agustus","September","Oktober","November","Desember"];
+
+function buatDapemPeserta(p, n, opsi = {}) {
+  const janda = p.statusPeserta === "MENINGGAL AKTIF";
+
+  const pad   = (v, l) => String(v).padStart(l, "0");
+  const naik  = (v, per) => Math.ceil(v / per) * per;
+  const bulat = (v, per) => Math.round(v / per) * per;
+  const { bulan: bNow, tahun: tNow } = DAPEM_BULAN_BERJALAN;
+
+  const mitra   = opsi.mitra || HAK_MITRA[n % HAK_MITRA.length];
+  const nopens  = opsi.nopens || (p.nopens !== "-" ? p.nopens : `${p.ktpa}110${pad(n % 1000, 3)}`);
+  const norek   = opsi.norek  || `1003${pad((n * 48271 + 6089) % 100000000, 8)}`;
+  const penspok = opsi.penspok || bulat(2600000 + (n * 173300) % 2400000, 100);
+  const pasangan = (p.keluarga || []).find(k => k.hubungan === "ISTRI" || k.hubungan === "SUAMI");
+  const penerima = janda && pasangan ? pasangan.nama : p.nama.split(",")[0];
+
+  /* Dapem mulai bulan TMT pensiun, paling jauh 24 bulan ke belakang. */
+  const idxNow = tNow * 12 + (bNow - 1);
+  let idxMulai = idxNow - 23;
+  const m = /^(\d{2})-(\d{2})-(\d{4})$/.exec(p.tglSkepPensiun || "");
+  if (m) idxMulai = Math.max(idxMulai, +m[3] * 12 + (+m[2] - 1));
+
+  const baris = (thn, bln, ke13) => {
+    const pokok = thn >= 2026 ? penspok : bulat(penspok / 1.05, 100);
+    const tunj  = ke13 ? Math.round(pokok * 0.029342) : bulat(pokok * 0.0184, 10);
+    const pot   = ke13 ? Math.round(pokok * 0.0109416) : Math.round(pokok * 0.02);
+    const kini  = thn * 12 + (bln - 1) === idxNow;
+    return {
+      aksi:         "Tidak ada aksi",
+      jenisPensiun: janda ? "PENSIUN JANDA/DUDA" : "PENSIUN SENDIRI",
+      tglDapem:     `${thn}-${pad(bln, 2)}-01`,
+      jenisDapem:   ke13 ? "Dapem Gaji ke-13" : "Dapem Induk",
+      noPensiun:    nopens,
+      namaPenerima: penerima,
+      kodeJiwa:     janda ? "2000" : "1000",
+      bank:         mitra.mitra,
+      noRekening:   norek,
+      penspok:      pokok,
+      tunjTotal:    tunj,
+      potTotal:     pot,
+      nilaiDapem:   naik(pokok + tunj - pot, 100),
+      kodeOten:     ke13 ? "30" : "31",
+      tglFlag:      kini ? "- -" : `${ke13 ? "05" : "01"} - ${pad(bln, 2)} - ${thn}`,
+      status:       kini ? "" : "OTENTIKASI"
+    };
+  };
+
+  const riwayat = [];
+  for (let i = idxNow; i >= idxMulai; i--) {
+    const thn = Math.floor(i / 12), bln = i % 12 + 1;
+    if (bln === 6) riwayat.push(baris(thn, bln, true));   /* gaji ke-13 tampil di atas dapem induk bulan yang sama */
+    riwayat.push(baris(thn, bln, false));
+  }
+
+  /* Pembayaran terakhir yang sudah tuntas = dua bulan sebelum dapem berjalan. */
+  const iBayar = idxNow - 2;
+  const sptb   = (p.sptb || [])[0];
+  const giral  = mitra.kode !== "POS";
+  return {
+    info: {
+      tglSptb:       sptb ? sptb.tglSptb.replace(/^(\d{2})-(\d{2})-(\d{4})$/, (_, d, b, y) => `${d} ${DAPEM_BULAN_ID[+b - 1]} ${y}`) : "",
+      tglBayar:      `01 ${DAPEM_BULAN_ID[iBayar % 12]} ${Math.floor(iBayar / 12)}`,
+      jenisBayar:    giral ? "GIRAL" : "TUNAI",
+      flagMitra:     mitra.mitra,
+      dataDapem:     `Cut off bulan ${DAPEM_BULAN_ID[bNow - 1]} tanggal 15`
+    },
+    rekening: [{
+      nopens,
+      bank:        `${mitra.mitra}, Cabang : ${mitra.cabang}`,
+      jenisBayar:  giral ? "GIRAL" : "TUNAI",
+      tglBerhenti: "",
+      alasan:      "",
+      tglBatasHak: ""
+    }],
+    riwayat
+  };
+}
+
+DATA_PESERTA_KELOLA.forEach((p, i) => { p.dapem = buatDapemPeserta(p, i); });
+
+/* ---------------------------------------------------------------------------
+   22g-0. DATA UJI — ISI DAPEM PERSIS CONTOH DARI USER
+   BENG SURYANA, SE. (KPA DX100303, Nopens DX100303110042): dibayar lewat BANK
+   WOORI SAUDARA cabang BWS KC MALANG ke rekening 100360089249, Penspok
+   3.935.800. Ringkasannya ditulis persis capture — Tanggal Terakhir SPTB
+   memang kosong, dan Jenis Pembayaran ringkasan (TUNAI) berbeda dengan
+   Jenis Pembayaran di tabel rekening (GIRAL), sesuai contoh.
+   --------------------------------------------------------------------------- */
+(function () {
+  const n = DATA_PESERTA_KELOLA.findIndex(x => x.ktpa === "DX100303");
+  const p = DATA_PESERTA_KELOLA[n];
+  p.dapem = buatDapemPeserta(p, n, {
+    mitra: HAK_MITRA.find(x => x.kode === "BWS"), nopens: "DX100303110042",
+    norek: "100360089249", penspok: 3935800
+  });
+  Object.assign(p.dapem.info, {
+    tglSptb: "", tglBayar: "01 Juli 2026", jenisBayar: "TUNAI",
+    flagMitra: "BANK WOORI SAUDARA", dataDapem: "Cut off bulan September tanggal 15"
+  });
+})();
 
 /* Sub-tab di layar Detail Peserta. Baru "Profil" yang sudah berisi data;
    tab lain menampilkan keadaan kosong sampai rincian FSD-nya tersedia.
