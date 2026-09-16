@@ -2339,7 +2339,7 @@ DATA_PESERTA_KELOLA.forEach((p, i) => { p.profil = lengkapiProfilPeserta(p, i); 
    badge di layar Detail Perubahan Data); Tipe Perubahan adalah kolom data
    yang benar-benar berubah, cth. "REKENING BANK" atau "NOMOR PENSIUN". */
 const SPTB_KATEGORI_PERUBAHAN = ["Pangkat", "Keluarga", "Peserta"];
-const SPTB_SUMBER             = ["Asabri Mobile", "Sistem YANDU via Klaim"];
+const SPTB_SUMBER             = ["Asabri Mobile", "Sistem YANDU"];
 
 /* Unit kerja petugas yang menyetujui perubahan — dipakai kolom Unit Kerja di
    tab Riwayat Perubahan Data. */
@@ -2357,7 +2357,7 @@ const SPTB_NAMA_PETUGAS = [
   "NOVITA SARI", "BAMBANG WIJAYA", "LILIS HERAWATI"
 ];
 
-/* Unit yang menyetujui SPTB dari Sistem YANDU via Klaim. SPTB yang masuk
+/* Unit yang menyetujui SPTB dari Sistem YANDU. SPTB yang masuk
    lewat Asabri Mobile tidak memakai daftar ini — approval-nya selalu dari
    kantor cabang tempat peserta terdaftar. */
 const SPTB_UNIT_PUSAT = ["DIVISI KEPESERTAAN", "DIVISI PELAYANAN"];
@@ -2426,7 +2426,7 @@ function buatRiwayatSptbPeserta(p, n) {
     const baru = ubah.baru ?? p.pangkatAkhir;
 
     /* SPTB yang masuk lewat Asabri Mobile ditandai kanal aplikasinya, bukan
-       nama unit; yang lewat Sistem YANDU via Klaim disetujui unit di kantor
+       nama unit; yang lewat Sistem YANDU disetujui unit di kantor
        pusat. */
     const sumber = putar(SPTB_SUMBER, k);
     const unit   = sumber === "Asabri Mobile" ? "ASABRI MOBILE" : putar(SPTB_UNIT_PUSAT, k);
@@ -3297,7 +3297,7 @@ function buatDapemPeserta(p, n, opsi = {}) {
       dataDapem:     `Cut off bulan ${DAPEM_BULAN_ID[bNow - 1]} tanggal 15`
     },
     rekening: [{
-      nopens,
+      nopens, norek,   /* norek tidak tampil di tabel Data DAPEM sendiri, tapi dipakai tab Daftar Rekening untuk menandai baris "Dapem" */
       bank:        `${mitra.mitra}, Cabang : ${mitra.cabang}`,
       jenisBayar:  giral ? "GIRAL" : "TUNAI",
       tglBerhenti: "",
@@ -3331,6 +3331,449 @@ DATA_PESERTA_KELOLA.forEach((p, i) => { p.dapem = buatDapemPeserta(p, i); });
   });
 })();
 
+/* ---------------------------------------------------------------------------
+   22h. PENGELOLAAN DATA PESERTA — isi tab "Pangkat"
+   Riwayat kepangkatan peserta (p.riwayatPangkat), satu baris per kenaikan:
+     { pangkat, tmt, tglSkep, noSkep, tmtPegawai, tipeDokumen, file }
+   Tanggal ditulis "dd-mm-yyyy"; kolom yang belum diketahui berisi "".
+   Dibentuk dari Pangkat Awal sampai Pangkat Akhir mengikuti tangga pangkat
+   angkatannya (BUP_GOLONGAN, golongan ruang untuk PNS/KEMHAN), paling banyak
+   6 baris. Kenaikan pertama = TMT Pengangkatan, berikutnya tiap 4 tahun per
+   1 April (dipersempit kalau masa dinasnya pendek); SKEP terbit sebulan
+   sebelum TMT. TMT Pegawai = TMT Pengangkatan peserta.
+   BUP_GOLONGAN baru didefinisikan di blok 23, jadi riwayat ini tidak dibentuk
+   saat data.js dimuat — app.js memanggil lengkapiRiwayatPangkat(p) ketika tab
+   Pangkat dibuka. Tombol "Generate Otomatis" memanggil buatRiwayatPangkat(p)
+   untuk membentuk ulang.
+   --------------------------------------------------------------------------- */
+function tanggaPangkatPeserta(p) {
+  if (/^GOL\./.test(p.pangkatAwal)) return ALIH_STATUS_GOL;
+  const cocok = t => t.includes(p.pangkatAwal) && t.includes(p.pangkatAkhir);
+  const utama = BUP_GOLONGAN[p.angkatan];
+  return (utama && cocok(utama) ? utama : Object.values(BUP_GOLONGAN).find(cocok)) || utama || ALIH_STATUS_GOL;
+}
+
+function buatRiwayatPangkat(p) {
+  const pad    = (v, l) => String(v).padStart(l, "0");
+  const tangga = tanggaPangkatPeserta(p);
+  const a = tangga.indexOf(p.pangkatAwal), z = tangga.indexOf(p.pangkatAkhir);
+
+  let urut;
+  if (a < 0 || z < a) {
+    urut = [...new Set([p.pangkatAwal, p.pangkatAkhir])].filter(x => x && x !== "-");
+  } else {
+    const jalur = tangga.slice(a, z + 1);
+    urut = jalur.length <= 6 ? jalur
+      : Array.from({ length: 6 }, (_, i) => jalur[Math.round(i * (jalur.length - 1) / 5)]);
+  }
+
+  const n      = Math.max(0, DATA_PESERTA_KELOLA.indexOf(p));
+  const tmt    = /^\d{2}-\d{2}-\d{4}$/.test(p.tmt) ? p.tmt : "01-01-2000";
+  const [, m0, y0] = tmt.split("-").map(Number);
+  const pensiun = /(\d{4})$/.exec(p.tglSkepPensiun || "");
+  const yAkhir = Math.min(2026, pensiun ? +pensiun[1] - 1 : 2026);
+  const jarak  = urut.length > 1 ? Math.max(1, Math.min(4, Math.floor((yAkhir - y0) / (urut.length - 1)))) : 0;
+
+  return urut.map((pangkat, i) => {
+    const thn   = y0 + i * jarak;
+    const bln   = i === 0 ? m0 : 4;
+    const bSkep = bln === 1 ? 12 : bln - 1;
+    const tSkep = bln === 1 ? thn - 1 : thn;
+    return {
+      pangkat,
+      tmt:         i === 0 ? tmt : `01-${pad(bln, 2)}-${thn}`,
+      tglSkep:     `${pad(10 + (n + i) % 15, 2)}-${pad(bSkep, 2)}-${tSkep}`,
+      noSkep:      `KEP/${pad((n * 131 + i * 457) % 2000 + 1, 4)}/${HAK_BULAN_ROMAWI[bSkep - 1]}/${tSkep}`,
+      tmtPegawai:  tmt,
+      tipeDokumen: "",
+      file:        ""
+    };
+  });
+}
+
+function lengkapiRiwayatPangkat(p) {
+  if (!p.riwayatPangkat) p.riwayatPangkat = buatRiwayatPangkat(p);
+}
+
+/* ---------------------------------------------------------------------------
+   22h-0. DATA UJI — RIWAYAT PANGKAT PERSIS CONTOH DARI USER
+   BENG SURYANA, SE.: GOL.III/A (01-03-1995) sampai GOL.IV/A (01-12-2024).
+   Tanggal & Nomor SKEP memang kosong di contoh. Pangkat Akhir peserta ikut
+   disesuaikan ke GOL.IV/A supaya sama dengan baris terakhir riwayatnya.
+   --------------------------------------------------------------------------- */
+(function () {
+  const p = DATA_PESERTA_KELOLA.find(x => x.ktpa === "DX100303");
+  p.pangkatAkhir = "GOL.IV/A";
+  const baris = (pangkat, tmt) => ({ pangkat, tmt, tglSkep: "", noSkep: "", tmtPegawai: p.tmt, tipeDokumen: "", file: "" });
+  p.riwayatPangkat = [
+    baris("GOL.III/A", "01-03-1995"),
+    baris("GOL.III/B", "01-04-1999"),
+    baris("GOL.III/C", "01-04-2003"),
+    baris("GOL.III/D", "01-04-2007"),
+    baris("GOL.IV/A",  "01-12-2024")
+  ];
+})();
+
+/* ---------------------------------------------------------------------------
+   22i. PENGELOLAAN DATA PESERTA — isi tab "Data Cacat"
+   Penetapan cacat peserta (p.dataCacat), satu baris per SKEP cacat:
+     { golongan, kriteria, noSkep, tglSkep, tmtSkep, santunan, tunjangan }
+   Santunan dibayar sekali, Tunjangan dibayar tiap bulan; "Nilai Tunjangan
+   Cacat" di atas tabel = jumlah kolom Jumlah Tunjangan. Setiap peserta diberi
+   satu contoh supaya tabelnya selalu terisi saat demo. SKEP cacat terbit 8–17
+   tahun setelah TMT Pengangkatan, TMT-nya sebulan setelah SKEP.
+   --------------------------------------------------------------------------- */
+const CACAT_GOLONGAN = [
+  { golongan:"Cacat Tingkat I",   kriteria:"Cacat karena dinas — tidak dapat bekerja lagi dalam jabatan apa pun",
+    santunan:75000000, tunjangan:2500000 },
+  { golongan:"Cacat Tingkat II",  kriteria:"Cacat karena dinas — tidak dapat bekerja lagi dalam jabatan militer/kepolisian",
+    santunan:50000000, tunjangan:1750000 },
+  { golongan:"Cacat Tingkat III", kriteria:"Cacat bukan karena dinas — masih dapat bekerja dengan pembatasan",
+    santunan:25000000, tunjangan:1000000 }
+];
+
+function buatDataCacat(p, n) {
+  const pad = (v, l) => String(v).padStart(l, "0");
+  const g   = CACAT_GOLONGAN[n % CACAT_GOLONGAN.length];
+  const m   = /^(\d{2})-(\d{2})-(\d{4})$/.exec(p.tmt || "");
+  const thn = Math.min(2025, (m ? +m[3] : 2000) + 8 + (n % 10));
+  const bln = (n % 11) + 1;
+  return [{
+    golongan:  g.golongan,
+    kriteria:  g.kriteria,
+    noSkep:    `SKEP/${pad((n * 211) % 900 + 100, 3)}/CACAT/${HAK_BULAN_ROMAWI[bln - 1]}/${thn}`,
+    tglSkep:   `${pad(5 + (n % 20), 2)}-${pad(bln, 2)}-${thn}`,
+    tmtSkep:   `01-${pad(bln + 1, 2)}-${thn}`,
+    santunan:  g.santunan,
+    tunjangan: g.tunjangan
+  }];
+}
+
+DATA_PESERTA_KELOLA.forEach((p, i) => { p.dataCacat = buatDataCacat(p, i); });
+
+/* ---------------------------------------------------------------------------
+   22j. PENGELOLAAN DATA PESERTA — isi tab "Premi"
+   Riwayat gaji per bulan & akumulasi iuran THT peserta, dari TMT Pengangkatan
+   sampai sebulan sebelum pensiun (paling akhir Agustus 2026). Per bulan:
+     - PKT        : pangkat yang berlaku (Riwayat Pangkat RHS)
+     - MKG        : masa kerja golongan dalam tahun (+ MKG Sisipan)
+     - Gaji Pokok : (1.200.000 + 160.000 × urutan pangkat + 42.000 × MKG)
+                    × 1,04^(tahun − 2026), dibulatkan ratusan; 80% selama Capeg
+     - Tunjangan Anak dan Istri : istri/suami 10% GP, anak 2% GP (maks. 2 anak,
+                    usia < 21 atau masih kuliah sampai usia 25) (Riwayat Keluarga RHS)
+     - Gaji Gross = GP + TI + TA; Kode Jiwa = 1 · jumlah pasangan · jumlah anak
+     - TPP        : Tunjangan Perbaikan Penghasilan 5% GP (tidak masuk gross)
+     - Iuran THT  : 3,25% × Gaji Gross
+     - Akum Hasil : saldo bulan lalu × bunga nominal yang berlaku / 12
+     - Saldo Akhir = Akum Iuran + Akum Hasil
+   Kesimpulan:
+     - M1 / M2  : masa kerja sebelum / sejak 1 Januari 2012 (tahun, 2 desimal)
+     - P1 / P2  : floor(M1) × 2,5 dan floor(M2) × 2,5 (persen) — label di layar
+                  memang mencatat bahwa MKG di-floor, bukan di-round
+     - Formulasi Manfaat Pasti = (P1% × Gross Jan 2012 + P2% × Gross akhir) × 12
+     - Iuran 2012 = iuran bulan Januari 2012; Iuran Akhir = iuran bulan terakhir
+     - Jumlah Manfaat = nilai terbesar dari Formulasi Manfaat Pasti & Saldo Akhir
+     - GS  = saldo akhir riwayat; PSP = saldo diproyeksikan sampai pensiun
+     - Perkiraan Pensiun = TMT SKEP Pensiun, atau tanggal lahir + 58 tahun
+   Tidak dihitung saat data.js dimuat (butuh Riwayat Pangkat, blok 22h) —
+   app.js memanggil lengkapiPremi(p) ketika tab Premi dibuka. Riwayat Pangkat
+   RHS & Keluarga RHS di modal Generate Premi awalnya kosong, sesuai contoh.
+   --------------------------------------------------------------------------- */
+/* Bunga nominal pengembangan iuran, dari TMT terbaru (tabel di Kesimpulan). */
+const PREMI_BUNGA = [
+  { tmt:"01-01-2027", bunga:3.75 },
+  { tmt:"01-01-2026", bunga:3.5  },
+  { tmt:"01-01-2025", bunga:3.75 },
+  { tmt:"01-01-2024", bunga:3    },
+  { tmt:"01-01-2023", bunga:2    },
+  { tmt:"01-01-2022", bunga:1    },
+  { tmt:"01-07-2021", bunga:0    },
+  { tmt:"01-06-2018", bunga:6    },
+  { tmt:"17-08-1945", bunga:8.25 }
+];
+const PREMI_TARIF_IURAN = 0.0325;
+const PREMI_BULAN_AKHIR = 2026 * 12 + 7;   /* Agustus 2026, dalam hitungan bulan */
+
+/* "dd-mm-yyyy" → nomor bulan (tahun × 12 + bulan − 1); null kalau kosong/"-". */
+function premiBulan(t) {
+  const m = /^(\d{2})-(\d{2})-(\d{4})$/.exec(t || "");
+  return m ? +m[3] * 12 + (+m[2] - 1) : null;
+}
+
+function premiBungaBulan(idx) {
+  const kunci = t => { const [d, m, y] = t.split("-").map(Number); return y * 10000 + m * 100 + d; };
+  const k = Math.floor(idx / 12) * 10000 + (idx % 12 + 1) * 100 + 1;
+  return (PREMI_BUNGA.find(b => kunci(b.tmt) <= k) || { bunga: 0 }).bunga;
+}
+
+function premiTglPensiun(p) {
+  if (premiBulan(p.tglSkepPensiun) !== null) return p.tglSkepPensiun;
+  const m = /^(\d{2})-(\d{2})-(\d{4})$/.exec(p.tglLahir || "");
+  return m ? `${m[1]}-${m[2]}-${+m[3] + 58}` : "-";
+}
+
+function premiPangkatRhs(p) {
+  return (p.riwayatPangkat || []).map(r => ({ pangkat: r.pangkat, tmt: r.tmt }));
+}
+
+function premiKeluargaRhs(p) {
+  const isi = v => v && v !== "-" ? v : "-";
+  return (p.keluarga || []).filter(k => k.hubungan !== "Diri Sendiri").map(k => ({
+    hubungan: k.hubungan, nama: k.nama,
+    tglLahir: isi(k.tglLahir), tglMeninggal: isi(k.tglMeninggal), tglMenikah: isi(k.tglMenikah),
+    tglCerai: isi(k.tglCerai), tglKuliahMulai: isi(k.tglMulaiKuliah), tglKuliahSelesai: isi(k.tglSelesaiKuliah)
+  }));
+}
+
+/* opsi = { rhsPangkat, rhsKeluarga, mkgSisipan, capeg } */
+function hitungPremi(p, opsi) {
+  const pad    = (v, l) => String(v).padStart(l, "0");
+  const ratus  = v => Math.round(v / 100) * 100;
+  const tangga = tanggaPangkatPeserta(p);
+  const pangkat = opsi.rhsPangkat.slice().sort((a, b) => (premiBulan(a.tmt) || 0) - (premiBulan(b.tmt) || 0));
+  const tglPensiun = premiTglPensiun(p);
+  const iPensiun   = premiBulan(tglPensiun);
+  const iMulai     = premiBulan(p.tmt) ?? 2000 * 12;
+  const iAkhir     = Math.min(iPensiun === null ? PREMI_BULAN_AKHIR : iPensiun - 1, PREMI_BULAN_AKHIR);
+  const sisipan    = +opsi.mkgSisipan || 0;
+  const capeg      = +opsi.capeg || 0;
+  const sebelum    = (t, i) => { const b = premiBulan(t); return b !== null && b <= i; };
+
+  const riwayat = [];
+  let akumIuran = 0, akumHasil = 0;
+  if (pangkat.length) for (let i = iMulai; i <= iAkhir; i++) {
+    const thn = Math.floor(i / 12), bln = i % 12 + 1;
+    const pk  = pangkat.filter(r => sebelum(r.tmt, i)).pop() || pangkat[0];
+    const mkg = Math.floor((i - iMulai) / 12) + sisipan;
+    const urutan = Math.max(0, tangga.indexOf(pk.pangkat));
+    let gp = ratus((1200000 + urutan * 160000 + mkg * 42000) * Math.pow(1.04, thn - 2026));
+    if (i - iMulai < capeg) gp = ratus(gp * 0.8);
+
+    const hidup = k => !sebelum(k.tglMeninggal, i);
+    const pasangan = opsi.rhsKeluarga.some(k => (k.hubungan === "ISTRI" || k.hubungan === "SUAMI")
+      && sebelum(k.tglMenikah, i) && hidup(k) && !sebelum(k.tglCerai, i)) ? 1 : 0;
+    const anak = Math.min(2, opsi.rhsKeluarga.filter(k => {
+      if (!/^ANAK/.test(k.hubungan) || !sebelum(k.tglLahir, i) || !hidup(k)) return false;
+      const usia = (i - premiBulan(k.tglLahir)) / 12;
+      const kuliah = sebelum(k.tglKuliahMulai, i) && !sebelum(k.tglKuliahSelesai, i);
+      return usia < 21 || (kuliah && usia < 25);
+    }).length);
+
+    const tunj  = Math.round(gp * 0.10) * pasangan + Math.round(gp * 0.02) * anak;
+    const gross = gp + tunj;
+    const iuran = Math.round(gross * PREMI_TARIF_IURAN);
+    akumHasil  += Math.round((akumIuran + akumHasil) * premiBungaBulan(i) / 100 / 12);
+    akumIuran  += iuran;
+    riwayat.push({
+      tahun: thn, tanggal: `01-${pad(bln, 2)}-${thn}`, mkg, pkt: pk.pangkat,
+      gajiPokok: gp, tunjAnakIstri: tunj, gross, kodeJiwa: `1${pasangan}${pad(anak, 2)}`,
+      tpp: Math.round(gp * 0.05), iuran, akumIuran, akumHasil, saldo: akumIuran + akumHasil
+    });
+  }
+
+  const dua   = v => Math.round(v * 100) / 100;
+  const i2012 = 2012 * 12;
+  const ujung = iPensiun === null ? iAkhir + 1 : iPensiun;
+  const m1 = dua(Math.max(0, Math.min(ujung, i2012) - iMulai) / 12);
+  const m2 = dua(Math.max(0, ujung - Math.max(iMulai, i2012)) / 12);
+  const p1 = Math.floor(m1) * 2.5, p2 = Math.floor(m2) * 2.5;
+  const baris2012 = riwayat.find(r => r.tanggal === "01-01-2012");
+  const akhir     = riwayat[riwayat.length - 1];
+  const iuran2012 = baris2012 ? baris2012.iuran : 0;
+  const iuranAkhir = akhir ? akhir.iuran : 0;
+  const saldo     = akhir ? akhir.saldo : 0;
+  const fmp = Math.round((p1 / 100 * (baris2012 ? baris2012.gross : 0) + p2 / 100 * (akhir ? akhir.gross : 0)) * 12);
+
+  let psp = saldo;
+  for (let i = iAkhir + 1; akhir && iPensiun !== null && i < iPensiun; i++)
+    psp += iuranAkhir + Math.round(psp * premiBungaBulan(i) / 100 / 12);
+
+  return {
+    riwayat: riwayat.reverse(),   /* terbaru di atas */
+    kesimpulan: {
+      m1, m2, p1, p2, fmp, iuran2012, iuranAkhir, selisih: iuranAkhir - iuran2012,
+      jumlahManfaat: Math.max(fmp, saldo), gs: saldo, psp, perkiraanPensiun: tglPensiun
+    }
+  };
+}
+
+/* MKD (MKG Normal): masa kerja penuh dari TMT Pengangkatan sampai pensiun. */
+function premiMkd(p) {
+  const a = premiBulan(p.tmt), b = premiBulan(premiTglPensiun(p));
+  return a === null || b === null ? 0 : Math.max(0, Math.floor((b - a) / 12));
+}
+
+function lengkapiPremi(p) {
+  if (p.premi) return;
+  lengkapiRiwayatPangkat(p);
+  const opsi = { rhsPangkat: premiPangkatRhs(p), rhsKeluarga: premiKeluargaRhs(p), mkgSisipan: 0, capeg: "" };
+  p.premi = { rhsPangkat: [], rhsKeluarga: [], mkgSisipan: "0", capeg: "", ...hitungPremi(p, opsi) };
+}
+
+/* ---------------------------------------------------------------------------
+   22k. PENGELOLAAN DATA PESERTA — isi tab Riwayat Dokumen, Riwayat Kunjungan,
+   E-DOSIR, Riwayat Alih Status, Daftar Rekening, SP3R, dan Call Center.
+   Setiap peserta diberi contoh supaya tab-tab ini tidak pernah kosong saat
+   demo (kecuali Riwayat Alih Status, yang memang hanya terisi untuk peserta
+   yang field `alihStatus`-nya bukan "-"). Berurutan dari indeks baris, tanpa
+   Math.random.
+   --------------------------------------------------------------------------- */
+const DOKUMEN_TIPE = [
+  { tipe:"KTP",             file:"KTP" },
+  { tipe:"KARTU KELUARGA",  file:"KK" },
+  { tipe:"SKEP PENSIUN",    file:"SKEP_PENSIUN" },
+  { tipe:"SPTB",            file:"SPTB" },
+  { tipe:"BUKU TABUNGAN",   file:"BUKU_TABUNGAN" },
+  { tipe:"SURAT NIKAH",     file:"SURAT_NIKAH" }
+];
+const DOKUMEN_CABANG = ["KC MALANG", "KC SURAKARTA", "KC SEMARANG", "KC BANDUNG", "KC SURABAYA", "KC PALANGKARAYA"];
+
+function buatRiwayatDokumen(p, n) {
+  const pad = (v, l) => String(v).padStart(l, "0");
+  const m   = /^(\d{2})-(\d{2})-(\d{4})$/.exec(p.tmt || "01-01-2020");
+  const jml = 2 + (n % 3);
+  const pasangan = (p.keluarga || []).find(k => k.hubungan === "ISTRI" || k.hubungan === "SUAMI");
+  return Array.from({ length: jml }, (_, i) => {
+    const t = DOKUMEN_TIPE[(n + i) % DOKUMEN_TIPE.length];
+    const thn = Math.min(2026, (m ? +m[3] : 2020) + i * 3);
+    return {
+      tglSimpan:  `${pad(5 + (n + i * 3) % 23, 2)}-${pad(1 + (i * 4) % 12, 2)}-${thn}`,
+      cabang:     DOKUMEN_CABANG[(n + i) % DOKUMEN_CABANG.length],
+      tipeDokumen: t.tipe,
+      namaPeserta: p.nama,
+      namaKeluarga: t.tipe === "SURAT NIKAH" && pasangan ? pasangan.nama : "-",
+      file: `${t.file}_${p.nrp.slice(-6)}_${i + 1}.pdf`
+    };
+  });
+}
+DATA_PESERTA_KELOLA.forEach((p, i) => { p.riwayatDokumen = buatRiwayatDokumen(p, i); });
+
+/* ------------------------------------------------------- Riwayat Kunjungan */
+const KUNJUNGAN_ADMIN = ["SETYA MITREKA", "MUHAMMAD ILHAM RAMADHAN", "DEWI ANGGRAINI", "RUDI HARTONO", "SITI NURJANNAH"];
+const KUNJUNGAN_STATUS = ["Dibuat", "Sudah di Setujui"];
+
+/* "dd-mm-yyyy" → "yyyy-mm-dd", supaya bisa dibandingkan sebagai teks. */
+function tglUrutkan(t) {
+  const [d, m, y] = String(t).split("-");
+  return `${y}-${m}-${d}`;
+}
+
+function buatRiwayatKunjungan(p, n) {
+  const pad = (v, l) => String(v).padStart(l, "0");
+  const jml = 1 + (n % 4);
+  return Array.from({ length: jml }, (_, i) => {
+    const thn = 2024 + ((n + i) % 3);
+    const bln = 1 + ((n * 3 + i * 5) % 12);
+    const hr  = 1 + ((n * 7 + i * 11) % 27);
+    const tgl = `${pad(hr, 2)}-${pad(bln, 2)}-${thn}`;
+    const status = KUNJUNGAN_STATUS[(n + i) % 2];
+    const admin = KUNJUNGAN_ADMIN[(n + i * 3) % KUNJUNGAN_ADMIN.length];
+    const jam = `${pad(8 + (n + i) % 9, 2)}:${pad((n * 13 + i * 7) % 60, 2)}`;
+    const sejarah = [{ tanggal: `${tgl} ${jam}`, status: "Dibuat" }];
+    if (status === "Sudah di Setujui")
+      sejarah.push({ tanggal: `${tgl} ${pad(+jam.slice(0, 2) + 1, 2)}:${jam.slice(3)}`, status: "Sudah di Setujui" });
+    return { tanggal: tgl, jenis: "", status, admin, sejarah };
+  }).sort((a, b) => tglUrutkan(b.tanggal).localeCompare(tglUrutkan(a.tanggal)));
+}
+DATA_PESERTA_KELOLA.forEach((p, i) => { p.riwayatKunjungan = buatRiwayatKunjungan(p, i); });
+
+/* ------------------------------------------------------------------ E-DOSIR */
+const EDOSIR_TEMPLATE = [
+  n => `LPK_${1000000 + (n * 48271) % 900000}.pdf`,
+  n => `SP_PEMBATALAN_HUTANG_2025-02-06_11_40_${1000000 + (n * 6089) % 900000}.pdf`,
+  n => `Surat_PP_2025-01-13_09_06_${n % 60}.pdf`,
+  n => `${DATA_PESERTA_KELOLA[n] ? DATA_PESERTA_KELOLA[n].ktpa : "KPA"} (1).pdf`,
+  n => `BATAL BUM.pdf`,
+  n => `Data_Pembayaran_PP2025-01-13_09_05_${n % 60}.pdf`
+];
+function buatEdosirDokumen(p, n) {
+  const jml = 3 + (n % 4);
+  return Array.from({ length: jml }, (_, i) => EDOSIR_TEMPLATE[(n + i) % EDOSIR_TEMPLATE.length](n + i));
+}
+DATA_PESERTA_KELOLA.forEach((p, i) => { p.edosir = buatEdosirDokumen(p, i); });
+
+/* ------------------------------------------------------- Riwayat Alih Status */
+function buatRiwayatAlihStatus(p, n) {
+  if (!p.alihStatus || p.alihStatus === "-") return [];
+  const pad = (v, l) => String(v).padStart(l, "0");
+  const m   = /^(\d{2})-(\d{2})-(\d{4})$/.exec(p.tglSkepPensiun || p.tmt);
+  const thn = m ? +m[3] : 2020;
+  const keluar = p.alihStatus.includes("Keluar");
+  return [{
+    tanggalAlih:      `01-${pad(1 + n % 12, 2)}-${thn}`,
+    tipeAlih:         p.alihStatus,
+    noSkepPindah:     `SKEP/${pad((n * 71) % 900 + 100, 3)}/ALIH/${HAK_BULAN_ROMAWI[n % 12]}/${thn}`,
+    tglSkepPindah:    `${pad(3 + n % 20, 2)}-${pad(1 + n % 12, 2)}-${thn}`,
+    tanggalPindah:    `01-${pad(2 + n % 11, 2)}-${thn}`,
+    satuanKerjaBaru:  keluar ? "PT TASPEN (PERSERO)" : "ASABRI KANTOR PUSAT",
+    nomorDps:         `${pad(2000000 + n, 7)}`
+  }];
+}
+DATA_PESERTA_KELOLA.forEach((p, i) => { p.riwayatAlihStatus = buatRiwayatAlihStatus(p, i); });
+
+/* --------------------------------------------------------- Daftar Rekening
+   Digabung dari rekening pribadi (hak/produk) dan rekening tiap anggota
+   keluarga yang sudah diisi. Rekening yang dipakai Dapem ditandai lewat
+   nomorRekening yang sama dengan p.dapem.rekening[0].norek. */
+function buatDaftarRekening(p) {
+  const dapemNorek = p.dapem && p.dapem.rekening[0] ? p.dapem.rekening[0].norek : null;
+  const baris = [];
+  const sudahAda = new Set();
+  const tambah = (hubungan, nama, norek, mitra, cabang) => {
+    if (!norek || norek === "-" || sudahAda.has(norek)) return;
+    sudahAda.add(norek);
+    baris.push({ hubungan, nama, norek, mitra, cabang, dapem: norek === dapemNorek });
+  };
+
+  (p.hakProduk || []).forEach(h => {
+    const sp = (h.suratPerintah || [])[0];
+    if (sp) tambah("SENDIRI -(khusus hak/manfaat)", sp.namaRekening, sp.nomorRekening, sp.mitraBayar, sp.cabangMitra);
+  });
+  (p.keluarga || []).forEach(k => {
+    if (k.hubungan !== "Diri Sendiri") tambah(k.hubungan, k.namaRekening, k.nomorRekening, k.mitraBayar, k.cabangMitraBayar);
+  });
+  if (dapemNorek && !sudahAda.has(dapemNorek)) {
+    const d = p.dapem.rekening[0];
+    tambah("SENDIRI -(khusus hak/manfaat)", p.nama, d.norek || dapemNorek, d.bank.split(", Cabang")[0], "");
+  }
+  return baris;
+}
+
+DATA_PESERTA_KELOLA.forEach(p => { p.daftarRekening = buatDaftarRekening(p); });
+
+/* -------------------------------------------------------------------- SP3R */
+function buatSp3r(p, n) {
+  if (n % 4 === 0) return [];   /* sebagian peserta memang belum pernah SP3R */
+  return [{ nama: `SP3R_${p.ktpa || p.nrp.slice(-6)}_${1000 + n}.pdf` }];
+}
+DATA_PESERTA_KELOLA.forEach((p, i) => { p.sp3r = buatSp3r(p, i); });
+
+/* -------------------------------------------------------------- Call Center */
+const CC_KANAL = ["Telepon", "WhatsApp", "Email", "Loket Kantor Cabang"];
+const CC_PERTANYAAN = [
+  "Menanyakan status pembayaran dapem bulan berjalan.",
+  "Menanyakan cara mengubah rekening penerima Dapem.",
+  "Menanyakan kelengkapan berkas untuk pengajuan SPTB.",
+  "Menanyakan estimasi pencairan Tabungan Asuransi.",
+  "Menanyakan prosedur alih status Asabri ke Taspen."
+];
+function buatCallCenter(p, n) {
+  const pad = (v, l) => String(v).padStart(l, "0");
+  const jml = n % 3;   /* sebagian peserta belum pernah menghubungi call center */
+  return Array.from({ length: jml }, (_, i) => {
+    const thn = 2025 + ((n + i) % 2);
+    const bln = 1 + ((n * 5 + i * 7) % 12);
+    const hr  = 1 + ((n * 3 + i * 9) % 27);
+    return {
+      tanggal: `${pad(hr, 2)}-${pad(bln, 2)}-${thn}`,
+      kanal: CC_KANAL[(n + i) % CC_KANAL.length],
+      nama: p.nama, nrp: p.nrp,
+      pertanyaan: CC_PERTANYAAN[(n + i * 3) % CC_PERTANYAAN.length]
+    };
+  });
+}
+DATA_PESERTA_KELOLA.forEach((p, i) => { p.callCenter = buatCallCenter(p, i); });
+
 /* Sub-tab di layar Detail Peserta. Baru "Profil" yang sudah berisi data;
    tab lain menampilkan keadaan kosong sampai rincian FSD-nya tersedia.
    `sub` dipakai sebagai kalimat penjelas di keadaan kosong tersebut. */
@@ -3341,20 +3784,18 @@ const PESERTA_KELOLA_TAB = [
   { key:"hak",        label:"Hak/Produk",             sub:"Hak manfaat dan produk yang melekat pada peserta." },
   { key:"dapem",      label:"Dapem",                  sub:"Riwayat daftar pembayaran pensiun peserta." },
   { key:"pangkat",    label:"Pangkat",                sub:"Riwayat kepangkatan dari pangkat awal sampai pangkat akhir." },
-  { key:"cacat",      label:"Peserta Cacat",          sub:"Penetapan tingkat cacat dan manfaat yang menyertainya." },
+  { key:"cacat",      label:"Data Cacat",             sub:"Penetapan tingkat cacat dan manfaat yang menyertainya." },
   { key:"premi",      label:"Premi",                  sub:"Rekapitulasi iuran premi THT, JKK, dan JKm." },
-  { key:"polis",      label:"Polis",                  sub:"Data polis dan nomor pertanggungan peserta." },
+  { key:"cetak-kpa",  label:"Cetak KPA",              sub:"Pratinjau dan cetak Kartu Peserta ASABRI." },
   { key:"dokumen",    label:"Riwayat Dokumen",        sub:"Dokumen yang pernah diunggah atau diterbitkan." },
   { key:"kunjungan",  label:"Riwayat Kunjungan",      sub:"Catatan kunjungan peserta ke kantor cabang." },
   { key:"edosir",     label:"E-DOSIR",                sub:"Berkas peserta yang sudah didigitalisasi di E-Dosir." },
   { key:"sptb",       label:"SPTB",                   sub:"Surat Pernyataan Tanda Bukti Diri yang pernah diajukan." },
-  { key:"pajak",      label:"Pajak",                  sub:"Potongan dan bukti potong pajak atas manfaat peserta." },
   { key:"alihstatus", label:"Riwayat Alih Status",    sub:"Perpindahan peserta antara ASABRI dan TASPEN." },
   { key:"rekening",   label:"Daftar Rekening",        sub:"Rekening bank untuk penyaluran manfaat." },
   { key:"callcenter", label:"Call Center",            sub:"Riwayat interaksi peserta dengan call center." },
   { key:"perubahan",  label:"Riwayat Perubahan Data", sub:"Jejak pemutakhiran data peserta beserta pengusulnya." },
-  { key:"sp3r",       label:"SP3R",                   sub:"Surat Perintah Pembayaran Pengembalian Refund." },
-  { key:"log",        label:"Log",                    sub:"Log akses dan aktivitas sistem atas data peserta." }
+  { key:"sp3r",       label:"SP3R",                   sub:"Surat Perintah Pembayaran Pengembalian Refund." }
 ];
 
 /* ---------------------------------------------------------------------------
@@ -4022,4 +4463,33 @@ const DATA_BUM_ANGSURAN = [
     angsuranKe:6,  tglBayar:"2026-08-05", nominal:2500000, sisaHutang:18500000,  buktiSetor:"bukti-setor-agustus-2026.pdf", tglUnggah:"2026-08-06", status:"Menunggu Verifikasi", tglVerifikasi:"",          catatan:"" },
   { noBukti:"ANG-2026-0011", kpa:"LB940456", nrp:"19880305004", nama:"Firman Dewantoro", cabang:"KC Medan",         nomorPinjaman:"BUM-2019-00042", jenisPinjaman:"BUM KPR Program Khusus ASABRI",
     angsuranKe:10, tglBayar:"2026-08-08", nominal:1500000, sisaHutang:8000000,   buktiSetor:"setoran-bri-08082026.jpg",    tglUnggah:"2026-08-09", status:"Ditolak",             tglVerifikasi:"2026-08-11", catatan:"Berkas buram dan tanggal setor tidak terbaca; mohon unggah ulang." }
+];
+
+/* ---------------------------------------------------------------------------
+   29. UPLOAD REKENING
+   Perekaman nomor rekening peserta secara kolektif lewat unggah template
+   Excel di layar "Upload Rekening". Tiap baris yang diunggah masuk sebagai
+   satu peserta berstatus "Pending" ke layar "Verifikasi Upload Rekening",
+   sampai Divisi Kepesertaan memutuskan.
+   status  : "Pending" | "Disetujui" | "Ditolak"
+   catatan : keterangan pemeriksa; wajib saat ditolak.
+   --------------------------------------------------------------------------- */
+const DATA_UPLOAD_REKENING = [
+  { nopens:"BZ131770111046", nama:"SURIPTO",           nomorRekening:"0021017701046", mitraBayar:"Bank BRI",     tglUnggah:"2026-07-02", status:"Disetujui", catatan:"" },
+  { nopens:"AY105460111121", nama:"JUWANDI",           nomorRekening:"0031054601121", mitraBayar:"Bank Mandiri", tglUnggah:"2026-07-02", status:"Disetujui", catatan:"" },
+  { nopens:"EY101086111002", nama:"WARDI",             nomorRekening:"0041010861002", mitraBayar:"Bank BTN",     tglUnggah:"2026-07-09", status:"Pending",   catatan:"" },
+  { nopens:"BC147967111034", nama:"SOETARTO",          nomorRekening:"0051479671034", mitraBayar:"Bank BNI",     tglUnggah:"2026-07-09", status:"Pending",   catatan:"" },
+  { nopens:"BB146468111058", nama:"SOERJO SOELARTO",   nomorRekening:"0061464681058", mitraBayar:"Bank BRI",     tglUnggah:"2026-07-15", status:"Ditolak",   catatan:"Nomor rekening pada berkas tidak sesuai dengan buku tabungan yang dilampirkan." },
+  { nopens:"EP001073111017", nama:"ASTUTI",            nomorRekening:"0070010731017", mitraBayar:"Bank BCA",     tglUnggah:"2026-07-15", status:"Disetujui", catatan:"" },
+  { nopens:"EP000737111009", nama:"HERMAN",            nomorRekening:"0080007371009", mitraBayar:"Bank BTN",     tglUnggah:"2026-07-21", status:"Pending",   catatan:"" }
+];
+
+/* Baris yang tampil di Section Preview saat berkas contoh diunggah — prototipe
+   ini tidak benar-benar membaca isi berkas Excel, jadi baris preview memakai
+   data contoh yang tetap supaya alurnya bisa didemokan berulang. */
+const DATA_UPLOAD_REKENING_PREVIEW = [
+  { nopens:"CD220981111063", nama:"SUPARMAN",   nomorRekening:"0091209811063", mitraBayar:"Bank BRI" },
+  { nopens:"DE331092111074", nama:"ROSITA DEWI", nomorRekening:"0101331092074", mitraBayar:"Bank Mandiri" },
+  { nopens:"FG442103111085", nama:"BAMBANG WIJAYA", nomorRekening:"0111442103085", mitraBayar:"Bank Syariah Indonesia (BSI)" },
+  { nopens:"HI553214111096", nama:"YULIANA SARI", nomorRekening:"0121553214096", mitraBayar:"Bank BNI" }
 ];
