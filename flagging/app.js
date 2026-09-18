@@ -1886,6 +1886,73 @@ $("#ffl-cari").onclick = () => {
   renderFfl();
 };
 
+/* ---- Export Excel
+   Yang diekspor adalah hasil fflDaftar() — persis baris yang lolos filter,
+   seluruh halaman, bukan hanya halaman yang sedang tampil.
+
+   Berkasnya dibuat sebagai CSV (pemisah ";", ber-BOM UTF-8) lalu diunduh lewat
+   Blob. .xlsx asli butuh penulis ZIP, dan prototipe ini tidak boleh menambah
+   library; ";" dipakai supaya Excel berlokal Indonesia langsung memecah
+   kolomnya, dan BOM supaya nama ber-aksen tidak rusak. */
+const FFL_KOLOM_EXPORT = [
+  ["Mitra Bayar",     r => r.mitra],
+  ["No. KPA",         r => r.ktpa],
+  ["NRP",             r => r.nrp],
+  ["NIK",             r => r.nik],
+  ["Nomor Pensiun",   r => r.nomorPensiun],
+  ["Nama",            r => r.nama],
+  ["Tanggal Lahir",   r => r.tglLahir],
+  ["Tgl Pengajuan",   r => r.pinjaman.tglPermohonan],
+  ["Awal Kredit",     r => r.pinjaman.awalKredit],
+  ["Akhir Kredit",    r => r.pinjaman.akhirKredit],
+  ["Plafon",          r => r.pinjaman.plafon],
+  ["No Rek Tab",      r => r.pinjaman.norekTab],
+  ["No Rek Kredit",   r => r.pinjaman.norekKredit],
+  ["No PK",           r => r.pinjaman.noPk],
+  ["Status Pinjaman", r => r.statusPinjaman],
+  ["Status Tagih",    r => r.statusTagih],
+  ["Tanggal Setuju",  r => r.tglSetuju],
+  ["Pengguna",        r => r.pengguna]
+];
+
+/* Angka dibiarkan apa adanya supaya Excel membacanya sebagai bilangan; sisanya
+   dikutip, dan kutip di dalam nilai digandakan sesuai aturan CSV. */
+function fflSelCsv(nilai) {
+  if (typeof nilai === "number") return String(nilai);
+  const teks = nilai == null ? "" : String(nilai);
+  return `"${teks.replace(/"/g, '""')}"`;
+}
+
+function fflNamaBerkas() {
+  const f = fflFilter;
+  const bagian = ["Flagging"];
+  if (f.status && f.status !== "Semua Status") bagian.push(f.status);
+  if (f.cari) bagian.push(f.cari);
+  bagian.push(fpsHariIni());
+  /* Karakter yang tidak sah di nama berkas Windows dibuang. */
+  return bagian.join(" - ").replace(/[\/:*?"<>|]/g, "") + ".csv";
+}
+
+$("#ffl-export").onclick = () => {
+  const rows = fflDaftar();
+  if (!rows.length) { toast("Tidak ada data untuk diekspor dengan filter ini.", "bad"); return; }
+
+  const isi = [
+    FFL_KOLOM_EXPORT.map(k => fflSelCsv(k[0])).join(";"),
+    ...rows.map(r => FFL_KOLOM_EXPORT.map(k => fflSelCsv(k[1](r))).join(";"))
+  ].join("\r\n");
+
+  const url = URL.createObjectURL(
+    new Blob(["\uFEFF" + isi], { type: "text/csv;charset=utf-8" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fflNamaBerkas();
+  a.click();
+  URL.revokeObjectURL(url);
+
+  toast(`${rows.length} baris diekspor ke ${a.download}.`, "ok");
+};
+
 const fflCari = ktpa => fflRows.find(r => r.ktpa === ktpa);
 
 /* ---- Detail Flagging: Info Peserta + Info Pinjaman, bisa disunting seperti

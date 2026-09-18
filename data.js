@@ -3161,7 +3161,7 @@ function buatKeluargaPeserta(p, n) {
   const pad   = (v, l) => String(v).padStart(l, "0");
   const tgl   = (d, m, y) => `${pad(d, 2)}-${pad(m, 2)}-${y}`;
   const kosong = {
-    nopens:"-", tempatLahir:"-", tglLahir:"-", tglMenikah:"-", tglMeninggal:"-",
+    nopens:"-", penspok:0, tempatLahir:"-", tglLahir:"-", tglMenikah:"-", tglMeninggal:"-",
     tglMulaiKuliah:"-", tglSelesaiKuliah:"-", tglMulaiKerja:"-", tglSelesaiKerja:"-",
     pekerjaan:"-", tglBerhentiTunjang:"-", tglTunjangKembali:"-",
     namaRekening:"-", nomorRekening:"-", mitraBayar:"-", cabangMitraBayar:"-"
@@ -3187,6 +3187,11 @@ function buatKeluargaPeserta(p, n) {
     ...kosong,
     tglEntry:     tgl((n % 26) + 1, (n % 12) + 1, thnEntry),
     nopens:       p.statusPeserta === "PENSIUN" && p.nopens !== "-" ? `${p.nopens}W` : "-",
+    /* Penspok pasangan hanya terisi kalau ia sendiri jadi calon penerima
+       dapem janda/duda (Nopens-nya terisi) — nilainya dibulatkan ratusan
+       ribu, berkisar Rp 3.000.000–3.900.000. */
+    penspok: p.statusPeserta === "PENSIUN" && p.nopens !== "-"
+      ? 3000000 + Math.floor((n * 173300) % 900000 / 100000) * 100000 : 0,
     nama:         perempuan ? putar(KELUARGA_NAMA_SUAMI, n) : putar(KELUARGA_NAMA_ISTRI, n),
     hubungan:     perempuan ? "SUAMI" : "ISTRI",
     tempatLahir:  pr.kota,
@@ -4373,7 +4378,7 @@ const PESERTA_KELOLA_TAB = [
   { key:"pangkat",    label:"Pangkat",                sub:"Riwayat kepangkatan dari pangkat awal sampai pangkat akhir." },
   { key:"cacat",      label:"Data Cacat",             sub:"Penetapan tingkat cacat dan manfaat yang menyertainya." },
   { key:"premi",      label:"Premi",                  sub:"Rekapitulasi iuran premi THT, JKK, dan JKm." },
-  { key:"cetak-kpa",  label:"Cetak KPA",              sub:"Pratinjau dan cetak Kartu Peserta ASABRI." },
+  { key:"cetak-kpa",  label:"KPA",                    sub:"Pratinjau dan cetak Kartu Peserta ASABRI." },
   { key:"dokumen",    label:"Riwayat Dokumen",        sub:"Dokumen yang pernah diunggah atau diterbitkan." },
   { key:"kunjungan",  label:"Riwayat Kunjungan",      sub:"Catatan kunjungan peserta ke kantor cabang." },
   { key:"edosir",     label:"E-DOSIR",                sub:"Berkas peserta yang sudah didigitalisasi di E-Dosir." },

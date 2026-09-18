@@ -5999,7 +5999,7 @@ function dpPindahPiutangMitra(idx) {
 /* Tabelnya 22 kolom, jadi memakai wide-table: kolom No menempel di kiri dan
    kolom Aksi di kanan supaya tetap terlihat saat digeser mendatar. */
 const DPD_KELUARGA_KOLOM = [
-  "No", "Tgl Entry", "Nopens", "Nama", "Hubungan Keluarga", "Tempat Lahir", "Tgl Lahir",
+  "No", "Tgl Entry", "Nopens", "Penspok", "Nama", "Hubungan Keluarga", "Tempat Lahir", "Tgl Lahir",
   "Tgl Menikah", "Tgl Meninggal", "Tgl Mulai Kuliah", "Tgl Selesai Kuliah",
   "Tgl Mulai Kerja", "Tgl Selesai Kerja", "Pekerjaan",
   "Tgl Berhenti di Tunjang", "Tgl di Tunjang Kembali",
@@ -6042,6 +6042,7 @@ function renderTabKeluargaPeserta() {
               <td class="stick-l">${i + 1}</td>
               <td>${esc(r.tglEntry)}</td>
               <td>${esc(r.nopens)}</td>
+              <td>${r.penspok ? esc(r.penspok.toLocaleString("id-ID")) : "-"}</td>
               <td class="t-strong">${esc(r.nama)}</td>
               <td>${esc(r.hubungan)}</td>
               <td>${esc(r.tempatLahir)}</td>
@@ -6325,6 +6326,7 @@ function dpFormKeluarga(idx, asal = "detail") {
   $("#dkf-kelamin").value      = dkfIsi(r.jenisKelamin);
   $("#dkf-status-kawin").value = dkfIsi(r.statusKawin);
   $("#dkf-nik").value          = dkfIsi(r.nomorIdentitas);
+  $("#dkf-penspok").value      = r.penspok ? r.penspok.toLocaleString("id-ID") : "";
   $("#dkf-pekerjaan").value    = KELUARGA_PEKERJAAN.includes(r.pekerjaan) ? r.pekerjaan : "";
 
   $("#dkf-tgl-meninggal").value        = dkfKeInput(r.tglMeninggal);
@@ -6476,6 +6478,7 @@ $("#dkf-simpan").onclick = () => {
   if (dkfIdx === null) {
     row = {};
     DPD_KELUARGA_FIELD.forEach(f => { row[f] = "-"; });
+    row.penspok  = 0;   /* angka, bukan "-" — dipakai langsung sebagai Rupiah di tabel & form */
     row.rekening = [];
     row.tglEntry = dpTglHariIni();
     row.nama     = "(belum diisi)";
@@ -6494,6 +6497,7 @@ $("#dkf-simpan").onclick = () => {
   row.jenisKelamin    = teks("#dkf-kelamin");
   row.statusKawin     = teks("#dkf-status-kawin");
   row.nomorIdentitas  = teks("#dkf-nik");
+  row.penspok         = +shAngka($("#dkf-penspok").value) || 0;
   row.pekerjaan       = teks("#dkf-pekerjaan");
   row.tglMeninggal       = dkfDariInput($("#dkf-tgl-meninggal").value);
   row.tglBerhentiTunjang = dkfDariInput($("#dkf-tgl-berhenti-tunjang").value);
