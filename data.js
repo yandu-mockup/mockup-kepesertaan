@@ -579,6 +579,593 @@ const DATA_PENDAFTARAN_PERORANGAN = [
       { label:"Surat Pengangkatan Pertama", file:null },
       { label:"Surat Pengantar", file:"surat-pengantar-siti.pdf" }
     ]
+  },
+
+  /* 20 pengajuan contoh berikutnya — dipakai untuk mencoba filter, paginasi,
+     dan ketiga status di riwayat Perorangan maupun antrean Approval
+     (8 Tertunda, 8 Diterima, 4 Ditolak). Semua nilai diambil dari pilihan yang
+     memang ada di form: Status Personil, Angkatan/UNOR, Pangkat per matra,
+     UKER (DATA_UKER), wilayah + kode pos (DATA_WILAYAH), dan Kantor Cabang
+     yang cocok dengan kota alamatnya (DATA_KANTOR_CABANG_MAP). */
+  {
+    id: 3,
+    tglPengajuan: "28 Agustus 2026",
+    kesatuanPengaju: "Mabes TNI AD",
+    nomorBatch: "-",
+    nomorAgenda: "0006/wirata.atmaja",
+    jenis: "Perorangan",
+    approvalStatus: "Diterima",
+    catatanApproval: "Berkas lengkap dan data sesuai SKEP pengangkatan.",
+    dataPengajuan: {
+      jenis:"Perorangan", nomorSurat:"B/231/VIII/2026",
+      instansi:"Mabes TNI AD", tglSurat:"27 Agustus 2026"
+    },
+    dataPeserta: {
+      nama:"Bambang Wicaksono", nrp:"142376", nik:"3273052108940005",
+      npwp:"918273645100000",
+      jk:"Laki-laki", tglLahir:"21 Agustus 1994", tmpLahir:"Bandung",
+      status:"Prajurit", angkatan:"TNI AD", unor:"TNI AD", uker:"- KOREM 084/BJ", pangkat:"SERKA",
+      tmt:"1 Maret 2016", nomorSkep:"SKEP/118/III/2016", tglSkep:"20 Februari 2016",
+      alamat:"Jl. Sukajadi No. 45", rt:"04", rw:"07",
+      kelurahan:"Sukajadi, Sukajadi, Kota Bandung, Jawa Barat",
+      kodepos:"40162", telp:"081321457890", email:"bambang.wicaksono@mail.com", kancab:"Kanca Bandung"
+    },
+    berkas: [
+      { label:"KTP", file:"ktp-bambang.jpg" },
+      { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-bambang.pdf" },
+      { label:"Surat Pengantar", file:"surat-pengantar-bambang.pdf" }
+    ]
+  },
+  {
+    id: 4,
+    tglPengajuan: "27 Agustus 2026",
+    kesatuanPengaju: "Mabes TNI AL",
+    nomorBatch: "-",
+    nomorAgenda: "0007/wirata.atmaja",
+    jenis: "Perorangan",
+    approvalStatus: "Tertunda",
+    catatanApproval: "",
+    dataPengajuan: {
+      jenis:"Perorangan", nomorSurat:"B/228/VIII/2026",
+      instansi:"Mabes TNI AL", tglSurat:"26 Agustus 2026"
+    },
+    dataPeserta: {
+      nama:"Nur Aisyah Rahmadani", nrp:"163890", nik:"3578056509960012",
+      npwp:"8273645910000012",
+      jk:"Perempuan", tglLahir:"25 September 1996", tmpLahir:"Surabaya",
+      status:"Prajurit", angkatan:"TNI AL", unor:"TNI AL", uker:"- KODIM 0827 REM 084/BJ", pangkat:"SERTU",
+      tmt:"1 April 2018", nomorSkep:"SKEP/142/IV/2018", tglSkep:"19 Maret 2018",
+      alamat:"Jl. Rungkut Asri No. 12", rt:"02", rw:"05",
+      kelurahan:"Rungkut, Rungkut, Kota Surabaya, Jawa Timur",
+      kodepos:"60293", telp:"081357924680", email:"nur.aisyah@mail.com", kancab:"Kanca Surabaya"
+    },
+    berkas: [
+      { label:"KTP", file:"ktp-nur-aisyah.jpg" },
+      { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-nur-aisyah.pdf" },
+      { label:"Surat Pengantar", file:null }
+    ]
+  },
+  {
+    id: 5,
+    tglPengajuan: "26 Agustus 2026",
+    kesatuanPengaju: "Mabes TNI AU",
+    nomorBatch: "-",
+    nomorAgenda: "0008/wirata.atmaja",
+    jenis: "Perorangan",
+    approvalStatus: "Diterima",
+    catatanApproval: "Data kepesertaan telah dicocokkan dengan data UKER pengaju.",
+    dataPengajuan: {
+      jenis:"Perorangan", nomorSurat:"B/225/VIII/2026",
+      instansi:"Mabes TNI AU", tglSurat:"25 Agustus 2026"
+    },
+    dataPeserta: {
+      nama:"Gilang Ramadhan", nrp:"175482", nik:"3175051407930021",
+      npwp:"736451928200000",
+      jk:"Laki-laki", tglLahir:"14 Juli 1993", tmpLahir:"Jakarta",
+      status:"Prajurit", angkatan:"TNI AU", unor:"TNI AU", uker:"- KODIM 0830 REM 084/BJ", pangkat:"LETDA",
+      tmt:"1 Februari 2020", nomorSkep:"SKEP/065/II/2020", tglSkep:"21 Januari 2020",
+      alamat:"Jl. Lapangan Tembak No. 8", rt:"06", rw:"03",
+      kelurahan:"Cibubur, Ciracas, Jakarta Timur, DKI Jakarta",
+      kodepos:"13720", telp:"081290873456", email:"gilang.ramadhan@mail.com", kancab:"Kanca Jakarta Timur"
+    },
+    berkas: [
+      { label:"KTP", file:"ktp-gilang.jpg" },
+      { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-gilang.pdf" },
+      { label:"Surat Pengantar", file:"surat-pengantar-gilang.pdf" }
+    ]
+  },
+  {
+    id: 6,
+    tglPengajuan: "25 Agustus 2026",
+    kesatuanPengaju: "Mabes Polri",
+    nomorBatch: "-",
+    nomorAgenda: "0009/wirata.atmaja",
+    jenis: "Perorangan",
+    approvalStatus: "Tertunda",
+    catatanApproval: "",
+    dataPengajuan: {
+      jenis:"Perorangan", nomorSurat:"B/219/VIII/2026",
+      instansi:"Mabes Polri", tglSurat:"24 Agustus 2026"
+    },
+    dataPeserta: {
+      nama:"Ratna Dewi Anggraini", nrp:"92034567", nik:"3671014612970034",
+      npwp:"645192837300000",
+      jk:"Perempuan", tglLahir:"6 Desember 1997", tmpLahir:"Tangerang",
+      status:"Prajurit", angkatan:"POLRI", unor:"POLRI", uker:"- KOMANDO RESORT KEPOLISIAN 1084 JOMBANG", pangkat:"BRIPDA",
+      tmt:"1 Juni 2019", nomorSkep:"SKEP/198/VI/2019", tglSkep:"22 Mei 2019",
+      alamat:"Jl. Cikokol Raya No. 27", rt:"03", rw:"08",
+      kelurahan:"Cikokol, Tangerang, Kota Tangerang, Banten",
+      kodepos:"15117", telp:"081198765432", email:"ratna.anggraini@mail.com", kancab:"Kanca Tangerang"
+    },
+    berkas: [
+      { label:"KTP", file:"ktp-ratna.jpg" },
+      { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-ratna.pdf" },
+      { label:"Surat Pengantar", file:null }
+    ]
+  },
+  {
+    id: 7,
+    tglPengajuan: "24 Agustus 2026",
+    kesatuanPengaju: "Kementerian Pertahanan",
+    nomorBatch: "-",
+    nomorAgenda: "0010/wirata.atmaja",
+    jenis: "Perorangan",
+    approvalStatus: "Ditolak",
+    catatanApproval: "Surat Pengangkatan Pertama belum diunggah — pengajuan tidak dapat diproses.",
+    dataPengajuan: {
+      jenis:"Perorangan", nomorSurat:"B/214/VIII/2026",
+      instansi:"Kementerian Pertahanan", tglSurat:"23 Agustus 2026"
+    },
+    dataPeserta: {
+      nama:"Hendra Gunawan", nrp:"198802142014031007", nik:"3174011402880045",
+      npwp:"519283746400000",
+      jk:"Laki-laki", tglLahir:"14 Februari 1988", tmpLahir:"Jakarta",
+      status:"PNS", angkatan:"KEMHAN", unor:"KEMHAN", uker:"- MILSUK PAL TA1984/1985", pangkat:"GOL.III/A",
+      tmt:"1 Maret 2014", nomorSkep:"SKEP/077/III/2014", tglSkep:"18 Februari 2014",
+      alamat:"Jl. Kemang Raya No. 63", rt:"05", rw:"02",
+      kelurahan:"Kemang, Mampang Prapatan, Jakarta Selatan, DKI Jakarta",
+      kodepos:"12730", telp:"081211334455", email:"hendra.gunawan@mail.com", kancab:"Kanca Jakarta Selatan"
+    },
+    berkas: [
+      { label:"KTP", file:"ktp-hendra.jpg" },
+      { label:"Surat Pengangkatan Pertama", file:null },
+      { label:"Surat Pengantar", file:null }
+    ]
+  },
+  {
+    id: 8,
+    tglPengajuan: "21 Agustus 2026",
+    kesatuanPengaju: "Kementerian Pertahanan",
+    nomorBatch: "-",
+    nomorAgenda: "0011/wirata.atmaja",
+    jenis: "Perorangan",
+    approvalStatus: "Diterima",
+    catatanApproval: "NIP dan SKEP pengangkatan sesuai data Biro SDM Kemhan.",
+    dataPengajuan: {
+      jenis:"Perorangan", nomorSurat:"B/207/VIII/2026",
+      instansi:"Kementerian Pertahanan", tglSurat:"20 Agustus 2026"
+    },
+    dataPeserta: {
+      nama:"Sri Mulyani Kusuma", nrp:"199107182015032005", nik:"3275055807910056",
+      npwp:"4028371650000056",
+      jk:"Perempuan", tglLahir:"18 Juli 1991", tmpLahir:"Bekasi",
+      status:"PNS", angkatan:"KEMHAN", unor:"KEMHAN", uker:"- MILSUK ARHANUD TA 1984/1985", pangkat:"GOL.II/C",
+      tmt:"1 Maret 2015", nomorSkep:"SKEP/090/III/2015", tglSkep:"17 Februari 2015",
+      alamat:"Jl. Jatiasih Permai Blok C No. 9", rt:"07", rw:"04",
+      kelurahan:"Jatiasih, Jatiasih, Kota Bekasi, Jawa Barat",
+      kodepos:"17423", telp:"081376543210", email:"sri.mulyani@mail.com", kancab:"Kanca Bekasi"
+    },
+    berkas: [
+      { label:"KTP", file:"ktp-sri-mulyani.jpg" },
+      { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-sri-mulyani.pdf" },
+      { label:"Surat Pengantar", file:"surat-pengantar-sri-mulyani.pdf" }
+    ]
+  },
+  {
+    id: 9,
+    tglPengajuan: "20 Agustus 2026",
+    kesatuanPengaju: "PUSKERSIN",
+    nomorBatch: "-",
+    nomorAgenda: "0012/wirata.atmaja",
+    jenis: "Perorangan",
+    approvalStatus: "Tertunda",
+    catatanApproval: "",
+    dataPengajuan: {
+      jenis:"Perorangan", nomorSurat:"B/203/VIII/2026",
+      instansi:"PUSKERSIN", tglSurat:"19 Agustus 2026"
+    },
+    dataPeserta: {
+      nama:"Agus Setiawan", nrp:"128745", nik:"3173010309890067",
+      npwp:"302938475600000",
+      jk:"Laki-laki", tglLahir:"3 September 1989", tmpLahir:"Semarang",
+      status:"Prajurit", angkatan:"MABES TNI", unor:"MABES TNI", uker:"344281 - KOREM-084/W DAM V/BRW", pangkat:"KAPTEN",
+      tmt:"1 September 2017", nomorSkep:"SKEP/255/IX/2017", tglSkep:"23 Agustus 2017",
+      alamat:"Jl. Kebon Jeruk Raya No. 19", rt:"01", rw:"06",
+      kelurahan:"Kebon Jeruk, Kebon Jeruk, Jakarta Barat, DKI Jakarta",
+      kodepos:"11530", telp:"081234998877", email:"agus.setiawan@mail.com", kancab:"Kanca Jakarta Barat"
+    },
+    berkas: [
+      { label:"KTP", file:"ktp-agus.jpg" },
+      { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-agus.pdf" },
+      { label:"Surat Pengantar", file:"surat-pengantar-agus.pdf" }
+    ]
+  },
+  {
+    id: 10,
+    tglPengajuan: "19 Agustus 2026",
+    kesatuanPengaju: "Mabes TNI AD",
+    nomorBatch: "-",
+    nomorAgenda: "0013/wirata.atmaja",
+    jenis: "Perorangan",
+    approvalStatus: "Ditolak",
+    catatanApproval: "NIK pada KTP berbeda dengan NIK yang diisikan di form.",
+    dataPengajuan: {
+      jenis:"Perorangan", nomorSurat:"B/199/VIII/2026",
+      instansi:"Mabes TNI AD", tglSurat:"18 Agustus 2026"
+    },
+    dataPeserta: {
+      nama:"Fitriani Nurhaliza", nrp:"157023", nik:"3404026211950078",
+      npwp:"213456789000000",
+      jk:"Perempuan", tglLahir:"22 November 1995", tmpLahir:"Sleman",
+      status:"Prajurit", angkatan:"TNI AD", unor:"TNI AD", uker:"- KODIM 0828 REM 084/BJ", pangkat:"SERDA",
+      tmt:"1 Mei 2019", nomorSkep:"SKEP/160/V/2019", tglSkep:"18 April 2019",
+      alamat:"Jl. Kaliurang Km 10 No. 3", rt:"08", rw:"01",
+      kelurahan:"Ngaglik, Ngaglik, Sleman, D.I. Yogyakarta",
+      kodepos:"55581", telp:"081328765431", email:"fitriani.nurhaliza@mail.com", kancab:"Kanca Yogyakarta"
+    },
+    berkas: [
+      { label:"KTP", file:"ktp-fitriani.jpg" },
+      { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-fitriani.pdf" },
+      { label:"Surat Pengantar", file:null }
+    ]
+  },
+  {
+    id: 11,
+    tglPengajuan: "18 Agustus 2026",
+    kesatuanPengaju: "Mabes TNI AL",
+    nomorBatch: "-",
+    nomorAgenda: "0014/wirata.atmaja",
+    jenis: "Perorangan",
+    approvalStatus: "Diterima",
+    catatanApproval: "Pengajuan disetujui, KPA diterbitkan pada batch berikutnya.",
+    dataPengajuan: {
+      jenis:"Perorangan", nomorSurat:"B/195/VIII/2026",
+      instansi:"Mabes TNI AL", tglSurat:"17 Agustus 2026"
+    },
+    dataPeserta: {
+      nama:"Dimas Prakoso", nrp:"149238", nik:"3578051612910089",
+      npwp:"1029384756000089",
+      jk:"Laki-laki", tglLahir:"16 Desember 1991", tmpLahir:"Surabaya",
+      status:"Prajurit", angkatan:"TNI AL", unor:"TNI AL", uker:"- KODIM 0829 REM 084/BJ", pangkat:"KOPKA",
+      tmt:"1 Oktober 2015", nomorSkep:"SKEP/301/X/2015", tglSkep:"21 September 2015",
+      alamat:"Jl. Rungkut Menanggal No. 74", rt:"05", rw:"09",
+      kelurahan:"Rungkut, Rungkut, Kota Surabaya, Jawa Timur",
+      kodepos:"60293", telp:"081332211445", email:"dimas.prakoso@mail.com", kancab:"Kanca Surabaya"
+    },
+    berkas: [
+      { label:"KTP", file:"ktp-dimas.jpg" },
+      { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-dimas.pdf" },
+      { label:"Surat Pengantar", file:"surat-pengantar-dimas.pdf" }
+    ]
+  },
+  {
+    id: 12,
+    tglPengajuan: "17 Agustus 2026",
+    kesatuanPengaju: "Mabes Polri",
+    nomorBatch: "-",
+    nomorAgenda: "0015/wirata.atmaja",
+    jenis: "Perorangan",
+    approvalStatus: "Tertunda",
+    catatanApproval: "",
+    dataPengajuan: {
+      jenis:"Perorangan", nomorSurat:"B/191/VIII/2026",
+      instansi:"Mabes Polri", tglSurat:"16 Agustus 2026"
+    },
+    dataPeserta: {
+      nama:"Wahyu Hidayatullah", nrp:"90112233", nik:"3273052505920090",
+      npwp:"987654321000000",
+      jk:"Laki-laki", tglLahir:"25 Mei 1992", tmpLahir:"Bandung",
+      status:"Prajurit", angkatan:"POLRI", unor:"POLRI", uker:"- KODIM 0826 REM 084/BJ", pangkat:"BRIPTU",
+      tmt:"1 Juli 2016", nomorSkep:"SKEP/223/VII/2016", tglSkep:"20 Juni 2016",
+      alamat:"Jl. Sukaluyu Indah No. 21", rt:"02", rw:"03",
+      kelurahan:"Sukaluyu, Cibeunying Kaler, Kota Bandung, Jawa Barat",
+      kodepos:"40123", telp:"081223344556", email:"wahyu.hidayatullah@mail.com", kancab:"Kanca Bandung"
+    },
+    berkas: [
+      { label:"KTP", file:"ktp-wahyu.jpg" },
+      { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-wahyu.pdf" },
+      { label:"Surat Pengantar", file:null }
+    ]
+  },
+  {
+    id: 13,
+    tglPengajuan: "14 Agustus 2026",
+    kesatuanPengaju: "PUSKERSIN",
+    nomorBatch: "-",
+    nomorAgenda: "0016/wirata.atmaja",
+    jenis: "Perorangan",
+    approvalStatus: "Diterima",
+    catatanApproval: "Dokumen pengangkatan sesuai, data peserta siap disinkronkan.",
+    dataPengajuan: {
+      jenis:"Perorangan", nomorSurat:"B/186/VIII/2026",
+      instansi:"PUSKERSIN", tglSurat:"13 Agustus 2026"
+    },
+    dataPeserta: {
+      nama:"Larasati Puspitasari", nrp:"198909302016042011", nik:"3174017009890101",
+      npwp:"564738291000101",
+      jk:"Perempuan", tglLahir:"30 September 1989", tmpLahir:"Jakarta",
+      status:"PNS", angkatan:"MABES TNI", unor:"MABES TNI", uker:"639869 - GABRAH 84", pangkat:"GOL.III/B",
+      tmt:"1 April 2016", nomorSkep:"SKEP/131/IV/2016", tglSkep:"21 Maret 2016",
+      alamat:"Jl. Kemang Selatan VIII No. 4", rt:"04", rw:"05",
+      kelurahan:"Kemang, Mampang Prapatan, Jakarta Selatan, DKI Jakarta",
+      kodepos:"12730", telp:"081277889900", email:"larasati.puspitasari@mail.com", kancab:"Kanca Jakarta Selatan"
+    },
+    berkas: [
+      { label:"KTP", file:"ktp-larasati.jpg" },
+      { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-larasati.pdf" },
+      { label:"Surat Pengantar", file:"surat-pengantar-larasati.pdf" }
+    ]
+  },
+  {
+    id: 14,
+    tglPengajuan: "13 Agustus 2026",
+    kesatuanPengaju: "Mabes TNI AU",
+    nomorBatch: "-",
+    nomorAgenda: "0017/wirata.atmaja",
+    jenis: "Perorangan",
+    approvalStatus: "Tertunda",
+    catatanApproval: "",
+    dataPengajuan: {
+      jenis:"Perorangan", nomorSurat:"B/182/VIII/2026",
+      instansi:"Mabes TNI AU", tglSurat:"12 Agustus 2026"
+    },
+    dataPeserta: {
+      nama:"Rizky Ardiansyah", nrp:"134902", nik:"3175050208900112",
+      npwp:"6758493021000112",
+      jk:"Laki-laki", tglLahir:"2 Agustus 1990", tmpLahir:"Jakarta",
+      status:"Prajurit", angkatan:"TNI AU", unor:"TNI AU", uker:"- KODIM 0817 REM 084/BJ", pangkat:"SERMA",
+      tmt:"1 November 2014", nomorSkep:"SKEP/340/XI/2014", tglSkep:"20 Oktober 2014",
+      alamat:"Jl. Raya Cibubur No. 55", rt:"09", rw:"02",
+      kelurahan:"Cibubur, Ciracas, Jakarta Timur, DKI Jakarta",
+      kodepos:"13720", telp:"081266778899", email:"rizky.ardiansyah@mail.com", kancab:"Kanca Jakarta Timur"
+    },
+    berkas: [
+      { label:"KTP", file:"ktp-rizky.jpg" },
+      { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-rizky.pdf" },
+      { label:"Surat Pengantar", file:"surat-pengantar-rizky.pdf" }
+    ]
+  },
+  {
+    id: 15,
+    tglPengajuan: "12 Agustus 2026",
+    kesatuanPengaju: "Kementerian Pertahanan",
+    nomorBatch: "-",
+    nomorAgenda: "0018/wirata.atmaja",
+    jenis: "Perorangan",
+    approvalStatus: "Ditolak",
+    catatanApproval: "Nomor SKEP tidak ditemukan pada arsip referensi Kemhan.",
+    dataPengajuan: {
+      jenis:"Perorangan", nomorSurat:"B/178/VIII/2026",
+      instansi:"Kementerian Pertahanan", tglSurat:"11 Agustus 2026"
+    },
+    dataPeserta: {
+      nama:"Maya Sari Utami", nrp:"199304122022212004", nik:"3671015204930123",
+      npwp:"445566778800000",
+      jk:"Perempuan", tglLahir:"12 April 1993", tmpLahir:"Tangerang",
+      status:"PPPK", angkatan:"KEMHAN", unor:"KEMHAN", uker:"- SECABA MILSUK ZI TA 1984/1985", pangkat:"GOL.III/A",
+      tmt:"1 Maret 2022", nomorSkep:"SKEP/412/III/2022", tglSkep:"18 Februari 2022",
+      alamat:"Jl. Cikokol Indah No. 7", rt:"06", rw:"07",
+      kelurahan:"Cikokol, Tangerang, Kota Tangerang, Banten",
+      kodepos:"15117", telp:"081355667788", email:"maya.sari@mail.com", kancab:"Kanca Tangerang"
+    },
+    berkas: [
+      { label:"KTP", file:"ktp-maya.jpg" },
+      { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-maya.pdf" },
+      { label:"Surat Pengantar", file:null }
+    ]
+  },
+  {
+    id: 16,
+    tglPengajuan: "11 Agustus 2026",
+    kesatuanPengaju: "Mabes TNI AD",
+    nomorBatch: "-",
+    nomorAgenda: "0019/wirata.atmaja",
+    jenis: "Perorangan",
+    approvalStatus: "Diterima",
+    catatanApproval: "Seluruh berkas terbaca jelas dan sesuai data kesatuan.",
+    dataPengajuan: {
+      jenis:"Perorangan", nomorSurat:"B/174/VIII/2026",
+      instansi:"Mabes TNI AD", tglSurat:"10 Agustus 2026"
+    },
+    dataPeserta: {
+      nama:"Yudi Firmansyah", nrp:"118654", nik:"3275052309870134",
+      npwp:"334455667700000",
+      jk:"Laki-laki", tglLahir:"23 September 1987", tmpLahir:"Bekasi",
+      status:"Prajurit", angkatan:"TNI AD", unor:"TNI AD", uker:"- KODIM 0831 REM 084/BJ", pangkat:"PELTU",
+      tmt:"1 Juni 2012", nomorSkep:"SKEP/187/VI/2012", tglSkep:"21 Mei 2012",
+      alamat:"Jl. Jatiasih Raya No. 118", rt:"03", rw:"06",
+      kelurahan:"Jatiasih, Jatiasih, Kota Bekasi, Jawa Barat",
+      kodepos:"17423", telp:"081344556677", email:"yudi.firmansyah@mail.com", kancab:"Kanca Bekasi"
+    },
+    berkas: [
+      { label:"KTP", file:"ktp-yudi.jpg" },
+      { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-yudi.pdf" },
+      { label:"Surat Pengantar", file:"surat-pengantar-yudi.pdf" }
+    ]
+  },
+  {
+    id: 17,
+    tglPengajuan: "10 Agustus 2026",
+    kesatuanPengaju: "Mabes Polri",
+    nomorBatch: "-",
+    nomorAgenda: "0020/wirata.atmaja",
+    jenis: "Perorangan",
+    approvalStatus: "Tertunda",
+    catatanApproval: "",
+    dataPengajuan: {
+      jenis:"Perorangan", nomorSurat:"B/170/VIII/2026",
+      instansi:"Mabes Polri", tglSurat:"9 Agustus 2026"
+    },
+    dataPeserta: {
+      nama:"Indah Permatasari", nrp:"89045612", nik:"3173015103900145",
+      npwp:"5566778899000145",
+      jk:"Perempuan", tglLahir:"11 Maret 1990", tmpLahir:"Jakarta",
+      status:"Prajurit", angkatan:"POLRI", unor:"POLRI", uker:"- KOREM 084", pangkat:"AIPDA",
+      tmt:"1 Agustus 2013", nomorSkep:"SKEP/248/VIII/2013", tglSkep:"22 Juli 2013",
+      alamat:"Jl. Kemanggisan Ilir No. 30", rt:"07", rw:"02",
+      kelurahan:"Kemanggisan, Palmerah, Jakarta Barat, DKI Jakarta",
+      kodepos:"11480", telp:"081299887766", email:"indah.permatasari@mail.com", kancab:"Kanca Jakarta Barat"
+    },
+    berkas: [
+      { label:"KTP", file:"ktp-indah.jpg" },
+      { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-indah.pdf" },
+      { label:"Surat Pengantar", file:null }
+    ]
+  },
+  {
+    id: 18,
+    tglPengajuan: "7 Agustus 2026",
+    kesatuanPengaju: "Mabes TNI AL",
+    nomorBatch: "-",
+    nomorAgenda: "0021/wirata.atmaja",
+    jenis: "Perorangan",
+    approvalStatus: "Diterima",
+    catatanApproval: "Pengajuan disetujui tanpa catatan perbaikan.",
+    dataPengajuan: {
+      jenis:"Perorangan", nomorSurat:"B/166/VIII/2026",
+      instansi:"Mabes TNI AL", tglSurat:"6 Agustus 2026"
+    },
+    dataPeserta: {
+      nama:"Bagus Setyo Nugroho", nrp:"126781", nik:"3404021905880156",
+      npwp:"667788990000000",
+      jk:"Laki-laki", tglLahir:"19 Mei 1988", tmpLahir:"Yogyakarta",
+      status:"Prajurit", angkatan:"TNI AL", unor:"TNI AL", uker:"- SECABA MILSUK KODIKLATDAM VI/SLW TA 1983/1984", pangkat:"LETTU",
+      tmt:"1 Desember 2013", nomorSkep:"SKEP/372/XII/2013", tglSkep:"20 November 2013",
+      alamat:"Jl. Palagan Tentara Pelajar No. 62", rt:"01", rw:"08",
+      kelurahan:"Ngaglik, Ngaglik, Sleman, D.I. Yogyakarta",
+      kodepos:"55581", telp:"081311223344", email:"bagus.nugroho@mail.com", kancab:"Kanca Yogyakarta"
+    },
+    berkas: [
+      { label:"KTP", file:"ktp-bagus.jpg" },
+      { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-bagus.pdf" },
+      { label:"Surat Pengantar", file:"surat-pengantar-bagus.pdf" }
+    ]
+  },
+  {
+    id: 19,
+    tglPengajuan: "6 Agustus 2026",
+    kesatuanPengaju: "PUSKERSIN",
+    nomorBatch: "-",
+    nomorAgenda: "0022/wirata.atmaja",
+    jenis: "Perorangan",
+    approvalStatus: "Tertunda",
+    catatanApproval: "",
+    dataPengajuan: {
+      jenis:"Perorangan", nomorSurat:"B/162/VIII/2026",
+      instansi:"PUSKERSIN", tglSurat:"5 Agustus 2026"
+    },
+    dataPeserta: {
+      nama:"Dewi Anjani", nrp:"199506252023212008", nik:"3174016506950167",
+      npwp:"778899001100000",
+      jk:"Perempuan", tglLahir:"25 Juni 1995", tmpLahir:"Jakarta",
+      status:"PPPK", angkatan:"MABES TNI", unor:"MABES TNI", uker:"- MILSUK PAL TA1984/1985", pangkat:"GOL.II/D",
+      tmt:"1 Februari 2023", nomorSkep:"SKEP/058/II/2023", tglSkep:"19 Januari 2023",
+      alamat:"Jl. Kemang Timur No. 15", rt:"02", rw:"04",
+      kelurahan:"Kemang, Mampang Prapatan, Jakarta Selatan, DKI Jakarta",
+      kodepos:"12730", telp:"081255443322", email:"dewi.anjani@mail.com", kancab:"Kanca Jakarta Selatan"
+    },
+    berkas: [
+      { label:"KTP", file:"ktp-dewi.jpg" },
+      { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-dewi.pdf" },
+      { label:"Surat Pengantar", file:null }
+    ]
+  },
+  {
+    id: 20,
+    tglPengajuan: "5 Agustus 2026",
+    kesatuanPengaju: "Mabes TNI AU",
+    nomorBatch: "-",
+    nomorAgenda: "0023/wirata.atmaja",
+    jenis: "Perorangan",
+    approvalStatus: "Ditolak",
+    catatanApproval: "Kantor Cabang tidak sesuai dengan alamat domisili peserta.",
+    dataPengajuan: {
+      jenis:"Perorangan", nomorSurat:"B/158/VIII/2026",
+      instansi:"Mabes TNI AU", tglSurat:"4 Agustus 2026"
+    },
+    dataPeserta: {
+      nama:"Fajar Nugroho", nrp:"165430", nik:"3273051108910178",
+      npwp:"889900112200000",
+      jk:"Laki-laki", tglLahir:"11 Agustus 1991", tmpLahir:"Bandung",
+      status:"Prajurit", angkatan:"TNI AU", unor:"TNI AU", uker:"- KODIM 0827 REM 084/BJ", pangkat:"KOPTU",
+      tmt:"1 Mei 2015", nomorSkep:"SKEP/152/V/2015", tglSkep:"20 April 2015",
+      alamat:"Jl. Sukajadi Atas No. 88", rt:"05", rw:"01",
+      kelurahan:"Sukajadi, Sukajadi, Kota Bandung, Jawa Barat",
+      kodepos:"40162", telp:"081366554433", email:"fajar.nugroho@mail.com", kancab:"Kanca Bandung"
+    },
+    berkas: [
+      { label:"KTP", file:"ktp-fajar.jpg" },
+      { label:"Surat Pengangkatan Pertama", file:null },
+      { label:"Surat Pengantar", file:null }
+    ]
+  },
+  {
+    id: 21,
+    tglPengajuan: "4 Agustus 2026",
+    kesatuanPengaju: "Kementerian Pertahanan",
+    nomorBatch: "-",
+    nomorAgenda: "0024/wirata.atmaja",
+    jenis: "Perorangan",
+    approvalStatus: "Diterima",
+    catatanApproval: "Data golongan dan TMT sesuai SK kepegawaian.",
+    dataPengajuan: {
+      jenis:"Perorangan", nomorSurat:"B/154/VIII/2026",
+      instansi:"Kementerian Pertahanan", tglSurat:"3 Agustus 2026"
+    },
+    dataPeserta: {
+      nama:"Siti Alifah Zahra", nrp:"198512052010122003", nik:"3175054512850189",
+      npwp:"9900112233000189",
+      jk:"Perempuan", tglLahir:"5 Desember 1985", tmpLahir:"Jakarta",
+      status:"PNS", angkatan:"KEMHAN", unor:"KEMHAN", uker:"- MILSUK ARHANUD TA 1984/1985", pangkat:"GOL.IV/A",
+      tmt:"1 Desember 2010", nomorSkep:"SKEP/365/XII/2010", tglSkep:"22 November 2010",
+      alamat:"Jl. Ciracas Baru No. 26", rt:"08", rw:"05",
+      kelurahan:"Cibubur, Ciracas, Jakarta Timur, DKI Jakarta",
+      kodepos:"13720", telp:"081288997755", email:"siti.alifah@mail.com", kancab:"Kanca Jakarta Timur"
+    },
+    berkas: [
+      { label:"KTP", file:"ktp-siti-alifah.jpg" },
+      { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-siti-alifah.pdf" },
+      { label:"Surat Pengantar", file:"surat-pengantar-siti-alifah.pdf" }
+    ]
+  },
+  {
+    id: 22,
+    tglPengajuan: "3 Agustus 2026",
+    kesatuanPengaju: "Mabes Polri",
+    nomorBatch: "-",
+    nomorAgenda: "0025/wirata.atmaja",
+    jenis: "Perorangan",
+    approvalStatus: "Tertunda",
+    catatanApproval: "",
+    dataPengajuan: {
+      jenis:"Perorangan", nomorSurat:"B/150/VIII/2026",
+      instansi:"Mabes Polri", tglSurat:"2 Agustus 2026"
+    },
+    dataPeserta: {
+      nama:"Reza Maulana", nrp:"91078345", nik:"3578050707930190",
+      npwp:"112233445500000",
+      jk:"Laki-laki", tglLahir:"7 Juli 1993", tmpLahir:"Surabaya",
+      status:"Prajurit", angkatan:"POLRI", unor:"POLRI", uker:"- KOMANDO RESORT KEPOLISIAN 1084 JOMBANG", pangkat:"IPDA",
+      tmt:"1 September 2018", nomorSkep:"SKEP/276/IX/2018", tglSkep:"21 Agustus 2018",
+      alamat:"Jl. Rungkut Industri No. 40", rt:"04", rw:"03",
+      kelurahan:"Rungkut, Rungkut, Kota Surabaya, Jawa Timur",
+      kodepos:"60293", telp:"081377665544", email:"reza.maulana@mail.com", kancab:"Kanca Surabaya"
+    },
+    berkas: [
+      { label:"KTP", file:"ktp-reza.jpg" },
+      { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-reza.pdf" },
+      { label:"Surat Pengantar", file:"surat-pengantar-reza.pdf" }
+    ]
   }
 ];
 
