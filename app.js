@@ -6355,6 +6355,13 @@ function dpFormKeluarga(idx, asal = "detail") {
   $("#dkf-hp").value      = dkfIsi(r.handphone);
   $("#dkf-email").value   = dkfIsi(r.email);
   $("#dkf-ibu").value     = dkfIsi(r.namaIbu);
+  $("#dkf-domisili-alamat").value  = dkfIsi(r.domisiliAlamat);
+  $("#dkf-domisili-kodepos").value = dkfIsi(r.domisiliKodePos);
+  $("#dkf-domisili-rt").value      = dkfIsi(r.domisiliRt);
+  $("#dkf-domisili-rw").value      = dkfIsi(r.domisiliRw);
+  $("#dkf-domisili-desa").value    = dkfIsi(r.domisiliDesa);
+  $("#dkf-domisili-hp").value      = dkfIsi(r.domisiliHandphone);
+  $("#dkf-domisili-email").value   = dkfIsi(r.domisiliEmail);
 
   $("#dkf-ahli-waris").checked = !!r.ahliWaris;
   $("#dkf-persen").value       = dkfIsi(r.persenAhliWaris);
@@ -6375,6 +6382,36 @@ $("#dkf-ahli-waris").onchange   = () => {
   $("#dkf-persen").disabled = !aktif;
   if (!aktif) $("#dkf-persen").value = "";
 };
+
+/* Autocomplete Desa/Kelurahan untuk Alamat Domisili — memilih satu opsi juga
+   mengisi Kode Pos-nya. Berdiri sendiri (bukan memakai pola "pp-kelurahan-field"
+   generik) karena form ini tidak punya field Kantor Cabang yang ikut disarankan. */
+$("#dkf-domisili-desa").addEventListener("input", () => {
+  const input = $("#dkf-domisili-desa");
+  const list  = $("#dkf-domisili-desa-list");
+  const q = input.value.trim().toLowerCase();
+  if (!q) { list.classList.remove("open"); list.innerHTML = ""; return; }
+  const hits = DATA_WILAYAH.filter(w => w.kelurahan.toLowerCase().includes(q)).slice(0, 8);
+  if (!hits.length) { list.classList.remove("open"); list.innerHTML = ""; return; }
+  list.innerHTML = hits.map(w => `
+    <div class="autocomplete-item" data-kel="${esc(w.kelurahan)}">
+      ${esc(w.kelurahan)}<small>${esc(w.kecamatan)}, ${esc(w.kabupaten)}, ${esc(w.provinsi)}</small>
+    </div>`).join("");
+  list.classList.add("open");
+});
+$("#dkf-domisili-desa-list").addEventListener("click", e => {
+  const item = e.target.closest(".autocomplete-item");
+  if (!item) return;
+  const w = DATA_WILAYAH.find(x => x.kelurahan === item.dataset.kel);
+  if (w) {
+    $("#dkf-domisili-desa").value = `${w.kelurahan}, ${w.kecamatan}, ${w.kabupaten}, ${w.provinsi}`;
+    if (w.kodepos) $("#dkf-domisili-kodepos").value = w.kodepos;
+  }
+  $("#dkf-domisili-desa-list").classList.remove("open");
+});
+document.addEventListener("click", e => {
+  if (!e.target.closest("#dkf-domisili-desa")) $("#dkf-domisili-desa-list").classList.remove("open");
+});
 
 function renderRiwayatRekeningKeluarga() {
   const rows = dkfIdx === null ? [] : (dpPesertaAktif.keluarga[dkfIdx].rekening || []);
@@ -6530,6 +6567,13 @@ $("#dkf-simpan").onclick = () => {
   row.handphone = teks("#dkf-hp");
   row.email     = teks("#dkf-email");
   row.namaIbu   = teks("#dkf-ibu");
+  row.domisiliAlamat     = teks("#dkf-domisili-alamat");
+  row.domisiliKodePos    = teks("#dkf-domisili-kodepos");
+  row.domisiliRt         = teks("#dkf-domisili-rt");
+  row.domisiliRw         = teks("#dkf-domisili-rw");
+  row.domisiliDesa       = teks("#dkf-domisili-desa");
+  row.domisiliHandphone  = teks("#dkf-domisili-hp");
+  row.domisiliEmail      = teks("#dkf-domisili-email");
 
   row.ahliWaris       = $("#dkf-ahli-waris").checked;
   row.persenAhliWaris = row.ahliWaris ? teks("#dkf-persen") : "-";
