@@ -6383,35 +6383,44 @@ $("#dkf-ahli-waris").onchange   = () => {
   if (!aktif) $("#dkf-persen").value = "";
 };
 
-/* Autocomplete Desa/Kelurahan untuk Alamat Domisili — memilih satu opsi juga
+/* Autocomplete Desa/Kelurahan untuk section "Alamat Domisili" — dipakai baik
+   di form Tambah/Ubah Data Keluarga (`dkf-domisili-…`) maupun di Profil
+   Peserta pada Ubah Data Peserta (`dup-domisili-…`). Memilih satu opsi juga
    mengisi Kode Pos-nya. Berdiri sendiri (bukan memakai pola "pp-kelurahan-field"
-   generik) karena form ini tidak punya field Kantor Cabang yang ikut disarankan. */
-$("#dkf-domisili-desa").addEventListener("input", () => {
-  const input = $("#dkf-domisili-desa");
-  const list  = $("#dkf-domisili-desa-list");
-  const q = input.value.trim().toLowerCase();
-  if (!q) { list.classList.remove("open"); list.innerHTML = ""; return; }
-  const hits = DATA_WILAYAH.filter(w => w.kelurahan.toLowerCase().includes(q)).slice(0, 8);
-  if (!hits.length) { list.classList.remove("open"); list.innerHTML = ""; return; }
-  list.innerHTML = hits.map(w => `
-    <div class="autocomplete-item" data-kel="${esc(w.kelurahan)}">
-      ${esc(w.kelurahan)}<small>${esc(w.kecamatan)}, ${esc(w.kabupaten)}, ${esc(w.provinsi)}</small>
-    </div>`).join("");
-  list.classList.add("open");
-});
-$("#dkf-domisili-desa-list").addEventListener("click", e => {
-  const item = e.target.closest(".autocomplete-item");
-  if (!item) return;
-  const w = DATA_WILAYAH.find(x => x.kelurahan === item.dataset.kel);
-  if (w) {
-    $("#dkf-domisili-desa").value = `${w.kelurahan}, ${w.kecamatan}, ${w.kabupaten}, ${w.provinsi}`;
-    if (w.kodepos) $("#dkf-domisili-kodepos").value = w.kodepos;
-  }
-  $("#dkf-domisili-desa-list").classList.remove("open");
-});
-document.addEventListener("click", e => {
-  if (!e.target.closest("#dkf-domisili-desa")) $("#dkf-domisili-desa-list").classList.remove("open");
-});
+   generik) karena kedua form ini tidak punya field Kantor Cabang yang ikut
+   disarankan. */
+function dpPasangAutocompleteDesaDomisili(prefix) {
+  const input = $(`#${prefix}-desa`);
+  const list  = $(`#${prefix}-desa-list`);
+  if (!input || !list) return;
+  input.addEventListener("input", () => {
+    const q = input.value.trim().toLowerCase();
+    if (!q) { list.classList.remove("open"); list.innerHTML = ""; return; }
+    const hits = DATA_WILAYAH.filter(w => w.kelurahan.toLowerCase().includes(q)).slice(0, 8);
+    if (!hits.length) { list.classList.remove("open"); list.innerHTML = ""; return; }
+    list.innerHTML = hits.map(w => `
+      <div class="autocomplete-item" data-kel="${esc(w.kelurahan)}">
+        ${esc(w.kelurahan)}<small>${esc(w.kecamatan)}, ${esc(w.kabupaten)}, ${esc(w.provinsi)}</small>
+      </div>`).join("");
+    list.classList.add("open");
+  });
+  list.addEventListener("click", e => {
+    const item = e.target.closest(".autocomplete-item");
+    if (!item) return;
+    const w = DATA_WILAYAH.find(x => x.kelurahan === item.dataset.kel);
+    if (w) {
+      input.value = `${w.kelurahan}, ${w.kecamatan}, ${w.kabupaten}, ${w.provinsi}`;
+      const kodepos = $(`#${prefix}-kodepos`);
+      if (w.kodepos && kodepos) kodepos.value = w.kodepos;
+    }
+    list.classList.remove("open");
+  });
+  document.addEventListener("click", e => {
+    if (!e.target.closest(`#${prefix}-desa`)) list.classList.remove("open");
+  });
+}
+dpPasangAutocompleteDesaDomisili("dkf-domisili");
+dpPasangAutocompleteDesaDomisili("dup-domisili");
 
 function renderRiwayatRekeningKeluarga() {
   const rows = dkfIdx === null ? [] : (dpPesertaAktif.keluarga[dkfIdx].rekening || []);
@@ -8071,6 +8080,13 @@ function dupBuka(migrasiId, asal) {
   $("#dup-email").value      = dkfIsi(pr.email);
   $("#dup-hp").value         = dkfIsi(pr.handphone);
   $("#dup-flag").innerHTML   = dupOpsi(UBAH_PESERTA_FLAG, "— Silahkan Pilih Flag —", pr.flag);
+  $("#dup-domisili-alamat").value  = dkfIsi(pr.domisiliAlamat);
+  $("#dup-domisili-kodepos").value = dkfIsi(pr.domisiliKodePos);
+  $("#dup-domisili-rt").value      = dkfIsi(pr.domisiliRt);
+  $("#dup-domisili-rw").value      = dkfIsi(pr.domisiliRw);
+  $("#dup-domisili-desa").value    = dkfIsi(pr.domisiliDesa);
+  $("#dup-domisili-hp").value      = dkfIsi(pr.domisiliHandphone);
+  $("#dup-domisili-email").value   = dkfIsi(pr.domisiliEmail);
 
   renderUbahKeluarga();
   go("data-peserta-ubah");
@@ -8292,6 +8308,13 @@ $("#dup-simpan").onclick = () => {
   pr.email     = teks("#dup-email");
   pr.handphone = teks("#dup-hp");
   if ($("#dup-flag").value) pr.flag = $("#dup-flag").value;
+  pr.domisiliAlamat    = teks("#dup-domisili-alamat");
+  pr.domisiliKodePos   = teks("#dup-domisili-kodepos");
+  pr.domisiliRt        = teks("#dup-domisili-rt");
+  pr.domisiliRw        = teks("#dup-domisili-rw");
+  pr.domisiliDesa      = teks("#dup-domisili-desa");
+  pr.domisiliHandphone = teks("#dup-domisili-hp");
+  pr.domisiliEmail     = teks("#dup-domisili-email");
 
   /* Tulis balik ke baris aslinya. Objeknya tetap sama, jadi layar lain yang
      memegang referensi ke peserta ini ikut melihat perubahannya. */
