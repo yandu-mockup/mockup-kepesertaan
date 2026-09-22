@@ -86,13 +86,7 @@
     </div>
     <button class="nav-item" data-go="data-peserta">List Peserta</button>
 
-    <button class="nav-item nav-parent" id="nav-upload-rekening" aria-expanded="true">
-      <span>Upload Rekening</span><span class="chevron">⌄</span>
-    </button>
-    <div class="nav-children" id="nav-upload-rekening-children">
-      <button class="nav-item nav-child" data-go="upload-rekening">Upload Rekening</button>
-      <button class="nav-item nav-child" data-go="verifikasi-upload-rekening">Verifikasi Upload Rekening</button>
-    </div>
+    <button class="nav-item" data-go="upload-rekening">Upload Rekening</button>
 
   </nav>
 
@@ -4418,7 +4412,7 @@
 
       <!-- ---------- UPLOAD REKENING ---------- -->
       <section class="screen" id="s-upload-rekening">
-        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Upload Rekening</span><span>›</span><b>Upload Rekening</b></div>
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><b>Upload Rekening</b></div>
 
         <!-- ===== Daftar Upload Rekening (tampilan awal) ===== -->
         <div id="ur-list-view">
@@ -4503,77 +4497,6 @@
               <button class="btn btn-ghost" id="ur-preview-kembali">← Kembali</button>
               <button class="btn btn-primary" id="ur-simpan">Simpan</button>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ---------- VERIFIKASI UPLOAD REKENING ---------- -->
-      <section class="screen" id="s-verifikasi-upload-rekening">
-        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Upload Rekening</span><span>›</span><b>Verifikasi Upload Rekening</b></div>
-        <div class="page-head">
-          <div>
-            <h1 class="page-title">Verifikasi Upload Rekening</h1>
-            <div class="page-sub">Pemeriksaan nomor rekening peserta yang diunggah sebelum diakui sebagai rekening aktif peserta.</div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="grid3">
-            <div class="field" style="margin-bottom:0">
-              <label class="fl caps">Status</label>
-              <select class="inp" id="urv-f-status">
-                <option value="all">Semua Status</option>
-                <option value="Pending">Pending</option>
-                <option value="Disetujui">Disetujui</option>
-                <option value="Ditolak">Ditolak</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-actions" style="border-top:0;padding-top:0">
-            <button class="btn btn-primary" id="urv-cari">⌕ Cari</button>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="tbl-wrap">
-            <table>
-              <thead><tr>
-                <th>No</th><th>NOPENS</th><th>Nama</th><th>Nomor Rekening</th><th>Mitra Bayar</th><th>Status</th><th>Aksi</th>
-              </tr></thead>
-              <tbody id="urv-body"></tbody>
-            </table>
-          </div>
-          <div class="tbl-note" id="urv-count" style="margin-top:10px"></div>
-        </div>
-      </section>
-
-      <!-- ---------- DETAIL VERIFIKASI UPLOAD REKENING ---------- -->
-      <section class="screen" id="s-verifikasi-upload-rekening-detail">
-        <div class="head-row">
-          <button class="link-back" id="urvd-kembali-atas">← Kembali</button>
-          <div class="head-divider"></div>
-          <div>
-            <h1 class="page-title">Detail Upload Rekening</h1>
-            <div class="crumb" style="margin:3px 0 0">
-              <span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Upload Rekening</span><span>›</span><span>Verifikasi Upload Rekening</span><span>›</span><span>Detail</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
-            <div>
-              <h2 class="card-title" style="margin-bottom:2px" id="urvd-title">—</h2>
-              <div class="hint" style="margin:0" id="urvd-sub"></div>
-            </div>
-            <span class="pill pill-info" id="urvd-status">—</span>
-          </div>
-
-          <div class="grid2" id="urvd-body" style="margin-top:18px"></div>
-
-          <div class="form-actions split">
-            <button class="btn btn-ghost" id="urvd-kembali">← Kembali ke Daftar</button>
-            <div id="urvd-actions" style="display:flex;gap:8px"></div>
           </div>
         </div>
       </section>

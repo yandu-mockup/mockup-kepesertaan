@@ -5060,20 +5060,17 @@ const DATA_BUM_ANGSURAN = [
 /* ---------------------------------------------------------------------------
    29. UPLOAD REKENING
    Perekaman nomor rekening peserta secara kolektif lewat unggah template
-   Excel di layar "Upload Rekening". Tiap baris yang diunggah masuk sebagai
-   satu peserta berstatus "Pending" ke layar "Verifikasi Upload Rekening",
-   sampai Divisi Kepesertaan memutuskan.
-   status  : "Pending" | "Disetujui" | "Ditolak"
-   catatan : keterangan pemeriksa; wajib saat ditolak.
+   Excel di layar "Upload Rekening". Tiap baris yang diunggah langsung
+   tersimpan sebagai rekening peserta.
    --------------------------------------------------------------------------- */
 const DATA_UPLOAD_REKENING = [
-  { nopens:"BZ131770111046", nama:"SURIPTO",           nomorRekening:"0021017701046", mitraBayar:"Bank BRI",     tglUnggah:"2026-07-02", status:"Disetujui", catatan:"" },
-  { nopens:"AY105460111121", nama:"JUWANDI",           nomorRekening:"0031054601121", mitraBayar:"Bank Mandiri", tglUnggah:"2026-07-02", status:"Disetujui", catatan:"" },
-  { nopens:"EY101086111002", nama:"WARDI",             nomorRekening:"0041010861002", mitraBayar:"Bank BTN",     tglUnggah:"2026-07-09", status:"Pending",   catatan:"" },
-  { nopens:"BC147967111034", nama:"SOETARTO",          nomorRekening:"0051479671034", mitraBayar:"Bank BNI",     tglUnggah:"2026-07-09", status:"Pending",   catatan:"" },
-  { nopens:"BB146468111058", nama:"SOERJO SOELARTO",   nomorRekening:"0061464681058", mitraBayar:"Bank BRI",     tglUnggah:"2026-07-15", status:"Ditolak",   catatan:"Nomor rekening pada berkas tidak sesuai dengan buku tabungan yang dilampirkan." },
-  { nopens:"EP001073111017", nama:"ASTUTI",            nomorRekening:"0070010731017", mitraBayar:"Bank BCA",     tglUnggah:"2026-07-15", status:"Disetujui", catatan:"" },
-  { nopens:"EP000737111009", nama:"HERMAN",            nomorRekening:"0080007371009", mitraBayar:"Bank BTN",     tglUnggah:"2026-07-21", status:"Pending",   catatan:"" }
+  { nopens:"BZ131770111046", nama:"SURIPTO",         nomorRekening:"0021017701046", mitraBayar:"Bank BRI",     tglUnggah:"2026-07-02" },
+  { nopens:"AY105460111121", nama:"JUWANDI",         nomorRekening:"0031054601121", mitraBayar:"Bank Mandiri", tglUnggah:"2026-07-02" },
+  { nopens:"EY101086111002", nama:"WARDI",           nomorRekening:"0041010861002", mitraBayar:"Bank BTN",     tglUnggah:"2026-07-09" },
+  { nopens:"BC147967111034", nama:"SOETARTO",        nomorRekening:"0051479671034", mitraBayar:"Bank BNI",     tglUnggah:"2026-07-09" },
+  { nopens:"BB146468111058", nama:"SOERJO SOELARTO", nomorRekening:"0061464681058", mitraBayar:"Bank BRI",     tglUnggah:"2026-07-15" },
+  { nopens:"EP001073111017", nama:"ASTUTI",          nomorRekening:"0070010731017", mitraBayar:"Bank BCA",     tglUnggah:"2026-07-15" },
+  { nopens:"EP000737111009", nama:"HERMAN",          nomorRekening:"0080007371009", mitraBayar:"Bank BTN",     tglUnggah:"2026-07-21" }
 ];
 
 /* Baris yang tampil di Section Preview saat berkas contoh diunggah — prototipe

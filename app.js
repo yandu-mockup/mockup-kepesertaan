@@ -123,7 +123,6 @@ function go(id) {
   if (id === "dapem-validasi") renderValidasiKep();
   if (id === "dapem-keuangan") renderKeuangan();
   if (id === "upload-rekening") { urGotoList(); renderUploadRekening(); }
-  if (id === "verifikasi-upload-rekening") renderVerifikasiUploadRekening();
 }
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-go]");
@@ -13791,19 +13790,10 @@ renderBumVerifAngsuran();
    UPLOAD REKENING
    Upload Rekening merekam nomor rekening peserta secara kolektif lewat
    unggah template Excel (Section 1) lalu memeriksa hasilnya di Preview
-   sebelum disimpan (Section 2). Baris yang disimpan berstatus "Pending"
-   dan langsung muncul di layar Verifikasi Upload Rekening, sampai Divisi
-   Kepesertaan memutuskan lewat halaman Detail.
+   sebelum disimpan (Section 2). Baris yang disimpan langsung masuk ke
+   daftar rekening peserta.
    =========================================================================== */
 let uploadRekeningRows = DATA_UPLOAD_REKENING.map((r, i) => ({ ...r, _id: i }));
-
-const URV_PILL_STATUS = {
-  "Pending"  : "pill-warn",
-  "Disetujui": "pill-ok",
-  "Ditolak"  : "pill-bad"
-};
-const urvPill = r => `<span class="pill ${URV_PILL_STATUS[r.status]}">${esc(r.status)}</span>`;
-let urvFilterStatus = "all";
 
 /* --------------------------------------------------------- Layar Upload Rekening */
 function renderUploadRekening() {
@@ -13892,129 +13882,12 @@ $("#ur-simpan").onclick = () => {
     uploadRekeningRows.push({
       _id: uploadRekeningRows.length ? Math.max(...uploadRekeningRows.map(x => x._id)) + 1 : 0,
       nopens: r.nopens, nama: r.nama, nomorRekening: r.nomorRekening, mitraBayar: r.mitraBayar,
-      tglUnggah: iso, status: "Pending", catatan: ""
+      tglUnggah: iso
     });
   });
   renderUploadRekening();
-  renderVerifikasiUploadRekening();
   urGotoList();
-  toast(`${n} data rekening tersimpan dan masuk ke Verifikasi Upload Rekening.`, "ok");
+  toast(`${n} data rekening tersimpan.`, "ok");
 };
 
-/* --------------------------------------------------- Layar Verifikasi Upload Rekening */
-function renderVerifikasiUploadRekening() {
-  const rows = uploadRekeningRows.filter(r =>
-    urvFilterStatus === "all" || r.status === urvFilterStatus);
-  $("#urv-body").innerHTML = rows.length ? rows.map((r, i) => `
-    <tr>
-      <td>${i + 1}</td>
-      <td>${esc(r.nopens)}</td>
-      <td>${esc(r.nama)}</td>
-      <td>${esc(r.nomorRekening)}</td>
-      <td>${esc(r.mitraBayar)}</td>
-      <td>${urvPill(r)}</td>
-      <td><button class="btn btn-info btn-sm" data-urv-detail="${r._id}">👁 Detail</button></td>
-    </tr>`).join("")
-    : `<tr><td colspan="7"><div class="empty"><h4>Tidak ada data rekening</h4><p>Coba ubah filter status pencarian.</p></div></td></tr>`;
-  $("#urv-count").textContent = `Menampilkan ${rows.length} data rekening`;
-}
-$("#urv-cari").onclick = () => { urvFilterStatus = $("#urv-f-status").value; renderVerifikasiUploadRekening(); };
-
-/* -------------------------------------------------- Detail Verifikasi Upload Rekening */
-let urvDetailRow = null;
-
-function renderUrvDetail() {
-  const r = urvDetailRow;
-  if (!r) return;
-  const bisaPutus = r.status === "Pending";
-  $("#urvd-title").textContent = r.nama;
-  $("#urvd-sub").textContent   = `${r.nopens} · ${r.mitraBayar}`;
-  const badge = $("#urvd-status");
-  badge.className   = `pill ${URV_PILL_STATUS[r.status]}`;
-  badge.textContent = r.status;
-
-  $("#urvd-body").innerHTML = `
-    ${reviewField("NOPENS", r.nopens)}
-    ${reviewField("Nama", r.nama)}
-    ${reviewField("Nomor Rekening", r.nomorRekening)}
-    ${reviewField("Mitra Bayar", r.mitraBayar)}`;
-
-  $("#urvd-actions").innerHTML = bisaPutus ? `
-    <button class="btn btn-danger" id="urvd-tolak">✕ Tolak</button>
-    <button class="btn btn-success" id="urvd-setujui">✓ Setujui</button>` : "";
-  if (bisaPutus) {
-    $("#urvd-setujui").onclick = () => urvdConfirmSetujui(r);
-    $("#urvd-tolak").onclick   = () => urvdConfirmTolak(r);
-  }
-}
-
-function urvShowDetail(r) {
-  if (!r) return;
-  urvDetailRow = r;
-  renderUrvDetail();
-  go("verifikasi-upload-rekening-detail");
-}
-$("#urvd-kembali").onclick      = () => go("verifikasi-upload-rekening");
-$("#urvd-kembali-atas").onclick = () => go("verifikasi-upload-rekening");
-
-function urvPutusan(r, status, catatan, pesan, kind) {
-  r.status  = status;
-  r.catatan = catatan;
-  renderUploadRekening();
-  renderVerifikasiUploadRekening();
-  renderUrvDetail();
-  go("verifikasi-upload-rekening");
-  toast(pesan, kind);
-}
-
-function urvdConfirmSetujui(r) {
-  $("#modal-title").textContent = "Konfirmasi Persetujuan Rekening";
-  $("#modal-sub").textContent   = `${r.nopens} · ${r.nama}`;
-  $("#modal-body").innerHTML = `
-    <div class="alert alert-info">
-      <span>ⓘ</span><span>Nomor rekening <b>${esc(r.nomorRekening)}</b> di <b>${esc(r.mitraBayar)}</b> akan ditandai <b>Disetujui</b> sebagai rekening aktif peserta.</span>
-    </div>
-    <div class="form-actions">
-      <button class="btn btn-ghost" id="urvd-setuju-batal">Batal</button>
-      <button class="btn btn-success" id="urvd-setuju-konfirmasi">✓ Setujui</button>
-    </div>`;
-  openModal();
-  $("#urvd-setuju-batal").onclick      = closeModal;
-  $("#urvd-setuju-konfirmasi").onclick = () => {
-    closeModal();
-    urvPutusan(r, "Disetujui", "", `Rekening ${r.nomorRekening} atas nama ${r.nama} disetujui.`, "ok");
-  };
-}
-
-function urvdConfirmTolak(r) {
-  $("#modal-title").textContent = "Konfirmasi Penolakan Rekening";
-  $("#modal-sub").textContent   = `${r.nopens} · ${r.nama}`;
-  $("#modal-body").innerHTML = `
-    <div class="alert alert-bad">
-      <span>⚠</span><span>Data rekening ini akan ditandai <b>Ditolak</b> dan perlu diunggah ulang.</span>
-    </div>
-    <div class="field" style="margin-top:14px">
-      <label class="fl" for="urvd-catatan-tolak">Alasan Penolakan <span class="req">*</span></label>
-      <textarea class="inp" id="urvd-catatan-tolak" style="height:90px;padding:9px 10px;resize:vertical" placeholder="Contoh: nomor rekening tidak sesuai dengan buku tabungan yang dilampirkan."></textarea>
-    </div>
-    <div class="form-actions">
-      <button class="btn btn-ghost" id="urvd-tolak-batal">Batal</button>
-      <button class="btn btn-danger-solid" id="urvd-tolak-konfirmasi">✕ Tolak</button>
-    </div>`;
-  openModal();
-  $("#urvd-tolak-batal").onclick      = closeModal;
-  $("#urvd-tolak-konfirmasi").onclick = () => {
-    const catatan = $("#urvd-catatan-tolak").value.trim();
-    if (!catatan) { toast("Alasan penolakan wajib diisi.", "bad"); return; }
-    closeModal();
-    urvPutusan(r, "Ditolak", catatan, `Rekening ${r.nomorRekening} atas nama ${r.nama} ditolak.`, "bad");
-  };
-}
-
-document.addEventListener("click", e => {
-  const bDetail = e.target.closest("[data-urv-detail]");
-  if (bDetail) urvShowDetail(uploadRekeningRows.find(x => x._id === +bDetail.dataset.urvDetail));
-});
-
 renderUploadRekening();
-renderVerifikasiUploadRekening();
