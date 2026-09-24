@@ -11565,7 +11565,9 @@ $("#skrf-mekanisme").onchange = () => {
   skrTerapkanMekanisme();
 };
 
-$("#skrf-template").onclick = () => toast("Template Satuan Kerja diunduh.");
+/* Tombol template mengunduh berkas aslinya di folder ini lewat href + download. */
+$("#skrf-template").href = encodeURIComponent(SATUAN_KERJA_KOLEKTIF_CONTOH.templateFile);
+$("#skrf-template").setAttribute("download", SATUAN_KERJA_KOLEKTIF_CONTOH.templateFile);
 
 $("#skrf-dropzone").onclick = () => {
   skrForm.berkas = true;

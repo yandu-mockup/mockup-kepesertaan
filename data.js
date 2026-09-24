@@ -4701,9 +4701,11 @@ const DATA_SATUAN_KERJA = [
 
 /* Isi berkas contoh yang "terbaca" saat Tambah Satuan Kerja mekanisme
    Kolektif. Kodenya belum terdaftar, jadi unggahan pertama masuk seluruhnya;
-   unggahan ulang dilewati karena kodenya sudah ada. */
+   unggahan ulang dilewati karena kodenya sudah ada. `templateFile` = berkas
+   yang diunduh tombol "⤓ Download Template Satuan Kerja" (ada di folder ini). */
 const SATUAN_KERJA_KOLEKTIF_CONTOH = {
-  namaBerkas: "satuan_kerja_kolektif_2026.xlsx",
+  templateFile: "template-satuan-kerja.xlsx",
+  namaBerkas:   "satuan_kerja_kolektif_2026.xlsx",
   rows: [
     { kode:"0421", nama:"KODIM 0833/KOTA MALANG", alamat:"Jl. Kahuripan No. 12, Klojen, Kota Malang" },
     { kode:"0422", nama:"KODIM 0818/MALANG-BATU", alamat:"Jl. Panglima Sudirman No. 1, Kota Batu" },
@@ -4749,24 +4751,24 @@ const DATA_DAERAH = [
    unggahan pertama selalu masuk seluruhnya; unggahan ulang akan dilewati
    karena kodenya sudah ada. */
 const DAERAH_KOLEKTIF_CONTOH = {
-  Provinsi: { templateFile:"Template Daerah Provinsi.xlsx", kolom:["Kode Provinsi", "Nama Provinsi"],
+  Provinsi: { templateFile:"template-daerah-provinsi.xlsx", kolom:["Kode Provinsi", "Nama Provinsi"],
     namaBerkas:"daerah_kolektif_provinsi_2026.xlsx", rows:[
     { kode:"34", nama:"DI YOGYAKARTA", induk:"" },
     { kode:"36", nama:"BANTEN",        induk:"" }
   ] },
-  Kota: { templateFile:"Template Daerah Kota.xlsx", kolom:["Kode Kota", "Nama Provinsi", "Nama Kota"],
+  Kota: { templateFile:"template-daerah-kota.xlsx", kolom:["Kode Kota", "Nama Provinsi", "Nama Kota"],
     namaBerkas:"daerah_kolektif_kota_2026.xlsx", rows:[
     { kode:"32.75", nama:"KOTA BEKASI",    induk:"32" },
     { kode:"33.72", nama:"KOTA SURAKARTA", induk:"33" },
     { kode:"35.73", nama:"KOTA MALANG",    induk:"35" }
   ] },
-  Kecamatan: { templateFile:"Template Daerah Kecamatan.xlsx", kolom:["Kode Kecamatan", "Nama Kota", "Nama Kecamatan"],
+  Kecamatan: { templateFile:"template-daerah-kecamatan.xlsx", kolom:["Kode Kecamatan", "Nama Kota", "Nama Kecamatan"],
     namaBerkas:"daerah_kolektif_kecamatan_2026.xlsx", rows:[
     { kode:"31.71.02", nama:"KEC. SAWAH BESAR",    induk:"31.71" },
     { kode:"33.74.02", nama:"KEC. SEMARANG UTARA", induk:"33.74" },
     { kode:"35.78.13", nama:"KEC. BENOWO",         induk:"35.78" }
   ] },
-  Kelurahan: { templateFile:"Template Daerah Kelurahan.xlsx", kolom:["Kode Kelurahan", "Nama Kecamatan", "Nama Kelurahan"],
+  Kelurahan: { templateFile:"template-daerah-kelurahan.xlsx", kolom:["Kode Kelurahan", "Nama Kecamatan", "Nama Kelurahan"],
     namaBerkas:"daerah_kolektif_kelurahan_2026.xlsx", rows:[
     { kode:"32.73.27.1001", nama:"KEL. CISARANTEN KIDUL", induk:"32.73.27" },
     { kode:"35.15.01.1002", nama:"KEL. PUCANG",           induk:"35.15.01" },
