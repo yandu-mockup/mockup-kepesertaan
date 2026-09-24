@@ -532,9 +532,12 @@ $("#pum-baru-cari").onclick = () => {
   const pumMatch = pumRows.find(r => samaDenganPeserta(r, found));
   const bumMatch = !pumMatch && bumRows.find(r => samaDenganPeserta(r, found));
 
-  /* Anggota TNI dengan Masa Kerja Dinas < 2 Tahun juga belum memenuhi syarat. */
-  const masaKerjaAwal = /^tni/i.test(found.angkatan || "") ? masaKerjaKpaAwal(found.kpa) : null;
-  const masaKerjaKurang = masaKerjaAwal !== null && masaKerjaAwal < 2;
+  /* Masa Kerja Dinas ditampilkan untuk semua peserta; yang dikunci hanya
+     anggota TNI dengan Masa Kerja Dinas < 2 Tahun. */
+  const masaKerjaAwal = masaKerjaKpaAwal(found);
+  const masaKerjaLabel = masaKerjaAwal === null ? "-" : `${masaKerjaAwal} Tahun`;
+  const masaKerjaKurang = /^tni/i.test(found.angkatan || "") &&
+                          masaKerjaAwal !== null && masaKerjaAwal < 2;
 
   const belumMemenuhiSyarat = !!pumMatch || !!bumMatch || masaKerjaKurang;
 
@@ -547,6 +550,12 @@ $("#pum-baru-cari").onclick = () => {
       <div class="field"><label class="fl">NPWP</label><div>${esc(found.npwp)}</div></div>
       <div class="field"><label class="fl">NIK</label><div>${esc(found.nik || "-")}</div></div>
       <div class="field"><label class="fl">Angkatan</label><div>${esc(found.angkatan)}</div></div>
+      <div class="field"><label class="fl">Masa Kerja Dinas</label>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span>${esc(masaKerjaLabel)}</span>
+          ${masaKerjaKurang ? `<span class="pill pill-bad">Kurang dari 2 Tahun</span>` : ""}
+        </div>
+      </div>
     </div>
     <div class="form-actions">
       <button class="btn btn-primary" id="pum-baru-lanjut" ${belumMemenuhiSyarat ? "disabled" : ""}>Lanjutkan →</button>
@@ -1375,13 +1384,15 @@ function hitungMasaKerjaTahun() {
   return tahunDariTmt(pfEarliestTmt());
 }
 
-/* Masa Kerja Dinas dari Riwayat Kepangkatan Peserta (DB) langsung berdasarkan
-   Nomor KPA — dipakai di langkah "Cari Data Peserta" sebelum wizard (dan
-   pfFound) terbentuk. */
-function masaKerjaKpaAwal(kpa) {
-  const rows = DATA_RIWAYAT_KEPANGKATAN[kpa] || [];
+/* Masa Kerja Dinas peserta langsung dari data master — dipakai di langkah
+   "Cari Data Peserta" sebelum wizard (dan pfFound) terbentuk. Sumbernya TMT
+   tertua di Riwayat Kepangkatan Peserta (DB); kalau peserta itu belum punya
+   riwayat, dipakai TMT Pengangkatan Awal yang menempel di baris pesertanya.
+   null = kedua sumber kosong, jadi masa kerjanya memang tidak diketahui. */
+function masaKerjaKpaAwal(peserta) {
+  const rows = DATA_RIWAYAT_KEPANGKATAN[peserta.kpa] || [];
   const tmts = rows.map(r => r.tmt).filter(Boolean).sort();
-  return tahunDariTmt(tmts[0] || null);
+  return tahunDariTmt(tmts[0] || peserta.tmt || null);
 }
 
 /* Snapshot lengkap dari semua field wizard (langkah 1–5) untuk tipe yang
