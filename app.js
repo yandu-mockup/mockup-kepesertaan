@@ -11025,18 +11025,48 @@ function unorForm(judul, awal, simpan) {
   $("#modal-title").textContent = judul;
   $("#modal-sub").textContent   = "Kode Unit Organisasi harus unik.";
   $("#modal-body").innerHTML = `
-    <div class="field">
-      <label class="fl">Kode Unit Organisasi <span class="req">*</span></label>
-      <input class="inp" id="unor-m-kode" value="${esc(awal.kode || "")}" placeholder="Contoh: UNOR-AD-046">
-      <div class="hint">Pola kode: UNOR-&lt;matra&gt;-&lt;nomor urut&gt;.</div>
+    <div class="grid2">
+      <div class="field">
+        <label class="fl" for="unor-m-kode">Kode Unit Organisasi <span class="req">*</span></label>
+        <input class="inp" id="unor-m-kode" value="${esc(awal.kode || "")}" placeholder="Contoh: UNOR-AD-046">
+        <div class="hint">Pola kode: UNOR-&lt;matra&gt;-&lt;nomor urut&gt;.</div>
+      </div>
+      <div class="field">
+        <label class="fl" for="unor-m-nama">Nama Unit Organisasi <span class="req">*</span></label>
+        <input class="inp" id="unor-m-nama" value="${esc(awal.nama || "")}" placeholder="Contoh: Markas Besar TNI Angkatan Darat (MABESAD)">
+      </div>
     </div>
-    <div class="field">
-      <label class="fl">Nama Unit Organisasi <span class="req">*</span></label>
-      <input class="inp" id="unor-m-nama" value="${esc(awal.nama || "")}">
+    <div class="grid2">
+      <div class="field">
+        <label class="fl" for="unor-m-singkatan">Nama Singkatan Unit Organisasi <span class="req">*</span></label>
+        <input class="inp" id="unor-m-singkatan" value="${esc(awal.singkatan || "")}" placeholder="Contoh: MABESAD">
+      </div>
+      <div class="field">
+        <label class="fl" for="unor-m-deskripsi">Deskripsi Unit Organisasi</label>
+        <input class="inp" id="unor-m-deskripsi" value="${esc(awal.deskripsi || "")}" placeholder="Keterangan singkat unit organisasi">
+      </div>
     </div>
-    <div class="field" style="margin-bottom:0">
-      <label class="fl">Deskripsi Unit Organisasi</label>
-      <textarea class="inp" id="unor-m-deskripsi" style="height:80px;padding:9px 10px;resize:vertical">${esc(awal.deskripsi || "")}</textarea>
+    <div class="grid2">
+      <div class="field">
+        <label class="fl" for="unor-m-telepon">Telepon Unit Organisasi</label>
+        <input class="inp" id="unor-m-telepon" value="${esc(awal.telepon || "")}" placeholder="Contoh: 021-8459123">
+      </div>
+      <div class="field">
+        <label class="fl" for="unor-m-status">Default Status Personil</label>
+        <select class="inp" id="unor-m-status">
+          <option value="">— Pilih Status Personil —</option>
+          ${SPP_STATUS_PERSONIL.map(s => `<option${s === awal.statusPersonil ? " selected" : ""}>${esc(s)}</option>`).join("")}
+        </select>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="field" style="margin-bottom:0">
+        <label class="fl" for="unor-m-angkatan">Angkatan</label>
+        <select class="inp" id="unor-m-angkatan">
+          <option value="">— Pilih Angkatan —</option>
+          ${UNOR_ANGKATAN.map(a => `<option${a === awal.angkatan ? " selected" : ""}>${esc(a)}</option>`).join("")}
+        </select>
+      </div>
     </div>
     <div class="form-actions" style="justify-content:flex-end">
       <button class="btn btn-ghost" id="unor-m-batal">Batal</button>
@@ -11046,11 +11076,18 @@ function unorForm(judul, awal, simpan) {
   $("#unor-m-batal").onclick  = closeModal;
   $("#unor-m-simpan").onclick = () => {
     const nilai = {
-      kode:      $("#unor-m-kode").value.trim().toUpperCase(),
-      nama:      $("#unor-m-nama").value.trim(),
-      deskripsi: $("#unor-m-deskripsi").value.trim()
+      kode:           $("#unor-m-kode").value.trim().toUpperCase(),
+      nama:           $("#unor-m-nama").value.trim(),
+      singkatan:      $("#unor-m-singkatan").value.trim().toUpperCase(),
+      deskripsi:      $("#unor-m-deskripsi").value.trim(),
+      telepon:        $("#unor-m-telepon").value.trim(),
+      statusPersonil: $("#unor-m-status").value,
+      angkatan:       $("#unor-m-angkatan").value
     };
-    if (!nilai.kode || !nilai.nama) { toast("Kode dan Nama Unit Organisasi wajib diisi.", "bad"); return; }
+    if (!nilai.kode || !nilai.nama || !nilai.singkatan) {
+      toast("Kode, Nama, dan Nama Singkatan Unit Organisasi wajib diisi.", "bad");
+      return;
+    }
     simpan(nilai);
   };
 }
