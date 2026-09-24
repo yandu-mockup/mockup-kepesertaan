@@ -8057,6 +8057,7 @@ function dupBuka(migrasiId, asal) {
   $("#dup-tmt-iuran-akhir").value = dkfKeInput(pr.tglIuranTerakhir);
   $("#dup-status-peserta").innerHTML = dupOpsi(UBAH_PESERTA_STATUS, "— Silahkan Pilih Status Peserta —",
     dupStatusPesertaLabel(d.statusPeserta));
+  $("#dup-tmt-capeg").value = dkfKeInput(pr.tmtCapeg);
 
   /* ---- Profil Peserta ---- */
   $("#dup-nama").value          = dkfIsi(d.nama);
@@ -8287,6 +8288,7 @@ $("#dup-simpan").onclick = () => {
      filter Status Peserta di layar pencarian. */
   const status = $("#dup-status-peserta").value;
   if (status) d.statusPeserta = { "Meninggal Dunia Aktif":"MENINGGAL AKTIF" }[status] || status.toUpperCase();
+  pr.tmtCapeg = dkfDariInput($("#dup-tmt-capeg").value);
 
   /* ---- Profil Peserta ---- */
   d.nama            = teks("#dup-nama");
