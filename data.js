@@ -4652,37 +4652,50 @@ const DATA_BUP = [
    disimpan), `alamat` = alamat satuan. `unor` = nama pada DATA_UNOR dan
    `kppn` = kode KPPN pada DATA_REFERENSI (jenis "KPPN") hanya ada pada data
    lama — form Tambah Satuan Kerja tidak merekamnya, jadi entri baru kosong.
-   `kode` unik. */
+   `kode` unik. Form Tambah mekanisme Satuan juga merekam `kodeUker`,
+   `telepon`, `kantorCabang` (SATKER_KANTOR_CABANG), `kelurahan`, dan
+   `kodePos`; Deskripsi Kesatuan disimpan pada `keterangan`. */
+/* Pilihan "Kantor Cabang" pada form Tambah Satuan Kerja — kode + nama
+   kantor cabang ASABRI. */
+const SATKER_KANTOR_CABANG = [
+  "1000 - KANTOR PUSAT",      "1100 - KANCAB MEDAN",          "1200 - KANCAB PALEMBANG",
+  "1300 - KANCAB BANDUNG",    "1400 - KANCAB SEMARANG",       "1500 - KANCAB SURABAYA",
+  "1600 - KANCAB BALIKPAPAN", "1700 - KANCAB MAKASSAR",       "1800 - KANCAB JAYAPURA",
+  "1900 - KANCAB DENPASAR",   "2000 - KANCAB UTAMA JAKARTA",  "2100 - KANCAB AMBON",
+  "2200 - KANCAB BANDA ACEH", "2300 - KANCAB PONTIANAK",      "1101 - KANCAB PEKANBARU",
+  "1102 - KANCAB BATAM",      "1103 - KANCAB PADANG",         "1201 - KANCAB LAMPUNG"
+];
+
 const DATA_SATUAN_KERJA = [
-  { tgl:"04/07/2026", kode:"0401", nama:"KOREM 084/BHASKARA JAYA",         alamat:"Jl. Hayam Wuruk No. 2, Sawunggaling, Wonokromo, Kota Surabaya",
-    unor:"Komando Daerah Militer V/Brawijaya (KODAM V/BRW)",            kppn:"084", mekanisme:"Satuan", oleh:"Lojita — R. Prasetyo",
+  { tgl:"04/07/2026", kodeUker:"UKER-0401", kode:"0401", nama:"KOREM 084/BHASKARA JAYA",         alamat:"Jl. Hayam Wuruk No. 2, Sawunggaling, Wonokromo, Kota Surabaya",
+    unor:"Komando Daerah Militer V/Brawijaya (KODAM V/BRW)",            kppn:"084", telepon:"031-5678001", kantorCabang:"1500 - KANCAB SURABAYA", kelurahan:"", kodePos:"60242", mekanisme:"Satuan", oleh:"Lojita — R. Prasetyo",
     keterangan:"Komando resor militer wilayah Surabaya dan Madura." },
-  { tgl:"04/07/2026", kode:"0412", nama:"KODIM 0827/SUMENEP",              alamat:"Jl. Trunojoyo No. 110, Kolor, Kabupaten Sumenep",
-    unor:"Komando Daerah Militer V/Brawijaya (KODAM V/BRW)",            kppn:"084", mekanisme:"Satuan", oleh:"Lojita — R. Prasetyo",
+  { tgl:"04/07/2026", kodeUker:"UKER-0412", kode:"0412", nama:"KODIM 0827/SUMENEP",              alamat:"Jl. Trunojoyo No. 110, Kolor, Kabupaten Sumenep",
+    unor:"Komando Daerah Militer V/Brawijaya (KODAM V/BRW)",            kppn:"084", telepon:"0328-662002", kantorCabang:"1500 - KANCAB SURABAYA", kelurahan:"", kodePos:"69417", mekanisme:"Satuan", oleh:"Lojita — R. Prasetyo",
     keterangan:"Komando distrik militer di bawah KOREM 084/BHASKARA JAYA." },
-  { tgl:"12/07/2026", kode:"0415", nama:"KODIM 0829/BANGKALAN",            alamat:"Jl. Soekarno Hatta No. 1, Mlajah, Kabupaten Bangkalan",
-    unor:"Komando Daerah Militer V/Brawijaya (KODAM V/BRW)",            kppn:"084", mekanisme:"Satuan", oleh:"Lojita — S. Wijayanti",
+  { tgl:"12/07/2026", kodeUker:"UKER-0415", kode:"0415", nama:"KODIM 0829/BANGKALAN",            alamat:"Jl. Soekarno Hatta No. 1, Mlajah, Kabupaten Bangkalan",
+    unor:"Komando Daerah Militer V/Brawijaya (KODAM V/BRW)",            kppn:"084", telepon:"031-3095003", kantorCabang:"1500 - KANCAB SURABAYA", kelurahan:"", kodePos:"69116", mekanisme:"Satuan", oleh:"Lojita — S. Wijayanti",
     keterangan:"Pemekaran Kodim sesuai Perkasad Nomor 12/IV/2026." },
-  { tgl:"12/07/2026", kode:"0655", nama:"POLRES SIDOARJO",                 alamat:"Jl. Kombes Pol. M. Duryat No. 1, Kabupaten Sidoarjo",
-    unor:"Kepolisian Daerah Jawa Timur (POLDA JATIM)",                  kppn:"084", mekanisme:"Satuan", oleh:"Lojita — S. Wijayanti",
+  { tgl:"12/07/2026", kodeUker:"UKER-0655", kode:"0655", nama:"POLRES SIDOARJO",                 alamat:"Jl. Kombes Pol. M. Duryat No. 1, Kabupaten Sidoarjo",
+    unor:"Kepolisian Daerah Jawa Timur (POLDA JATIM)",                  kppn:"084", telepon:"031-8921004", kantorCabang:"1500 - KANCAB SURABAYA", kelurahan:"", kodePos:"61212", mekanisme:"Satuan", oleh:"Lojita — S. Wijayanti",
     keterangan:"Kepolisian resor wilayah Kabupaten Sidoarjo." },
-  { tgl:"21/07/2026", kode:"0920", nama:"SKADRON UDARA 3 LANUD ISWAHJUDI", alamat:"Lanud Iswahjudi, Maospati, Kabupaten Magetan",
-    unor:"Pangkalan TNI AU Iswahjudi (LANUD IWJ)",                      kppn:"084", mekanisme:"Satuan", oleh:"Lojita — R. Prasetyo",
+  { tgl:"21/07/2026", kodeUker:"UKER-0920", kode:"0920", nama:"SKADRON UDARA 3 LANUD ISWAHJUDI", alamat:"Lanud Iswahjudi, Maospati, Kabupaten Magetan",
+    unor:"Pangkalan TNI AU Iswahjudi (LANUD IWJ)",                      kppn:"084", telepon:"0351-868005", kantorCabang:"1500 - KANCAB SURABAYA", kelurahan:"", kodePos:"63392", mekanisme:"Satuan", oleh:"Lojita — R. Prasetyo",
     keterangan:"Satuan skadron tempur yang berpangkalan di Lanud Iswahjudi." },
-  { tgl:"21/07/2026", kode:"0501", nama:"KODIM 0501/JAKARTA PUSAT",        alamat:"Jl. Kramat Raya No. 150, Senen, Jakarta Pusat",
-    unor:"Komando Daerah Militer Jayakarta (KODAM JAYA)",               kppn:"019", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo",
+  { tgl:"21/07/2026", kodeUker:"UKER-0501", kode:"0501", nama:"KODIM 0501/JAKARTA PUSAT",        alamat:"Jl. Kramat Raya No. 150, Senen, Jakarta Pusat",
+    unor:"Komando Daerah Militer Jayakarta (KODAM JAYA)",               kppn:"019", telepon:"021-3904006", kantorCabang:"2000 - KANCAB UTAMA JAKARTA", kelurahan:"", kodePos:"10450", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo",
     keterangan:"Komando distrik militer wilayah Jakarta Pusat." },
-  { tgl:"28/07/2026", kode:"0620", nama:"POLRES METRO JAKARTA PUSAT",      alamat:"Jl. Kramat Raya No. 61, Senen, Jakarta Pusat",
-    unor:"Kepolisian Daerah Metro Jaya (POLDA METRO JAYA)",             kppn:"019", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo",
+  { tgl:"28/07/2026", kodeUker:"UKER-0620", kode:"0620", nama:"POLRES METRO JAKARTA PUSAT",      alamat:"Jl. Kramat Raya No. 61, Senen, Jakarta Pusat",
+    unor:"Kepolisian Daerah Metro Jaya (POLDA METRO JAYA)",             kppn:"019", telepon:"021-3904007", kantorCabang:"2000 - KANCAB UTAMA JAKARTA", kelurahan:"", kodePos:"10450", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo",
     keterangan:"Kepolisian resor metropolitan wilayah Jakarta Pusat." },
-  { tgl:"28/07/2026", kode:"0801", nama:"BIRO KEUANGAN SETJEN KEMHAN",     alamat:"Jl. Medan Merdeka Barat No. 13-14, Gambir, Jakarta Pusat",
-    unor:"Sekretariat Jenderal Kementerian Pertahanan (SETJEN KEMHAN)", kppn:"019", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo",
+  { tgl:"28/07/2026", kodeUker:"UKER-0801", kode:"0801", nama:"BIRO KEUANGAN SETJEN KEMHAN",     alamat:"Jl. Medan Merdeka Barat No. 13-14, Gambir, Jakarta Pusat",
+    unor:"Sekretariat Jenderal Kementerian Pertahanan (SETJEN KEMHAN)", kppn:"019", telepon:"021-3904008", kantorCabang:"2000 - KANCAB UTAMA JAKARTA", kelurahan:"", kodePos:"10450", mekanisme:"Kolektif", oleh:"Lojita — A. Nurcahyo",
     keterangan:"Biro pengelola keuangan di lingkungan Sekretariat Jenderal Kemhan." },
-  { tgl:"18/08/2026", kode:"0618", nama:"KODIM 0618/KOTA BANDUNG",         alamat:"Jl. Manado No. 4, Cihapit, Bandung Wetan, Kota Bandung",
-    unor:"Komando Daerah Militer III/Siliwangi (KODAM III/SLW)",        kppn:"137", mekanisme:"Satuan", oleh:"Lojita — S. Wijayanti",
+  { tgl:"18/08/2026", kodeUker:"UKER-0618", kode:"0618", nama:"KODIM 0618/KOTA BANDUNG",         alamat:"Jl. Manado No. 4, Cihapit, Bandung Wetan, Kota Bandung",
+    unor:"Komando Daerah Militer III/Siliwangi (KODAM III/SLW)",        kppn:"137", telepon:"022-4231009", kantorCabang:"1300 - KANCAB BANDUNG", kelurahan:"", kodePos:"40115", mekanisme:"Satuan", oleh:"Lojita — S. Wijayanti",
     keterangan:"Komando distrik militer wilayah Kota Bandung." },
-  { tgl:"18/08/2026", kode:"0633", nama:"POLRESTABES BANDUNG",             alamat:"Jl. Merdeka No. 18-20, Babakan Ciamis, Kota Bandung",
-    unor:"Kepolisian Daerah Jawa Barat (POLDA JABAR)",                  kppn:"137", mekanisme:"Satuan", oleh:"Lojita — S. Wijayanti",
+  { tgl:"18/08/2026", kodeUker:"UKER-0633", kode:"0633", nama:"POLRESTABES BANDUNG",             alamat:"Jl. Merdeka No. 18-20, Babakan Ciamis, Kota Bandung",
+    unor:"Kepolisian Daerah Jawa Barat (POLDA JABAR)",                  kppn:"137", telepon:"022-4231010", kantorCabang:"1300 - KANCAB BANDUNG", kelurahan:"", kodePos:"40115", mekanisme:"Satuan", oleh:"Lojita — S. Wijayanti",
     keterangan:"Kepolisian resor kota besar wilayah Bandung." }
 ];
 

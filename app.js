@@ -11542,9 +11542,10 @@ function skrTerapkanMekanisme() {
   $("#skrf-satuan").style.display   = m === "Satuan"   ? "" : "none";
   $("#skrf-kolektif").style.display = m === "Kolektif" ? "" : "none";
   $("#skrf-aksi").style.display     = m ? "" : "none";
-  $("#skrf-kode").value   = "";
-  $("#skrf-nama").value   = "";
-  $("#skrf-alamat").value = "";
+  ["#skrf-kode-uker", "#skrf-kode", "#skrf-nama", "#skrf-deskripsi", "#skrf-telepon",
+   "#skrf-kancab", "#skrf-kelurahan", "#skrf-kodepos", "#skrf-alamat"].forEach(id => { $(id).value = ""; });
+  $("#skrf-kodepos-saran").style.display = "none";
+  $("#skrf-kelurahan-list").classList.remove("open");
   skrResetUnggah();
 }
 
@@ -11591,13 +11592,62 @@ function skrSelesaiSimpan(pesan) {
   toast(pesan, "ok");
 }
 
+$("#skrf-kancab").innerHTML += SATKER_KANTOR_CABANG.map(k => `<option>${esc(k)}</option>`).join("");
+
+/* Autocomplete Desa/Kelurahan khusus form Satuan Kerja. Memakai tampilan yang
+   sama dengan autocomplete Data Peserta (.autocomplete-list/.autocomplete-item),
+   tetapi handler sendiri karena form ini tidak punya field Kantor Cabang
+   bergaya "Kanca ..." yang dipakai pola .pp-scope. Memilih kelurahan mengisi
+   Kode Pos; nilainya tetap boleh diubah manual. */
+$("#skrf-kelurahan").oninput = () => {
+  const q    = $("#skrf-kelurahan").value.trim().toLowerCase();
+  const list = $("#skrf-kelurahan-list");
+  const hits = q ? DATA_WILAYAH.filter(w => w.kelurahan.toLowerCase().includes(q)).slice(0, 8) : [];
+  list.innerHTML = hits.map(w => `
+    <div class="autocomplete-item" data-skrf-kel="${esc(w.kelurahan)}">
+      ${esc(w.kelurahan)}<small>${esc(w.kecamatan)}, ${esc(w.kabupaten)}, ${esc(w.provinsi)}</small>
+    </div>`).join("");
+  list.classList.toggle("open", hits.length > 0);
+};
+
+$("#skrf-kodepos").oninput = () => { $("#skrf-kodepos-saran").style.display = "none"; };
+
+document.addEventListener("click", e => {
+  const item = e.target.closest("[data-skrf-kel]");
+  if (item) {
+    const w = DATA_WILAYAH.find(x => x.kelurahan === item.dataset.skrfKel);
+    $("#skrf-kelurahan").value = `${w.kelurahan}, ${w.kecamatan}, ${w.kabupaten}, ${w.provinsi}`;
+    if (w.kodepos) {
+      $("#skrf-kodepos").value = w.kodepos;
+      $("#skrf-kodepos-saran").textContent = "💡 Terisi otomatis dari desa/kelurahan — bisa diubah jika perlu.";
+      $("#skrf-kodepos-saran").style.display = "";
+    }
+    $("#skrf-kelurahan-list").classList.remove("open");
+    return;
+  }
+  if (!e.target.closest("#skrf-kelurahan")) $("#skrf-kelurahan-list").classList.remove("open");
+});
+
 function skrSimpanSatuan() {
-  const kode   = $("#skrf-kode").value.trim().toUpperCase();
-  const nama   = $("#skrf-nama").value.trim().toUpperCase();
-  const alamat = $("#skrf-alamat").value.trim();
-  if (!kode || !nama || !alamat) { toast("Seluruh field bertanda * wajib diisi.", "bad"); return; }
+  const kodeUker = $("#skrf-kode-uker").value.trim().toUpperCase();
+  const kode     = $("#skrf-kode").value.trim().toUpperCase();
+  const nama     = $("#skrf-nama").value.trim().toUpperCase();
+  const alamat   = $("#skrf-alamat").value.trim();
+  const kodePos  = $("#skrf-kodepos").value.trim();
+  if (!kodeUker || !kode || !nama || !alamat || !kodePos) {
+    toast("Seluruh field bertanda * wajib diisi.", "bad");
+    return;
+  }
   if (skrKodeTerpakai(kode)) { toast(`Kode ${kode} sudah terdaftar pada daftar Satuan Kerja.`, "bad"); return; }
-  skrTambahBaris({ kode, nama, alamat, mekanisme: "Satuan" });
+
+  skrTambahBaris({
+    kodeUker, kode, nama, alamat, kodePos,
+    keterangan:    $("#skrf-deskripsi").value.trim() || "Belum ada keterangan.",
+    telepon:       $("#skrf-telepon").value.trim(),
+    kantorCabang:  $("#skrf-kancab").value,
+    kelurahan:     $("#skrf-kelurahan").value.trim(),
+    mekanisme:     "Satuan"
+  });
   skrSelesaiSimpan(`Satuan kerja ${nama} berhasil disimpan.`);
 }
 

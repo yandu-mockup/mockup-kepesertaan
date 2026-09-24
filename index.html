@@ -3043,20 +3043,57 @@
 
             <!-- Mekanisme Satuan -->
             <div id="skrf-satuan" style="display:none">
+              <h3 class="section-title">Data UKER</h3>
               <div class="grid2">
                 <div class="field">
-                  <label class="fl" for="skrf-kode">Kode Satuan <span class="req">*</span></label>
-                  <input class="inp" id="skrf-kode" placeholder="Contoh: 0421">
-                  <div class="hint">Kode Satuan harus unik.</div>
+                  <label class="fl" for="skrf-kode-uker">Kode UKER <span class="req">*</span></label>
+                  <input class="inp" id="skrf-kode-uker" placeholder="Contoh: UKER-0421">
                 </div>
                 <div class="field">
-                  <label class="fl" for="skrf-nama">Nama Satuan <span class="req">*</span></label>
+                  <label class="fl" for="skrf-kode">Kode Kesatuan <span class="req">*</span></label>
+                  <input class="inp" id="skrf-kode" placeholder="Contoh: 0421">
+                  <div class="hint">Kode Kesatuan harus unik.</div>
+                </div>
+              </div>
+              <div class="grid2">
+                <div class="field">
+                  <label class="fl" for="skrf-nama">Nama Kesatuan <span class="req">*</span></label>
                   <input class="inp" id="skrf-nama" placeholder="Contoh: KODIM 0833/KOTA MALANG">
+                </div>
+                <div class="field">
+                  <label class="fl" for="skrf-deskripsi">Deskripsi Kesatuan</label>
+                  <input class="inp" id="skrf-deskripsi" placeholder="Keterangan singkat kesatuan">
+                </div>
+              </div>
+              <div class="grid2">
+                <div class="field">
+                  <label class="fl" for="skrf-telepon">Telepon Kesatuan</label>
+                  <input class="inp" id="skrf-telepon" placeholder="Contoh: 0341-362123">
+                </div>
+                <div class="field">
+                  <label class="fl" for="skrf-kancab">Kantor Cabang</label>
+                  <select class="inp" id="skrf-kancab">
+                    <option value="">— Pilih Kantor Cabang —</option>
+                  </select>
+                </div>
+              </div>
+
+              <h3 class="section-title">Lokasi</h3>
+              <div class="grid2">
+                <div class="field" style="position:relative">
+                  <label class="fl" for="skrf-kelurahan">Desa/Kelurahan</label>
+                  <input class="inp" id="skrf-kelurahan" autocomplete="off" placeholder="Ketik nama desa/kelurahan...">
+                  <div class="autocomplete-list" id="skrf-kelurahan-list"></div>
+                </div>
+                <div class="field">
+                  <label class="fl" for="skrf-kodepos">Kode Pos <span class="req">*</span></label>
+                  <input class="inp" id="skrf-kodepos" inputmode="numeric" maxlength="5" placeholder="Contoh: 65111">
+                  <div class="hint" id="skrf-kodepos-saran" style="display:none"></div>
                 </div>
               </div>
               <div class="field">
-                <label class="fl" for="skrf-alamat">Alamat Satuan <span class="req">*</span></label>
-                <textarea class="inp" id="skrf-alamat" rows="3" placeholder="Contoh: Jl. Kahuripan No. 12, Klojen, Kota Malang"></textarea>
+                <label class="fl" for="skrf-alamat">Alamat <span class="req">*</span></label>
+                <input class="inp" id="skrf-alamat" placeholder="Contoh: Jl. Kahuripan No. 12, Klojen, Kota Malang">
               </div>
             </div>
 
