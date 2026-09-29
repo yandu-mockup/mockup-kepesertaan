@@ -12154,8 +12154,9 @@ document.addEventListener("click", e => {
    yang sama persis dengan List Peserta. */
 let sppRows = DATA_SPP.map((r, i) => ({ ...r, _id: i, rekomendasi: r.rekomendasi.map(k => ({ ...k })) }));
 
-/* Nomor permohonan meneruskan deret data contoh (SPP-2026-00117 terakhir). */
-let sppSeq = 117;
+/* Nomor permohonan meneruskan deret terakhir pada data contoh, jadi nomor
+   pengajuan baru tidak pernah bentrok saat data dummy ditambah. */
+let sppSeq = Math.max(0, ...sppRows.map(r => +String(r.no).slice(-5) || 0));
 
 function sppPillStatus(s) {
   return s === "Disetujui" ? "pill-ok" : s === "Ditolak" ? "pill-bad" : "pill-warn";

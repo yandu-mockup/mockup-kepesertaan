@@ -4790,6 +4790,302 @@ const DAERAH_KOLEKTIF_CONTOH = {
    kolom tabel daftar permohonan; `pangkat` sendiri berisi pangkat terakhir.
    --------------------------------------------------------------------------- */
 const DATA_SPP = [
+  /* --- Data uji tambahan: 17 pengajuan lintas status, angkatan, dan Kantor
+     Cabang. `kesatuan` sengaja memakai nama pada DATA_SATUAN_KERJA dan
+     `cabang` mengikuti SPP_KANCAB_LOKASI, supaya cocok dengan hasil pencarian
+     UKER dan autofill Kancab ASABRI di form Tambah. --- */
+  { no:"SPP-2026-00134", tgl:"18/09/2026", kpa:"LA940436", nama:"Wahyu Nugroho", nrp:"199404282015031002",
+    nik:"3578142804940005", tglLahir:"28/04/1994", pangkat:"SERSAN DUA", kesatuan:"KOREM 084/BHASKARA JAYA",
+    tmt:"01/03/2015", noSkep:"KEP/1180/III/2015", tglSkep:"12/02/2015", pangkatAwal:"PRAJURIT DUA",
+    angkatan:"TNI-AD", statusPersonil:"Prajurit", unor:"TNI AD", tempatLahir:"SURABAYA",
+    jk:"Laki-laki", statusKawin:"BELUM MENIKAH", npwp:"", alamat:"Jl. Hayam Wuruk No. 18", rt:"03", rw:"05",
+    kelurahan:"Sawunggaling, Wonokromo, Kota Surabaya", kodepos:"60242", telp:"", email:"wahyu.nugroho@mail.com", hp:"081234550134",
+    cabang:"KC Surabaya", pengaju:"Officer KC — D. Ramadhan", noRequest:"REQ-2026-01024",
+    dokumen:[], tanpaDokumen:true,
+    status:"Tertunda", tindakan:"", catatan:"Peserta belum dapat melampirkan berkas; menunggu salinan dari kesatuan.",
+    rekomendasi:[] },
+
+  { no:"SPP-2026-00133", tgl:"15/09/2026", kpa:"AU710262", nama:"Bayu Anggara", nrp:"199007152011011006",
+    nik:"3520151507900003", tglLahir:"15/07/1990", pangkat:"SERSAN SATU", kesatuan:"SKADRON UDARA 3 LANUD ISWAHJUDI",
+    tmt:"01/01/2011", noSkep:"KEP/402/I/2011", tglSkep:"10/12/2010", pangkatAwal:"PRAJURIT DUA",
+    angkatan:"TNI-AU", statusPersonil:"Prajurit", unor:"TNI AU", tempatLahir:"MAGETAN",
+    jk:"Laki-laki", statusKawin:"MENIKAH", npwp:"74.221.908.3-621.000", alamat:"Jl. Raya Maospati No. 41", rt:"02", rw:"04",
+    kelurahan:"Maospati, Maospati, Kabupaten Magetan", kodepos:"63392", telp:"0351778120", email:"bayu.anggara@mail.com", hp:"081234550133",
+    cabang:"KC Madiun", pengaju:"Officer KC — T. Wibisono", noRequest:"REQ-2026-01011",
+    dokumen:["Surat Permohonan KC Madiun.pdf", "Fotokopi KPA.pdf", "SKEP Pengangkatan.pdf"],
+    status:"Tertunda", tindakan:"", catatan:"",
+    rekomendasi:[] },
+
+  { no:"SPP-2026-00132", tgl:"11/09/2026", kpa:"PB910544", nama:"Hesti Puspitasari", nrp:"198512032007012004",
+    nik:"3515114312850006", tglLahir:"03/12/1985", pangkat:"BRIGADIR POLISI KEPALA", kesatuan:"POLRES SIDOARJO",
+    tmt:"01/01/2007", noSkep:"KEP/233/I/2007", tglSkep:"18/12/2006", pangkatAwal:"BHARADA",
+    angkatan:"POLRI", statusPersonil:"Prajurit", unor:"POLRI", tempatLahir:"SIDOARJO",
+    jk:"Perempuan", statusKawin:"MENIKAH", npwp:"68.410.337.2-603.000", alamat:"Jl. Kombes Pol. M. Duryat No. 27", rt:"01", rw:"08",
+    kelurahan:"Sidokumpul, Sidoarjo, Kabupaten Sidoarjo", kodepos:"61212", telp:"0318921345", email:"hesti.puspitasari@mail.com", hp:"081234550132",
+    bintangJasa:"Satyalancana Kesetiaan VIII Tahun",
+    cabang:"KC Surabaya", pengaju:"Officer KC — D. Ramadhan", noRequest:"REQ-2026-00998",
+    dokumen:["Surat Permohonan KC Surabaya.pdf", "Fotokopi KPA.pdf", "KTP & KK.pdf", "Surat Nikah / KPI.pdf"],
+    keluarga:[
+      { hubungan:"Suami", nama:"RIYADI SUSANTO", nik:"3515110206830004", tempatLahir:"SIDOARJO", tglLahir:"1983-06-02", jk:"Laki-laki" },
+      { hubungan:"Anak",  nama:"NAYLA PUTRI SUSANTO", nik:"3515114509120002", tempatLahir:"SIDOARJO", tglLahir:"2012-09-05", jk:"Perempuan" }
+    ],
+    riwayatPangkat:[
+      { pangkat:"BHARADA", tmt:"01/01/2007", noSkep:"KEP/233/I/2007", tglSkep:"18/12/2006" },
+      { pangkat:"BRIGADIR POLISI", tmt:"01/07/2014", noSkep:"KEP/1471/VII/2014", tglSkep:"20/06/2014" },
+      { pangkat:"BRIGADIR POLISI KEPALA", tmt:"01/01/2022", noSkep:"KEP/188/I/2022", tglSkep:"15/12/2021" }
+    ],
+    status:"Disetujui", tindakan:"Restore Data",
+    catatan:"Disetujui — data peserta aktif kembali dan cocok dengan arsip kepolisian.",
+    rekomendasi:[
+      { nama:"HESTI PUSPITASARI", nrp:"198512032007012004", kpa:"PB910544", tglLahir:"03/12/1985",
+        satker:"POLRES SIDOARJO", sumber:"Data Terhapus", skor:98 }
+    ] },
+
+  { no:"SPP-2026-00131", tgl:"08/09/2026", kpa:"KH430591", nama:"Dwi Hartono", nrp:"197708222005011008",
+    nik:"3171062208770007", tglLahir:"22/08/1977", pangkat:"PENATA MUDA TINGKAT I", kesatuan:"BIRO KEUANGAN SETJEN KEMHAN",
+    tmt:"01/01/2005", noSkep:"KEP/119/I/2005", tglSkep:"20/12/2004", pangkatAwal:"GOL.II/A",
+    angkatan:"KEMHAN", statusPersonil:"PNS", unor:"KEMHAN", tempatLahir:"JAKARTA",
+    jk:"Laki-laki", statusKawin:"MENIKAH", npwp:"55.207.813.4-019.000", alamat:"Jl. Medan Merdeka Barat No. 9", rt:"04", rw:"02",
+    kelurahan:"Gambir, Gambir, Jakarta Pusat", kodepos:"10110", telp:"0213840123", email:"dwi.hartono@mail.com", hp:"081234550131",
+    cabang:"KC Jakarta Pusat", pengaju:"Officer KC — R. Handoko", noRequest:"REQ-2026-00985",
+    dokumen:["Surat Permohonan KC Jakarta Pusat.pdf", "Fotokopi KPA.pdf"],
+    status:"Ditolak", tindakan:"",
+    catatan:"SK CPNS dan SK PNS tidak dilampirkan sehingga masa kerja tidak dapat diverifikasi.",
+    rekomendasi:[] },
+
+  { no:"SPP-2026-00130", tgl:"04/09/2026", kpa:"LA940327", nama:"Sutrisno Adi", nrp:"196911031991031004",
+    nik:"3529120311690001", tglLahir:"03/11/1969", pangkat:"PEMBANTU LETNAN DUA", kesatuan:"KODIM 0827/SUMENEP",
+    tmt:"01/03/1991", noSkep:"KEP/1330/III/1991", tglSkep:"14/02/1991", pangkatAwal:"PRAJURIT DUA",
+    noSkepPensiun:"KEP/882/X/2025", tglSkepPensiun:"01/12/2025",
+    angkatan:"TNI-AD", statusPersonil:"Prajurit", unor:"TNI AD", tempatLahir:"SUMENEP",
+    jk:"Laki-laki", statusKawin:"MENIKAH", npwp:"61.338.204.9-608.000", alamat:"Jl. Trunojoyo No. 88", rt:"02", rw:"03",
+    kelurahan:"Kolor, Kota Sumenep, Kabupaten Sumenep", kodepos:"69417", telp:"0328662410", email:"sutrisno.adi@mail.com", hp:"081234550130",
+    bintangJasa:"Satyalancana Kesetiaan XXIV Tahun",
+    cabang:"KC Surabaya", pengaju:"Officer KC — L. Anggraeni", noRequest:"REQ-2026-00971",
+    dokumen:["Surat Permohonan KC Surabaya.pdf", "Fotokopi KPA.pdf", "SKEP Pensiun.pdf", "KTP & KK.pdf"],
+    status:"Disetujui", tindakan:"Restore Data",
+    catatan:"Disetujui — data pensiunan ditemukan pada arsip Yandu lama dan diaktifkan kembali.",
+    rekomendasi:[
+      { nama:"SUTRISNO ADI", nrp:"196911031991031004", kpa:"LA940327", tglLahir:"03/11/1969",
+        satker:"KODIM 0827/SUMENEP", sumber:"Arsip Yandu Lama", skor:95 }
+    ] },
+
+  { no:"SPP-2026-00129", tgl:"01/09/2026", kpa:"UA121045", nama:"Rendi Saputra", nrp:"199506182017011003",
+    nik:"3520151806950004", tglLahir:"18/06/1995", pangkat:"KOPRAL SATU", kesatuan:"SKADRON UDARA 3 LANUD ISWAHJUDI",
+    tmt:"01/01/2017", noSkep:"KEP/287/I/2017", tglSkep:"09/12/2016", pangkatAwal:"PRAJURIT DUA",
+    angkatan:"TNI-AU", statusPersonil:"Prajurit", unor:"TNI AU", tempatLahir:"MADIUN",
+    jk:"Laki-laki", statusKawin:"BELUM MENIKAH", npwp:"", alamat:"Jl. Raya Solo No. 12", rt:"05", rw:"01",
+    kelurahan:"Maospati, Maospati, Kabupaten Magetan", kodepos:"63392", telp:"", email:"rendi.saputra@mail.com", hp:"081234550129",
+    cabang:"KC Madiun", pengaju:"Officer KC — T. Wibisono", noRequest:"REQ-2026-00958",
+    dokumen:["Surat Permohonan KC Madiun.pdf", "Fotokopi KPA.pdf"],
+    status:"Ditolak", tindakan:"",
+    catatan:"Nomor KPA tidak sesuai data Spersau — dikembalikan ke Kantor Cabang untuk diperbaiki.",
+    rekomendasi:[
+      { nama:"RENDI SAPUTRA", nrp:"199506182017011030", kpa:"UA121046", tglLahir:"18/06/1995",
+        satker:"LANUD ABDULRACHMAN SALEH", sumber:"Arsip Yandu Lama", skor:58 }
+    ] },
+
+  { no:"SPP-2026-00128", tgl:"28/08/2026", kpa:"PL810234", nama:"Ahmad Fauzi", nrp:"198202142004121005",
+    nik:"3171061402820003", tglLahir:"14/02/1982", pangkat:"AJUN INSPEKTUR POLISI SATU", kesatuan:"POLRES METRO JAKARTA PUSAT",
+    tmt:"01/12/2004", noSkep:"KEP/2044/XII/2004", tglSkep:"19/11/2004", pangkatAwal:"BHARADA",
+    angkatan:"POLRI", statusPersonil:"Prajurit", unor:"POLRI", tempatLahir:"JAKARTA",
+    jk:"Laki-laki", statusKawin:"MENIKAH", npwp:"49.512.770.6-019.000", alamat:"Jl. Kramat Raya No. 70", rt:"06", rw:"02",
+    kelurahan:"Kramat, Senen, Jakarta Pusat", kodepos:"10450", telp:"0213901288", email:"ahmad.fauzi@mail.com", hp:"081234550128",
+    cabang:"KC Jakarta Pusat", pengaju:"Officer KC — R. Handoko", noRequest:"REQ-2026-00944",
+    dokumen:["Surat Permohonan KC Jakarta Pusat.pdf", "Fotokopi KPA.pdf", "SKEP Pengangkatan.pdf"],
+    status:"Ditolak", tindakan:"",
+    catatan:"Data peserta dengan NRP yang sama sudah tersedia di YANDU NextGen — pengajuan ganda.",
+    rekomendasi:[] },
+
+  { no:"SPP-2026-00127", tgl:"25/08/2026", kpa:"LA940215", nama:"Gunawan Prasetyo", nrp:"197405092000031003",
+    nik:"3273120905740002", tglLahir:"09/05/1974", pangkat:"KAPTEN", kesatuan:"KODIM 0618/KOTA BANDUNG",
+    tmt:"01/03/2000", noSkep:"KEP/1712/III/2000", tglSkep:"17/02/2000", pangkatAwal:"LETNAN DUA",
+    angkatan:"TNI-AD", statusPersonil:"Prajurit", unor:"TNI AD", tempatLahir:"BANDUNG",
+    jk:"Laki-laki", statusKawin:"MENIKAH", npwp:"52.884.160.7-137.000", alamat:"Jl. Manado No. 22", rt:"01", rw:"07",
+    kelurahan:"Cihapit, Bandung Wetan, Kota Bandung", kodepos:"40114", telp:"0224201567", email:"gunawan.prasetyo@mail.com", hp:"081234550127",
+    bintangJasa:"Satyalancana Kesetiaan XVI Tahun",
+    cabang:"KC Bandung", pengaju:"Officer KC — F. Kurniawan", noRequest:"REQ-2026-00931",
+    dokumen:["Surat Permohonan KC Bandung.pdf", "Fotokopi KPA.pdf", "SKEP Pengangkatan.pdf", "KTP & KK.pdf"],
+    keluarga:[
+      { hubungan:"Istri", nama:"MELATI ANGGRAENI", nik:"3273126612770003", tempatLahir:"BANDUNG", tglLahir:"1977-12-26", jk:"Perempuan" },
+      { hubungan:"Anak",  nama:"FAJAR PRASETYO",   nik:"3273121503050001", tempatLahir:"BANDUNG", tglLahir:"2005-03-15", jk:"Laki-laki" },
+      { hubungan:"Anak",  nama:"CITRA PRASETYO",   nik:"3273125808090004", tempatLahir:"BANDUNG", tglLahir:"2009-08-18", jk:"Perempuan" }
+    ],
+    riwayatPangkat:[
+      { pangkat:"LETNAN DUA",  tmt:"01/03/2000", noSkep:"KEP/1712/III/2000", tglSkep:"17/02/2000" },
+      { pangkat:"LETNAN SATU", tmt:"01/04/2004", noSkep:"KEP/912/IV/2004",   tglSkep:"21/03/2004" },
+      { pangkat:"KAPTEN",      tmt:"01/10/2010", noSkep:"KEP/2260/X/2010",   tglSkep:"18/09/2010" }
+    ],
+    status:"Disetujui", tindakan:"Input Data Baru",
+    catatan:"Disetujui — data peserta diinput baru sesuai SKEP pengangkatan dan dokumen pendukung.",
+    rekomendasi:[] },
+
+  { no:"SPP-2026-00126", tgl:"21/08/2026", kpa:"CD050628", nama:"Fitri Handayani", nrp:"198809272014022005",
+    nik:"3171066709880002", tglLahir:"27/09/1988", pangkat:"PENATA MUDA", kesatuan:"BIRO KEUANGAN SETJEN KEMHAN",
+    tmt:"01/02/2014", noSkep:"KEP/377/II/2014", tglSkep:"16/01/2014", pangkatAwal:"GOL.III/A",
+    angkatan:"KEMHAN", statusPersonil:"PNS", unor:"KEMHAN", tempatLahir:"BOGOR",
+    jk:"Perempuan", statusKawin:"MENIKAH", npwp:"71.906.542.1-019.000", alamat:"Jl. Merdeka Barat No. 14", rt:"03", rw:"01",
+    kelurahan:"Gambir, Gambir, Jakarta Pusat", kodepos:"10110", telp:"0213845690", email:"fitri.handayani@mail.com", hp:"081234550126",
+    cabang:"KC Jakarta Pusat", pengaju:"Officer KC — R. Handoko", noRequest:"REQ-2026-00917",
+    dokumen:["Surat Permohonan KC Jakarta Pusat.pdf", "Fotokopi KPA.pdf", "SK CPNS & PNS.pdf"],
+    status:"Tertunda", tindakan:"", catatan:"",
+    rekomendasi:[
+      { nama:"FITRI HANDAYANI", nrp:"198809272014022005", kpa:"CD050628", tglLahir:"27/09/1988",
+        satker:"BIRO KEUANGAN SETJEN KEMHAN", sumber:"Belum Termigrasi", skor:94 },
+      { nama:"FITRIA HANDAYANI", nrp:"198809272014022050", kpa:"CD050631", tglLahir:"27/09/1988",
+        satker:"BIRO UMUM SETJEN KEMHAN",     sumber:"Arsip Yandu Lama", skor:67 }
+    ] },
+
+  { no:"SPP-2026-00125", tgl:"18/08/2026", kpa:"PB910433", nama:"Iwan Kurniawan", nrp:"198011052003121002",
+    nik:"3273120511800005", tglLahir:"05/11/1980", pangkat:"AJUN KOMISARIS POLISI", kesatuan:"POLRESTABES BANDUNG",
+    tmt:"01/12/2003", noSkep:"KEP/1988/XII/2003", tglSkep:"20/11/2003", pangkatAwal:"INSPEKTUR POLISI DUA",
+    angkatan:"POLRI", statusPersonil:"Prajurit", unor:"POLRI", tempatLahir:"CIMAHI",
+    jk:"Laki-laki", statusKawin:"MENIKAH", npwp:"58.113.674.2-137.000", alamat:"Jl. Merdeka No. 25", rt:"04", rw:"06",
+    kelurahan:"Babakan Ciamis, Sumur Bandung, Kota Bandung", kodepos:"40117", telp:"0224230981", email:"iwan.kurniawan@mail.com", hp:"081234550125",
+    cabang:"KC Bandung", pengaju:"Officer KC — F. Kurniawan", noRequest:"REQ-2026-00904",
+    dokumen:["Surat Permohonan KC Bandung.pdf", "Fotokopi KPA.pdf", "SKEP Pengangkatan.pdf", "Kartu Keluarga.pdf"],
+    keluarga:[
+      { hubungan:"Istri", nama:"RIA SEPTIANI", nik:"3273124109840006", tempatLahir:"BANDUNG", tglLahir:"1984-09-01", jk:"Perempuan" },
+      { hubungan:"Anak",  nama:"ARKAN KURNIAWAN", nik:"3273121204110003", tempatLahir:"BANDUNG", tglLahir:"2011-04-12", jk:"Laki-laki" }
+    ],
+    riwayatPangkat:[
+      { pangkat:"INSPEKTUR POLISI DUA",  tmt:"01/12/2003", noSkep:"KEP/1988/XII/2003", tglSkep:"20/11/2003" },
+      { pangkat:"INSPEKTUR POLISI SATU", tmt:"01/06/2009", noSkep:"KEP/1043/VI/2009",  tglSkep:"19/05/2009" },
+      { pangkat:"AJUN KOMISARIS POLISI", tmt:"01/01/2018", noSkep:"KEP/166/I/2018",    tglSkep:"14/12/2017" }
+    ],
+    status:"Disetujui", tindakan:"Input Data Baru",
+    catatan:"Disetujui — tidak ada data serupa, peserta diinput baru sesuai dokumen persyaratan.",
+    rekomendasi:[] },
+
+  { no:"SPP-2026-00124", tgl:"14/08/2026", kpa:"AD980821", nama:"Heru Santoso", nrp:"197106181993031007",
+    nik:"3526101806710004", tglLahir:"18/06/1971", pangkat:"SERSAN KEPALA", kesatuan:"KODIM 0829/BANGKALAN",
+    tmt:"01/03/1993", noSkep:"KEP/1455/III/1993", tglSkep:"15/02/1993", pangkatAwal:"PRAJURIT DUA",
+    angkatan:"TNI-AD", statusPersonil:"Prajurit", unor:"TNI AD", tempatLahir:"BANGKALAN",
+    jk:"Laki-laki", statusKawin:"CERAI MATI", npwp:"63.470.219.8-608.000", alamat:"Jl. Soekarno Hatta No. 5", rt:"02", rw:"02",
+    kelurahan:"Mlajah, Bangkalan, Kabupaten Bangkalan", kodepos:"69116", telp:"0313095412", email:"heru.santoso@mail.com", hp:"081234550124",
+    cabang:"KC Surabaya", pengaju:"Officer KC — L. Anggraeni", noRequest:"REQ-2026-00890",
+    dokumen:["Surat Permohonan KC Surabaya.pdf"],
+    status:"Ditolak", tindakan:"",
+    catatan:"Fotokopi KPA dan SKEP tidak dilampirkan — dikembalikan ke Kantor Cabang.",
+    rekomendasi:[] },
+
+  { no:"SPP-2026-00123", tgl:"11/08/2026", kpa:"AU710156", nama:"Yusuf Ramadhan", nrp:"198707192009121002",
+    nik:"3520151907870002", tglLahir:"19/07/1987", pangkat:"PEMBANTU LETNAN DUA", kesatuan:"SKADRON UDARA 3 LANUD ISWAHJUDI",
+    tmt:"01/12/2009", noSkep:"KEP/2311/XII/2009", tglSkep:"18/11/2009", pangkatAwal:"PRAJURIT DUA",
+    angkatan:"TNI-AU", statusPersonil:"Prajurit", unor:"TNI AU", tempatLahir:"MAGETAN",
+    jk:"Laki-laki", statusKawin:"MENIKAH", npwp:"66.728.451.3-621.000", alamat:"Lanud Iswahjudi Blok C No. 7", rt:"01", rw:"05",
+    kelurahan:"Maospati, Maospati, Kabupaten Magetan", kodepos:"63392", telp:"0351779004", email:"yusuf.ramadhan@mail.com", hp:"081234550123",
+    cabang:"KC Madiun", pengaju:"Officer KC — T. Wibisono", noRequest:"REQ-2026-00876",
+    dokumen:["Surat Permohonan KC Madiun.pdf", "Fotokopi KPA.pdf", "SKEP Pengangkatan.pdf", "KTP & KK.pdf"],
+    keluarga:[
+      { hubungan:"Istri", nama:"ANITA RAHMAWATI", nik:"3520155203900005", tempatLahir:"MADIUN", tglLahir:"1990-03-12", jk:"Perempuan" },
+      { hubungan:"Anak",  nama:"ALIF RAMADHAN",   nik:"3520150207160001", tempatLahir:"MAGETAN", tglLahir:"2016-07-02", jk:"Laki-laki" }
+    ],
+    riwayatPangkat:[
+      { pangkat:"PRAJURIT DUA",         tmt:"01/12/2009", noSkep:"KEP/2311/XII/2009", tglSkep:"18/11/2009" },
+      { pangkat:"SERSAN DUA",           tmt:"01/04/2013", noSkep:"KEP/744/IV/2013",   tglSkep:"20/03/2013" },
+      { pangkat:"PEMBANTU LETNAN DUA",  tmt:"01/10/2023", noSkep:"KEP/2015/X/2023",   tglSkep:"12/09/2023" }
+    ],
+    status:"Disetujui", tindakan:"Restore Data",
+    catatan:"Disetujui — data ditemukan pada arsip belum termigrasi dan cocok dengan dokumen persyaratan.",
+    rekomendasi:[
+      { nama:"YUSUF RAMADHAN", nrp:"198707192009121002", kpa:"AU710156", tglLahir:"19/07/1987",
+        satker:"SKADRON UDARA 3 LANUD ISWAHJUDI", sumber:"Belum Termigrasi", skor:99 }
+    ] },
+
+  { no:"SPP-2026-00122", tgl:"07/08/2026", kpa:"UA120933", nama:"Dimas Prakoso", nrp:"199103222012011004",
+    nik:"3520152203910006", tglLahir:"22/03/1991", pangkat:"SERSAN KEPALA", kesatuan:"SKADRON UDARA 3 LANUD ISWAHJUDI",
+    tmt:"01/01/2012", noSkep:"KEP/311/I/2012", tglSkep:"08/12/2011", pangkatAwal:"PRAJURIT DUA",
+    angkatan:"TNI-AU", statusPersonil:"Prajurit", unor:"TNI AU", tempatLahir:"NGAWI",
+    jk:"Laki-laki", statusKawin:"MENIKAH", npwp:"70.145.998.2-621.000", alamat:"Jl. Raya Barat No. 96", rt:"03", rw:"02",
+    kelurahan:"Maospati, Maospati, Kabupaten Magetan", kodepos:"63392", telp:"", email:"dimas.prakoso@mail.com", hp:"081234550122",
+    cabang:"KC Madiun", pengaju:"Officer KC — T. Wibisono", noRequest:"REQ-2026-00863",
+    dokumen:["Surat Permohonan KC Madiun.pdf", "Fotokopi KPA.pdf", "SKEP Pengangkatan.pdf"],
+    status:"Tertunda", tindakan:"", catatan:"",
+    rekomendasi:[] },
+
+  { no:"SPP-2026-00121", tgl:"04/08/2026", kpa:"AD980714", nama:"Slamet Riyadi", nrp:"196410051986031001",
+    nik:"3171060510640008", tglLahir:"05/10/1964", pangkat:"PEMBANTU LETNAN SATU", kesatuan:"KODIM 0501/JAKARTA PUSAT",
+    tmt:"01/03/1986", noSkep:"KEP/1041/III/1986", tglSkep:"11/02/1986", pangkatAwal:"PRAJURIT DUA",
+    noSkepPensiun:"KEP/1520/IX/2022", tglSkepPensiun:"01/11/2022",
+    angkatan:"TNI-AD", statusPersonil:"Prajurit", unor:"TNI AD", tempatLahir:"KLATEN",
+    jk:"Laki-laki", statusKawin:"MENIKAH", npwp:"44.309.812.5-019.000", alamat:"Jl. Kramat Raya No. 155", rt:"07", rw:"03",
+    kelurahan:"Senen, Senen, Jakarta Pusat", kodepos:"10410", telp:"0213907711", email:"slamet.riyadi@mail.com", hp:"081234550121",
+    cabang:"KC Jakarta Pusat", pengaju:"Officer KC — R. Handoko", noRequest:"REQ-2026-00849",
+    dokumen:["Surat Permohonan KC Jakarta Pusat.pdf", "Fotokopi KPA.pdf", "SKEP Pensiun.pdf"],
+    status:"Ditolak", tindakan:"",
+    catatan:"Tanggal lahir pada KTP berbeda dengan SKEP pensiun — perlu surat keterangan perbaikan data.",
+    rekomendasi:[
+      { nama:"SLAMET RIYADI", nrp:"196410051986031001", kpa:"AD980714", tglLahir:"05/10/1963",
+        satker:"KODIM 0501/JAKARTA PUSAT", sumber:"Arsip Yandu Lama", skor:72 }
+    ] },
+
+  { no:"SPP-2026-00120", tgl:"31/07/2026", kpa:"CD050512", nama:"Retno Palupi", nrp:"198203142006042003",
+    nik:"3171065403820001", tglLahir:"14/03/1982", pangkat:"PENATA MUDA TINGKAT I", kesatuan:"BIRO KEUANGAN SETJEN KEMHAN",
+    tmt:"01/04/2006", noSkep:"KEP/806/IV/2006", tglSkep:"21/03/2006", pangkatAwal:"GOL.III/A",
+    angkatan:"KEMHAN", statusPersonil:"PNS", unor:"KEMHAN", tempatLahir:"SEMARANG",
+    jk:"Perempuan", statusKawin:"MENIKAH", npwp:"59.622.180.4-019.000", alamat:"Jl. Medan Merdeka Barat No. 13", rt:"02", rw:"01",
+    kelurahan:"Gambir, Gambir, Jakarta Pusat", kodepos:"10110", telp:"0213841122", email:"retno.palupi@mail.com", hp:"081234550120",
+    cabang:"KC Jakarta Pusat", pengaju:"Officer KC — R. Handoko", noRequest:"REQ-2026-00835",
+    dokumen:["Surat Permohonan KC Jakarta Pusat.pdf", "Fotokopi KPA.pdf", "SK CPNS & PNS.pdf", "KTP & KK.pdf"],
+    keluarga:[
+      { hubungan:"Suami", nama:"BAGUS WICAKSONO", nik:"3171061105790002", tempatLahir:"JAKARTA", tglLahir:"1979-05-11", jk:"Laki-laki" },
+      { hubungan:"Anak",  nama:"KEISHA WICAKSONO", nik:"3171064802140007", tempatLahir:"JAKARTA", tglLahir:"2014-02-08", jk:"Perempuan" }
+    ],
+    riwayatPangkat:[
+      { pangkat:"GOL.III/A", tmt:"01/04/2006", noSkep:"KEP/806/IV/2006", tglSkep:"21/03/2006" },
+      { pangkat:"GOL.III/B", tmt:"01/04/2010", noSkep:"KEP/704/IV/2010", tglSkep:"18/03/2010" }
+    ],
+    status:"Disetujui", tindakan:"Input Data Baru",
+    catatan:"Disetujui — data ASN diinput baru dan sudah dicocokkan dengan SK kepegawaian.",
+    rekomendasi:[] },
+
+  { no:"SPP-2026-00119", tgl:"27/07/2026", kpa:"PB910327", nama:"Agus Setiawan", nrp:"197505182000121001",
+    nik:"3515111805750003", tglLahir:"18/05/1975", pangkat:"AJUN INSPEKTUR POLISI DUA", kesatuan:"POLRES SIDOARJO",
+    tmt:"01/12/2000", noSkep:"KEP/1902/XII/2000", tglSkep:"20/11/2000", pangkatAwal:"BHARADA",
+    angkatan:"POLRI", statusPersonil:"Prajurit", unor:"POLRI", tempatLahir:"SIDOARJO",
+    jk:"Laki-laki", statusKawin:"MENIKAH", npwp:"47.885.310.9-603.000", alamat:"Jl. Raya Buduran No. 14", rt:"05", rw:"04",
+    kelurahan:"Buduran, Buduran, Kabupaten Sidoarjo", kodepos:"61252", telp:"0318965120", email:"agus.setiawan@mail.com", hp:"081234550119",
+    cabang:"KC Surabaya", pengaju:"Officer KC — D. Ramadhan", noRequest:"REQ-2026-00822",
+    dokumen:["Surat Permohonan KC Surabaya.pdf", "Fotokopi KPA.pdf", "SKEP Pengangkatan.pdf"],
+    status:"Tertunda", tindakan:"", catatan:"",
+    rekomendasi:[
+      { nama:"AGUS SETIAWAN",  nrp:"197505182000121001", kpa:"PB910327", tglLahir:"18/05/1975",
+        satker:"POLRES SIDOARJO",  sumber:"Belum Termigrasi", skor:97 },
+      { nama:"AGUS SETIAWAN",  nrp:"197505182000121010", kpa:"PB910329", tglLahir:"18/05/1975",
+        satker:"POLRES MOJOKERTO", sumber:"Arsip Yandu Lama", skor:70 }
+    ] },
+
+  { no:"SPP-2026-00118", tgl:"22/06/2026", kpa:"LA940101", nama:"Bambang Suryanto", nrp:"196812101990031002",
+    nik:"3578141012680003", tglLahir:"10/12/1968", pangkat:"SERSAN MAYOR", kesatuan:"KOREM 084/BHASKARA JAYA",
+    tmt:"01/03/1990", noSkep:"KEP/1288/III/1990", tglSkep:"13/02/1990", pangkatAwal:"PRAJURIT DUA",
+    noSkepPensiun:"KEP/1104/VII/2024", tglSkepPensiun:"01/09/2024",
+    angkatan:"TNI-AD", statusPersonil:"Prajurit", unor:"TNI AD", tempatLahir:"SURABAYA", nrpLama:"512480",
+    jk:"Laki-laki", statusKawin:"MENIKAH", npwp:"51.702.446.8-609.000", alamat:"Jl. Hayam Wuruk No. 2", rt:"04", rw:"01",
+    kelurahan:"Sawunggaling, Wonokromo, Kota Surabaya", kodepos:"60242", telp:"0315678234", email:"bambang.suryanto@mail.com", hp:"081234550118",
+    bintangJasa:"Satyalancana Kesetiaan XXIV Tahun",
+    cabang:"KC Surabaya", pengaju:"Officer KC — D. Ramadhan", noRequest:"REQ-2026-00908",
+    dokumen:["Surat Permohonan KC Surabaya.pdf", "Fotokopi KPA.pdf", "SKEP Pensiun.pdf", "KTP & KK.pdf", "Buku Tabungan.pdf"],
+    keluarga:[
+      { hubungan:"Istri", nama:"SUMIYATI",        nik:"3578146503720004", tempatLahir:"SURABAYA", tglLahir:"1972-03-25", jk:"Perempuan" },
+      { hubungan:"Anak",  nama:"RIZKY SURYANTO",  nik:"3578141809980002", tempatLahir:"SURABAYA", tglLahir:"1998-09-18", jk:"Laki-laki" },
+      { hubungan:"Anak",  nama:"DINDA SURYANTO",  nik:"3578145712020006", tempatLahir:"SURABAYA", tglLahir:"2002-12-17", jk:"Perempuan" }
+    ],
+    riwayatPangkat:[
+      { pangkat:"PRAJURIT DUA",   tmt:"01/03/1990", noSkep:"KEP/1288/III/1990", tglSkep:"13/02/1990" },
+      { pangkat:"SERSAN DUA",     tmt:"01/04/1996", noSkep:"KEP/820/IV/1996",   tglSkep:"19/03/1996" },
+      { pangkat:"SERSAN KEPALA",  tmt:"01/04/2008", noSkep:"KEP/915/IV/2008",   tglSkep:"20/03/2008" },
+      { pangkat:"SERSAN MAYOR",   tmt:"01/10/2016", noSkep:"KEP/2188/X/2016",   tglSkep:"15/09/2016" }
+    ],
+    status:"Disetujui", tindakan:"Restore Data",
+    catatan:"Disetujui — data pensiunan ditemukan pada arsip belum termigrasi dan diaktifkan kembali.",
+    rekomendasi:[
+      { nama:"BAMBANG SURYANTO", nrp:"196812101990031002", kpa:"LA940101", tglLahir:"10/12/1968",
+        satker:"KOREM 084/BHASKARA JAYA", sumber:"Belum Termigrasi", skor:99 },
+      { nama:"BAMBANG SURYANTA",  nrp:"196812101990031020", kpa:"LA940108", tglLahir:"10/12/1968",
+        satker:"KODIM 0830 REM 084/BJ",   sumber:"Arsip Yandu Lama", skor:66 }
+    ] },
+
   { no:"SPP-2026-00117", tgl:"19/06/2026", kpa:"LA930358", nama:"Sunarto Wibowo", nrp:"196705121988031003",
     nik:"3578141205670004", tglLahir:"12/05/1967", pangkat:"SERSAN MAYOR", kesatuan:"KODIM 0827/SUMENEP",
     tmt:"01/03/1988", noSkep:"KEP/1204/III/1988", tglSkep:"12/02/1988", pangkatAwal:"PRAJURIT DUA",
