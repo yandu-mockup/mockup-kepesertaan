@@ -341,56 +341,56 @@ const DATA_MITRA_BAYAR = [
    tmtAkad       : TMT Akad Kredit BUM.
    nomorPinjaman : Nomor Piutang BUM.
    jumlah        : Jumlah Nominal BUM yang pernah dicairkan.
-   jenisPinjaman : "BUM KPR Program Khusus ASABRI" | "BUM KPR TWPAD" |
-                   "BUM KPR Program Reguler YPPSDP"
+   jenisPinjaman : "BUM KPR YKPP PROGSUS" | "BUM KPR TWPAD" |
+                   "BUM KPR YKPP PROGREG"
    cabang, sisaHutang, dan outstanding ikut data peserta yang tercatat sistem —
    tidak diinput petugas dan hanya tampil di modal detail.
    --------------------------------------------------------------------------- */
 const DATA_BUM = [
   { kpa:"TA910123", nrp:"19870512001", nik:"3271051205870001", nama:"Intan M. Sari",     tglLahir:"1987-05-12", tmt:"2009-08-01", tmtAkad:"2021-03-01",
-    cabang:"KC Jakarta Utama", nomorPinjaman:"BUM-2021-00114", jenisPinjaman:"BUM KPR Program Reguler YPPSDP", jumlah:120000000, sisaHutang:64500000,  outstanding:3500000,
+    cabang:"KC Jakarta Utama", nomorPinjaman:"BUM-2021-00114", jenisPinjaman:"BUM KPR YKPP PROGREG", jumlah:120000000, sisaHutang:64500000,  outstanding:3500000,
     keterangan:"Pendaftaran ulang data akad dari arsip YPPSDP." },
   { kpa:"TB920234", nrp:"19900820002", nik:"5171200812900002", nama:"Made Wardani",      tglLahir:"1990-08-20", tmt:"2012-04-01", tmtAkad:"2020-07-15",
-    cabang:"KC Denpasar",      nomorPinjaman:"BUM-2020-00087", jenisPinjaman:"BUM KPR Program Khusus ASABRI",  jumlah:95000000,  sisaHutang:21000000,  outstanding:1500000,
+    cabang:"KC Denpasar",      nomorPinjaman:"BUM-2020-00087", jenisPinjaman:"BUM KPR YKPP PROGSUS", jumlah:95000000,  sisaHutang:21000000,  outstanding:1500000,
     keterangan:"Hutang tidak terpotong hak asuransi, dibayar angsur." },
   { kpa:"LA930345", nrp:"19951130003", nik:"3578301103950003", nama:"Kenedi",            tglLahir:"1995-11-30", tmt:"2017-03-01", tmtAkad:"2022-01-10",
-    cabang:"KC Surabaya",      nomorPinjaman:"BUM-2022-00203", jenisPinjaman:"BUM KPR TWPAD",                  jumlah:150000000, sisaHutang:112000000, outstanding:6000000,
+    cabang:"KC Surabaya",      nomorPinjaman:"BUM-2022-00203", jenisPinjaman:"BUM KPR TWPAD",        jumlah:150000000, sisaHutang:112000000, outstanding:6000000,
     keterangan:"Perbaikan nomor piutang hasil rekonsiliasi semester I." },
   { kpa:"LB940456", nrp:"19880305004", nik:"1271030508880004", nama:"Firman Dewantoro",  tglLahir:"1988-03-05", tmt:"2010-02-15", tmtAkad:"2019-11-05",
-    cabang:"KC Medan",         nomorPinjaman:"BUM-2019-00042", jenisPinjaman:"BUM KPR Program Khusus ASABRI",  jumlah:80000000,  sisaHutang:9500000,   outstanding:500000,
+    cabang:"KC Medan",         nomorPinjaman:"BUM-2019-00042", jenisPinjaman:"BUM KPR YKPP PROGSUS", jumlah:80000000,  sisaHutang:9500000,   outstanding:500000,
     keterangan:"Sisa hutang mendekati lunas, menunggu setoran terakhir." },
   { kpa:"UA950567", nrp:"19921215005", nik:"7371151212920005", nama:"Aprildo A. R.",     tglLahir:"1992-12-15", tmt:"2014-09-01", tmtAkad:"2023-04-20",
-    cabang:"KC Makassar",      nomorPinjaman:"BUM-2023-00311", jenisPinjaman:"BUM KPR Program Reguler YPPSDP", jumlah:135000000, sisaHutang:121000000, outstanding:7500000,
+    cabang:"KC Makassar",      nomorPinjaman:"BUM-2023-00311", jenisPinjaman:"BUM KPR YKPP PROGREG", jumlah:135000000, sisaHutang:121000000, outstanding:7500000,
     keterangan:"Akad terbaru, potongan mulai periode berjalan." },
   { kpa:"UB960678", nrp:"19870910006", nik:"3374100909870006", nama:"Wati Handayani",    tglLahir:"1987-09-10", tmt:"2009-11-01", tmtAkad:"2021-09-12",
-    cabang:"KC Semarang",      nomorPinjaman:"BUM-2021-00176", jenisPinjaman:"BUM KPR TWPAD",                  jumlah:110000000, sisaHutang:58000000,  outstanding:3200000,
+    cabang:"KC Semarang",      nomorPinjaman:"BUM-2021-00176", jenisPinjaman:"BUM KPR TWPAD",        jumlah:110000000, sisaHutang:58000000,  outstanding:3200000,
     keterangan:"Pendaftaran ulang karena nomor piutang lama ganda." },
   { kpa:"PA970789", nrp:"19930422007", nik:"1671220404930007", nama:"Yuni Kartika",      tglLahir:"1993-04-22", tmt:"2015-05-01", tmtAkad:"2020-02-28",
-    cabang:"KC Palembang",     nomorPinjaman:"BUM-2020-00033", jenisPinjaman:"BUM KPR Program Khusus ASABRI",  jumlah:90000000,  sisaHutang:14000000,  outstanding:800000,
+    cabang:"KC Palembang",     nomorPinjaman:"BUM-2020-00033", jenisPinjaman:"BUM KPR YKPP PROGSUS", jumlah:90000000,  sisaHutang:14000000,  outstanding:800000,
     keterangan:"Angsuran berjalan lewat Kantor Cabang." },
   { kpa:"PB980890", nrp:"19850617008", nik:"5171170606850008", nama:"Sri Wahyuni",       tglLahir:"1985-06-17", tmt:"2007-08-01", tmtAkad:"2022-08-01",
-    cabang:"KC Denpasar",      nomorPinjaman:"BUM-2022-00265", jenisPinjaman:"BUM KPR Program Reguler YPPSDP", jumlah:125000000, sisaHutang:98000000,  outstanding:5500000,
+    cabang:"KC Denpasar",      nomorPinjaman:"BUM-2022-00265", jenisPinjaman:"BUM KPR YKPP PROGREG", jumlah:125000000, sisaHutang:98000000,  outstanding:5500000,
     keterangan:"Imbal jasa Program Reguler dihitung sampai BUP." },
   { kpa:"PC990901", nrp:"19910304009", nik:"6471030409910009", nama:"Ratna Dewi",        tglLahir:"1991-03-04", tmt:"2013-06-01", tmtAkad:"2019-05-17",
-    cabang:"KC Balikpapan",    nomorPinjaman:"BUM-2019-00019", jenisPinjaman:"BUM KPR TWPAD",                  jumlah:70000000,  sisaHutang:6200000,   outstanding:400000,
+    cabang:"KC Balikpapan",    nomorPinjaman:"BUM-2019-00019", jenisPinjaman:"BUM KPR TWPAD",        jumlah:70000000,  sisaHutang:6200000,   outstanding:400000,
     keterangan:"Tinggal sisa outstanding kecil, siap dilunasi." },
   { kpa:"TA911012", nrp:"19890128010", nik:"7171280101890010", nama:"Hendra Gunawan",    tglLahir:"1989-01-28", tmt:"2011-02-01", tmtAkad:"2023-01-09",
-    cabang:"KC Manado",        nomorPinjaman:"BUM-2023-00298", jenisPinjaman:"BUM KPR Program Reguler YPPSDP", jumlah:140000000, sisaHutang:133000000, outstanding:8000000,
+    cabang:"KC Manado",        nomorPinjaman:"BUM-2023-00298", jenisPinjaman:"BUM KPR YKPP PROGREG", jumlah:140000000, sisaHutang:133000000, outstanding:8000000,
     keterangan:"Akad 2023, belum ada pemotongan hak asuransi." },
   { kpa:"TB921123", nrp:"19940512011", nik:"1371120505940011", nama:"Fitri Ramadhani",   tglLahir:"1994-05-12", tmt:"2016-07-01", tmtAkad:"2021-06-23",
-    cabang:"KC Padang",        nomorPinjaman:"BUM-2021-00152", jenisPinjaman:"BUM KPR Program Khusus ASABRI",  jumlah:85000000,  sisaHutang:19500000,  outstanding:1200000,
+    cabang:"KC Padang",        nomorPinjaman:"BUM-2021-00152", jenisPinjaman:"BUM KPR YKPP PROGSUS", jumlah:85000000,  sisaHutang:19500000,  outstanding:1200000,
     keterangan:"Dibayar angsur, bukti setor diunggah Kantor Cabang." },
   { kpa:"LA931234", nrp:"19860303012", nik:"3172030303860012", nama:"Andi Saputra",      tglLahir:"1986-03-03", tmt:"2008-04-01", tmtAkad:"2020-10-30",
-    cabang:"KC Jakarta Utama", nomorPinjaman:"BUM-2020-00121", jenisPinjaman:"BUM KPR TWPAD",                  jumlah:118000000, sisaHutang:71000000,  outstanding:4000000,
+    cabang:"KC Jakarta Utama", nomorPinjaman:"BUM-2020-00121", jenisPinjaman:"BUM KPR TWPAD",        jumlah:118000000, sisaHutang:71000000,  outstanding:4000000,
     keterangan:"Pendaftaran ulang setelah pemutakhiran data kesatuan." },
   { kpa:"LB941345", nrp:"19920815013", nik:"3273150808920013", nama:"Lina Marlina",      tglLahir:"1992-08-15", tmt:"2014-10-01", tmtAkad:"2022-12-04",
-    cabang:"KC Bandung",       nomorPinjaman:"BUM-2022-00340", jenisPinjaman:"BUM KPR Program Reguler YPPSDP", jumlah:145000000, sisaHutang:139000000, outstanding:8500000,
+    cabang:"KC Bandung",       nomorPinjaman:"BUM-2022-00340", jenisPinjaman:"BUM KPR YKPP PROGREG", jumlah:145000000, sisaHutang:139000000, outstanding:8500000,
     keterangan:"Akad terbaru pada Kantor Cabang Bandung." },
   { kpa:"UA951456", nrp:"19830706014", nik:"3578060707830014", nama:"Joko Purnomo",      tglLahir:"1983-07-06", tmt:"2005-09-01", tmtAkad:"2019-08-14",
-    cabang:"KC Surabaya",      nomorPinjaman:"BUM-2019-00027", jenisPinjaman:"BUM KPR Program Khusus ASABRI",  jumlah:75000000,  sisaHutang:5000000,   outstanding:300000,
+    cabang:"KC Surabaya",      nomorPinjaman:"BUM-2019-00027", jenisPinjaman:"BUM KPR YKPP PROGSUS", jumlah:75000000,  sisaHutang:5000000,   outstanding:300000,
     keterangan:"Mendekati BUP, sisa hutang dipotong saat klaim." },
   { kpa:"AD900123", nrp:"199105102016121003", nik:"3374012004890130", nama:"Yusuf Maulana",    tglLahir:"1989-04-20", tmt:"2016-12-01", tmtAkad:"2022-06-15",
-    cabang:"KC Semarang",      nomorPinjaman:"BUM-2022-00456", jenisPinjaman:"BUM KPR Program Khusus ASABRI",  jumlah:110000000, sisaHutang:85000000,  outstanding:4500000,
+    cabang:"KC Semarang",      nomorPinjaman:"BUM-2022-00456", jenisPinjaman:"BUM KPR YKPP PROGSUS", jumlah:110000000, sisaHutang:85000000,  outstanding:4500000,
     keterangan:"Peserta baru terverifikasi memiliki Pinjaman KPR (BUM) aktif." }
 ];
 
@@ -4935,8 +4935,8 @@ const SPP_BERKAS_TETAP = [
    25. PELUNASAN KPR (BUM)
    Satu baris = satu potongan pelunasan pinjaman BUM peserta.
    jenisPotongan : keterangan sumber potongan, mis. "Tabungan Asuransi".
-   jenisPinjaman : "BUM KPR Program Khusus ASABRI" | "BUM KPR TWPAD"
-                   | "BUM KPR Program Reguler YPPSDP"
+   jenisPinjaman : "BUM KPR YKPP PROGSUS" | "BUM KPR TWPAD" |
+                   "BUM KPR YKPP PROGREG"
    jumlah        : plafon pinjaman BUM yang pernah dicairkan.
    sisaHutang    : pokok pinjaman yang belum terbayar.
    bruto         : nilai bruto manfaat sebelum potongan.
@@ -4949,18 +4949,18 @@ const SPP_BERKAS_TETAP = [
    notes         : catatan bebas dari petugas pengunggah, boleh kosong.
    --------------------------------------------------------------------------- */
 const DATA_BUM_PELUNASAN = [
-  { kpa:"TA910123", nrp:"19870512001", nama:"Intan M. Sari",    tmt:"2021-03-01", nomorPinjaman:"BUM-2021-00114", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR Program Reguler YPPSDP", jumlah:120000000, sisaHutang:64500000,  bruto:72400000,  nominal:68000000,  imbalJasa:2400000, cabang:"KC Jakarta Utama", tglRekon:"2026-06-25", tglSp:"2026-06-18", tglDps:"2026-06-22", tglPeriode:"2026-07-01", notes:"Pelunasan dipercepat atas permintaan peserta." },
-  { kpa:"LB940456", nrp:"19880305004", nama:"Firman Dewantoro", tmt:"2019-11-05", nomorPinjaman:"BUM-2019-00042", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR Program Khusus ASABRI",  jumlah:80000000,  sisaHutang:9500000,   bruto:11250000,  nominal:10000000,  cabang:"KC Medan",         tglRekon:"2026-06-23", tglSp:"2026-06-15", tglDps:"2026-06-19", tglPeriode:"2026-07-01", notes:"" },
-  { kpa:"PC990901", nrp:"19910304009", nama:"Ratna Dewi",       tmt:"2019-05-17", nomorPinjaman:"BUM-2019-00019", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR TWPAD",                  jumlah:70000000,  sisaHutang:6200000,   bruto:7400000,   nominal:6600000,   cabang:"KC Balikpapan",    tglRekon:"2026-06-20", tglSp:"2026-06-12", tglDps:"2026-06-16", tglPeriode:"2026-07-01", notes:"Selisih nihil setelah rekonsiliasi." },
-  { kpa:"PA970789", nrp:"19930422007", nama:"Yuni Kartika",     tmt:"2020-02-28", nomorPinjaman:"BUM-2020-00033", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR Program Khusus ASABRI",  jumlah:90000000,  sisaHutang:14000000,  bruto:16200000,  nominal:14800000,  cabang:"KC Palembang",     tglRekon:"2026-06-18", tglSp:"2026-06-10", tglDps:"2026-06-14", tglPeriode:"2026-07-01", notes:"" },
-  { kpa:"UB960678", nrp:"19870910006", nama:"Wati Handayani",   tmt:"2021-09-12", nomorPinjaman:"BUM-2021-00176", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR TWPAD",                  jumlah:110000000, sisaHutang:58000000,  bruto:64750000,  nominal:61200000,  cabang:"KC Semarang",      tglRekon:"2026-06-17", tglSp:"2026-06-08", tglDps:"2026-06-12", tglPeriode:"2026-07-01", notes:"" },
-  { kpa:"TB920234", nrp:"19900820002", nama:"Made Wardani",     tmt:"2020-07-15", nomorPinjaman:"BUM-2020-00087", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR Program Khusus ASABRI",  jumlah:95000000,  sisaHutang:21000000,  bruto:24100000,  nominal:22500000,  cabang:"KC Denpasar",      tglRekon:"2026-06-15", tglSp:"2026-06-05", tglDps:"2026-06-09", tglPeriode:"2026-07-01", notes:"" },
-  { kpa:"UA951456", nrp:"19830706014", nama:"Joko Purnomo",     tmt:"2019-08-14", nomorPinjaman:"BUM-2019-00027", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR Program Khusus ASABRI",  jumlah:75000000,  sisaHutang:5000000,   bruto:5900000,   nominal:5300000,   cabang:"KC Surabaya",      tglRekon:"2026-06-10", tglSp:"2026-06-02", tglDps:"2026-06-06", tglPeriode:"2026-06-01", notes:"Sisa hutang di bawah Rp 10 juta." },
-  { kpa:"LA931234", nrp:"19860303012", nama:"Andi Saputra",     tmt:"2020-10-30", nomorPinjaman:"BUM-2020-00121", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR TWPAD",                  jumlah:118000000, sisaHutang:71000000,  bruto:79500000,  nominal:75000000,  cabang:"KC Jakarta Utama", tglRekon:"2026-06-05", tglSp:"2026-05-28", tglDps:"2026-06-01", tglPeriode:"2026-06-01", notes:"" },
-  { kpa:"TB921123", nrp:"19940512011", nama:"Fitri Ramadhani",  tmt:"2021-06-23", nomorPinjaman:"BUM-2021-00152", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR Program Khusus ASABRI",  jumlah:85000000,  sisaHutang:19500000,  bruto:22300000,  nominal:20700000,  cabang:"KC Padang",        tglRekon:"2026-06-03", tglSp:"2026-05-25", tglDps:"2026-05-29", tglPeriode:"2026-06-01", notes:"" },
-  { kpa:"PB980890", nrp:"19850617008", nama:"Sri Wahyuni",      tmt:"2022-08-01", nomorPinjaman:"BUM-2022-00265", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR Program Reguler YPPSDP", jumlah:125000000, sisaHutang:98000000,  bruto:108900000, nominal:103500000, imbalJasa:2500000, cabang:"KC Denpasar",      tglRekon:"2026-05-30", tglSp:"2026-05-20", tglDps:"2026-05-24", tglPeriode:"2026-06-01", notes:"Menunggu konfirmasi berkas dari kantor cabang." },
-  { kpa:"UA950567", nrp:"19921215005", nama:"Aprildo A. R.",    tmt:"2023-04-20", nomorPinjaman:"BUM-2023-00311", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR Program Reguler YPPSDP", jumlah:135000000, sisaHutang:121000000, bruto:132750000, nominal:128500000, imbalJasa:2700000, cabang:"KC Makassar",      tglRekon:"2026-05-28", tglSp:"2026-05-18", tglDps:"2026-05-22", tglPeriode:"2026-06-01", notes:"" },
-  { kpa:"LB941345", nrp:"19920815013", nama:"Lina Marlina",     tmt:"2022-12-04", nomorPinjaman:"BUM-2022-00340", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR Program Reguler YPPSDP", jumlah:145000000, sisaHutang:139000000, bruto:143200000, nominal:139500000, imbalJasa:2900000, cabang:"KC Bandung",       tglRekon:"2026-05-25", tglSp:"2026-05-14", tglDps:"2026-05-18", tglPeriode:"2026-06-01", notes:"" }
+  { kpa:"TA910123", nrp:"19870512001", nama:"Intan M. Sari",    tmt:"2021-03-01", nomorPinjaman:"BUM-2021-00114", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR YKPP PROGREG", jumlah:120000000, sisaHutang:64500000,  bruto:72400000,  nominal:68000000,  imbalJasa:2400000, cabang:"KC Jakarta Utama", tglRekon:"2026-06-25", tglSp:"2026-06-18", tglDps:"2026-06-22", tglPeriode:"2026-07-01", notes:"Pelunasan dipercepat atas permintaan peserta." },
+  { kpa:"LB940456", nrp:"19880305004", nama:"Firman Dewantoro", tmt:"2019-11-05", nomorPinjaman:"BUM-2019-00042", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR YKPP PROGSUS", jumlah:80000000,  sisaHutang:9500000,   bruto:11250000,  nominal:10000000,  cabang:"KC Medan",         tglRekon:"2026-06-23", tglSp:"2026-06-15", tglDps:"2026-06-19", tglPeriode:"2026-07-01", notes:"" },
+  { kpa:"PC990901", nrp:"19910304009", nama:"Ratna Dewi",       tmt:"2019-05-17", nomorPinjaman:"BUM-2019-00019", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR TWPAD",        jumlah:70000000,  sisaHutang:6200000,   bruto:7400000,   nominal:6600000,   cabang:"KC Balikpapan",    tglRekon:"2026-06-20", tglSp:"2026-06-12", tglDps:"2026-06-16", tglPeriode:"2026-07-01", notes:"Selisih nihil setelah rekonsiliasi." },
+  { kpa:"PA970789", nrp:"19930422007", nama:"Yuni Kartika",     tmt:"2020-02-28", nomorPinjaman:"BUM-2020-00033", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR YKPP PROGSUS", jumlah:90000000,  sisaHutang:14000000,  bruto:16200000,  nominal:14800000,  cabang:"KC Palembang",     tglRekon:"2026-06-18", tglSp:"2026-06-10", tglDps:"2026-06-14", tglPeriode:"2026-07-01", notes:"" },
+  { kpa:"UB960678", nrp:"19870910006", nama:"Wati Handayani",   tmt:"2021-09-12", nomorPinjaman:"BUM-2021-00176", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR TWPAD",        jumlah:110000000, sisaHutang:58000000,  bruto:64750000,  nominal:61200000,  cabang:"KC Semarang",      tglRekon:"2026-06-17", tglSp:"2026-06-08", tglDps:"2026-06-12", tglPeriode:"2026-07-01", notes:"" },
+  { kpa:"TB920234", nrp:"19900820002", nama:"Made Wardani",     tmt:"2020-07-15", nomorPinjaman:"BUM-2020-00087", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR YKPP PROGSUS", jumlah:95000000,  sisaHutang:21000000,  bruto:24100000,  nominal:22500000,  cabang:"KC Denpasar",      tglRekon:"2026-06-15", tglSp:"2026-06-05", tglDps:"2026-06-09", tglPeriode:"2026-07-01", notes:"" },
+  { kpa:"UA951456", nrp:"19830706014", nama:"Joko Purnomo",     tmt:"2019-08-14", nomorPinjaman:"BUM-2019-00027", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR YKPP PROGSUS", jumlah:75000000,  sisaHutang:5000000,   bruto:5900000,   nominal:5300000,   cabang:"KC Surabaya",      tglRekon:"2026-06-10", tglSp:"2026-06-02", tglDps:"2026-06-06", tglPeriode:"2026-06-01", notes:"Sisa hutang di bawah Rp 10 juta." },
+  { kpa:"LA931234", nrp:"19860303012", nama:"Andi Saputra",     tmt:"2020-10-30", nomorPinjaman:"BUM-2020-00121", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR TWPAD",        jumlah:118000000, sisaHutang:71000000,  bruto:79500000,  nominal:75000000,  cabang:"KC Jakarta Utama", tglRekon:"2026-06-05", tglSp:"2026-05-28", tglDps:"2026-06-01", tglPeriode:"2026-06-01", notes:"" },
+  { kpa:"TB921123", nrp:"19940512011", nama:"Fitri Ramadhani",  tmt:"2021-06-23", nomorPinjaman:"BUM-2021-00152", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR YKPP PROGSUS", jumlah:85000000,  sisaHutang:19500000,  bruto:22300000,  nominal:20700000,  cabang:"KC Padang",        tglRekon:"2026-06-03", tglSp:"2026-05-25", tglDps:"2026-05-29", tglPeriode:"2026-06-01", notes:"" },
+  { kpa:"PB980890", nrp:"19850617008", nama:"Sri Wahyuni",      tmt:"2022-08-01", nomorPinjaman:"BUM-2022-00265", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR YKPP PROGREG", jumlah:125000000, sisaHutang:98000000,  bruto:108900000, nominal:103500000, imbalJasa:2500000, cabang:"KC Denpasar",      tglRekon:"2026-05-30", tglSp:"2026-05-20", tglDps:"2026-05-24", tglPeriode:"2026-06-01", notes:"Menunggu konfirmasi berkas dari kantor cabang." },
+  { kpa:"UA950567", nrp:"19921215005", nama:"Aprildo A. R.",    tmt:"2023-04-20", nomorPinjaman:"BUM-2023-00311", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR YKPP PROGREG", jumlah:135000000, sisaHutang:121000000, bruto:132750000, nominal:128500000, imbalJasa:2700000, cabang:"KC Makassar",      tglRekon:"2026-05-28", tglSp:"2026-05-18", tglDps:"2026-05-22", tglPeriode:"2026-06-01", notes:"" },
+  { kpa:"LB941345", nrp:"19920815013", nama:"Lina Marlina",     tmt:"2022-12-04", nomorPinjaman:"BUM-2022-00340", jenisPotongan:"Tabungan Asuransi", jenisPinjaman:"BUM KPR YKPP PROGREG", jumlah:145000000, sisaHutang:139000000, bruto:143200000, nominal:139500000, imbalJasa:2900000, cabang:"KC Bandung",       tglRekon:"2026-05-25", tglSp:"2026-05-14", tglDps:"2026-05-18", tglPeriode:"2026-06-01", notes:"" }
 ];
 
 
@@ -4982,8 +4982,8 @@ const DATA_BUM_PELUNASAN = [
      dengan menerbitkan SP pembayaran pemotongan, sehingga data tarikannya
      bertambah: Nomor SP pembatalan, Tanggal DPS, dan Nomor DPS.
 
-   jenisPinjaman: "BUM KPR Program Khusus ASABRI" | "BUM KPR TWPAD" |
-                  "BUM KPR Program Reguler YPPSDP"
+   jenisPinjaman: "BUM KPR YKPP PROGSUS" | "BUM KPR TWPAD" |
+                  "BUM KPR YKPP PROGREG"
 
    status: "Tercatat"    → peserta aktif, data pembatalan siap ditarik
            "Menunggu SP" → peserta pensiun, SP pembayaran belum diterbitkan Div. Keuangan
@@ -5008,30 +5008,30 @@ const BUM_PEMBATALAN_DOKUMEN = [
 ];
 
 const DATA_BUM_PEMBATALAN = [
-  { kpa:"TA910123", nrp:"19870512001", nama:"Intan M. Sari",     cabang:"KC Jakarta Utama", nomorPinjaman:"BUM-2021-00114", jenisPinjaman:"BUM KPR Program Reguler YPPSDP",
+  { kpa:"TA910123", nrp:"19870512001", nama:"Intan M. Sari",     cabang:"KC Jakarta Utama", nomorPinjaman:"BUM-2021-00114", jenisPinjaman:"BUM KPR YKPP PROGREG",
     statusPeserta:"Aktif",     keterangan:"Batal Akad Kredit",        noSurat:"B/412/YPPSDP/VI/2026", tglSurat:"2026-06-04", nominal:38000000,  status:"Tercatat" },
   { kpa:"LA930345", nrp:"19951130003", nama:"Kenedi",            cabang:"KC Surabaya",      nomorPinjaman:"BUM-2022-00203", jenisPinjaman:"BUM KPR TWPAD",
     statusPeserta:"Aktif",     keterangan:"Pembatalan Sebagian",      noSurat:"B/418/YPPSDP/VI/2026", tglSurat:"2026-06-09", nominal:22500000,  status:"Tercatat" },
   { kpa:"UB960678", nrp:"19870910006", nama:"Wati Handayani",    cabang:"KC Semarang",      nomorPinjaman:"BUM-2021-00176", jenisPinjaman:"BUM KPR TWPAD",
     statusPeserta:"Aktif",     keterangan:"Rumah Batal Serah Terima", noSurat:"B/423/YPPSDP/VI/2026", tglSurat:"2026-06-15", nominal:41000000,  status:"Tercatat" },
-  { kpa:"PB980890", nrp:"19850617008", nama:"Sri Wahyuni",       cabang:"KC Denpasar",      nomorPinjaman:"BUM-2022-00265", jenisPinjaman:"BUM KPR Program Reguler YPPSDP",
+  { kpa:"PB980890", nrp:"19850617008", nama:"Sri Wahyuni",       cabang:"KC Denpasar",      nomorPinjaman:"BUM-2022-00265", jenisPinjaman:"BUM KPR YKPP PROGREG",
     statusPeserta:"Aktif",     keterangan:"Pembatalan Seluruhnya",    noSurat:"B/431/YPPSDP/VII/2026", tglSurat:"2026-07-02", nominal:55000000, status:"Tercatat" },
-  { kpa:"LB941345", nrp:"19920815013", nama:"Lina Marlina",      cabang:"KC Bandung",       nomorPinjaman:"BUM-2022-00340", jenisPinjaman:"BUM KPR Program Reguler YPPSDP",
+  { kpa:"LB941345", nrp:"19920815013", nama:"Lina Marlina",      cabang:"KC Bandung",       nomorPinjaman:"BUM-2022-00340", jenisPinjaman:"BUM KPR YKPP PROGREG",
     statusPeserta:"Aktif",     keterangan:"Pengunduran Diri Peserta", noSurat:"B/436/YPPSDP/VII/2026", tglSurat:"2026-07-10", nominal:30000000, status:"Tercatat" },
 
-  { kpa:"TB920234", nrp:"19900820002", nama:"Made Wardani",      cabang:"KC Denpasar",      nomorPinjaman:"BUM-2020-00087", jenisPinjaman:"BUM KPR Program Khusus ASABRI",
+  { kpa:"TB920234", nrp:"19900820002", nama:"Made Wardani",      cabang:"KC Denpasar",      nomorPinjaman:"BUM-2020-00087", jenisPinjaman:"BUM KPR YKPP PROGSUS",
     statusPeserta:"Pensiun",   keterangan:"Pembatalan Seluruhnya",    noSurat:"B/405/YPPSDP/V/2026",  tglSurat:"2026-05-21", nominal:19500000,  status:"Selesai",
     noRequest:"RU-2026-00218", noSp:"SP/1180/KEU/VI/2026", tglDps:"2026-06-11", noDps:"DPS-2026-06-0042", dokumen:["Surat Permohonan Pembatalan BUM KPR","Surat Pembatalan BUM KPR dari YPPSDP"] },
-  { kpa:"LB940456", nrp:"19880305004", nama:"Firman Dewantoro",  cabang:"KC Medan",         nomorPinjaman:"BUM-2019-00042", jenisPinjaman:"BUM KPR Program Khusus ASABRI",
+  { kpa:"LB940456", nrp:"19880305004", nama:"Firman Dewantoro",  cabang:"KC Medan",         nomorPinjaman:"BUM-2019-00042", jenisPinjaman:"BUM KPR YKPP PROGSUS",
     statusPeserta:"Pensiun",   keterangan:"Pembatalan Sebagian",      noSurat:"B/409/YPPSDP/V/2026",  tglSurat:"2026-05-28", nominal:8750000,   status:"Selesai",
     noRequest:"RU-2026-00224", noSp:"SP/1194/KEU/VI/2026", tglDps:"2026-06-18", noDps:"DPS-2026-06-0057", dokumen:["Surat Permohonan Pembatalan BUM KPR","Surat Pembatalan BUM KPR dari YPPSDP"] },
-  { kpa:"PA970789", nrp:"19930422007", nama:"Yuni Kartika",      cabang:"KC Palembang",     nomorPinjaman:"BUM-2020-00033", jenisPinjaman:"BUM KPR Program Khusus ASABRI",
+  { kpa:"PA970789", nrp:"19930422007", nama:"Yuni Kartika",      cabang:"KC Palembang",     nomorPinjaman:"BUM-2020-00033", jenisPinjaman:"BUM KPR YKPP PROGSUS",
     statusPeserta:"Pensiun",   keterangan:"Batal Akad Kredit",        noSurat:"B/427/YPPSDP/VI/2026", tglSurat:"2026-06-22", nominal:12400000,  status:"Menunggu SP",
     noRequest:"RU-2026-00237", noSp:"", tglDps:"", noDps:"", dokumen:["Surat Permohonan Pembatalan BUM KPR","Surat Pembatalan BUM KPR dari YPPSDP"] },
   { kpa:"PC990901", nrp:"19910304009", nama:"Ratna Dewi",        cabang:"KC Balikpapan",    nomorPinjaman:"BUM-2019-00019", jenisPinjaman:"BUM KPR TWPAD",
     statusPeserta:"Pensiun",   keterangan:"Pembatalan Seluruhnya",    noSurat:"B/433/YPPSDP/VII/2026", tglSurat:"2026-07-06", nominal:6200000,  status:"Menunggu SP",
     noRequest:"RU-2026-00245", noSp:"", tglDps:"", noDps:"", dokumen:["Surat Permohonan Pembatalan BUM KPR","Surat Pembatalan BUM KPR dari YPPSDP"] },
-  { kpa:"UA951456", nrp:"19830706014", nama:"Joko Purnomo",      cabang:"KC Surabaya",      nomorPinjaman:"BUM-2019-00027", jenisPinjaman:"BUM KPR Program Khusus ASABRI",
+  { kpa:"UA951456", nrp:"19830706014", nama:"Joko Purnomo",      cabang:"KC Surabaya",      nomorPinjaman:"BUM-2019-00027", jenisPinjaman:"BUM KPR YKPP PROGSUS",
     statusPeserta:"Pensiun",   keterangan:"Rumah Batal Serah Terima", noSurat:"B/439/YPPSDP/VII/2026", tglSurat:"2026-07-14", nominal:5000000,  status:"Menunggu SP",
     noRequest:"RU-2026-00251", noSp:"", tglDps:"", noDps:"", dokumen:["Surat Permohonan Pembatalan BUM KPR","Surat Pembatalan BUM KPR dari YPPSDP"] }
 ];
@@ -5053,15 +5053,15 @@ const DATA_BUM_PEMBATALAN = [
 const BUM_ANGSURAN_STATUS = ["Menunggu Verifikasi", "Terverifikasi", "Ditolak"];
 
 const DATA_BUM_ANGSURAN = [
-  { noBukti:"ANG-2026-0001", kpa:"TB920234", nrp:"19900820002", nama:"Made Wardani",     cabang:"KC Denpasar",      nomorPinjaman:"BUM-2020-00087", jenisPinjaman:"BUM KPR Program Khusus ASABRI",
+  { noBukti:"ANG-2026-0001", kpa:"TB920234", nrp:"19900820002", nama:"Made Wardani",     cabang:"KC Denpasar",      nomorPinjaman:"BUM-2020-00087", jenisPinjaman:"BUM KPR YKPP PROGSUS",
     angsuranKe:5,  tglBayar:"2026-07-05", nominal:2500000, sisaHutang:21000000,  buktiSetor:"bukti-setor-juli-2026.pdf",   tglUnggah:"2026-07-07", status:"Terverifikasi",       tglVerifikasi:"2026-07-09", catatan:"" },
-  { noBukti:"ANG-2026-0002", kpa:"LB940456", nrp:"19880305004", nama:"Firman Dewantoro", cabang:"KC Medan",         nomorPinjaman:"BUM-2019-00042", jenisPinjaman:"BUM KPR Program Khusus ASABRI",
+  { noBukti:"ANG-2026-0002", kpa:"LB940456", nrp:"19880305004", nama:"Firman Dewantoro", cabang:"KC Medan",         nomorPinjaman:"BUM-2019-00042", jenisPinjaman:"BUM KPR YKPP PROGSUS",
     angsuranKe:9,  tglBayar:"2026-07-08", nominal:1500000, sisaHutang:9500000,   buktiSetor:"setoran-bri-08072026.jpg",    tglUnggah:"2026-07-08", status:"Terverifikasi",       tglVerifikasi:"2026-07-10", catatan:"" },
-  { noBukti:"ANG-2026-0003", kpa:"PA970789", nrp:"19930422007", nama:"Yuni Kartika",     cabang:"KC Palembang",     nomorPinjaman:"BUM-2020-00033", jenisPinjaman:"BUM KPR Program Khusus ASABRI",
+  { noBukti:"ANG-2026-0003", kpa:"PA970789", nrp:"19930422007", nama:"Yuni Kartika",     cabang:"KC Palembang",     nomorPinjaman:"BUM-2020-00033", jenisPinjaman:"BUM KPR YKPP PROGSUS",
     angsuranKe:7,  tglBayar:"2026-07-12", nominal:2000000, sisaHutang:14000000,  buktiSetor:"bukti-transfer-yuni.pdf",     tglUnggah:"2026-07-13", status:"Menunggu Verifikasi", tglVerifikasi:"",           catatan:"" },
-  { noBukti:"ANG-2026-0004", kpa:"TB921123", nrp:"19940512011", nama:"Fitri Ramadhani",  cabang:"KC Padang",        nomorPinjaman:"BUM-2021-00152", jenisPinjaman:"BUM KPR Program Khusus ASABRI",
+  { noBukti:"ANG-2026-0004", kpa:"TB921123", nrp:"19940512011", nama:"Fitri Ramadhani",  cabang:"KC Padang",        nomorPinjaman:"BUM-2021-00152", jenisPinjaman:"BUM KPR YKPP PROGSUS",
     angsuranKe:4,  tglBayar:"2026-07-15", nominal:1750000, sisaHutang:19500000,  buktiSetor:"angsuran-ke-4.pdf",           tglUnggah:"2026-07-16", status:"Menunggu Verifikasi", tglVerifikasi:"",           catatan:"" },
-  { noBukti:"ANG-2026-0005", kpa:"UA951456", nrp:"19830706014", nama:"Joko Purnomo",     cabang:"KC Surabaya",      nomorPinjaman:"BUM-2019-00027", jenisPinjaman:"BUM KPR Program Khusus ASABRI",
+  { noBukti:"ANG-2026-0005", kpa:"UA951456", nrp:"19830706014", nama:"Joko Purnomo",     cabang:"KC Surabaya",      nomorPinjaman:"BUM-2019-00027", jenisPinjaman:"BUM KPR YKPP PROGSUS",
     angsuranKe:12, tglBayar:"2026-07-18", nominal:1000000, sisaHutang:5000000,   buktiSetor:"wa-bukti-bayar.jpg",          tglUnggah:"2026-07-19", status:"Ditolak",             tglVerifikasi:"2026-07-21", catatan:"Nominal pada bukti setor tidak sama dengan yang diinput Kantor Cabang." },
   { noBukti:"ANG-2026-0006", kpa:"LA930345", nrp:"19951130003", nama:"Kenedi",           cabang:"KC Surabaya",      nomorPinjaman:"BUM-2022-00203", jenisPinjaman:"BUM KPR TWPAD",
     angsuranKe:3,  tglBayar:"2026-07-20", nominal:5000000, sisaHutang:112000000, buktiSetor:"setoran-twpad-kenedi.pdf",    tglUnggah:"2026-07-21", status:"Menunggu Verifikasi", tglVerifikasi:"",           catatan:"" },
@@ -5071,9 +5071,9 @@ const DATA_BUM_ANGSURAN = [
     angsuranKe:14, tglBayar:"2026-07-25", nominal:800000,  sisaHutang:6200000,   buktiSetor:"angsuran-ratna-juli.jpg",     tglUnggah:"2026-07-26", status:"Menunggu Verifikasi", tglVerifikasi:"",           catatan:"" },
   { noBukti:"ANG-2026-0009", kpa:"LA931234", nrp:"19860303012", nama:"Andi Saputra",     cabang:"KC Jakarta Utama", nomorPinjaman:"BUM-2020-00121", jenisPinjaman:"BUM KPR TWPAD",
     angsuranKe:8,  tglBayar:"2026-07-28", nominal:4000000, sisaHutang:71000000,  buktiSetor:"bukti-setor-andi-08.pdf",     tglUnggah:"2026-07-29", status:"Menunggu Verifikasi", tglVerifikasi:"",           catatan:"" },
-  { noBukti:"ANG-2026-0010", kpa:"TB920234", nrp:"19900820002", nama:"Made Wardani",     cabang:"KC Denpasar",      nomorPinjaman:"BUM-2020-00087", jenisPinjaman:"BUM KPR Program Khusus ASABRI",
+  { noBukti:"ANG-2026-0010", kpa:"TB920234", nrp:"19900820002", nama:"Made Wardani",     cabang:"KC Denpasar",      nomorPinjaman:"BUM-2020-00087", jenisPinjaman:"BUM KPR YKPP PROGSUS",
     angsuranKe:6,  tglBayar:"2026-08-05", nominal:2500000, sisaHutang:18500000,  buktiSetor:"bukti-setor-agustus-2026.pdf", tglUnggah:"2026-08-06", status:"Menunggu Verifikasi", tglVerifikasi:"",          catatan:"" },
-  { noBukti:"ANG-2026-0011", kpa:"LB940456", nrp:"19880305004", nama:"Firman Dewantoro", cabang:"KC Medan",         nomorPinjaman:"BUM-2019-00042", jenisPinjaman:"BUM KPR Program Khusus ASABRI",
+  { noBukti:"ANG-2026-0011", kpa:"LB940456", nrp:"19880305004", nama:"Firman Dewantoro", cabang:"KC Medan",         nomorPinjaman:"BUM-2019-00042", jenisPinjaman:"BUM KPR YKPP PROGSUS",
     angsuranKe:10, tglBayar:"2026-08-08", nominal:1500000, sisaHutang:8000000,   buktiSetor:"setoran-bri-08082026.jpg",    tglUnggah:"2026-08-09", status:"Ditolak",             tglVerifikasi:"2026-08-11", catatan:"Berkas buram dan tanggal setor tidak terbaca; mohon unggah ulang." }
 ];
 

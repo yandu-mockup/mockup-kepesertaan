@@ -2000,14 +2000,18 @@ let bumPage = 1;
 
 /* Tiga jenis pinjaman BUM, masing-masing punya warna badge sendiri. */
 const BUM_JENIS = [
-  { nama:"BUM KPR Program Khusus ASABRI",  tone:"pill-warn" },
-  { nama:"BUM KPR TWPAD",                  tone:"pill-info" },
-  { nama:"BUM KPR Program Reguler YPPSDP", tone:"pill-ok"   }
+  { nama:"BUM KPR YKPP PROGSUS", tone:"pill-warn" },
+  { nama:"BUM KPR TWPAD",        tone:"pill-info" },
+  { nama:"BUM KPR YKPP PROGREG", tone:"pill-ok"   }
 ];
 const bumJenisTone = nama => (BUM_JENIS.find(j => j.nama === nama) || {}).tone || "pill-info";
 const bumJenisOptions = dipilih => BUM_JENIS.map(j =>
-
   `<option value="${j.nama}" ${j.nama === dipilih ? "selected" : ""}>${j.nama}</option>`).join("");
+
+/* Imbal jasa hanya melekat pada jenis PROGREG, jadi namanya dipakai sebagai
+   penanda di beberapa tempat. */
+const BUM_JENIS_PROGREG = "BUM KPR YKPP PROGREG";
+
 function renderBum() {
   const fDari     = $("#bum-f-dari").value;
   const fSampai   = $("#bum-f-sampai").value;
@@ -2238,13 +2242,6 @@ document.addEventListener("click", e => {
 /* ==================================================== PELUNASAN KPR (BUM) */
 let bplPage = 1;
 
-/* Warna badge per jenis pinjaman BUM. */
-function bplPillJenis(jenis = "") {
-  if (jenis.includes("Khusus"))  return "pill-warn";
-  if (jenis.includes("Reguler")) return "pill-ok";
-  return "pill-info";
-}
-
 function renderBumPelunasan() {
   const fDari     = $("#bpl-f-dari").value;
   const fSampai   = $("#bpl-f-sampai").value;
@@ -2272,7 +2269,7 @@ function renderBumPelunasan() {
   $("#bpl-body").innerHTML = pageRows.length ? pageRows.map((r, i) => `
     <tr>
       <td class="stick-l">${start + i + 1}</td>
-      <td><span class="pill ${bplPillJenis(r.jenisPinjaman)}">${esc(r.jenisPinjaman)}</span></td>
+      <td><span class="pill ${bumJenisTone(r.jenisPinjaman)}">${esc(r.jenisPinjaman)}</span></td>
       <td>${esc(fmtTgl(r.tglRekon)) || "—"}</td>
       <td class="t-strong">${esc(r.kpa)}</td>
       <td>${esc(r.nrp)}</td>
@@ -2306,8 +2303,8 @@ $("#bpl-export-excel").onclick = () => toast("Daftar pelunasan KPR (BUM) diekspo
 /* --------------------------------------------------------- Halaman Detail
    Field-nya sama persis dengan kolom tabel, terisi otomatis dari baris yang
    dipilih dan dikunci (readonly) — halaman ini hanya untuk melihat. Khusus
-   jenis pinjaman Program Reguler YPPSDP muncul satu field tambahan, Imbal
-   Jasa Program Reguler, yang ikut terisi otomatis. */
+   jenis pinjaman YKPP PROGREG muncul satu field tambahan, Imbal Jasa
+   Program Reguler, yang ikut terisi otomatis. */
 let bplDetailRow = null;
 
 function bplDetailField(label, value, span2 = false) {
@@ -2322,7 +2319,7 @@ function renderBumPelunasanDetail() {
 
   $("#bpld-title").textContent  = r.nama;
   $("#bpld-sub").textContent    = `${r.kpa} · ${r.nrp} · ${r.nomorPinjaman}`;
-  $("#bpld-jenis").className    = "pill " + bplPillJenis(r.jenisPinjaman);
+  $("#bpld-jenis").className    = "pill " + bumJenisTone(r.jenisPinjaman);
   $("#bpld-jenis").textContent  = r.jenisPinjaman;
 
   $("#bpld-body").innerHTML = `
@@ -2348,7 +2345,7 @@ function renderBumPelunasanDetail() {
       ${bplDetailField("Jenis Potongan/Keterangan", r.jenisPotongan, true)}
       ${bplDetailField("Bruto", rp(r.bruto))}
       ${bplDetailField("Nominal", rp(r.nominal))}
-      ${r.jenisPinjaman.includes("Reguler")
+      ${r.jenisPinjaman === BUM_JENIS_PROGREG
           ? bplDetailField("Imbal Jasa Program Reguler", rp(r.imbalJasa), true) : ""}
       ${bplDetailField("Tanggal Rekonsiliasi", fmtTgl(r.tglRekon))}
       ${bplDetailField("Tanggal SP", fmtTgl(r.tglSp))}
@@ -2384,9 +2381,9 @@ function bplShowUnggahData() {
         <label class="fl">Jenis Pinjaman <span class="req">*</span></label>
         <select class="inp" id="bpd-jenis">
           <option value="">-- Pilih Jenis Pinjaman --</option>
-          <option value="BUM KPR Program Khusus ASABRI">BUM KPR Program Khusus ASABRI</option>
+          <option value="BUM KPR YKPP PROGSUS">BUM KPR YKPP PROGSUS</option>
           <option value="BUM KPR TWPAD">BUM KPR TWPAD</option>
-          <option value="BUM KPR Program Reguler YPPSDP">BUM KPR Program Reguler YPPSDP</option>
+          <option value="BUM KPR YKPP PROGREG">BUM KPR YKPP PROGREG</option>
         </select>
       </div>
       <div class="field span2">
@@ -2440,7 +2437,7 @@ function bplShowUnggahData() {
         jenisPinjaman,
         jumlah: p.jumlah, sisaHutang: p.sisaHutang,
         bruto: Math.round(nominal * 1.05), nominal,
-        ...(jenisPinjaman.includes("Reguler") ? { imbalJasa: Math.round(p.jumlah * 0.02) } : {}),
+        ...(jenisPinjaman === BUM_JENIS_PROGREG ? { imbalJasa: Math.round(p.jumlah * 0.02) } : {}),
         cabang: p.cabang, tglRekon, notes
       });
     });
