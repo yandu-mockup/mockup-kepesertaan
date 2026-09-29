@@ -40,6 +40,7 @@ strukturnya. Hampir semua pola sudah pernah dipakai di suatu tempat.
 | `Template Alih Status Kolektif.xlsx` | Berkas yang diunduh tombol "⤓ Unduh Template" di Alih Status mekanisme Kolektif; dirujuk lewat `templateFile` di `DATA_ALIH_STATUS_KOLEKTIF` |
 | `template-daerah-*.xlsx` (4 berkas: Provinsi, Kota, Kecamatan, Kelurahan) | Berkas yang diunduh tombol "⤓ Download Template Excel" di Tambah Daerah mekanisme Kolektif, satu per Tingkat; dirujuk lewat `templateFile` di `DAERAH_KOLEKTIF_CONTOH` |
 | `template-satuan-kerja.xlsx` | Berkas yang diunduh tombol "⤓ Download Template Satuan Kerja" di Tambah Satuan Kerja mekanisme Kolektif; dirujuk lewat `templateFile` di `SATUAN_KERJA_KOLEKTIF_CONTOH` |
+| `pemulihan-data-peserta-dummy.xlsx` | Salinan Excel dari `DATA_SPP` untuk bahan uji manual — 5 sheet (Ringkasan, Pengajuan, Data Keluarga, Data Pangkat, Rekomendasi). Tidak dibaca aplikasi; buat ulang bila `DATA_SPP` berubah |
 | `pum/` | **Aplikasi terpisah "KPR (PUM)"** — lihat di bawah |
 | `flagging/` | **Aplikasi terpisah "Flagging Mitra Bayar"** — lihat di bawah |
 
