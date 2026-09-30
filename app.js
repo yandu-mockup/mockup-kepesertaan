@@ -123,6 +123,7 @@ function go(id) {
   if (id === "dapem-validasi") renderValidasiKep();
   if (id === "dapem-keuangan") renderKeuangan();
   if (id === "upload-rekening") { urGotoList(); renderUploadRekening(); }
+  if (id.startsWith("lap-")) renderLaporan(id);
 }
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-go]");
@@ -13401,7 +13402,7 @@ $("#bpb-proses-btn").onclick = bpbShowProses;
    Nomor DPS ikut tertarik bersama data pembatalan lainnya. */
 function bpbShowSp(r) {
   if (!r) return;
-  $("#modal-title").textContent = "Terbitkan SP Pembayaran Pemotongan BUM KPR";
+  $("#modal-title").textContent = "Terbitkan SP Pembatalan KPR (BUM)";
   $("#modal-sub").textContent   = `${r.nama} · ${r.kpa} · ${r.cabang}`;
   $("#modal-body").innerHTML = `
     <div class="grid2">
@@ -14047,3 +14048,442 @@ $("#ur-simpan").onclick = () => {
 };
 
 renderUploadRekening();
+
+/* ===========================================================================
+   LAPORAN KEPESERTAAN — 9 sub laporan
+   ---------------------------------------------------------------------------
+   Semua laporan dihitung dari LAPORAN_PESERTA_BARU (data.js). Tiap layar
+   punya id "lap-…"; filter berid "<layar>-f-<nama>" dan hasil dirender ke
+   "<layar>-head" / "-body" / "-metrics" / "-note". Laporan diringkas menjadi
+   satu spesifikasi tabel: { head, rows, total, angka, metrics, judul }
+   — kolom mulai indeks `angka` rata kanan dan diformat sebagai bilangan.
+   =========================================================================== */
+const LAP_PAGE_SIZE = 15;
+let lapPage = 1;
+
+const lapNilai = (scr, n) => { const el = $(`#${scr}-f-${n}`); return el ? el.value : ""; };
+const lapAngka = n => Number(n).toLocaleString("id-ID");
+const lapUnik  = (kolom, potong) =>
+  [...new Set(LAPORAN_PESERTA_BARU.map(r => r[kolom].slice(0, potong)))].sort();
+
+/* Pilihan dropdown filter, diisi sekali saat aplikasi dimuat. Varian "-x"
+   (pembanding A/B) tidak punya pilihan "Semua". */
+const LAP_OPSI = {
+  "angkatan":       () => [["", "Semua Angkatan"],      ...LAPORAN_ANGKATAN.map(a => [a, a])],
+  "unor":           () => [["", "Semua UNOR/Satker"], ...["TNI AD", "TNI AL", "TNI AU", "POLRI", "MABES TNI", "KEMHAN"].map(u => [u, u])],
+  "tahun-daftar-x": () => lapUnik("tglDaftar", 4).map(t => [t, t]),
+  "tahun-daftar":   () => [["", "Semua"], ...lapUnik("tglDaftar", 4).map(t => [t, t])],
+  "tahun-tmt":      () => [["", "Semua"], ...lapUnik("tmt", 4).map(t => [t, t])],
+  "tahun-tmt-x":    () => lapUnik("tmt", 4).map(t => [t, t]),
+  "gol-pangkat":    () => [["", "Semua Golongan Pangkat"], ...LAPORAN_GOL_PANGKAT.map(g => [g, g])]
+};
+$$("select[data-opt]").forEach(sel => {
+  sel.innerHTML = LAP_OPSI[sel.dataset.opt]().map(([v, l]) => `<option value="${esc(v)}">${esc(l)}</option>`).join("");
+});
+
+/* Nilai awal filter: rentang tanggal peserta baru = tahun berjalan; pembanding
+   A/B = dua tahun terakhir; tahun penomoran = tahun terakhir. Tombol Reset
+   mengembalikan ke nilai ini. */
+function lapNilaiAwal(scr) {
+  $$(`[id^="${scr}-f-"]`).forEach(el => { if (el.tagName === "SELECT") el.selectedIndex = 0; else el.value = ""; });
+  if (scr === "lap-peserta-baru") {
+    $("#lap-peserta-baru-f-dari").value   = "2026-01-01";
+    $("#lap-peserta-baru-f-sampai").value = "2026-09-29";
+  }
+  ["a", "b"].forEach((k, i) => {
+    const el = $(`#${scr}-f-${k}`);
+    if (el) el.selectedIndex = Math.max(0, el.options.length - 2 + i);
+  });
+  /* Laporan per Kantor Cabang: pendaftaran = tahun terakhir; TMT = seluruh tahun yang ada. */
+  if (scr === "lap-kpa-cabang") {
+    ["daftar-dari", "daftar-sampai", "tmt-sampai"].forEach(k => { const el = $(`#${scr}-f-${k}`); el.selectedIndex = el.options.length - 1; });
+  }
+  /* Filter tahun tanpa pilihan "Semua" (Laporan Periode Tahun) mulai dari tahun terakhir. */
+  if (scr === "lap-peserta-tahun" || scr === "lap-kpa-tmt" || scr === "lap-kpa-pangkat-awal" || scr === "lap-kpa-golongan" || scr === "lap-kpa-banding-golongan" || scr === "lap-kpa-banding-tmt")
+    ["th-dari", "th-sampai"].forEach((k, i) => {
+      const el = $(`#${scr}-f-${k}`);
+      el.selectedIndex = Math.max(0, el.options.length - (scr === "lap-kpa-tmt" || scr === "lap-kpa-banding-tmt" || scr === "lap-kpa-banding-golongan" ? 2 - i : 1));
+    });
+}
+
+/* Baris peserta yang lolos semua filter layar; `kolom` = kolom tanggal yang
+   dipakai untuk filter rentang tanggal / rentang tahun. */
+function lapRows(scr, kolom) {
+  const v = n => lapNilai(scr, n);
+  return LAPORAN_PESERTA_BARU.filter(r => {
+    const t = r[kolom];
+    return (!v("dari") || t >= v("dari")) && (!v("sampai") || t <= v("sampai"))
+      && (!v("th-dari") || t.slice(0, 4) >= v("th-dari")) && (!v("th-sampai") || t.slice(0, 4) <= v("th-sampai"))
+      && (!v("angkatan") || r.angkatan === v("angkatan")) && (!v("cabang") || r.cabang === v("cabang"));
+  });
+}
+
+/* Daftar tahun untuk baris tabel, dipangkas mengikuti filter Tahun Dari/Sampai. */
+function lapTahunBaris(scr, kolom) {
+  const dari = lapNilai(scr, "th-dari"), sampai = lapNilai(scr, "th-sampai");
+  return lapUnik(kolom, 4).filter(t => (!dari || t >= dari) && (!sampai || t <= sampai));
+}
+
+/* Tabel silang: satu baris per kunci, satu kolom per angkatan, plus Total. */
+function lapPivot(rows, labelKolom, kunciFn, urutan, judul) {
+  const isi = urutan.map(k => {
+    const c = LAPORAN_ANGKATAN.map(a => rows.filter(r => kunciFn(r) === k && r.angkatan === a).length);
+    return [k, ...c, c.reduce((x, y) => x + y, 0)];
+  });
+  const total = ["Total", ...LAPORAN_ANGKATAN.map((_, i) => isi.reduce((s, r) => s + r[i + 1], 0)), rows.length];
+  const puncak = isi.reduce((m, r) => (r.at(-1) > (m ? m.at(-1) : 0) ? r : m), null);
+  return {
+    judul, head: [labelKolom, ...LAPORAN_ANGKATAN, "Total"], rows: isi, total, angka: 1,
+    metrics: [
+      { l: "Total KPA", v: lapAngka(rows.length), c: "navy" },
+      { l: `${labelKolom} Terbanyak`, v: puncak ? `${puncak[0]} (${lapAngka(puncak.at(-1))})` : "—", c: "" },
+      { l: `${labelKolom} Terisi`, v: lapAngka(isi.filter(r => r.at(-1) > 0).length), c: "" }
+    ]
+  };
+}
+
+const LAP_UNOR_BARIS = [["Angkatan Darat", "TNI AD"], ["Angkatan Laut", "TNI AL"], ["Angkatan Udara", "TNI AU"],
+  ["Kepolisian", "POLRI"], ["Mabes TNI", "MABES TNI"], ["Kemhan", "KEMHAN"]];
+
+/* Laporan yang angkanya bisa diklik (drill-down ke Daftar Nominatif Peserta Baru).
+   peserta(scr, u, k) → baris peserta untuk UNOR ke-u (-1 = semua) dan kolom ke-k
+   (-1 = semua); kolom(scr, k) → teks kriteria kolom; kolomList(scr) → daftar kolom. */
+const LAP_DRILL = {
+  /* Periode Tahun: peserta terdaftar pada rentang tahun, dipisah menurut TMT
+     pengangkatan sebelum (kolom 0) atau pada (kolom 1) tahun "Sampai". */
+  "lap-peserta-tahun": {
+    kolomList: scr => { const y = lapNilai(scr, "th-sampai"); return [`TMT Pengangkatan < ${y}`, `TMT Pengangkatan ${y}`]; },
+    dasar: scr => lapRows(scr, "tglDaftar"),
+    masuk: (scr, r, k) => (r.tmt.slice(0, 4) < lapNilai(scr, "th-sampai") ? 0 : 1) === k,
+    periode: scr => `Terdaftar ${lapNilai(scr, "th-dari")}–${lapNilai(scr, "th-sampai")}`
+  },
+  /* Pangkat Awal: peserta terdaftar pada rentang tahun, dipisah menurut TMT
+     pengangkatan sebelum (kolom 0) atau pada (kolom 1) tahun "Sampai". */
+  "lap-kpa-pangkat-awal": {
+    tanpaUnor: true,
+    kolomList: scr => { const y = lapNilai(scr, "th-sampai"); return [`TMT Pengangkatan < ${y}`, `TMT Pengangkatan ${y}`]; },
+    dasar: scr => lapRows(scr, "tglDaftar"),
+    masuk: (scr, r, k) => (r.tmt.slice(0, 4) < lapNilai(scr, "th-sampai") ? 0 : 1) === k,
+    periode: scr => `Terdaftar ${lapNilai(scr, "th-dari")}–${lapNilai(scr, "th-sampai")}`
+  },
+  /* Pangkat/Golongan memakai definisi yang sama dengan Pangkat Awal. */
+  get "lap-kpa-golongan"() { return this["lap-kpa-pangkat-awal"]; },
+  /* Perbandingan Pangkat/Golongan: satu kolom per tahun TMT dalam rentang filter. */
+  get "lap-kpa-banding-golongan"() { return this["lap-kpa-banding-tmt"]; },
+  /* Perbandingan TMT Pengangkatan: satu kolom per tahun TMT dalam rentang filter. */
+  "lap-kpa-banding-tmt": {
+    kolomList: scr => lapTahunBaris(scr, "tmt").map(t => `TMT Pengangkatan ${t}`),
+    dasar: () => LAPORAN_PESERTA_BARU,
+    masuk: (scr, r, k) => r.tmt.slice(0, 4) === lapTahunBaris(scr, "tmt")[k],
+    periode: () => ""
+  },
+  /* TMT Pengangkatan Pertama: satu kolom per tahun TMT dalam rentang filter. */
+  "lap-kpa-tmt": {
+    kolomList: scr => lapTahunBaris(scr, "tmt").map(t => `TMT Pengangkatan ${t}`),
+    dasar: scr => lapRows(scr, "tmt"),
+    masuk: (scr, r, k) => r.tmt.slice(0, 4) === lapTahunBaris(scr, "tmt")[k],
+    periode: () => ""
+  }
+};
+function lapDrillPeserta(scr, u, k, p = "") {
+  const d = LAP_DRILL[scr];
+  return d.dasar(scr).filter(r => (u < 0 || r.unor === LAP_UNOR_BARIS[u][1]) && (!p || p.split("|").includes(r.pangkat)) && (k < 0 || d.masuk(scr, r, k)));
+}
+/* Sel angka berhubungan: klik membuka pilihan unduh Excel / PDF. */
+const lapLink = (scr, n, u, k, p = "") => n
+  ? { html: `<a href="#" data-lap-unduh="${scr},${u},${k},${p}" style="color:var(--navy);font-weight:700;text-decoration:underline">${lapAngka(n)}</a>` }
+  : "-";
+
+/* Tabel Unit Organisasi × kolom (dipakai laporan yang bisa diklik). */
+function lapTabelUnor(scr, judul, grandTotal) {
+  const d = LAP_DRILL[scr], kolom = d.kolomList(scr);
+  const hitung = (u, k) => lapDrillPeserta(scr, u, k).length;
+  const spec = {
+    judul, angka: 1,
+    head: ["Unit Organisasi", ...kolom],
+    rows: LAP_UNOR_BARIS.map(([nama], u) => [nama, ...kolom.map((_, k) => lapLink(scr, hitung(u, k), u, k))]),
+    total: ["JUMLAH", ...kolom.map((_, k) => lapLink(scr, hitung(-1, k), -1, k))]
+  };
+  if (grandTotal) spec.footHtml = `<tr><td></td><td colspan="${kolom.length}" style="text-align:right" class="t-strong">${lapLink(scr, hitung(-1, -1), -1, -1).html || "-"}</td></tr>`;
+  return spec;
+}
+
+function lapTabelPangkat(scr, judul, kolomTotal) {
+  const d = LAP_DRILL[scr], kolom = d.kolomList(scr), nk = kolom.length;
+  const dasar = d.dasar(scr);
+  const th = "text-align:center;background:var(--navy);color:var(--surface)";
+  const angka = (u, p) => {
+    const c = kolom.map((_, k) => lapDrillPeserta(scr, u, k, p).length);
+    return kolomTotal ? [...c, c.reduce((x, y) => x + y, 0)] : c;
+  };
+  const tdAngka = (n, u, k, p) => `<td style="text-align:right">${lapLink(scr, n, u, k, p).html || "-"}</td>`;
+  let body = "";
+  LAP_UNOR_BARIS.forEach(([nama, kode], u) => {
+    const punya = new Set(dasar.filter(r => r.unor === kode).map(r => r.pangkat));
+    const g = angka(u, "");
+    body += `<tr class="t-strong" style="background:var(--line-soft)"><td class="t-strong">${esc(nama)}</td>${g.map((n, k) => tdAngka(n, u, k === nk ? -1 : k, "")).join("")}</tr>`;
+    LAP_PANGKAT_TINGGI.filter(p => punya.has(p) && angka(u, p).some(n => n > 0)).forEach(p => {
+      body += `<tr><td style="padding-left:28px">${esc(p)}</td>${angka(u, p).map((n, k) => tdAngka(n, u, k === nk ? -1 : k, p)).join("")}</tr>`;
+    });
+  });
+  const t = angka(-1, "");
+  body += `<tr style="background:var(--amber-soft)"><td class="t-strong">TOTAL</td>${t.map((n, k) => `<td style="text-align:right" class="t-strong">${lapLink(scr, n, -1, k === nk ? -1 : k, "").html || "-"}</td>`).join("")}</tr>`;
+  return {
+    judul, angka: 1, rows: [], bodyHtml: body,
+    catatan: `${LAP_UNOR_BARIS.length} Unit Organisasi ditampilkan`,
+    headHtml: `<tr><th colspan="${nk + (kolomTotal ? 2 : 1)}" style="${th}">${esc(judul.toUpperCase())}</th></tr>
+      <tr><th rowspan="2" style="${th};vertical-align:middle">UNOR / PANGKAT AWAL</th>
+        <th colspan="${nk}" style="${th}">TMT PENGANGKATAN</th>
+        ${kolomTotal ? `<th rowspan="2" style="${th};vertical-align:middle">TOTAL</th>` : ""}</tr>
+      <tr>${kolom.map(k => `<th style="${th}">${esc(k.replace("TMT Pengangkatan ", ""))}</th>`).join("")}</tr>`
+  };
+}
+
+/* Pengelompokan baris Laporan Pangkat Awal: golongan → baris (label, pangkat yang
+   digabung; pangkat antar angkatan yang setara ditulis dalam satu baris). */
+const LAP_PANGKAT_GRUP = [
+  { gol: "Tamtama", baris: [["PRADA/BHARADA/KELASI II", ["PRADA", "BHARADA", "KLD"]], ["PRATU/BHARATU/KELASI I", ["PRATU", "BHARATU", "KLS"]], ["KOPDA", ["KOPDA"]]] },
+  { gol: "Bintara", baris: [["SERDA/BRIPDA", ["SERDA", "BRIPDA"]], ["SERTU/BRIPTU", ["SERTU", "BRIPTU"]]] },
+  { gol: "Perwira", baris: [["LETDA/IPDA", ["LETDA", "IPDA"]], ["IPTU", ["IPTU"]]] },
+  { gol: "PNS Gol. II", baris: [["GOL.II/A", ["GOL.II/A"]], ["GOL.II/B", ["GOL.II/B"]]] },
+  { gol: "PNS Gol. III", baris: [["GOL.III/A", ["GOL.III/A"]], ["GOL.III/B", ["GOL.III/B"]]] },
+  { gol: "PNS Gol. IV", baris: [["GOL.IV/A", ["GOL.IV/A"]]] }
+];
+
+/* Tabel Golongan × Pangkat Awal × TMT (Laporan Pangkat Awal dan Pangkat/Golongan). */
+/* Tabel Golongan × Pangkat Awal × TMT (Laporan Pangkat Awal dan Pangkat/Golongan). */
+function lapTabelGolongan(scr, judul) {
+  const d = LAP_DRILL[scr], kolom = d.kolomList(scr), nk = kolom.length;
+  const th = "text-align:center;background:var(--navy);color:var(--surface);vertical-align:middle";
+  const angka = p => { const c = kolom.map((_, k) => lapDrillPeserta(scr, -1, k, p).length); return [...c, c.reduce((x, y) => x + y, 0)]; };
+  const td = (n, p, k, tebal) => `<td style="text-align:right"${tebal ? ' class="t-strong"' : ""}>${lapLink(scr, n, -1, k, p).html || "-"}</td>`;
+  const sel = (p, v) => v.map((n, k) => td(n, p, k === nk ? -1 : k)).join("");
+  let body = "";
+  LAP_PANGKAT_GRUP.forEach(g => {
+    const baris = g.baris.map(([label, isi]) => ({ label, p: isi.join("|"), v: angka(isi.join("|")) })).filter(r => r.v[nk] > 0);
+    baris.forEach((r, i) => {
+      body += `<tr>${i ? "" : `<td rowspan="${baris.length}" style="vertical-align:top">${esc(g.gol)}</td>`}<td>${esc(r.label)}</td>${sel(r.p, r.v)}</tr>`;
+    });
+  });
+  const t = angka("");
+  body += `<tr style="background:var(--amber-soft)"><td colspan="2" class="t-strong" style="text-align:center">JUMLAH</td>${t.map((n, k) => td(n, "", k === nk ? -1 : k, true)).join("")}</tr>`;
+  return {
+    judul, angka: 2, rows: [], bodyHtml: body, catatan: "",
+    headHtml: `<tr><th rowspan="2" style="${th}">GOLONGAN</th><th rowspan="2" style="${th}">PANGKAT AWAL</th>
+        <th colspan="${nk}" style="${th}">TMT PENGANGKATAN</th><th rowspan="2" style="${th}">TOTAL</th></tr>
+      <tr>${kolom.map(k => `<th style="${th}">${esc(k.replace("TMT Pengangkatan ", ""))}</th>`).join("")}</tr>`
+  };
+}
+
+/* Urutan pangkat dari tertinggi ke terendah untuk baris rincian Pangkat Awal. */
+const LAP_PANGKAT_TINGGI = ["GOL.IV/A", "GOL.III/B", "GOL.III/A", "GOL.II/B", "GOL.II/A", "IPTU", "IPDA", "LETDA",
+  "SERTU", "SERDA", "BRIPTU", "BRIPDA", "KOPDA", "PRATU", "PRADA", "KLS", "KLD", "BHARATU", "BHARADA"];
+
+const LAP_PANGKAT_URUT = [...new Set(Object.values(LAPORAN_PANGKAT_AWAL).flat().map(p => p[0]))];
+
+/* Kolom Laporan Peserta Baru Per Periode — mengikuti Format Daftar Nominatif.
+   `urut` = nilai untuk mengurutkan (tanggal memakai ISO, bukan teks tampilan). */
+const LAP_PB_KOLOM = [
+  { key:"batch",     label:"Nomor Batch",        get:r => r.batch },
+  { key:"tglInsert", label:"Tanggal Insert Data", get:r => r.tglInsert },
+  { key:"kpa",       label:"KPA",                get:r => r.kpa },
+  { key:"nrp",       label:"NRP/NIP",            get:r => r.nrp },
+  { key:"nama",      label:"Nama Peserta",       get:r => r.nama },
+  { key:"status",    label:"Status Personil",    get:r => r.statusPersonil },
+  { key:"unor",      label:"UNOR",               get:r => r.unor },
+  { key:"angkatan",  label:"Angkatan",           get:r => r.angkatan === "PNS" ? "KEMHAN" : r.angkatan.replace("-", " ") },
+  { key:"pangkat",   label:"Pangkat/Golongan",   get:r => r.pangkat },
+  { key:"tglLahir",  label:"Tgl. Lahir",         get:r => fmtTgl(r.tglLahir),  urut:r => r.tglLahir },
+  { key:"tmt",       label:"TMT Pengangkatan",   get:r => fmtTgl(r.tmt),       urut:r => r.tmt },
+  { key:"skep",      label:"SKEP Pertama",       get:r => r.skep },
+  { key:"tglSkep",   label:"Tgl. SKEP",          get:r => fmtTgl(r.tglSkep),   urut:r => r.tglSkep },
+  { key:"kesatuan",  label:"Kesatuan",           get:r => r.kesatuan },
+  { key:"cabang",    label:"Kantor Cabang",      get:r => r.cabang.replace("Kanca", "KANCAB").toUpperCase() },
+  { key:"hp",        label:"No. HP",             get:r => r.hp },
+  { key:"nik",       label:"NIK",                get:r => r.nik }
+];
+let lapSort = { key: null, dir: 1 };
+
+/* Saran untuk kolom "UNOR / Satker": gabungan nama UNOR dan Kesatuan. */
+const LAP_UNOR_SATKER = [...new Set(LAPORAN_PESERTA_BARU.flatMap(r => [r.unor, r.kesatuan]))].sort();
+
+function lapPesertaBaruRows(scr) {
+  const v = n => lapNilai(scr, n).trim().toLowerCase();
+  const dari = lapNilai(scr, "dari"), sampai = lapNilai(scr, "sampai");
+  return LAPORAN_PESERTA_BARU.filter(r =>
+    (!v("batch") || r.batch.toLowerCase().includes(v("batch")))
+    && (!v("nrp") || r.nrp.includes(v("nrp")))
+    && (!v("unor") || r.unor.toLowerCase().includes(v("unor")) || r.kesatuan.toLowerCase().includes(v("unor")))
+    && (!lapNilai(scr, "golongan") || r.golPangkat === lapNilai(scr, "golongan"))
+    && (!dari || r.tglDaftar >= dari) && (!sampai || r.tglDaftar <= sampai));
+}
+
+/* Kunci = id layar. Tiap fungsi mengembalikan spesifikasi tabel. */
+const LAP_LAPORAN = {
+  "lap-peserta-baru": scr => {
+    const k = LAP_PB_KOLOM.find(x => x.key === lapSort.key);
+    let rows = lapPesertaBaruRows(scr);
+    if (k) {
+      const nilai = k.urut || k.get;
+      rows = rows.slice().sort((a, b) => (nilai(a) > nilai(b) ? 1 : nilai(a) < nilai(b) ? -1 : 0) * lapSort.dir);
+    }
+    return {
+      judul: "Daftar Nominatif Peserta Baru", halaman: true, angka: 99, kolom: LAP_PB_KOLOM,
+      head: ["No", ...LAP_PB_KOLOM.map(c => c.label)],
+      rows: rows.map((r, i) => [i + 1, ...LAP_PB_KOLOM.map(c => c.get(r))])
+    };
+  },
+
+  "lap-kontrol-kpa": () => ({
+    judul: "Kontrol Penomoran Terakhir KPA", angka: 99, pusat: true,
+    headHtml: `<tr><th rowspan="2" style="text-align:center;vertical-align:middle;background:var(--navy);color:var(--surface)">UNOR</th>
+      <th colspan="${LAPORAN_KONTROL_KPA.kolom.length}" style="text-align:center;background:var(--navy);color:var(--surface)">PANGKAT</th></tr>
+      <tr>${LAPORAN_KONTROL_KPA.kolom.map(k => `<th style="text-align:center;background:var(--navy);color:var(--surface)">${esc(k)}</th>`).join("")}</tr>`,
+    rows: LAPORAN_KONTROL_KPA.baris.map(r => [r.unor, ...r.nilai.map(n => n || "-")])
+  }),
+
+  "lap-peserta-tahun": scr => lapTabelUnor(scr, "Jumlah Peserta Baru per Unit Organisasi", true),
+
+  "lap-kpa-tmt": scr => lapTabelUnor(scr, "Penerbitan KPA per Unit Organisasi", false),
+
+  "lap-kpa-pangkat-awal": scr => lapTabelGolongan(scr, "Penerbitan KPA Berdasarkan Pangkat Awal"),
+
+  "lap-kpa-banding-tmt": scr => lapTabelPangkat(scr, "Perbandingan Penerbitan KPA Berdasarkan TMT Pengangkatan", false),
+
+  "lap-kpa-golongan": scr => lapTabelGolongan(scr, "Penerbitan KPA Berdasarkan Pangkat/Golongan"),
+
+  "lap-kpa-banding-golongan": scr => lapTabelGolongan(scr, "Perbandingan Penerbitan KPA Berdasarkan Pangkat/Golongan"),
+
+  "lap-kpa-cabang": scr => {
+    const v = n => lapNilai(scr, n);
+    const th = (r, k) => r[k].slice(0, 4);
+    const rows = LAPORAN_PESERTA_BARU.filter(r =>
+      th(r, "tglDaftar") >= v("daftar-dari") && th(r, "tglDaftar") <= v("daftar-sampai")
+      && th(r, "tmt") >= v("tmt-dari") && th(r, "tmt") <= v("tmt-sampai")
+      && (!v("unor") || r.unor === v("unor")));
+    const isi = LAPORAN_KANTOR_CABANG.map((c, i) => {
+      const n = rows.filter(r => r.cabang === c).length;
+      return [i + 1, c, n ? lapAngka(n) : "-"];
+    });
+    return {
+      judul: "Penerbitan KPA Berdasarkan Kantor Cabang", angka: 2,
+      head: ["NO", "KANTOR CABANG", "JUMLAH"], rows: isi,
+      total: ["", "JUMLAH", lapAngka(rows.length)]
+    };
+  }
+};
+
+function renderLaporan(scr) {
+  const spec = LAP_LAPORAN[scr](scr);
+  const ukuran = Number(($(`#${scr}-page-size`) || {}).value) || LAP_PAGE_SIZE;
+  const totalHal = spec.halaman ? Math.max(1, Math.ceil(spec.rows.length / ukuran)) : 1;
+  if (lapPage > totalHal) lapPage = totalHal;
+  const awal   = spec.halaman ? (lapPage - 1) * ukuran : 0;
+  const tampil = spec.halaman ? spec.rows.slice(awal, awal + ukuran) : spec.rows;
+  const kanan  = i => (i >= spec.angka ? ' style="text-align:right"' : "");
+  const sel = (v, i, tebal) =>
+    `<td${kanan(i)}${spec.pusat ? (i ? ' style="text-align:center"' : ' style="background:var(--amber-soft)"') : ""}${tebal || (spec.pusat && !i) ? ' class="t-strong"' : ""}>${v && v.html ? v.html : esc(typeof v === "number" && i >= spec.angka ? lapAngka(v) : v)}</td>`;
+
+  $(`#${scr}-judul`).textContent = spec.judul;
+  if (spec.metrics) $(`#${scr}-metrics`).innerHTML = spec.metrics.map(m => `
+    <div class="metric">
+      <div class="metric-lbl">${esc(m.l)}</div>
+      <div class="metric-val ${m.c}">${esc(m.v)}</div>
+    </div>`).join("");
+  $(`#${scr}-head`).innerHTML = spec.headHtml || `<tr>${spec.head.map((h, i) => {
+    const c = spec.kolom && spec.kolom[i - 1];
+    if (!c) return `<th${kanan(i)}>${esc(h)}</th>`;
+    const panah = lapSort.key === c.key ? (lapSort.dir === 1 ? "↑" : "↓") : "↑↓";
+    return `<th data-lap-sort="${c.key}" style="cursor:pointer;white-space:nowrap;user-select:none">${esc(h)} <span style="opacity:.5;font-size:10px">${panah}</span></th>`;
+  }).join("")}</tr>`;
+  $(`#${scr}-body`).innerHTML = spec.bodyHtml || (tampil.length
+    ? tampil.map(r => `<tr>${r.map((v, i) => sel(v, i, i === 0 && !spec.halaman)).join("")}</tr>`).join("")
+    : `<tr><td colspan="${spec.head.length}"><div class="empty"><h4>Tidak ada data</h4><p>Ubah filter lalu tampilkan kembali.</p></div></td></tr>`)
+    + (spec.total ? `<tr>${spec.total.map((v, i) => sel(v, i, true)).join("")}</tr>` : "");
+  $(`#${scr}-body`).insertAdjacentHTML("beforeend", spec.footHtml || "");
+  $(`#${scr}-note`).textContent = spec.halaman
+    ? `Menampilkan ${spec.rows.length ? awal + 1 : 0} sampai ${Math.min(awal + ukuran, spec.rows.length)} dari ${lapAngka(spec.rows.length)} peserta`
+    : (spec.catatan || `${spec.rows.length} baris ditampilkan`);
+
+  const pag = $(`#${scr}-pagination`);
+  if (!spec.halaman || totalHal < 2) { pag.innerHTML = ""; return; }
+  const tombol = (p, label, mati) => `<button class="btn ${p === lapPage && !mati ? "btn-primary" : "btn-ghost"} btn-sm" style="min-width:30px;padding:0" ${mati ? "disabled" : `data-lap-page="${p}"`}>${label}</button>`;
+  let html = tombol(lapPage - 1, "‹", lapPage === 1);
+  for (let p = 1; p <= totalHal; p++) {
+    if (p === 1 || p === totalHal || Math.abs(p - lapPage) <= 1) html += tombol(p, p);
+    else if (Math.abs(p - lapPage) === 2) html += `<span style="padding:0 4px;color:var(--faint)">…</span>`;
+  }
+  pag.innerHTML = html + tombol(lapPage + 1, "›", lapPage === totalHal);
+}
+
+document.addEventListener("click", e => {
+  const cari = e.target.closest("[data-lap-cari]");
+  if (cari) { lapPage = 1; renderLaporan(cari.dataset.lapCari); return; }
+  const reset = e.target.closest("[data-lap-reset]");
+  if (reset) { lapNilaiAwal(reset.dataset.lapReset); lapPage = 1; renderLaporan(reset.dataset.lapReset); return; }
+  const exp = e.target.closest("[data-lap-export]");
+  if (exp) { toast(`${$(`#${exp.dataset.lapExport}-judul`).textContent} diunduh sebagai Excel.`, "ok"); return; }
+  const unduh = e.target.closest("[data-lap-unduh]");
+  if (unduh) {
+    e.preventDefault();
+    const [scr, uS, kS, p] = unduh.dataset.lapUnduh.split(",");
+    const u = Number(uS), k = Number(kS), d = LAP_DRILL[scr];
+    const n = lapDrillPeserta(scr, u, k, p).length;
+    const kriteria = [
+      u < 0 ? (d.tanpaUnor ? "" : "Semua Unit Organisasi") : `UNOR ${LAP_UNOR_BARIS[u][0]}`,
+      p && `Pangkat Awal ${p.replaceAll("|", "/")}`,
+      k < 0 ? "Semua TMT Pengangkatan" : d.kolomList(scr)[k],
+      d.periode(scr)
+    ].filter(Boolean).join(" · ");
+    $("#modal-title").textContent = "Unduh Daftar Nominatif Peserta Baru";
+    $("#modal-sub").textContent   = `${kriteria} — ${lapAngka(n)} peserta`;
+    $("#modal-body").innerHTML = `
+      <div style="font-size:13px;color:var(--body);line-height:1.5;margin-bottom:18px">Pilih format berkas yang akan diunduh.</div>
+      <div class="form-actions" style="justify-content:flex-end">
+        <button class="btn btn-ghost" id="lap-unduh-batal">Batal</button>
+        <button class="btn btn-ghost" id="lap-unduh-pdf">⭳ Download PDF</button>
+        <button class="btn btn-primary" id="lap-unduh-xls">⭳ Download Excel</button>
+      </div>`;
+    openModal();
+    $("#lap-unduh-batal").onclick = closeModal;
+    $("#lap-unduh-xls").onclick = () => { closeModal(); toast(`Daftar Nominatif Peserta Baru (${kriteria}) diunduh sebagai Excel.`, "ok"); };
+    $("#lap-unduh-pdf").onclick = () => { closeModal(); toast(`Daftar Nominatif Peserta Baru (${kriteria}) diunduh sebagai PDF.`, "ok"); };
+    return;
+  }
+  const pdf = e.target.closest("[data-lap-pdf]");
+  if (pdf) { toast(`${$(`#${pdf.dataset.lapPdf}-judul`).textContent} diunduh sebagai PDF.`, "ok"); return; }
+  const urut = e.target.closest("[data-lap-sort]");
+  if (urut) {
+    lapSort = { key: urut.dataset.lapSort, dir: lapSort.key === urut.dataset.lapSort ? -lapSort.dir : 1 };
+    lapPage = 1;
+    renderLaporan("lap-peserta-baru");
+    return;
+  }
+  const hal = e.target.closest("[data-lap-page]");
+  if (hal) { lapPage = Number(hal.dataset.lapPage); renderLaporan($(".screen.active").id.slice(2)); }
+});
+
+$("#lap-peserta-baru-page-size").onchange = () => { lapPage = 1; renderLaporan("lap-peserta-baru"); };
+$("#s-lap-peserta-baru").addEventListener("keydown", e => {
+  if (e.key === "Enter" && e.target.tagName === "INPUT") { lapPage = 1; renderLaporan("lap-peserta-baru"); }
+});
+
+/* Kolom "UNOR / Satker": ketik untuk menyaring, atau pilih dari saran. */
+function lapRenderSaranUnor() {
+  const q = $("#lap-peserta-baru-f-unor").value.trim().toLowerCase();
+  const hits = LAP_UNOR_SATKER.filter(u => !q || u.toLowerCase().includes(q)).slice(0, 8);
+  $("#lap-peserta-baru-unor-list").innerHTML = hits.map(u => `<div class="autocomplete-item" data-unor="${esc(u)}">${esc(u)}</div>`).join("");
+  $("#lap-peserta-baru-unor-list").classList.toggle("open", hits.length > 0);
+}
+$("#lap-peserta-baru-f-unor").oninput = lapRenderSaranUnor;
+$("#lap-peserta-baru-f-unor").onfocus = lapRenderSaranUnor;
+$("#lap-peserta-baru-f-unor").onblur  = () => $("#lap-peserta-baru-unor-list").classList.remove("open");
+$("#lap-peserta-baru-unor-list").onmousedown = e => {
+  const item = e.target.closest("[data-unor]");
+  if (!item) return;
+  e.preventDefault();
+  $("#lap-peserta-baru-f-unor").value = item.dataset.unor;
+  $("#lap-peserta-baru-unor-list").classList.remove("open");
+};
+
+Object.keys(LAP_LAPORAN).forEach(lapNilaiAwal);

@@ -5398,3 +5398,158 @@ const DATA_UPLOAD_REKENING_PREVIEW = [
   { nopens:"FG442103111085", nama:"BAMBANG WIJAYA", nomorRekening:"0111442103085", mitraBayar:"Bank Syariah Indonesia (BSI)" },
   { nopens:"HI553214111096", nama:"YULIANA SARI", nomorRekening:"0121553214096", mitraBayar:"Bank BNI" }
 ];
+
+/* ===========================================================================
+   LAPORAN KEPESERTAAN — data sumber untuk 9 sub laporan
+   ---------------------------------------------------------------------------
+   Satu baris = satu KPA yang diterbitkan untuk peserta baru. Semua laporan
+   dihitung dari daftar ini di app.js (renderLaporan*), jadi mengubah isinya
+   di sini otomatis mengubah semua laporan. Dibangkitkan deterministik
+   (angka acak tetap) supaya hasil demo selalu sama setelah refresh.
+   =========================================================================== */
+const LAPORAN_ANGKATAN = ["TNI-AD", "TNI-AL", "TNI-AU", "POLRI", "PNS"];
+
+/* 33 Kantor Cabang (urutan abjad, sesuai Laporan Penerbitan KPA per Kantor Cabang). */
+const LAPORAN_KANTOR_CABANG = [
+  "KANCAB AMBON", "KANCAB BALIKPAPAN", "KANCAB BANDA ACEH", "KANCAB BANDUNG", "KANCAB BANJARMASIN",
+  "KANCAB BATAM", "KANCAB BENGKULU", "KANCAB CIREBON", "KANCAB DENPASAR", "KANCAB JAYAPURA",
+  "KANCAB KENDARI", "KANCAB KUPANG", "KANCAB LAMPUNG", "KANCAB LHOKSEUMAWE", "KANCAB MADIUN",
+  "KANCAB MAKASSAR", "KANCAB MALANG", "KANCAB MANADO", "KANCAB MATARAM", "KANCAB MEDAN",
+  "KANCAB PADANG", "KANCAB PALANGKARAYA", "KANCAB PALEMBANG", "KANCAB PALU", "KANCAB PEKANBARU",
+  "KANCAB PONTIANAK", "KANCAB SEMARANG", "KANCAB SERANG", "KANCAB SORONG", "KANCAB SURABAYA",
+  "KANCAB TERNATE", "KANCAB UTAMA JAKARTA", "KANCAB YOGYAKARTA"
+];
+const LAPORAN_KODE_CABANG = Object.fromEntries(LAPORAN_KANTOR_CABANG.map((c, i) => [c, String(i + 1).padStart(2, "0")]));
+
+/* Pangkat awal per angkatan (tiga jenjang terendah dari tiap golongan) dan
+   golongan pangkatnya — mengikuti BUP_GOLONGAN. */
+const LAPORAN_PANGKAT_AWAL = {
+  "TNI-AD": [["PRADA","Tamtama"],["PRATU","Tamtama"],["KOPDA","Tamtama"],["SERDA","Bintara"],["SERTU","Bintara"],["LETDA","Perwira"]],
+  "TNI-AL": [["KLD","Tamtama"],["KLS","Tamtama"],["KOPDA","Tamtama"],["SERDA","Bintara"],["SERTU","Bintara"],["LETDA","Perwira"]],
+  "TNI-AU": [["PRADA","Tamtama"],["PRATU","Tamtama"],["KOPDA","Tamtama"],["SERDA","Bintara"],["SERTU","Bintara"],["LETDA","Perwira"]],
+  "POLRI":  [["BHARADA","Tamtama"],["BHARATU","Tamtama"],["BRIPDA","Bintara"],["BRIPTU","Bintara"],["IPDA","Perwira"],["IPTU","Perwira"]],
+  "PNS":    [["GOL.II/A","PNS Gol. II"],["GOL.II/B","PNS Gol. II"],["GOL.III/A","PNS Gol. III"],["GOL.III/B","PNS Gol. III"],["GOL.IV/A","PNS Gol. IV"]]
+};
+const LAPORAN_GOLONGAN = ["Tamtama", "Bintara", "Perwira", "PNS Gol. II", "PNS Gol. III", "PNS Gol. IV"];
+
+/* Pilihan filter "Golongan Pangkat" — kode + nama. PP-01 dipakai dua kali
+   (Perwira Pertama Tingkat 1 dan GOL.I), jadi yang disimpan/dicocokkan adalah
+   teks lengkapnya. */
+const LAPORAN_GOL_PANGKAT = [
+  "TM-01 - Tamtama Tingkat 1", "TM-02 - Tamtama Tingkat 2", "TM-03 - Tamtama Tingkat 3",
+  "BR-01 - Tamtama Kepala Tingkat 1", "BR-02 - Tamtama Kepala Tingkat 2", "BR-03 - Tamtama Kepala Tingkat 3",
+  "BT-01 - Bintara Tingkat 1", "BT-02 - Bintara Tingkat 2", "BT-03 - Bintara Tingkat 3", "BT-04 - Bintara Tingkat 4",
+  "BT-05 - Bintara Tinggi Tingkat 1", "BT-06 - Bintara Tinggi Tingkat 2", "BT-07 - Calon Perwira",
+  "PP-01 - Perwira Pertama Tingkat 1", "PP-02 - Perwira Pertama Tingkat 2", "PP-03 - Perwira Pertama Tingkat 3",
+  "PM-01 - Perwira Menengah Tingkat 1", "PM-02 - Perwira Menengah Tingkat 2", "PM-03 - Perwira Menengah Tingkat 3",
+  "PT-00 - Perwira Tinggi Istimewa", "PT-01 - Perwira Tinggi Tingkat 1", "PT-02 - Perwira Tinggi Tingkat 2",
+  "PT-03 - Perwira Tinggi Tingkat 3", "PT-04 - Perwira Tinggi Tingkat 4",
+  "JU-01 - GOL.I/A", "JU-02 - GOL.I/B", "JU-03 - GOL.I/C", "JU-04 - GOL.I/D",
+  "PN-01 - GOL.II/A", "PN-02 - GOL.II/B", "PN-03 - GOL.II/C", "PN-04 - GOL.II/D",
+  "PD-01 - GOL.III/A", "PD-02 - GOL.III/B", "PD-03 - GOL.III/C", "PD-04 - GOL.III/D",
+  "PB-01 - GOL.IV/A", "PB-02 - GOL.IV/B", "PB-03 - GOL.IV/C", "PB-04 - GOL.IV/D", "PB-05 - GOL.IV/E",
+  ...["I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII","XIII","XIV","XV","XVI","XVII"]
+    .map((r, i) => `PP-${String(i + 1).padStart(2, "0")} - GOL.${r}`)
+];
+const LAPORAN_GOL_PANGKAT_KODE = {
+  "PRADA":"TM-01 - Tamtama Tingkat 1", "KLD":"TM-01 - Tamtama Tingkat 1", "BHARADA":"TM-01 - Tamtama Tingkat 1",
+  "PRATU":"TM-02 - Tamtama Tingkat 2", "KLS":"TM-02 - Tamtama Tingkat 2", "BHARATU":"TM-02 - Tamtama Tingkat 2",
+  "KOPDA":"TM-03 - Tamtama Tingkat 3",
+  "SERDA":"BT-01 - Bintara Tingkat 1", "BRIPDA":"BT-01 - Bintara Tingkat 1",
+  "SERTU":"BT-02 - Bintara Tingkat 2", "BRIPTU":"BT-02 - Bintara Tingkat 2",
+  "LETDA":"PP-01 - Perwira Pertama Tingkat 1", "IPDA":"PP-01 - Perwira Pertama Tingkat 1",
+  "IPTU":"PP-02 - Perwira Pertama Tingkat 2",
+  "GOL.II/A":"PN-01 - GOL.II/A", "GOL.II/B":"PN-02 - GOL.II/B",
+  "GOL.III/A":"PD-01 - GOL.III/A", "GOL.III/B":"PD-02 - GOL.III/B", "GOL.IV/A":"PB-01 - GOL.IV/A"
+};
+
+const LAPORAN_PESERTA_BARU = (() => {
+  let seed = 20260929;
+  const acak = n => { seed = (seed * 1664525 + 1013904223) % 4294967296; return Math.floor(seed / 4294967296 * n); };
+  const NAMA_DEPAN = ["AHMAD","BUDI","CAHYO","DIMAS","EKO","FAJAR","GILANG","HENDRA","IRFAN","JOKO","KURNIA","LUKMAN","MULYONO","NUR","OKTAVIAN","PRASETYO","RIZKY","SETIAWAN","TEGUH","WAHYU","YUDI","SITI","DEWI","RINA","AYU"];
+  const NAMA_BELAKANG = ["SANTOSO","PRATAMA","WIJAYA","HIDAYAT","SAPUTRA","KURNIAWAN","NUGROHO","RAHMAN","SETIAWAN","UTOMO","LESTARI","WIBOWO","FIRMANSYAH","HAKIM","MAULANA"];
+  const iso = (t, h = 0) => new Date(t + h * 86400000).toISOString().slice(0, 10);
+  const cabang = Object.keys(LAPORAN_KODE_CABANG);
+  const bobotAngkatan = [34, 12, 12, 32, 10];          /* Polri & AD terbanyak */
+  const seq = {};
+  const rows = [];
+  for (let i = 0; i < 480; i++) {
+    let a = acak(100), ai = 0;
+    while (a >= bobotAngkatan[ai]) { a -= bobotAngkatan[ai]; ai++; }
+    const angkatan = LAPORAN_ANGKATAN[ai];
+    const pool = LAPORAN_PANGKAT_AWAL[angkatan];
+    const [pangkat, golongan] = pool[Math.min(acak(pool.length), acak(pool.length))];   /* condong ke pangkat rendah */
+    /* Tanggal terdaftar: 1 Jan 2022 – 25 Sep 2026, lebih banyak di tahun terbaru */
+    const mulai = Date.UTC(2022, 0, 1), akhir = Date.UTC(2026, 8, 25);
+    const tglDaftarMs = mulai + Math.floor(Math.sqrt(acak(10000) / 10000) * (akhir - mulai));
+    const tglDaftar = iso(tglDaftarMs);
+    const tglTerbit = iso(tglDaftarMs, 1 + acak(5));
+    /* TMT pengangkatan pertama: 0–2 tahun sebelum terdaftar, jatuh 1 Jan / 1 Apr / 1 Jul / 1 Okt */
+    const tmtTahun = new Date(tglDaftarMs).getUTCFullYear() - acak(3);
+    let tmt = `${tmtTahun}-${["01","04","07","10"][acak(4)]}-01`;
+    if (tmt > tglDaftar) tmt = `${tmtTahun - 1}${tmt.slice(4)}`;   /* TMT tidak boleh setelah tanggal terdaftar */
+    const kc = cabang[acak(cabang.length)];
+    const th = tglTerbit.slice(0, 4);
+    const kunci = kc + th;
+    seq[kunci] = (seq[kunci] || 0) + 1;
+    rows.push({
+      kpa: `${LAPORAN_KODE_CABANG[kc]}${th.slice(2)}${String(seq[kunci]).padStart(5, "0")}`,
+      nama: `${NAMA_DEPAN[acak(NAMA_DEPAN.length)]} ${NAMA_BELAKANG[acak(NAMA_BELAKANG.length)]}`,
+      angkatan, pangkat, golongan, tmt, tglDaftar, tglTerbit, cabang: kc
+    });
+  }
+  rows.sort((x, y) => x.tglDaftar.localeCompare(y.tglDaftar));
+
+  /* Kolom tambahan untuk Laporan Peserta Baru Per Periode (mengikuti Format
+     Daftar Nominatif). Dibuat setelah pengurutan agar data di atas tidak berubah. */
+  const ROMAWI = ["I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"];
+  const UNOR_ANGKATAN = { "TNI-AD":"TNI AD", "TNI-AL":"TNI AL", "TNI-AU":"TNI AU", "POLRI":"POLRI", "PNS":"KEMHAN" };
+  const KESATUAN = {
+    "TNI-AD": ["MAKORPASKHAS", "KODAM III/SILIWANGI", "KODIM 0601/PANDEGLANG", "YONIF 305/TENGKORAK", "KOSTRAD"],
+    "TNI-AL": ["LANTAMAL III JAKARTA", "KOARMADA I", "KORMAR", "LANAL SURABAYA"],
+    "TNI-AU": ["LANUD HUSEIN SASTRANEGARA", "KOOPSUDNAS", "LANUD ADI SUTJIPTO", "PASKHAS"],
+    "POLRI":  ["POLDA JAWA BARAT", "POLRES BEKASI", "MABES POLRI", "POLDA METRO JAYA", "POLRESTABES SURABAYA"],
+    "PNS":    ["SETJEN KEMHAN", "BALITBANG KEMHAN", "DITJEN POTHAN", "BADAN SARANA PERTAHANAN"]
+  };
+  const KODE_KEP = { "TNI-AD":"TI", "TNI-AL":"TL", "TNI-AU":"TU", "POLRI":"POL", "PNS":"KEM" };
+  let batchNo = 0, batchKunci = "";
+  rows.forEach((r, i) => {
+    const [th, bl, tg] = r.tglDaftar.split("-");
+    const kunciBatch = `${th}-${bl}-${+tg <= 15 ? "a" : "b"}`;
+    if (kunciBatch !== batchKunci) { batchKunci = kunciBatch; batchNo++; }
+    const hh = String(acak(24)).padStart(2, "0"), mm = String(acak(60)).padStart(2, "0"), ss = String(acak(60)).padStart(2, "0");
+    const pns = r.angkatan === "PNS";
+    const tglSkepMs = Date.parse(r.tmt) - (4 + acak(10)) * 86400000;
+    const tglSkep = iso(tglSkepMs);
+    const lahirMs = Date.parse(r.tglDaftar) - (19 + acak(6)) * 365.25 * 86400000 - acak(300) * 86400000;
+    Object.assign(r, {
+      batch: `B-UPLOAD/${th}/${ROMAWI[+bl - 1]}/${String(batchNo).padStart(6, "0")}`,
+      tglInsert: `${r.tglDaftar} ${hh}:${mm}:${ss}.000`,
+      nrp: pns ? `199${acak(9)}${String(acak(1e9)).padStart(9, "0")}${String(acak(1e5)).padStart(5, "0")}` : String(1e7 + acak(9e7)),
+      statusPersonil: pns ? (acak(5) ? "PNS" : "PPPK") : "PRAJURIT",
+      unor: !pns && r.angkatan !== "POLRI" && acak(6) === 0 ? "MABES TNI" : UNOR_ANGKATAN[r.angkatan],
+      tglLahir: iso(lahirMs),
+      skep: `KEP/${100 + acak(700)}-${KODE_KEP[r.angkatan]}/${ROMAWI[+tglSkep.slice(5, 7) - 1]}/${tglSkep.slice(0, 4)}`,
+      tglSkep,
+      kesatuan: KESATUAN[r.angkatan][acak(KESATUAN[r.angkatan].length)],
+      hp: `0812${String(acak(1e8)).padStart(8, "0")}`,
+      nik: `32${String(acak(1e7)).padStart(7, "0")}${String(acak(1e7)).padStart(7, "0")}`,
+      golPangkat: LAPORAN_GOL_PANGKAT_KODE[r.pangkat]
+    });
+  });
+  return rows;
+})();
+
+/* Laporan Kontrol Penomoran Terakhir KPA — nomor KPA terakhir per UNOR (baris)
+   dan Pangkat (kolom). null = belum ada penomoran untuk kombinasi itu ("-"). */
+const LAPORAN_KONTROL_KPA = {
+  kolom: ["TAMTAMA", "BINTARA", "PERWIRA", "GOL. I", "GOL. II", "GOL. III"],
+  baris: [
+    { unor:"TNI AD",    nilai:["BE511445", "BD378210", "BC102934", "BZ245871", "BY198456", "BX076123"] },
+    { unor:"TNI AL",    nilai:["CE402317", "CD215689", "CC087452", "CZ133908", "CY094275", "CX041836"] },
+    { unor:"TNI AU",    nilai:["DE356124", "DD189307", "DC064581", "DZ112746", "DY078319", "DX032654"] },
+    { unor:"POLRI",     nilai:["EE528906", "ED402113", "EC118475", "EZ203987", "EY151642", "EX067390"] },
+    { unor:"MABES TNI", nilai:[null, null, null, null, null, null] },
+    { unor:"KEMHAN",    nilai:[null, null, null, "AZ047218", "AY083561", "AX029407"] }
+  ]
+};

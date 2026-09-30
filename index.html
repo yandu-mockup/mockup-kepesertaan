@@ -87,6 +87,20 @@
     <button class="nav-item" data-go="data-peserta">List Peserta</button>
 
     <button class="nav-item" data-go="upload-rekening">Upload Rekening</button>
+    <button class="nav-item nav-parent" id="nav-laporan" aria-expanded="true">
+      <span>Laporan</span><span class="chevron">⌄</span>
+    </button>
+    <div class="nav-children" id="nav-laporan-children">
+      <button class="nav-item nav-child" data-go="lap-peserta-baru">Laporan Peserta Baru Per Periode</button>
+      <button class="nav-item nav-child" data-go="lap-kontrol-kpa">Laporan Kontrol Penomoran Terakhir KPA</button>
+      <button class="nav-item nav-child" data-go="lap-peserta-tahun">Laporan Peserta Baru Yang Terdaftar Periode Tahun</button>
+      <button class="nav-item nav-child" data-go="lap-kpa-tmt">Laporan Penerbitan KPA Berdasarkan TMT Pengangkatan Pertama</button>
+      <button class="nav-item nav-child" data-go="lap-kpa-pangkat-awal">Laporan Penerbitan KPA Berdasarkan Pangkat Awal</button>
+      <button class="nav-item nav-child" data-go="lap-kpa-banding-tmt">Laporan Perbandingan Penerbitan KPA Berdasarkan TMT Pengangkatan</button>
+      <button class="nav-item nav-child" data-go="lap-kpa-golongan">Laporan Penerbitan KPA Berdasarkan Pangkat/Golongan</button>
+      <button class="nav-item nav-child" data-go="lap-kpa-banding-golongan">Laporan Perbandingan Penerbitan KPA Berdasarkan Pangkat/Golongan</button>
+      <button class="nav-item nav-child" data-go="lap-kpa-cabang">Laporan Penerbitan KPA Berdasarkan Kantor Cabang</button>
+    </div>
 
   </nav>
 
@@ -1768,7 +1782,7 @@
 
           <div class="form-actions split">
             <button class="btn btn-ghost" id="bpbd-kembali">← Kembali ke Daftar</button>
-            <button class="btn btn-info" id="bpbd-sp">🧾 Terbitkan SP Pembayaran</button>
+            <button class="btn btn-info" id="bpbd-sp">🧾 Terbitkan SP Pembatalan</button>
           </div>
         </div>
       </section>
@@ -5209,6 +5223,434 @@
           <div class="tbl-note" id="dist-count"></div>
         </div>
       </section>
+      <!-- ================= LAPORAN KEPESERTAAN ================= -->
+      <section class="screen" id="s-lap-peserta-baru">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Laporan</span><span>›</span><b>Laporan Peserta Baru Per Periode</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Laporan Peserta Baru Per Periode</h1>
+            <div class="page-sub">Daftar nominatif peserta baru yang terdaftar pada rentang tanggal pendaftaran tertentu.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">Filter</h3>
+          <div class="grid3">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="lap-peserta-baru-f-batch">Nomor Batch</label>
+              <input class="inp" id="lap-peserta-baru-f-batch" placeholder="Contoh: B-UPLOAD/2026/IX/000033">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="lap-peserta-baru-f-nrp">NRP/NIP</label>
+              <input class="inp" id="lap-peserta-baru-f-nrp" placeholder="Masukkan NRP/NIP">
+            </div>
+            <div class="field" style="margin-bottom:0;position:relative">
+              <label class="fl caps" for="lap-peserta-baru-f-unor">UNOR / Satker</label>
+              <input class="inp" id="lap-peserta-baru-f-unor" placeholder="Cari UNOR atau satuan kerja..." autocomplete="off">
+              <div class="autocomplete-list" id="lap-peserta-baru-unor-list"></div>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="lap-peserta-baru-f-golongan">Golongan Pangkat</label>
+              <select class="inp" id="lap-peserta-baru-f-golongan" data-opt="gol-pangkat"></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="lap-peserta-baru-f-dari">Tanggal Pendaftaran Dari</label>
+              <input class="inp" type="date" id="lap-peserta-baru-f-dari">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="lap-peserta-baru-f-sampai">Tanggal Pendaftaran Sampai</label>
+              <input class="inp" type="date" id="lap-peserta-baru-f-sampai">
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" data-lap-cari="lap-peserta-baru">⌕ Tampilkan</button>
+            <button class="btn btn-ghost" data-lap-reset="lap-peserta-baru">↺ Reset</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h2 class="card-title" style="margin:0" id="lap-peserta-baru-judul">Daftar Nominatif Peserta Baru</h2>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost" data-lap-export="lap-peserta-baru">⭳ Download Excel</button>
+              <button class="btn btn-ghost" data-lap-pdf="lap-peserta-baru">⭳ Download PDF</button>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table class="wide-table">
+              <thead id="lap-peserta-baru-head"></thead>
+              <tbody id="lap-peserta-baru-body"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+            <div class="tbl-note" id="lap-peserta-baru-note" style="margin:0"></div>
+            <div style="display:flex;align-items:center;gap:14px">
+              <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)">
+                Baris
+                <select class="inp" id="lap-peserta-baru-page-size" style="width:64px;height:30px;padding:0 6px;font-size:11px">
+                  <option>10</option><option selected>20</option><option>50</option>
+                </select>
+              </div>
+              <div id="lap-peserta-baru-pagination" style="display:flex;gap:4px"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="s-lap-kontrol-kpa">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Laporan</span><span>›</span><b>Laporan Kontrol Penomoran Terakhir KPA</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Laporan Kontrol Penomoran Terakhir KPA</h1>
+            <div class="page-sub">Nomor KPA terakhir yang diterbitkan untuk tiap UNOR menurut pangkat/golongan.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h2 class="card-title" style="margin:0" id="lap-kontrol-kpa-judul">Kontrol Penomoran Terakhir KPA</h2>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost" data-lap-export="lap-kontrol-kpa">⭳ Download Excel</button>
+              <button class="btn btn-ghost" data-lap-pdf="lap-kontrol-kpa">⭳ Download PDF</button>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead id="lap-kontrol-kpa-head"></thead>
+              <tbody id="lap-kontrol-kpa-body"></tbody>
+            </table>
+          </div>
+          <div class="tbl-note" id="lap-kontrol-kpa-note"></div>
+        </div>
+      </section>
+
+      <section class="screen" id="s-lap-peserta-tahun">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Laporan</span><span>›</span><b>Laporan Peserta Baru Yang Terdaftar Periode Tahun</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Laporan Peserta Baru Yang Terdaftar Periode Tahun</h1>
+            <div class="page-sub">Jumlah peserta baru per Unit Organisasi menurut TMT pengangkatan. Klik angka untuk mengunduh Daftar Nominatif Peserta Baru-nya.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">Filter</h3>
+          <div class="grid2">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="lap-peserta-tahun-f-th-dari">Tanggal Pendaftaran Dari</label>
+              <select class="inp" id="lap-peserta-tahun-f-th-dari" data-opt="tahun-daftar-x"></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="lap-peserta-tahun-f-th-sampai">Tanggal Pendaftaran Sampai</label>
+              <select class="inp" id="lap-peserta-tahun-f-th-sampai" data-opt="tahun-daftar-x"></select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" data-lap-cari="lap-peserta-tahun">⌕ Tampilkan</button>
+            <button class="btn btn-ghost" data-lap-reset="lap-peserta-tahun">↺ Reset</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h2 class="card-title" style="margin:0" id="lap-peserta-tahun-judul">Jumlah Peserta Baru per Unit Organisasi</h2>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost" data-lap-export="lap-peserta-tahun">⭳ Download Excel</button>
+              <button class="btn btn-ghost" data-lap-pdf="lap-peserta-tahun">⭳ Download PDF</button>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead id="lap-peserta-tahun-head"></thead>
+              <tbody id="lap-peserta-tahun-body"></tbody>
+            </table>
+          </div>
+          <div class="tbl-note" id="lap-peserta-tahun-note"></div>
+        </div>
+      </section>
+
+      <section class="screen" id="s-lap-kpa-tmt">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Laporan</span><span>›</span><b>Laporan Penerbitan KPA Berdasarkan TMT Pengangkatan Pertama</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Laporan Penerbitan KPA Berdasarkan TMT Pengangkatan Pertama</h1>
+            <div class="page-sub">Jumlah KPA yang diterbitkan per Unit Organisasi menurut tahun TMT pengangkatan pertama. Klik angka untuk mengunduh Daftar Nominatif Peserta Baru-nya.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">Filter</h3>
+          <div class="grid2">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="lap-kpa-tmt-f-th-dari">Tahun TMT Pengangkatan Dari</label>
+              <select class="inp" id="lap-kpa-tmt-f-th-dari" data-opt="tahun-tmt-x"></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="lap-kpa-tmt-f-th-sampai">Tahun TMT Pengangkatan Sampai</label>
+              <select class="inp" id="lap-kpa-tmt-f-th-sampai" data-opt="tahun-tmt-x"></select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" data-lap-cari="lap-kpa-tmt">⌕ Tampilkan</button>
+            <button class="btn btn-ghost" data-lap-reset="lap-kpa-tmt">↺ Reset</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h2 class="card-title" style="margin:0" id="lap-kpa-tmt-judul">Penerbitan KPA per Unit Organisasi</h2>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost" data-lap-export="lap-kpa-tmt">⭳ Download Excel</button>
+              <button class="btn btn-ghost" data-lap-pdf="lap-kpa-tmt">⭳ Download PDF</button>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead id="lap-kpa-tmt-head"></thead>
+              <tbody id="lap-kpa-tmt-body"></tbody>
+            </table>
+          </div>
+          <div class="tbl-note" id="lap-kpa-tmt-note"></div>
+        </div>
+      </section>
+
+      <section class="screen" id="s-lap-kpa-pangkat-awal">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Laporan</span><span>›</span><b>Laporan Penerbitan KPA Berdasarkan Pangkat Awal</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Laporan Penerbitan KPA Berdasarkan Pangkat Awal</h1>
+            <div class="page-sub">Jumlah KPA yang diterbitkan per golongan dan pangkat awal, menurut tahun TMT pengangkatan. Klik angka untuk mengunduh Daftar Nominatif Peserta Baru-nya. Klik angka untuk mengunduh Daftar Nominatif Peserta Baru-nya.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">Filter</h3>
+          <div class="grid2">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="lap-kpa-pangkat-awal-f-th-dari">Tanggal Pendaftaran Dari</label>
+              <select class="inp" id="lap-kpa-pangkat-awal-f-th-dari" data-opt="tahun-daftar-x"></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="lap-kpa-pangkat-awal-f-th-sampai">Tanggal Pendaftaran Sampai</label>
+              <select class="inp" id="lap-kpa-pangkat-awal-f-th-sampai" data-opt="tahun-daftar-x"></select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" data-lap-cari="lap-kpa-pangkat-awal">⌕ Tampilkan</button>
+            <button class="btn btn-ghost" data-lap-reset="lap-kpa-pangkat-awal">↺ Reset</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h2 class="card-title" style="margin:0" id="lap-kpa-pangkat-awal-judul">Penerbitan KPA Berdasarkan Kategori Pangkat Awal</h2>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost" data-lap-export="lap-kpa-pangkat-awal">⭳ Download Excel</button>
+              <button class="btn btn-ghost" data-lap-pdf="lap-kpa-pangkat-awal">⭳ Download PDF</button>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead id="lap-kpa-pangkat-awal-head"></thead>
+              <tbody id="lap-kpa-pangkat-awal-body"></tbody>
+            </table>
+          </div>
+          <div class="tbl-note" id="lap-kpa-pangkat-awal-note"></div>
+        </div>
+      </section>
+
+      <section class="screen" id="s-lap-kpa-banding-tmt">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Laporan</span><span>›</span><b>Laporan Perbandingan Penerbitan KPA Berdasarkan TMT Pengangkatan</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Laporan Perbandingan Penerbitan KPA Berdasarkan TMT Pengangkatan</h1>
+            <div class="page-sub">Perbandingan jumlah KPA per Unit Organisasi dan pangkat awal antar tahun TMT pengangkatan. Klik angka untuk mengunduh Daftar Nominatif Peserta Baru-nya.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">Filter</h3>
+          <div class="grid2">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="lap-kpa-banding-tmt-f-th-dari">Tahun TMT Pengangkatan Dari</label>
+              <select class="inp" id="lap-kpa-banding-tmt-f-th-dari" data-opt="tahun-tmt-x"></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="lap-kpa-banding-tmt-f-th-sampai">Tahun TMT Pengangkatan Sampai</label>
+              <select class="inp" id="lap-kpa-banding-tmt-f-th-sampai" data-opt="tahun-tmt-x"></select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" data-lap-cari="lap-kpa-banding-tmt">⌕ Tampilkan</button>
+            <button class="btn btn-ghost" data-lap-reset="lap-kpa-banding-tmt">↺ Reset</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h2 class="card-title" style="margin:0" id="lap-kpa-banding-tmt-judul">Perbandingan Penerbitan KPA Berdasarkan TMT Pengangkatan</h2>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost" data-lap-export="lap-kpa-banding-tmt">⭳ Download Excel</button>
+              <button class="btn btn-ghost" data-lap-pdf="lap-kpa-banding-tmt">⭳ Download PDF</button>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead id="lap-kpa-banding-tmt-head"></thead>
+              <tbody id="lap-kpa-banding-tmt-body"></tbody>
+            </table>
+          </div>
+          <div class="tbl-note" id="lap-kpa-banding-tmt-note"></div>
+        </div>
+      </section>
+
+      <section class="screen" id="s-lap-kpa-golongan">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Laporan</span><span>›</span><b>Laporan Penerbitan KPA Berdasarkan Pangkat/Golongan</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Laporan Penerbitan KPA Berdasarkan Pangkat/Golongan</h1>
+            <div class="page-sub">Jumlah KPA yang diterbitkan per pangkat/golongan, menurut tahun TMT pengangkatan. Klik angka untuk mengunduh Daftar Nominatif Peserta Baru-nya. Klik angka untuk mengunduh Daftar Nominatif Peserta Baru-nya.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">Filter</h3>
+          <div class="grid2">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="lap-kpa-golongan-f-th-dari">Tanggal Pendaftaran Dari</label>
+              <select class="inp" id="lap-kpa-golongan-f-th-dari" data-opt="tahun-daftar-x"></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="lap-kpa-golongan-f-th-sampai">Tanggal Pendaftaran Sampai</label>
+              <select class="inp" id="lap-kpa-golongan-f-th-sampai" data-opt="tahun-daftar-x"></select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" data-lap-cari="lap-kpa-golongan">⌕ Tampilkan</button>
+            <button class="btn btn-ghost" data-lap-reset="lap-kpa-golongan">↺ Reset</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h2 class="card-title" style="margin:0" id="lap-kpa-golongan-judul">Penerbitan KPA Berdasarkan Pangkat/Golongan</h2>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost" data-lap-export="lap-kpa-golongan">⭳ Download Excel</button>
+              <button class="btn btn-ghost" data-lap-pdf="lap-kpa-golongan">⭳ Download PDF</button>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead id="lap-kpa-golongan-head"></thead>
+              <tbody id="lap-kpa-golongan-body"></tbody>
+            </table>
+          </div>
+          <div class="tbl-note" id="lap-kpa-golongan-note"></div>
+        </div>
+      </section>
+
+      <section class="screen" id="s-lap-kpa-banding-golongan">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Laporan</span><span>›</span><b>Laporan Perbandingan Penerbitan KPA Berdasarkan Pangkat/Golongan</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Laporan Perbandingan Penerbitan KPA Berdasarkan Pangkat/Golongan</h1>
+            <div class="page-sub">Perbandingan jumlah KPA per golongan dan pangkat awal antar tahun TMT pengangkatan. Klik angka untuk mengunduh Daftar Nominatif Peserta Baru-nya.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">Filter</h3>
+          <div class="grid2">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="lap-kpa-banding-golongan-f-th-dari">Tahun TMT Pengangkatan Dari</label>
+              <select class="inp" id="lap-kpa-banding-golongan-f-th-dari" data-opt="tahun-tmt-x"></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="lap-kpa-banding-golongan-f-th-sampai">Tahun TMT Pengangkatan Sampai</label>
+              <select class="inp" id="lap-kpa-banding-golongan-f-th-sampai" data-opt="tahun-tmt-x"></select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" data-lap-cari="lap-kpa-banding-golongan">⌕ Tampilkan</button>
+            <button class="btn btn-ghost" data-lap-reset="lap-kpa-banding-golongan">↺ Reset</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h2 class="card-title" style="margin:0" id="lap-kpa-banding-golongan-judul">Perbandingan Penerbitan KPA Berdasarkan Pangkat/Golongan</h2>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost" data-lap-export="lap-kpa-banding-golongan">⭳ Download Excel</button>
+              <button class="btn btn-ghost" data-lap-pdf="lap-kpa-banding-golongan">⭳ Download PDF</button>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead id="lap-kpa-banding-golongan-head"></thead>
+              <tbody id="lap-kpa-banding-golongan-body"></tbody>
+            </table>
+          </div>
+          <div class="tbl-note" id="lap-kpa-banding-golongan-note"></div>
+        </div>
+      </section>
+
+      <section class="screen" id="s-lap-kpa-cabang">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Laporan</span><span>›</span><b>Laporan Penerbitan KPA Berdasarkan Kantor Cabang</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Laporan Penerbitan KPA Berdasarkan Kantor Cabang</h1>
+            <div class="page-sub">Jumlah KPA yang diterbitkan per Kantor Cabang menurut tahun pendaftaran, tahun TMT pengangkatan, dan UNOR/Satker.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">Filter</h3>
+          <div class="grid3">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="lap-kpa-cabang-f-daftar-dari">Tanggal Pendaftaran Dari</label>
+              <select class="inp" id="lap-kpa-cabang-f-daftar-dari" data-opt="tahun-daftar-x"></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="lap-kpa-cabang-f-daftar-sampai">Tanggal Pendaftaran Sampai</label>
+              <select class="inp" id="lap-kpa-cabang-f-daftar-sampai" data-opt="tahun-daftar-x"></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="lap-kpa-cabang-f-unor">UNOR/Satker</label>
+              <select class="inp" id="lap-kpa-cabang-f-unor" data-opt="unor"></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="lap-kpa-cabang-f-tmt-dari">Tahun TMT Pengangkatan Dari</label>
+              <select class="inp" id="lap-kpa-cabang-f-tmt-dari" data-opt="tahun-tmt-x"></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="lap-kpa-cabang-f-tmt-sampai">Tahun TMT Pengangkatan Sampai</label>
+              <select class="inp" id="lap-kpa-cabang-f-tmt-sampai" data-opt="tahun-tmt-x"></select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" data-lap-cari="lap-kpa-cabang">⌕ Tampilkan</button>
+            <button class="btn btn-ghost" data-lap-reset="lap-kpa-cabang">↺ Reset</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h2 class="card-title" style="margin:0" id="lap-kpa-cabang-judul">Penerbitan KPA Berdasarkan Kantor Cabang</h2>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost" data-lap-export="lap-kpa-cabang">⭳ Download Excel</button>
+              <button class="btn btn-ghost" data-lap-pdf="lap-kpa-cabang">⭳ Download PDF</button>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead id="lap-kpa-cabang-head"></thead>
+              <tbody id="lap-kpa-cabang-body"></tbody>
+            </table>
+          </div>
+          <div class="tbl-note" id="lap-kpa-cabang-note"></div>
+        </div>
+      </section>
+
 
     </main>
   </div>
