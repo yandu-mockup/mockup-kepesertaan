@@ -2876,7 +2876,7 @@ const fpnKosong = v => v ? esc(v) : `<span style="color:var(--faint)">–</span>
   $(sel).innerHTML = ["Semua Status", ...FPN_STATUS_PESERTA]
     .map(s => `<option>${esc(s)}</option>`).join("");
 });
-$("#fpt-status").innerHTML = FPN_STATUS_PESERTA.map(s => `<option>${esc(s)}</option>`).join("");
+$("#fpt-status").innerHTML = ["Semua", ...FPN_STATUS_PESERTA].map(s => `<option>${esc(s)}</option>`).join("");
 
 /* ---- Mitra: batch penagihan per mitra bayar */
 function fpnDaftar() {
@@ -3034,7 +3034,6 @@ function fptReset() {
   $("#fpt-tgl-awal").value   = "";
   $("#fpt-tgl-akhir").value  = "";
   $("#fpt-catatan").value    = "";
-  $("#fpt-keterangan").value = "";
   $("#fpt-hasil").style.display = "none";
 }
 
@@ -3065,12 +3064,12 @@ $("#fpt-cari-data").onclick = () => {
       awalKredit: r.pinjaman.awalKredit, akhirKredit: r.pinjaman.akhirKredit,
       plafon: r.pinjaman.plafon, angsuran: r.pinjaman.angsuran
     }))
-    .filter(p => p.statusPeserta === status);
+    .filter(p => status === "Semua" || p.statusPeserta === status);
 
   $("#fpt-hasil-body").innerHTML = fpnBarisPeserta(fptHasil);
   $("#fpt-hasil-note").textContent = fptHasil.length
     ? `${fptHasil.length} peserta ditemukan · total angsuran ${rp(fpnTotal(fptHasil))}`
-    : `Tidak ada peserta ${status.toLowerCase()} dengan flagging berjalan di ${mitra}.`;
+    : `Tidak ada peserta ${status === "Semua" ? "" : status.toLowerCase() + " "}dengan flagging berjalan di ${mitra}.`;
   $("#fpt-hasil").style.display = "";
 };
 
@@ -3085,7 +3084,7 @@ $("#fpt-simpan").onclick = () => {
     tglAwal: $("#fpt-tgl-awal").value,
     tglAkhir: $("#fpt-tgl-akhir").value,
     catatan: $("#fpt-catatan").value.trim(),
-    keterangan: $("#fpt-keterangan").value.trim(),
+    keterangan: "",
     user: "operator.kep", tglBuat: `${fpsHariIni()} 00:00:00`,
     /* Batch baru berarti tagihannya baru diterbitkan — statusnya "Ditagih"
        sampai pembayarannya dikonfirmasi. */
@@ -3421,6 +3420,496 @@ document.addEventListener("click", e => {
 
 topNotifSiap = true;
 renderTopNotif();
+
+/* ============================================ LAPORAN » LAPORAN TAGIHAN
+   Rekap tagihan per peserta. Filter disaring di memori (tanpa server), lalu
+   Download Excel/PDF selalu mengikuti hasil fltDaftar() — persis baris yang
+   lolos filter, bukan hanya halaman yang sedang tampil. */
+let fltPager  = { hal: 1, per: 10 };
+let fltFilter = { mitra: "", dari: "", sampai: "", peserta: "Semua Status Peserta", status: "Semua Status" };
+
+$("#flt-f-peserta").innerHTML =
+  ["Semua Status Peserta", "Aktif", "Pensiun"].map(s => `<option>${esc(s)}</option>`).join("");
+$("#flt-f-status").innerHTML =
+  ["Semua Status", ...FLT_STATUS].map(s => `<option>${esc(s)}</option>`).join("");
+bindMitraAutocomplete("flt-f-mitra", "flt-f-mitra-list");
+
+function fltDaftar() {
+  const f = fltFilter;
+  return DATA_FLAGGING_LAPORAN_TAGIHAN.filter(r =>
+    (!f.mitra || r.mitra.toLowerCase().includes(f.mitra)) &&
+    (!f.dari || r.tglTagihan >= f.dari) &&
+    (!f.sampai || r.tglTagihan <= f.sampai) &&
+    (f.peserta === "Semua Status Peserta" || r.statusPensiun === f.peserta) &&
+    (f.status === "Semua Status" || r.status === f.status)
+  );
+}
+
+function renderFlt() {
+  const rows = fltDaftar();
+  const pg   = pagerPotong(rows, fltPager);
+
+  $("#flt-body").innerHTML = pg.hal.length
+    ? pg.hal.map((r, i) => `
+      <tr>
+        <td>${pg.mulai + i + 1}</td>
+        <td class="t-strong">${esc(r.ktpa)}</td>
+        <td>${esc(r.nrp)}</td>
+        <td>${fflKosong(r.nomorPensiun)}</td>
+        <td>${esc(r.statusPensiun)}</td>
+        <td class="t-strong">${esc(r.nama)}</td>
+        <td>${esc(r.mitra)}</td>
+        <td>${esc(r.kantorMitra)}</td>
+        <td>${esc(r.awalKredit)}</td>
+        <td>${esc(r.akhirKredit)}</td>
+        <td>${esc(r.tglPermohonan)}</td>
+        <td>${esc(r.tglTagihan)}</td>
+        <td class="num">${r.nilai.toLocaleString("id-ID")}</td>
+        <td>${fpsPill(r.status)}</td>
+      </tr>`).join("")
+    : `<tr><td colspan="14"><div class="empty">Tidak ada data tagihan yang cocok dengan filter.</div></td></tr>`;
+
+  $("#flt-count").innerHTML = pagerNote(pg, "tagihan", "");
+  $("#flt-pager").innerHTML = rows.length ? pagerHtml(fltPager, pg, "data-flt-hal") : "";
+}
+document.addEventListener("click", e => {
+  const bHal = e.target.closest("[data-flt-hal]");
+  if (bHal) { fltPager.hal = +bHal.dataset.fltHal; renderFlt(); }
+});
+
+$("#flt-cari").onclick = () => {
+  fltFilter = {
+    mitra:   $("#flt-f-mitra").value.trim().toLowerCase(),
+    dari:    $("#flt-f-dari").value,
+    sampai:  $("#flt-f-sampai").value,
+    peserta: $("#flt-f-peserta").value,
+    status:  $("#flt-f-status").value
+  };
+  fltPager.hal = 1;
+  renderFlt();
+};
+
+const FLT_KOLOM_EXPORT = [
+  ["No KTPA",            r => r.ktpa],
+  ["NRP/NIP",            r => r.nrp],
+  ["Nopens",             r => r.nomorPensiun],
+  ["Status Pensiun",     r => r.statusPensiun],
+  ["Nama",               r => r.nama],
+  ["Mitra Bayar",        r => r.mitra],
+  ["Kantor Mitra Bayar", r => r.kantorMitra],
+  ["Awal Kredit",        r => r.awalKredit],
+  ["Akhir Kredit",       r => r.akhirKredit],
+  ["Permohonan",         r => r.tglPermohonan],
+  ["Tanggal Tagihan",    r => r.tglTagihan],
+  ["Nilai Tagihan",      r => r.nilai],
+  ["Status",             r => r.status]
+];
+
+function fltNamaBerkas() {
+  const f = fltFilter;
+  const bagian = ["Laporan Tagihan"];
+  if (f.mitra) bagian.push(f.mitra);
+  if (f.status && f.status !== "Semua Status") bagian.push(f.status);
+  bagian.push(fpsHariIni());
+  return bagian.join(" - ").replace(/[\\/:*?"<>|]/g, "");
+}
+
+$("#flt-excel").onclick = () => {
+  const rows = fltDaftar();
+  if (!rows.length) { toast("Tidak ada data untuk diekspor dengan filter ini.", "bad"); return; }
+  const isi = [
+    FLT_KOLOM_EXPORT.map(k => fflSelCsv(k[0])).join(";"),
+    ...rows.map(r => FLT_KOLOM_EXPORT.map(k => fflSelCsv(k[1](r))).join(";"))
+  ].join("\r\n");
+  const url = URL.createObjectURL(
+    new Blob(["﻿" + isi], { type: "text/csv;charset=utf-8" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fltNamaBerkas() + ".csv";
+  a.click();
+  URL.revokeObjectURL(url);
+  toast(`${rows.length} baris diekspor ke ${a.download}.`, "ok");
+};
+
+/* PDF memakai pratinjau cetak bawaan browser — pola yang sama dipakai di
+   Cetak PDF KPA pada prototipe utama — bukan berkas .pdf sungguhan. */
+$("#flt-pdf").onclick = () => {
+  if (!fltDaftar().length) { toast("Tidak ada data untuk dicetak dengan filter ini.", "bad"); return; }
+  window.print();
+};
+
+renderFlt();
+
+/* ============================================ LAPORAN » LAPORAN BOOKING
+   Sama polanya dengan Laporan Tagihan: filter disaring di memori, lalu
+   Download Excel/PDF mengikuti hasil flbDaftar() seluruhnya. */
+let flbPager  = { hal: 1, per: 10 };
+let flbFilter = { mitra: "", dari: "", sampai: "", peserta: "Semua Status Peserta", status: "Semua Status" };
+
+$("#flb-f-peserta").innerHTML =
+  ["Semua Status Peserta", "Aktif", "Pensiun"].map(s => `<option>${esc(s)}</option>`).join("");
+$("#flb-f-status").innerHTML =
+  ["Semua Status", ...FLB_STATUS].map(s => `<option>${esc(s)}</option>`).join("");
+bindMitraAutocomplete("flb-f-mitra", "flb-f-mitra-list");
+
+function flbDaftar() {
+  const f = flbFilter;
+  return DATA_FLAGGING_LAPORAN_BOOKING.filter(r =>
+    (!f.mitra || r.mitra.toLowerCase().includes(f.mitra)) &&
+    (!f.dari || r.bookingTgl >= f.dari) &&
+    (!f.sampai || r.bookingTgl <= f.sampai) &&
+    (f.peserta === "Semua Status Peserta" || r.statusPensiun === f.peserta) &&
+    (f.status === "Semua Status" || r.status === f.status)
+  );
+}
+
+function renderFlb() {
+  const rows = flbDaftar();
+  const pg   = pagerPotong(rows, flbPager);
+
+  $("#flb-body").innerHTML = pg.hal.length
+    ? pg.hal.map((r, i) => `
+      <tr>
+        <td>${pg.mulai + i + 1}</td>
+        <td class="t-strong">${esc(r.ktpa)}</td>
+        <td>${esc(r.nrp)}</td>
+        <td>${fflKosong(r.nomorPensiun)}</td>
+        <td class="t-strong">${esc(r.nama)}</td>
+        <td>${esc(r.tglLahir)}</td>
+        <td>${esc(r.statusPensiun)}</td>
+        <td>${esc(r.bookingTgl)}</td>
+        <td>${esc(r.bookingUser)}</td>
+        <td>${fciPill(r.status)}</td>
+      </tr>`).join("")
+    : `<tr><td colspan="10"><div class="empty">Tidak ada data booking yang cocok dengan filter.</div></td></tr>`;
+
+  $("#flb-count").innerHTML = pagerNote(pg, "booking", "");
+  $("#flb-pager").innerHTML = rows.length ? pagerHtml(flbPager, pg, "data-flb-hal") : "";
+}
+document.addEventListener("click", e => {
+  const bHal = e.target.closest("[data-flb-hal]");
+  if (bHal) { flbPager.hal = +bHal.dataset.flbHal; renderFlb(); }
+});
+
+$("#flb-cari").onclick = () => {
+  flbFilter = {
+    mitra:   $("#flb-f-mitra").value.trim().toLowerCase(),
+    dari:    $("#flb-f-dari").value,
+    sampai:  $("#flb-f-sampai").value,
+    peserta: $("#flb-f-peserta").value,
+    status:  $("#flb-f-status").value
+  };
+  flbPager.hal = 1;
+  renderFlb();
+};
+
+const FLB_KOLOM_EXPORT = [
+  ["No KTPA",         r => r.ktpa],
+  ["NRP/NIP",         r => r.nrp],
+  ["Nopens",          r => r.nomorPensiun],
+  ["Nama",            r => r.nama],
+  ["Tanggal Lahir",   r => r.tglLahir],
+  ["Status Pensiun",  r => r.statusPensiun],
+  ["Tanggal Booking", r => r.bookingTgl],
+  ["User Booking",    r => r.bookingUser],
+  ["Status",          r => r.status]
+];
+
+function flbNamaBerkas() {
+  const f = flbFilter;
+  const bagian = ["Laporan Booking"];
+  if (f.mitra) bagian.push(f.mitra);
+  if (f.status && f.status !== "Semua Status") bagian.push(f.status);
+  bagian.push(fpsHariIni());
+  return bagian.join(" - ").replace(/[\\/:*?"<>|]/g, "");
+}
+
+$("#flb-excel").onclick = () => {
+  const rows = flbDaftar();
+  if (!rows.length) { toast("Tidak ada data untuk diekspor dengan filter ini.", "bad"); return; }
+  const isi = [
+    FLB_KOLOM_EXPORT.map(k => fflSelCsv(k[0])).join(";"),
+    ...rows.map(r => FLB_KOLOM_EXPORT.map(k => fflSelCsv(k[1](r))).join(";"))
+  ].join("\r\n");
+  const url = URL.createObjectURL(
+    new Blob(["﻿" + isi], { type: "text/csv;charset=utf-8" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = flbNamaBerkas() + ".csv";
+  a.click();
+  URL.revokeObjectURL(url);
+  toast(`${rows.length} baris diekspor ke ${a.download}.`, "ok");
+};
+
+$("#flb-pdf").onclick = () => {
+  if (!flbDaftar().length) { toast("Tidak ada data untuk dicetak dengan filter ini.", "bad"); return; }
+  window.print();
+};
+
+renderFlb();
+
+/* ============================================ LAPORAN » LAPORAN PER PERIODE
+   Pola sama dengan Laporan Tagihan/Booking. Status memakai kosakata status
+   tagih yang sama dengan Penagihan (Ditagih/Terbayar/Gagal), disaring pada
+   `tglPengajuan` untuk rentang Tanggal Dari/Sampai. */
+let flpPager  = { hal: 1, per: 10 };
+let flpFilter = { mitra: "", dari: "", sampai: "", peserta: "Semua Status Peserta", status: "Semua Status" };
+
+$("#flp-f-peserta").innerHTML =
+  ["Semua Status Peserta", "Aktif", "Pensiun"].map(s => `<option>${esc(s)}</option>`).join("");
+$("#flp-f-status").innerHTML =
+  ["Semua Status", ...FLP_STATUS].map(s => `<option>${esc(s)}</option>`).join("");
+bindMitraAutocomplete("flp-f-mitra", "flp-f-mitra-list");
+
+const flpPill = s => `<span class="pill ${s === "Pelunasan" ? "pill-ok" : "pill-info"}">${esc(s)}</span>`;
+
+function flpDaftar() {
+  const f = flpFilter;
+  return DATA_FLAGGING_LAPORAN_PERIODE.filter(r =>
+    (!f.mitra || r.mitra.toLowerCase().includes(f.mitra)) &&
+    (!f.dari || r.tglPengajuan >= f.dari) &&
+    (!f.sampai || r.tglPengajuan <= f.sampai) &&
+    (f.peserta === "Semua Status Peserta" || r.statusPensiun === f.peserta) &&
+    (f.status === "Semua Status" || r.status === f.status)
+  );
+}
+
+function renderFlp() {
+  const rows = flpDaftar();
+  const pg   = pagerPotong(rows, flpPager);
+
+  $("#flp-body").innerHTML = pg.hal.length
+    ? pg.hal.map((r, i) => `
+      <tr>
+        <td>${pg.mulai + i + 1}</td>
+        <td class="t-strong">${esc(r.ktpa)}</td>
+        <td>${esc(r.nrp)}</td>
+        <td>${fflKosong(r.nomorPensiun)}</td>
+        <td class="t-strong">${esc(r.nama)}</td>
+        <td>${esc(r.statusPensiun)}</td>
+        <td>${esc(r.mitra)}</td>
+        <td>${esc(r.kantorMitra)}</td>
+        <td>${esc(r.tglPengajuan)}</td>
+        <td>${esc(r.awalKredit)}</td>
+        <td>${esc(r.akhirKredit)}</td>
+        <td class="num">${r.plafon.toLocaleString("id-ID")}</td>
+        <td>${esc(r.norekTab)}</td>
+        <td>${esc(r.norekKredit)}</td>
+        <td>${esc(r.noPk)}</td>
+        <td>${flpPill(r.status)}</td>
+      </tr>`).join("")
+    : `<tr><td colspan="16"><div class="empty">Tidak ada data periode yang cocok dengan filter.</div></td></tr>`;
+
+  $("#flp-count").innerHTML = pagerNote(pg, "pinjaman", "");
+  $("#flp-pager").innerHTML = rows.length ? pagerHtml(flpPager, pg, "data-flp-hal") : "";
+}
+document.addEventListener("click", e => {
+  const bHal = e.target.closest("[data-flp-hal]");
+  if (bHal) { flpPager.hal = +bHal.dataset.flpHal; renderFlp(); }
+});
+
+$("#flp-cari").onclick = () => {
+  flpFilter = {
+    mitra:   $("#flp-f-mitra").value.trim().toLowerCase(),
+    dari:    $("#flp-f-dari").value,
+    sampai:  $("#flp-f-sampai").value,
+    peserta: $("#flp-f-peserta").value,
+    status:  $("#flp-f-status").value
+  };
+  flpPager.hal = 1;
+  renderFlp();
+};
+
+const FLP_KOLOM_EXPORT = [
+  ["No KTPA",            r => r.ktpa],
+  ["NRP/NIP",            r => r.nrp],
+  ["Nopens",             r => r.nomorPensiun],
+  ["Nama",               r => r.nama],
+  ["Status Pensiun",     r => r.statusPensiun],
+  ["Mitra Bayar",        r => r.mitra],
+  ["Kantor Mitra Bayar", r => r.kantorMitra],
+  ["Tgl Pengajuan",      r => r.tglPengajuan],
+  ["Awal Kredit",        r => r.awalKredit],
+  ["Akhir Kredit",       r => r.akhirKredit],
+  ["Plafon",             r => r.plafon],
+  ["No Rek Tab",         r => r.norekTab],
+  ["No Rek Kredit",      r => r.norekKredit],
+  ["No PK",              r => r.noPk],
+  ["Status Tagihan",     r => r.status]
+];
+
+function flpNamaBerkas() {
+  const f = flpFilter;
+  const bagian = ["Laporan Per Periode"];
+  if (f.mitra) bagian.push(f.mitra);
+  if (f.status && f.status !== "Semua Status") bagian.push(f.status);
+  bagian.push(fpsHariIni());
+  return bagian.join(" - ").replace(/[\\/:*?"<>|]/g, "");
+}
+
+$("#flp-excel").onclick = () => {
+  const rows = flpDaftar();
+  if (!rows.length) { toast("Tidak ada data untuk diekspor dengan filter ini.", "bad"); return; }
+  const isi = [
+    FLP_KOLOM_EXPORT.map(k => fflSelCsv(k[0])).join(";"),
+    ...rows.map(r => FLP_KOLOM_EXPORT.map(k => fflSelCsv(k[1](r))).join(";"))
+  ].join("\r\n");
+  const url = URL.createObjectURL(
+    new Blob(["﻿" + isi], { type: "text/csv;charset=utf-8" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = flpNamaBerkas() + ".csv";
+  a.click();
+  URL.revokeObjectURL(url);
+  toast(`${rows.length} baris diekspor ke ${a.download}.`, "ok");
+};
+
+$("#flp-pdf").onclick = () => {
+  if (!flpDaftar().length) { toast("Tidak ada data untuk dicetak dengan filter ini.", "bad"); return; }
+  window.print();
+};
+
+renderFlp();
+
+/* ============================================ LAPORAN » LAPORAN PER MITRA
+   Filternya sudah lengkap; tabelnya menyusul sesuai referensi FSD, jadi Cari
+   dan Download sementara hanya menegaskan itu lewat toast. */
+$("#flm-f-peserta").innerHTML =
+  ["Semua Status Peserta", "Aktif", "Pensiun"].map(s => `<option>${esc(s)}</option>`).join("");
+$("#flm-f-status").innerHTML =
+  ["Semua Status", ...FLM_STATUS].map(s => `<option>${esc(s)}</option>`).join("");
+bindMitraAutocomplete("flm-f-mitra", "flm-f-mitra-list");
+
+const flmBelumSiap = () => toast("Tabel laporan ini masih dalam pengembangan.", "bad");
+$("#flm-cari").onclick  = flmBelumSiap;
+$("#flm-pdf").onclick   = flmBelumSiap;
+$("#flm-excel").onclick = flmBelumSiap;
+
+/* ============================================ LAPORAN » LAPORAN TAKE OVER
+   Pola sama dengan laporan lainnya. Mitra disaring dari mitraAwal ATAU
+   mitraPengajuan, dan rentang Tanggal Dari/Sampai dari `toTgl` (tanggal
+   pengajuan take over-nya). */
+let fltoPager  = { hal: 1, per: 10 };
+let fltoFilter = { mitra: "", dari: "", sampai: "", peserta: "Semua Status Peserta", status: "Semua Status" };
+
+$("#flto-f-peserta").innerHTML =
+  ["Semua Status Peserta", "Aktif", "Pensiun"].map(s => `<option>${esc(s)}</option>`).join("");
+$("#flto-f-status").innerHTML =
+  ["Semua Status", ...FLTO_STATUS].map(s => `<option>${esc(s)}</option>`).join("");
+bindMitraAutocomplete("flto-f-mitra", "flto-f-mitra-list");
+
+const fltoPill = s => `<span class="pill ${
+  s === "Take Over" ? "pill-ok" : s === "Disetujui" ? "pill-info" : "pill-warn"}">${esc(s)}</span>`;
+
+function fltoDaftar() {
+  const f = fltoFilter;
+  return DATA_FLAGGING_LAPORAN_TAKEOVER.filter(r =>
+    (!f.mitra || r.mitraAwal.toLowerCase().includes(f.mitra) || r.mitraPengajuan.toLowerCase().includes(f.mitra)) &&
+    (!f.dari || r.toTgl >= f.dari) &&
+    (!f.sampai || r.toTgl <= f.sampai) &&
+    (f.peserta === "Semua Status Peserta" || r.statusPensiun === f.peserta) &&
+    (f.status === "Semua Status" || r.status === f.status)
+  );
+}
+
+function renderFlto() {
+  const rows = fltoDaftar();
+  const pg   = pagerPotong(rows, fltoPager);
+
+  $("#flto-body").innerHTML = pg.hal.length
+    ? pg.hal.map((r, i) => `
+      <tr>
+        <td>${pg.mulai + i + 1}</td>
+        <td class="t-strong">${esc(r.ktpa)}</td>
+        <td>${esc(r.nrp)}</td>
+        <td>${fflKosong(r.nomorPensiun)}</td>
+        <td class="t-strong">${esc(r.nama)}</td>
+        <td>${esc(r.tglLahir)}</td>
+        <td>${esc(r.statusPensiun)}</td>
+        <td>${esc(r.mitraAwal)}</td>
+        <td>${esc(r.mitraPengajuan)}</td>
+        <td>${fflKosong(r.tglPelunasan)}</td>
+        <td>${fflKosong(r.toTgl)}</td>
+        <td>${fflKosong(r.toUser)}</td>
+        <td>${fflKosong(r.mtTgl)}</td>
+        <td>${fflKosong(r.mtUser)}</td>
+        <td>${fflKosong(r.asTgl)}</td>
+        <td>${fflKosong(r.asUser)}</td>
+        <td>${fltoPill(r.status)}</td>
+      </tr>`).join("")
+    : `<tr><td colspan="17"><div class="empty">Tidak ada data take over yang cocok dengan filter.</div></td></tr>`;
+
+  $("#flto-count").innerHTML = pagerNote(pg, "take over", "");
+  $("#flto-pager").innerHTML = rows.length ? pagerHtml(fltoPager, pg, "data-flto-hal") : "";
+}
+document.addEventListener("click", e => {
+  const bHal = e.target.closest("[data-flto-hal]");
+  if (bHal) { fltoPager.hal = +bHal.dataset.fltoHal; renderFlto(); }
+});
+
+$("#flto-cari").onclick = () => {
+  fltoFilter = {
+    mitra:   $("#flto-f-mitra").value.trim().toLowerCase(),
+    dari:    $("#flto-f-dari").value,
+    sampai:  $("#flto-f-sampai").value,
+    peserta: $("#flto-f-peserta").value,
+    status:  $("#flto-f-status").value
+  };
+  fltoPager.hal = 1;
+  renderFlto();
+};
+
+const FLTO_KOLOM_EXPORT = [
+  ["No KTPA",             r => r.ktpa],
+  ["NRP/NIP",             r => r.nrp],
+  ["Nopens",              r => r.nomorPensiun],
+  ["Nama",                r => r.nama],
+  ["Tanggal Lahir",       r => r.tglLahir],
+  ["Status Pensiun",      r => r.statusPensiun],
+  ["Mitra Awal",          r => r.mitraAwal],
+  ["Mitra Pengajuan",     r => r.mitraPengajuan],
+  ["Tanggal Pelunasan",   r => r.tglPelunasan],
+  ["Takeover Tanggal",    r => r.toTgl],
+  ["Takeover User",       r => r.toUser],
+  ["Mitra Takeover Tgl",  r => r.mtTgl],
+  ["Mitra Takeover User", r => r.mtUser],
+  ["ASABRI Tanggal",      r => r.asTgl],
+  ["ASABRI User",         r => r.asUser],
+  ["Status",              r => r.status]
+];
+
+function fltoNamaBerkas() {
+  const f = fltoFilter;
+  const bagian = ["Laporan Take Over"];
+  if (f.mitra) bagian.push(f.mitra);
+  if (f.status && f.status !== "Semua Status") bagian.push(f.status);
+  bagian.push(fpsHariIni());
+  return bagian.join(" - ").replace(/[\\/:*?"<>|]/g, "");
+}
+
+$("#flto-excel").onclick = () => {
+  const rows = fltoDaftar();
+  if (!rows.length) { toast("Tidak ada data untuk diekspor dengan filter ini.", "bad"); return; }
+  const isi = [
+    FLTO_KOLOM_EXPORT.map(k => fflSelCsv(k[0])).join(";"),
+    ...rows.map(r => FLTO_KOLOM_EXPORT.map(k => fflSelCsv(k[1](r))).join(";"))
+  ].join("\r\n");
+  const url = URL.createObjectURL(
+    new Blob(["﻿" + isi], { type: "text/csv;charset=utf-8" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fltoNamaBerkas() + ".csv";
+  a.click();
+  URL.revokeObjectURL(url);
+  toast(`${rows.length} baris diekspor ke ${a.download}.`, "ok");
+};
+
+$("#flto-pdf").onclick = () => {
+  if (!fltoDaftar().length) { toast("Tidak ada data untuk dicetak dengan filter ini.", "bad"); return; }
+  window.print();
+};
+
+renderFlto();
 
 /* ====================================================================== INIT */
 /* Role mitra bayar langsung diberi tahu pengajuan flagging miliknya yang

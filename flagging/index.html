@@ -52,6 +52,7 @@
       <button class="nav-item nav-child" data-go="flagging-laporan-tagihan">Laporan Tagihan</button>
       <button class="nav-item nav-child" data-go="flagging-laporan-booking">Laporan Booking</button>
       <button class="nav-item nav-child" data-go="flagging-laporan-periode">Laporan Per Periode</button>
+      <button class="nav-item nav-child" data-go="flagging-laporan-mitra">Laporan Per Mitra</button>
       <button class="nav-item nav-child" data-go="flagging-laporan-takeover">Laporan Take Over</button>
     </div>
 
@@ -410,7 +411,68 @@
           </div>
         </div>
         <div class="card">
-          <div class="alert alert-info"><span>ⓘ</span><span>Halaman ini masih dalam pengembangan. Isinya akan menyusul sesuai referensi FSD.</span></div>
+          <h3 class="card-title">Search &amp; Filter</h3>
+          <div class="grid3" style="align-items:end">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="flt-f-mitra">Mitra</label>
+              <input class="inp" id="flt-f-mitra" placeholder="Cari nama mitra..." autocomplete="off">
+              <div class="autocomplete-list" id="flt-f-mitra-list"></div>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="flt-f-dari">Tanggal Dari</label>
+              <input class="inp" type="date" id="flt-f-dari">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="flt-f-sampai">Tanggal Sampai</label>
+              <input class="inp" type="date" id="flt-f-sampai">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="flt-f-peserta">Status Peserta</label>
+              <select class="inp" id="flt-f-peserta"></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="flt-f-status">Status</label>
+              <select class="inp" id="flt-f-status"></select>
+            </div>
+            <div class="toolbar" style="justify-content:flex-end;margin-bottom:0">
+              <button class="btn btn-primary" id="flt-cari">⌕ Cari</button>
+            </div>
+          </div>
+          <div class="toolbar" style="justify-content:flex-end;margin-top:14px;margin-bottom:0;gap:8px">
+            <button class="btn btn-ghost" id="flt-pdf">🖶 Download PDF</button>
+            <button class="btn btn-ghost" id="flt-excel">⤓ Download Excel</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="tbl-wrap">
+            <table class="wide-table">
+              <thead>
+                <tr>
+                  <th rowspan="2" style="width:52px">No</th>
+                  <th rowspan="2">No KTPA</th>
+                  <th rowspan="2">NRP/NIP</th>
+                  <th rowspan="2">Nopens</th>
+                  <th rowspan="2">Status Pensiun</th>
+                  <th rowspan="2">Nama</th>
+                  <th rowspan="2">Mitra Bayar</th>
+                  <th rowspan="2">Kantor Mitra Bayar</th>
+                  <th colspan="3" class="th-group">Tanggal</th>
+                  <th colspan="2" class="th-group">Tagihan</th>
+                  <th rowspan="2">Status</th>
+                </tr>
+                <tr>
+                  <th>Awal Kredit</th><th>Akhir Kredit</th><th>Permohonan</th>
+                  <th>Tanggal</th><th class="num">Nilai</th>
+                </tr>
+              </thead>
+              <tbody id="flt-body"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+            <div class="tbl-note" id="flt-count" style="margin:0"></div>
+            <div id="flt-pager" style="display:flex;gap:4px"></div>
+          </div>
         </div>
       </section>
 
@@ -422,8 +484,67 @@
             <div class="page-sub">Rekap booking pinjaman mitra.</div>
           </div>
         </div>
+
         <div class="card">
-          <div class="alert alert-info"><span>ⓘ</span><span>Halaman ini masih dalam pengembangan. Isinya akan menyusul sesuai referensi FSD.</span></div>
+          <h3 class="card-title">Search &amp; Filter</h3>
+          <div class="grid3" style="align-items:end">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="flb-f-mitra">Mitra</label>
+              <input class="inp" id="flb-f-mitra" placeholder="Cari nama mitra..." autocomplete="off">
+              <div class="autocomplete-list" id="flb-f-mitra-list"></div>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="flb-f-dari">Tanggal Dari</label>
+              <input class="inp" type="date" id="flb-f-dari">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="flb-f-sampai">Tanggal Sampai</label>
+              <input class="inp" type="date" id="flb-f-sampai">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="flb-f-peserta">Status Peserta</label>
+              <select class="inp" id="flb-f-peserta"></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="flb-f-status">Status</label>
+              <select class="inp" id="flb-f-status"></select>
+            </div>
+            <div class="toolbar" style="justify-content:flex-end;margin-bottom:0">
+              <button class="btn btn-primary" id="flb-cari">⌕ Cari</button>
+            </div>
+          </div>
+          <div class="toolbar" style="justify-content:flex-end;margin-top:14px;margin-bottom:0;gap:8px">
+            <button class="btn btn-ghost" id="flb-pdf">🖶 Download PDF</button>
+            <button class="btn btn-ghost" id="flb-excel">⤓ Download Excel</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="tbl-wrap">
+            <table class="wide-table">
+              <thead>
+                <tr>
+                  <th rowspan="2" style="width:52px">No</th>
+                  <th rowspan="2">No KTPA</th>
+                  <th rowspan="2">NRP/NIP</th>
+                  <th rowspan="2">Nopens</th>
+                  <th rowspan="2">Nama</th>
+                  <th rowspan="2">Tanggal Lahir</th>
+                  <th rowspan="2">Status Pensiun</th>
+                  <th colspan="2" class="th-group">Info Booking</th>
+                  <th rowspan="2">Status</th>
+                </tr>
+                <tr>
+                  <th>Tanggal</th><th>User</th>
+                </tr>
+              </thead>
+              <tbody id="flb-body"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+            <div class="tbl-note" id="flb-count" style="margin:0"></div>
+            <div id="flb-pager" style="display:flex;gap:4px"></div>
+          </div>
         </div>
       </section>
 
@@ -435,8 +556,116 @@
             <div class="page-sub">Rekap pinjaman mitra per periode.</div>
           </div>
         </div>
+
         <div class="card">
-          <div class="alert alert-info"><span>ⓘ</span><span>Halaman ini masih dalam pengembangan. Isinya akan menyusul sesuai referensi FSD.</span></div>
+          <h3 class="card-title">Search &amp; Filter</h3>
+          <div class="grid3" style="align-items:end">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="flp-f-mitra">Mitra</label>
+              <input class="inp" id="flp-f-mitra" placeholder="Cari nama mitra..." autocomplete="off">
+              <div class="autocomplete-list" id="flp-f-mitra-list"></div>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="flp-f-dari">Tanggal Dari</label>
+              <input class="inp" type="date" id="flp-f-dari">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="flp-f-sampai">Tanggal Sampai</label>
+              <input class="inp" type="date" id="flp-f-sampai">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="flp-f-peserta">Status Peserta</label>
+              <select class="inp" id="flp-f-peserta"></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="flp-f-status">Status</label>
+              <select class="inp" id="flp-f-status"></select>
+            </div>
+            <div class="toolbar" style="justify-content:flex-end;margin-bottom:0">
+              <button class="btn btn-primary" id="flp-cari">⌕ Cari</button>
+            </div>
+          </div>
+          <div class="toolbar" style="justify-content:flex-end;margin-top:14px;margin-bottom:0;gap:8px">
+            <button class="btn btn-ghost" id="flp-pdf">🖶 Download PDF</button>
+            <button class="btn btn-ghost" id="flp-excel">⤓ Download Excel</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="tbl-wrap">
+            <table class="wide-table">
+              <thead>
+                <tr>
+                  <th rowspan="2" style="width:52px">No</th>
+                  <th rowspan="2">No KTPA</th>
+                  <th rowspan="2">NRP/NIP</th>
+                  <th rowspan="2">Nopens</th>
+                  <th rowspan="2">Nama</th>
+                  <th rowspan="2">Status Pensiun</th>
+                  <th rowspan="2">Mitra Bayar</th>
+                  <th rowspan="2">Kantor Mitra Bayar</th>
+                  <th colspan="7" class="th-group">Info Kredit</th>
+                  <th rowspan="2">Status Tagihan</th>
+                </tr>
+                <tr>
+                  <th>Tgl Pengajuan</th><th>Awal Kredit</th><th>Akhir Kredit</th>
+                  <th class="num">Plafon</th><th>No Rek Tab</th><th>No Rek Kredit</th><th>No PK</th>
+                </tr>
+              </thead>
+              <tbody id="flp-body"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+            <div class="tbl-note" id="flp-count" style="margin:0"></div>
+            <div id="flp-pager" style="display:flex;gap:4px"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="s-flagging-laporan-mitra">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Laporan</span><span>›</span><b>Laporan Per Mitra</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Laporan Per Mitra</h1>
+            <div class="page-sub">Rekap pinjaman mitra per mitra bayar.</div>
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="card-title">Search &amp; Filter</h3>
+          <div class="grid3" style="align-items:end">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="flm-f-mitra">Mitra</label>
+              <input class="inp" id="flm-f-mitra" placeholder="Cari nama mitra..." autocomplete="off">
+              <div class="autocomplete-list" id="flm-f-mitra-list"></div>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="flm-f-dari">Tanggal Dari</label>
+              <input class="inp" type="date" id="flm-f-dari">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="flm-f-sampai">Tanggal Sampai</label>
+              <input class="inp" type="date" id="flm-f-sampai">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="flm-f-peserta">Status Peserta</label>
+              <select class="inp" id="flm-f-peserta"></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="flm-f-status">Status</label>
+              <select class="inp" id="flm-f-status"></select>
+            </div>
+            <div class="toolbar" style="justify-content:flex-end;margin-bottom:0">
+              <button class="btn btn-primary" id="flm-cari">⌕ Cari</button>
+            </div>
+          </div>
+          <div class="toolbar" style="justify-content:flex-end;margin-top:14px;margin-bottom:0;gap:8px">
+            <button class="btn btn-ghost" id="flm-pdf">🖶 Download PDF</button>
+            <button class="btn btn-ghost" id="flm-excel">⤓ Download Excel</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="alert alert-info"><span>ⓘ</span><span>Tabel laporan ini masih dalam pengembangan. Isinya akan menyusul sesuai referensi FSD.</span></div>
         </div>
       </section>
 
@@ -448,8 +677,74 @@
             <div class="page-sub">Rekap take over pinjaman mitra.</div>
           </div>
         </div>
+
         <div class="card">
-          <div class="alert alert-info"><span>ⓘ</span><span>Halaman ini masih dalam pengembangan. Isinya akan menyusul sesuai referensi FSD.</span></div>
+          <h3 class="card-title">Search &amp; Filter</h3>
+          <div class="grid3" style="align-items:end">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="flto-f-mitra">Mitra</label>
+              <input class="inp" id="flto-f-mitra" placeholder="Cari nama mitra..." autocomplete="off">
+              <div class="autocomplete-list" id="flto-f-mitra-list"></div>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="flto-f-dari">Tanggal Dari</label>
+              <input class="inp" type="date" id="flto-f-dari">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="flto-f-sampai">Tanggal Sampai</label>
+              <input class="inp" type="date" id="flto-f-sampai">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="flto-f-peserta">Status Peserta</label>
+              <select class="inp" id="flto-f-peserta"></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="flto-f-status">Status</label>
+              <select class="inp" id="flto-f-status"></select>
+            </div>
+            <div class="toolbar" style="justify-content:flex-end;margin-bottom:0">
+              <button class="btn btn-primary" id="flto-cari">⌕ Cari</button>
+            </div>
+          </div>
+          <div class="toolbar" style="justify-content:flex-end;margin-top:14px;margin-bottom:0;gap:8px">
+            <button class="btn btn-ghost" id="flto-pdf">🖶 Download PDF</button>
+            <button class="btn btn-ghost" id="flto-excel">⤓ Download Excel</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="tbl-wrap">
+            <table class="wide-table">
+              <thead>
+                <tr>
+                  <th rowspan="2" style="width:52px">No</th>
+                  <th rowspan="2">No KTPA</th>
+                  <th rowspan="2">NRP/NIP</th>
+                  <th rowspan="2">Nopens</th>
+                  <th rowspan="2">Nama</th>
+                  <th rowspan="2">Tanggal Lahir</th>
+                  <th rowspan="2">Status Pensiun</th>
+                  <th colspan="2" class="th-group">Mitra</th>
+                  <th rowspan="2">Tanggal Pelunasan</th>
+                  <th colspan="2" class="th-group">Takeover</th>
+                  <th colspan="2" class="th-group">Mitra Takeover</th>
+                  <th colspan="2" class="th-group">ASABRI</th>
+                  <th rowspan="2">Status</th>
+                </tr>
+                <tr>
+                  <th>Awal</th><th>Pengajuan</th>
+                  <th>Tanggal</th><th>User</th>
+                  <th>Tanggal</th><th>User</th>
+                  <th>Tanggal</th><th>User</th>
+                </tr>
+              </thead>
+              <tbody id="flto-body"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+            <div class="tbl-note" id="flto-count" style="margin:0"></div>
+            <div id="flto-pager" style="display:flex;gap:4px"></div>
+          </div>
         </div>
       </section>
 
@@ -2535,11 +2830,6 @@
             <div class="field span2">
               <label class="fl" for="fpt-catatan">Catatan</label>
               <input class="inp" id="fpt-catatan" placeholder="Catatan singkat untuk baris penagihan...">
-            </div>
-
-            <div class="field span2">
-              <label class="fl" for="fpt-keterangan">Keterangan</label>
-              <textarea class="inp" id="fpt-keterangan" rows="3" placeholder="Keterangan tambahan..."></textarea>
             </div>
           </div>
 

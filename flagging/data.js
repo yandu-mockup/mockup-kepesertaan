@@ -1232,3 +1232,197 @@ const DATA_FLAGGING_INDIVIDU = [
     namaPenerima:"SRI WAHYUNI", status:"Booked",
     gaji:3480000, nik:"1271011503700008", mitra:"Bank BNI", cabangMitra:"KC Palembang" }
 ];
+
+/* ---------------------------------------------------------------------------
+   15. LAPORAN — TAGIHAN
+   Rekap tagihan per peserta untuk layar Laporan » Laporan Tagihan. Satu baris
+   = satu peserta yang pernah ditagih; `kantorMitra` dan `tglPermohonan`
+   mengikuti data Pinjaman peserta yang sama (`cabangMitra`/`awalKredit` di
+   blok lain), `tglTagihan`/`nilai` diambil dari rekap penagihan mitra.
+   `status` adalah status persetujuan tagihan itu sendiri. */
+const FLT_STATUS = ["Pending", "Disetujui", "Ditolak"];
+
+const DATA_FLAGGING_LAPORAN_TAGIHAN = [
+  { ktpa:"BD316947", nrp:"544925", nomorPensiun:"", statusPensiun:"Aktif", nama:"DODY ISWAHYUDIONO",
+    mitra:"Bank BRI", kantorMitra:"KC Jakarta Pusat", status:"Disetujui",
+    awalKredit:"2026-07-01", akhirKredit:"2031-07-01", tglPermohonan:"2026-07-01",
+    tglTagihan:"2026-07-05", nilai:1750000 },
+  { ktpa:"BE401859", nrp:"541451", nomorPensiun:"", statusPensiun:"Aktif", nama:"TARYONO",
+    mitra:"Bank BRI", kantorMitra:"KC Jakarta Pusat", status:"Disetujui",
+    awalKredit:"2026-07-01", akhirKredit:"2031-07-01", tglPermohonan:"2026-07-01",
+    tglTagihan:"2026-07-05", nilai:1320000 },
+  { ktpa:"BE502785", nrp:"31940543120872", nomorPensiun:"BE502785111022", statusPensiun:"Pensiun", nama:"SAMI'AN",
+    mitra:"Bank BRI", kantorMitra:"KC Jakarta Pusat", status:"Ditolak",
+    awalKredit:"2025-10-15", akhirKredit:"2040-10-15", tglPermohonan:"2025-10-15",
+    tglTagihan:"2026-07-05", nilai:2900000 },
+  { ktpa:"BE399727", nrp:"557800", nomorPensiun:"201311047710", statusPensiun:"Pensiun", nama:"SUPARDI",
+    mitra:"Bank BJB", kantorMitra:"KC Bandung", status:"Disetujui",
+    awalKredit:"2017-12-01", akhirKredit:"2022-12-01", tglPermohonan:"2017-12-01",
+    tglTagihan:"2018-09-18", nilai:1250000 },
+  { ktpa:"BE416312", nrp:"615637", nomorPensiun:"BE416312111200", statusPensiun:"Pensiun", nama:"ELDALIWAN",
+    mitra:"Bank BJB", kantorMitra:"KC Bandung", status:"Disetujui",
+    awalKredit:"2018-01-15", akhirKredit:"2023-01-15", tglPermohonan:"2018-01-15",
+    tglTagihan:"2018-09-18", nilai:1450000 },
+  { ktpa:"BE404972", nrp:"517141", nomorPensiun:"201511053900", statusPensiun:"Pensiun", nama:"MOH. SUEB",
+    mitra:"Bank Mantap", kantorMitra:"KC Surabaya", status:"Pending",
+    awalKredit:"2022-02-04", akhirKredit:"2028-02-04", tglPermohonan:"2022-02-04",
+    tglTagihan:"2026-07-06", nilai:625000 },
+  { ktpa:"CY104869", nrp:"197804081998032003", nomorPensiun:"PS-2019-004821", statusPensiun:"Pensiun", nama:"MADE WARDANI",
+    mitra:"PT Pos Indonesia", kantorMitra:"KC Denpasar", status:"Disetujui",
+    awalKredit:"2026-07-03", akhirKredit:"2031-07-03", tglPermohonan:"2026-07-03",
+    tglTagihan:"2026-08-04", nilai:980000 },
+  { ktpa:"CW661430", nrp:"087445", nomorPensiun:"PS-2006-000129", statusPensiun:"Pensiun", nama:"MOCHAMAD ZEIN",
+    mitra:"PT Pos Indonesia", kantorMitra:"KC Denpasar", status:"Pending",
+    awalKredit:"2026-06-19", akhirKredit:"2031-06-19", tglPermohonan:"2026-06-19",
+    tglTagihan:"2026-08-04", nilai:740000 },
+  { ktpa:"BZ143428", nrp:"196707181991031007", nomorPensiun:"BZ143428111028", statusPensiun:"Pensiun", nama:"SUROSO",
+    mitra:"Bank Woori Saudara", kantorMitra:"KC Medan", status:"Disetujui",
+    awalKredit:"2025-10-24", akhirKredit:"2028-12-24", tglPermohonan:"2025-10-24",
+    tglTagihan:"2026-08-05", nilai:2600000 },
+  { ktpa:"BY124343", nrp:"196911071997032004", nomorPensiun:"BY124343", statusPensiun:"Pensiun", nama:"MUSRIWATI",
+    mitra:"Bank Woori Saudara", kantorMitra:"KC Medan", status:"Ditolak",
+    awalKredit:"2025-10-20", akhirKredit:"2034-10-17", tglPermohonan:"2025-10-20",
+    tglTagihan:"2026-08-05", nilai:1180000 },
+  { ktpa:"EE331520", nrp:"63050076", nomorPensiun:"", statusPensiun:"Aktif", nama:"RAHDI ROHENDI",
+    mitra:"Bank BNI", kantorMitra:"KC Bandung", status:"Pending",
+    awalKredit:"2026-07-02", akhirKredit:"2031-07-02", tglPermohonan:"2026-07-02",
+    tglTagihan:"2026-08-06", nilai:1950000 },
+  { ktpa:"ED337689", nrp:"62090675", nomorPensiun:"", statusPensiun:"Aktif", nama:"SLAMET SUWARSONO",
+    mitra:"Bank Mandiri", kantorMitra:"KC Surabaya", status:"Disetujui",
+    awalKredit:"2026-07-08", akhirKredit:"2033-07-08", tglPermohonan:"2026-07-08",
+    tglTagihan:"2026-08-10", nilai:2280000 }
+];
+
+/* ---------------------------------------------------------------------------
+   16. LAPORAN — BOOKING
+   Rekap booking peserta untuk layar Laporan » Laporan Booking. `status` di
+   sini adalah status persetujuan booking-nya sendiri (bukan status pinjaman).
+   --------------------------------------------------------------------------- */
+const FLB_STATUS = ["Booked", "Pengajuan", "Dibatalkan"];
+
+const DATA_FLAGGING_LAPORAN_BOOKING = [
+  { ktpa:"BD316947", nrp:"544925", nomorPensiun:"", statusPensiun:"Aktif", nama:"DODY ISWAHYUDIONO", tglLahir:"1961-10-16",
+    mitra:"Bank BRI", bookingTgl:"2026-07-02", bookingUser:"operator.bri", status:"Booked" },
+  { ktpa:"BE401859", nrp:"541451", nomorPensiun:"", statusPensiun:"Aktif", nama:"TARYONO", tglLahir:"1962-06-20",
+    mitra:"Bank BRI", bookingTgl:"2026-07-02", bookingUser:"operator.bri", status:"Booked" },
+  { ktpa:"CY104869", nrp:"197804081998032003", nomorPensiun:"PS-2019-004821", statusPensiun:"Pensiun", nama:"MADE WARDANI", tglLahir:"1978-04-08",
+    mitra:"PT Pos Indonesia", bookingTgl:"2026-07-05", bookingUser:"operator.pos", status:"Booked" },
+  { ktpa:"EE331520", nrp:"63050076", nomorPensiun:"", statusPensiun:"Aktif", nama:"RAHDI ROHENDI", tglLahir:"1963-05-04",
+    mitra:"Bank BNI", bookingTgl:"2026-07-09", bookingUser:"verifikator.kep", status:"Pengajuan" },
+  { ktpa:"EE337485", nrp:"63010063", nomorPensiun:"", statusPensiun:"Aktif", nama:"CHARLESE TOMASOA", tglLahir:"1963-01-27",
+    mitra:"Bank BNI", bookingTgl:"2026-07-09", bookingUser:"verifikator.kep", status:"Pengajuan" },
+  { ktpa:"ED337689", nrp:"62090675", nomorPensiun:"", statusPensiun:"Aktif", nama:"SLAMET SUWARSONO", tglLahir:"1962-09-04",
+    mitra:"Bank Mandiri", bookingTgl:"2026-07-10", bookingUser:"verifikator.kep", status:"Booked" },
+  { ktpa:"DE301113", nrp:"510791", nomorPensiun:"", statusPensiun:"Aktif", nama:"JAHJO BUDIJANTO", tglLahir:"1962-05-07",
+    mitra:"Bank BTN", bookingTgl:"2026-07-11", bookingUser:"verifikator.kep", status:"Dibatalkan" },
+  { ktpa:"CE360625", nrp:"132170", nomorPensiun:"PS-2015-002214", statusPensiun:"Pensiun", nama:"KENEDI", tglLahir:"1970-03-15",
+    mitra:"Bank BNI", bookingTgl:"2026-07-12", bookingUser:"verifikator.kep", status:"Dibatalkan" },
+  { ktpa:"BE416312", nrp:"615637", nomorPensiun:"BE416312111200", statusPensiun:"Pensiun", nama:"ELDALIWAN", tglLahir:"1967-12-30",
+    mitra:"Bank BCA", bookingTgl:"2026-07-15", bookingUser:"operator.bca", status:"Booked" },
+  { ktpa:"BE352608", nrp:"586045", nomorPensiun:"201411062390", statusPensiun:"Pensiun", nama:"MAHFUDDIN", tglLahir:"1961-01-05",
+    mitra:"Bank BCA", bookingTgl:"2026-07-16", bookingUser:"operator.bca", status:"Pengajuan" },
+  { ktpa:"EE342429", nrp:"62090650", nomorPensiun:"200114009280", statusPensiun:"Pensiun", nama:"RANNI ROULI SIMANJUNTAK", tglLahir:"1960-02-01",
+    mitra:"Bank Syariah Indonesia (BSI)", bookingTgl:"2026-07-18", bookingUser:"verifikator.kep", status:"Booked" },
+  { ktpa:"BZ143428", nrp:"196707181991031007", nomorPensiun:"BZ143428111028", statusPensiun:"Pensiun", nama:"SUROSO", tglLahir:"1967-07-18",
+    mitra:"Bank Jatim", bookingTgl:"2026-07-20", bookingUser:"operator.jatim", status:"Pengajuan" }
+];
+
+/* ---------------------------------------------------------------------------
+   17. LAPORAN — PER PERIODE
+   Rekap pinjaman flagging per periode untuk layar Laporan » Laporan Per
+   Periode. `status` di sini: "Disetujui" (pinjaman masih berjalan) atau
+   "Pelunasan" (sudah lunas).
+   --------------------------------------------------------------------------- */
+const FLP_STATUS = ["Disetujui", "Pelunasan"];
+
+const DATA_FLAGGING_LAPORAN_PERIODE = [
+  { ktpa:"BE404972", nrp:"517141", nomorPensiun:"201511053900", statusPensiun:"Pensiun", nama:"MOH. SUEB",
+    mitra:"Bank Mantap", kantorMitra:"KC Surabaya", status:"Pelunasan",
+    tglPengajuan:"2026-08-08", awalKredit:"2022-02-04", akhirKredit:"2028-02-04", plafon:30000000,
+    norekTab:"9301500322216", norekKredit:"9301500322216", noPk:"F866976" },
+  { ktpa:"BZ143428", nrp:"196707181991031007", nomorPensiun:"BZ143428111028", statusPensiun:"Pensiun", nama:"SUROSO",
+    mitra:"Bank Woori Saudara", kantorMitra:"KC Semarang", status:"Disetujui",
+    tglPengajuan:"2025-10-24", awalKredit:"2025-10-24", akhirKredit:"2028-12-24", plafon:100000000,
+    norekTab:"1987574317", norekKredit:"1987574317", noPk:"0770/BKS/BFP/2025" },
+  { ktpa:"BE502785", nrp:"31940543120872", nomorPensiun:"BE502785111022", statusPensiun:"Pensiun", nama:"SAMI'AN",
+    mitra:"Bank BRI", kantorMitra:"KC Jakarta Pusat", status:"Disetujui",
+    tglPengajuan:"2020-03-10", awalKredit:"2025-10-15", akhirKredit:"2040-10-15", plafon:210000000,
+    norekTab:"0301000104869", norekKredit:"0309000104869", noPk:"PK/2025/10/0091" },
+  { ktpa:"BD316947", nrp:"544925", nomorPensiun:"", statusPensiun:"Aktif", nama:"DODY ISWAHYUDIONO",
+    mitra:"Bank BRI", kantorMitra:"KC Jakarta Pusat", status:"Pelunasan",
+    tglPengajuan:"2026-07-01", awalKredit:"2026-07-01", akhirKredit:"2031-07-01", plafon:150000000,
+    norekTab:"0101000316947", norekKredit:"0109000316947", noPk:"PK/2026/07/0001" },
+  { ktpa:"BE401859", nrp:"541451", nomorPensiun:"", statusPensiun:"Aktif", nama:"TARYONO",
+    mitra:"Bank BRI", kantorMitra:"KC Jakarta Pusat", status:"Disetujui",
+    tglPengajuan:"2026-07-01", awalKredit:"2026-07-01", akhirKredit:"2031-07-01", plafon:90000000,
+    norekTab:"0201000401859", norekKredit:"0209000401859", noPk:"PK/2026/07/0002" },
+  { ktpa:"CY104869", nrp:"197804081998032003", nomorPensiun:"PS-2019-004821", statusPensiun:"Pensiun", nama:"MADE WARDANI",
+    mitra:"PT Pos Indonesia", kantorMitra:"KC Denpasar", status:"Pelunasan",
+    tglPengajuan:"2026-07-03", awalKredit:"2026-07-03", akhirKredit:"2031-07-03", plafon:60000000,
+    norekTab:"0301000104869", norekKredit:"0309000104869", noPk:"PK/2026/07/0003" },
+  { ktpa:"EE331520", nrp:"63050076", nomorPensiun:"", statusPensiun:"Aktif", nama:"RAHDI ROHENDI",
+    mitra:"Bank BNI", kantorMitra:"KC Bandung", status:"Disetujui",
+    tglPengajuan:"2026-07-08", awalKredit:"2026-07-08", akhirKredit:"2031-07-08", plafon:120000000,
+    norekTab:"0401000331520", norekKredit:"0409000331520", noPk:"PK/2026/07/0004" },
+  { ktpa:"BE416312", nrp:"615637", nomorPensiun:"BE416312111200", statusPensiun:"Pensiun", nama:"ELDALIWAN",
+    mitra:"Bank BCA", kantorMitra:"KC Jakarta Pusat", status:"Disetujui",
+    tglPengajuan:"2023-02-27", awalKredit:"2023-03-03", akhirKredit:"2028-03-03", plafon:85000000,
+    norekTab:"0101000416312", norekKredit:"0109000416312", noPk:"TO/2023/03/0001" },
+  { ktpa:"BE352608", nrp:"586045", nomorPensiun:"201411062390", statusPensiun:"Pensiun", nama:"MAHFUDDIN",
+    mitra:"Bank BCA", kantorMitra:"KC Jakarta Selatan", status:"Pelunasan",
+    tglPengajuan:"2023-01-18", awalKredit:"2023-03-03", akhirKredit:"2029-03-03", plafon:120000000,
+    norekTab:"0102000352608", norekKredit:"0109000352608", noPk:"TO/2023/03/0002" },
+  { ktpa:"ED337689", nrp:"62090675", nomorPensiun:"", statusPensiun:"Aktif", nama:"SLAMET SUWARSONO",
+    mitra:"Bank Mandiri", kantorMitra:"KC Surabaya", status:"Disetujui",
+    tglPengajuan:"2026-07-08", awalKredit:"2026-07-08", akhirKredit:"2033-07-08", plafon:145000000,
+    norekTab:"0501000337689", norekKredit:"0509000337689", noPk:"PK/2026/07/3003" }
+];
+
+/* ---------------------------------------------------------------------------
+   18. LAPORAN — PER MITRA
+   Status mencakup seluruh perjalanan pinjaman (booking sampai pelunasan),
+   dipakai filter Status di layar Laporan » Laporan Per Mitra. Tabelnya
+   sendiri menyusul sesuai referensi FSD.
+   --------------------------------------------------------------------------- */
+const FLM_STATUS = ["Booked", "Pengajuan", "Disetujui", "Pelunasan", "Ditolak"];
+
+/* ---------------------------------------------------------------------------
+   19. LAPORAN — TAKE OVER
+   Rekap take over untuk layar Laporan » Laporan Take Over, bentuknya mengikuti
+   DATA_FLAGGING_TAKEOVER tapi `status` memakai kosakata proses take over itu
+   sendiri (Pengajuan/Disetujui/Take Over), bukan Tertunda/Diterima/Ditolak.
+   --------------------------------------------------------------------------- */
+const FLTO_STATUS = ["Pengajuan", "Disetujui", "Take Over"];
+
+const DATA_FLAGGING_LAPORAN_TAKEOVER = [
+  { ktpa:"BE416312", nrp:"615637", nomorPensiun:"BE416312111200", statusPensiun:"Pensiun", nama:"ELDALIWAN", tglLahir:"1967-12-30",
+    mitraAwal:"Bank BRI", mitraPengajuan:"Bank SMBC", tglPelunasan:"2023-02-27",
+    toTgl:"2023-03-03", toUser:"BTPN007", mtTgl:"", mtUser:"", asTgl:"", asUser:"", status:"Pengajuan" },
+  { ktpa:"BE352608", nrp:"586045", nomorPensiun:"201411062390", statusPensiun:"Pensiun", nama:"MAHFUDDIN", tglLahir:"1961-01-05",
+    mitraAwal:"Bank BRI", mitraPengajuan:"Bank SMBC", tglPelunasan:"2023-01-18",
+    toTgl:"2023-03-03", toUser:"BTPN007", mtTgl:"", mtUser:"", asTgl:"", asUser:"", status:"Pengajuan" },
+  { ktpa:"EE342429", nrp:"62090650", nomorPensiun:"200114009280", statusPensiun:"Pensiun", nama:"RANNI ROULI SIMANJUNTAK", tglLahir:"1960-02-01",
+    mitraAwal:"Bank Mantap", mitraPengajuan:"Bank Woori Saudara", tglPelunasan:"2023-03-03",
+    toTgl:"2023-03-03", toUser:"BWS001", mtTgl:"2023-03-06", mtUser:"MTP014", asTgl:"2023-03-08", asUser:"verifikator.kep", status:"Take Over" },
+  { ktpa:"BE456330", nrp:"3900024911069", nomorPensiun:"", statusPensiun:"Aktif", nama:"ZAMZAMI", tglLahir:"1969-10-10",
+    mitraAwal:"Bank BRI", mitraPengajuan:"Bank Woori Saudara", tglPelunasan:"2023-03-03",
+    toTgl:"2023-03-03", toUser:"BWS001", mtTgl:"2023-03-07", mtUser:"BRI009", asTgl:"", asUser:"", status:"Disetujui" },
+  { ktpa:"EE319601", nrp:"60120291", nomorPensiun:"EE319601111051", statusPensiun:"Aktif", nama:"BAMBANG SULISTYO GUNAWAN", tglLahir:"1960-01-19",
+    mitraAwal:"Bank Mantap", mitraPengajuan:"Bank Woori Saudara", tglPelunasan:"2023-03-03",
+    toTgl:"2023-03-03", toUser:"BWS001", mtTgl:"", mtUser:"", asTgl:"", asUser:"", status:"Pengajuan" },
+  { ktpa:"BZ101618", nrp:"030126780", nomorPensiun:"200221019480", statusPensiun:"Pensiun", nama:"NY. PADMIATUN", tglLahir:"1965-10-05",
+    mitraAwal:"PT Pos Indonesia", mitraPengajuan:"Bank Woori Saudara", tglPelunasan:"2023-03-03",
+    toTgl:"2023-03-03", toUser:"BWS001", mtTgl:"2023-03-09", mtUser:"POS006", asTgl:"", asUser:"", status:"Disetujui" },
+  { ktpa:"CE318275", nrp:"72415", nomorPensiun:"201712021990", statusPensiun:"Pensiun", nama:"JOKO MURYONO", tglLahir:"1967-07-17",
+    mitraAwal:"Bank BRI", mitraPengajuan:"Bank SMBC", tglPelunasan:"2023-03-01",
+    toTgl:"2023-03-03", toUser:"BTPN007", mtTgl:"2023-03-06", mtUser:"BRI009", asTgl:"2023-03-09", asUser:"verifikator.kep", status:"Take Over" },
+  { ktpa:"BE399727", nrp:"557800", nomorPensiun:"BE399727121060", statusPensiun:"Pensiun", nama:"SUDIRMAN", tglLahir:"1969-06-21",
+    mitraAwal:"Bank Woori Saudara", mitraPengajuan:"Bank Jabar Banten (BJB)", tglPelunasan:"2023-01-05",
+    toTgl:"2023-03-03", toUser:"BJB004", mtTgl:"", mtUser:"", asTgl:"", asUser:"", status:"Pengajuan" },
+  { ktpa:"BE344799", nrp:"515392", nomorPensiun:"201211096020", statusPensiun:"Pensiun", nama:"HERU SUROTO", tglLahir:"1959-07-11",
+    mitraAwal:"PT Pos Indonesia", mitraPengajuan:"Bank Jatim", tglPelunasan:"2023-03-02",
+    toTgl:"2023-03-03", toUser:"BKPN005", mtTgl:"2023-03-07", mtUser:"POS006", asTgl:"2023-03-10", asUser:"verifikator.kep", status:"Take Over" },
+  { ktpa:"BE364978", nrp:"621820", nomorPensiun:"201411062790", statusPensiun:"Pensiun", nama:"BAHTIAR", tglLahir:"1961-05-03",
+    mitraAwal:"Bank BRI", mitraPengajuan:"Bank Syariah Indonesia (BSI)", tglPelunasan:"2023-03-02",
+    toTgl:"2023-03-03", toUser:"bsi003", mtTgl:"", mtUser:"", asTgl:"", asUser:"", status:"Pengajuan" }
+];
