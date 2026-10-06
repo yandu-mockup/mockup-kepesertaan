@@ -103,18 +103,52 @@ Pinjaman"). **Riwayat** (`flagging-pengajuan-riwayat`) menampilkan jejak
 perubahan status per baris.
 
 ### 7. Pinjaman — Flagging (`flagging-pinjaman-flagging`)
-Daftar pinjaman yang flagging-nya sudah aktif (`DATA_FLAGGING_PINJAMAN`),
-dengan filter pencarian + Status (`Disetujui`/`Lunas`) dan tombol **⤓ Export
-Excel** (mengekspor persis hasil filter yang sedang aktif, seluruh halaman —
-bukan cuma yang tampil — sebagai CSV ber-BOM, nama berkas mengikuti filter).
-Per baris tersedia aksi:
-- **Detail** (`flagging-flagging-detail`) — bisa diubah (`✎ Ubah`).
-- **Pelunasan** (`flagging-pelunasan`) — hanya aktif untuk status `Disetujui`;
-  submit-nya otomatis membuat entri Persetujuan baru dengan aktivitas
-  **"Pelunasan Flagging"**.
-- **Top Up** — hanya aktif untuk status `Disetujui`; membuka alur Top Up
-  (lihat bagian Persetujuan → Top Up) dengan aktivitas **"Pengajuan Top Up"**.
-- **Riwayat** (`flagging-flagging-riwayat`).
+Daftar pinjaman yang flagging-nya **sudah aktif** di mitra bayar
+(`DATA_FLAGGING_PINJAMAN`) — representasi status akhir pinjaman, bukan lagi
+tahap pengajuan. **Catatan arsitektur prototipe**: ini seed data terpisah dari
+Pinjaman → Pengajuan; menyetujui sebuah pengajuan di Persetujuan hanya
+mengubah status baris itu jadi `Booked` di Pinjaman → Pengajuan
+([app.js:1739-1751](app.js#L1739)), **tidak otomatis** membuat baris baru di
+tabel Flagging ini. Secara bisnis keduanya berurutan, tapi di prototipe
+datanya tidak tersambung otomatis.
+
+Filter: pencarian KPA/NRP/NIP/Nama + **Status Pinjaman** (`Disetujui`/`Lunas`,
+dari `FFL_STATUS_PINJAMAN`). Kolom dikelompokkan: identitas peserta, **Info
+Kredit** (Tgl Pengajuan, Awal/Akhir Kredit, Plafon, No Rek Tab/Kredit, No PK),
+**Status** (sub-kolom Pinjaman = pill status, Tagih = penanda penagihan
+internal), Tanggal Setuju, Pengguna. Tombol **⤓ Export Excel** mengekspor
+persis hasil filter yang sedang aktif, seluruh halaman — bukan cuma yang
+tampil — sebagai CSV ber-BOM, nama berkas mengikuti filter.
+
+Per baris tersedia aksi ([app.js:1865-1871](app.js#L1865)): **Detail**
+(`flagging-flagging-detail`, bisa dibuka **✎ Ubah**), **Pelunasan**
+(`flagging-pelunasan`, hanya aktif untuk status `Disetujui`), **Top Up**
+(hanya aktif untuk status `Disetujui`), **Riwayat**
+(`flagging-flagging-riwayat`).
+
+**Pola kunci — perubahan tidak langsung berlaku, lewat Persetujuan dulu.**
+Detail bisa diubah, tapi hasil Ubah **tidak langsung tersimpan** ke baris
+Flagging-nya:
+
+| Aksi | Yang terjadi saat submit | Aktivitas di Persetujuan |
+|---|---|---|
+| Ubah data (Detail) ([app.js:2022](app.js#L2022)) | Hanya field yang benar-benar berubah dibandingkan satu-satu, lalu dikirim sebagai permintaan baru (`fpsTambah()`) | "Perubahan Data" |
+| Pelunasan ([s-flagging-pelunasan](index.html#L2020)) | Isi tanggal pelunasan + unggah berkas → submit | "Pelunasan Flagging" |
+| Top Up | Pencarian + form Top Up → submit, masuk ke antrean **Persetujuan → Top Up** (halaman terpisah dari Pengajuan biasa) | "Pengajuan Top Up" |
+
+Baris Flagging-nya **tidak berubah** sampai verifikator menyetujui permintaan
+itu di Persetujuan. Begitu **disetujui**, `fpsTerapkan()`
+([app.js:1575-1611](app.js#L1575)) baru menerapkannya ke baris yang dicari
+lewat KTPA yang sama:
+
+| Aktivitas | Efek ke baris Flagging saat disetujui |
+|---|---|
+| Perubahan Data | `Object.assign` field pinjaman dengan nilai baru, riwayat "Perubahan data disetujui" |
+| Pelunasan Flagging | `statusPinjaman` → `"Lunas"`, riwayat "Pelunasan" |
+| Pengajuan Top Up | **Tidak** mengubah baris Flagging ini — menambah baris baru di `ftuRows` (modul Top Up terpisah) |
+
+Kalau **ditolak**, baris Flagging tidak berubah sama sekali — hanya status
+permintaannya di Persetujuan yang jadi `Ditolak`.
 
 ### 8. Pinjaman — Take Over (`flagging-pinjaman-takeover`)
 List + filter (pencarian + Status: `Tertunda`/`Diterima`/`Ditolak`, dari
