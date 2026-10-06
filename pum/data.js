@@ -92,16 +92,20 @@ const DATA_MASTER_PESERTA = [
   { kpa:"TC911012", nrp:"165789",             npwp:"70.813.594.5-770.000", nik:"3372010306820126", nama:"Indra Permana",
     angkatan:"TNI-AD", uker:"Kodim 0733 Solo",           plafonPum:350000000 },
 
-  /* Prajurit dengan Masa Kerja Dinas < 2 Tahun (TMT baru, lihat
-     DATA_RIWAYAT_KEPANGKATAN di bawah) — dipakai untuk simulasi jalur
-     dokumen "Surat Pernyataan Kesanggupan" bagi peserta Polri baru, dan
-     kasus umum peserta TNI dengan masa kerja dinas masih pendek. */
+  /* Peserta dengan Masa Kerja Dinas < 2 Tahun (TMT baru, lihat
+     DATA_RIWAYAT_KEPANGKATAN di bawah). Tiga yang TNI dipakai untuk simulasi
+     validasi "Masa Kerja Dinas kurang dari 2 Tahun" yang mengunci tombol
+     Lanjutkan; yang Polri justru tetap boleh lanjut — dipakai untuk simulasi
+     jalur dokumen wajib tambahan "Surat Pernyataan Kesanggupan" di langkah
+     Unggah Dokumen (lihat pf5SyaratPolri() di app.js). */
   { kpa:"AD500992", nrp:"175002",             npwp:"31.560.772.4-992.000", nik:"3372011203010127", nama:"Dimas Aditya",
     angkatan:"TNI-AD", uker:"Kodim 0735 Surakarta",      plafonPum:300000000 },
   { kpa:"AL600992", nrp:"175003",             npwp:"42.671.883.5-992.000", nik:"8103011805020128", nama:"Reza Firmansyah",
     angkatan:"TNI-AL", uker:"Lanal Tual",                plafonPum:300000000 },
   { kpa:"AU700992", nrp:"175004",             npwp:"53.782.994.6-992.000", nik:"1471010207030129", nama:"Bagas Wicaksono",
     angkatan:"TNI-AU", uker:"Lanud Roesmin Nurjadin",    plafonPum:300000000 },
+  { kpa:"PL800992", nrp:"03085992",           npwp:"64.893.105.7-992.000", nik:"3404010808030131", nama:"Galih Prasetyo",
+    angkatan:"Polri",  uker:"Polres Sleman",             plafonPum:300000000 },
 
   /* Sudah memiliki Pinjaman KPR (BUM) aktif (lihat DATA_BUM) — dipakai untuk
      simulasi validasi "sudah memiliki Pinjaman KPR (BUM)" di pencarian
@@ -607,8 +611,10 @@ const DATA_RIWAYAT_KEPANGKATAN = {
   ],
 
   /* Masa Kerja Dinas dihitung otomatis dari TMT tertua di sini (lihat
-     pfEarliestTmt() di app.js) — TMT baru supaya ketiganya < 2 Tahun per
-     hari ini (24 Agustus 2026). */
+     pfEarliestTmt() di app.js) — TMT sengaja dibuat baru supaya keempatnya
+     masih < 2 Tahun. Perlu digeser maju kalau prototipe ini dipakai lagi
+     setelah pertengahan 2027, kalau tidak jalur validasinya berhenti
+     kelihatan. */
   AD500992: [
     { pangkat:"Prajurit Dua", nomorSkep:"KEP/012/VIII/2025", tmt:"2025-09-01", tglSkep:"2025-08-19" }
   ],
@@ -616,7 +622,10 @@ const DATA_RIWAYAT_KEPANGKATAN = {
     { pangkat:"Prajurit Dua", nomorSkep:"KEP/018/XII/2024", tmt:"2025-01-01", tglSkep:"2024-12-18" }
   ],
   AU700992: [
-    { pangkat:"Prajurit Dua", nomorSkep:"KEP/024/IX/2024", tmt:"2024-10-01", tglSkep:"2024-09-19" }
+    { pangkat:"Prajurit Dua", nomorSkep:"KEP/024/III/2025", tmt:"2025-04-01", tglSkep:"2025-03-19" }
+  ],
+  PL800992: [
+    { pangkat:"Bhayangkara Dua", nomorSkep:"KEP/031/V/2025", tmt:"2025-06-01", tglSkep:"2025-05-19" }
   ]
 };
 
