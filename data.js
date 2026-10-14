@@ -106,7 +106,12 @@ const DATA_LIST_KOTOR = [
    3. KESATUAN PENGAJU — pilihan dropdown "Kesatuan Pengaju" pada form
    Pendaftaran Peserta Baru » Kolektif.
    --------------------------------------------------------------------------- */
-const DATA_KESATUAN_PENGAJU = ["Mabes TNI", "Mabes Polri", "Kementerian Pertahanan"];
+const DATA_KESATUAN_PENGAJU = [
+  "Mabes TNI", "Mabes TNI AD", "Mabes TNI AL", "Mabes TNI AU", "Mabes Polri", "Kementerian Pertahanan", "PUSKERSIN",
+  "Kodam III/Siliwangi", "Kodam V/Brawijaya", "Kodam IX/Udayana",
+  "Lantamal V Surabaya", "Lanud Halim Perdanakusuma",
+  "Polda Metro Jaya", "Polda Jawa Tengah", "Polres Metro Bekasi Kota"
+];
 
 /* ---------------------------------------------------------------------------
    4. MASTER DATA PESERTA (mensimulasikan data yang ditarik dari ASABRI —
@@ -601,7 +606,7 @@ const DATA_PENDAFTARAN_PERORANGAN = [
       instansi:"Mabes TNI AD", tglSurat:"27 Agustus 2026"
     },
     dataPeserta: {
-      nama:"Bambang Wicaksono", nrp:"142376", nik:"3273052108940005",
+      nama:"Bambang Wicaksono", nrp:"271048", nik:"3273052108940005",
       npwp:"918273645100000",
       jk:"Laki-laki", tglLahir:"21 Agustus 1994", tmpLahir:"Bandung",
       status:"Prajurit", angkatan:"TNI AD", unor:"TNI AD", uker:"- KOREM 084/BJ", pangkat:"SERKA",
@@ -630,7 +635,7 @@ const DATA_PENDAFTARAN_PERORANGAN = [
       instansi:"Mabes TNI AL", tglSurat:"26 Agustus 2026"
     },
     dataPeserta: {
-      nama:"Nur Aisyah Rahmadani", nrp:"163890", nik:"3578056509960012",
+      nama:"Nur Aisyah Rahmadani", nrp:"283615", nik:"3578056509960012",
       npwp:"8273645910000012",
       jk:"Perempuan", tglLahir:"25 September 1996", tmpLahir:"Surabaya",
       status:"Prajurit", angkatan:"TNI AL", unor:"TNI AL", uker:"- KODIM 0827 REM 084/BJ", pangkat:"SERTU",
@@ -1170,6 +1175,971 @@ const DATA_PENDAFTARAN_PERORANGAN = [
 ];
 
 const DATA_UPLOAD_BATCH = [
+  /* 12 batch contoh berikutnya (id 4-15), masing-masing dari Kesatuan Pengaju
+     yang berbeda. Urutan terbaru di atas, sama seperti hasil submit baru.
+     Statusnya disebar supaya setiap layar punya data untuk dicoba:
+       Belum Terverifikasi (3) → antrean Verifikasi Kolektif
+       Tertunda (3)            → antrean Approval Pendaftaran Peserta Baru
+       Diterima (4)            → muncul di Daftar Nominatif
+       Ditolak (1) dan Ditolak Verifikasi (1) → memuat catatan penolakan
+     Satu batch memuat satu SKEP (nomor, tanggal, dan TMT sama untuk semua
+     peserta) dan satu kesatuan. Kode angkatan/UNOR 1-6 mengikuti urutan
+     dropdown, kode pangkat = digit angkatan + kode SPP_PANGKAT, sedangkan kode
+     kesatuan dan kode kancab di luar contoh template adalah kode dummy. */
+  {
+    id: 15,
+    tglPengajuan: "12 Oktober 2026",
+    kesatuanPengaju: "Polres Metro Bekasi Kota",
+    nomorBatch: "B-KOLEKTIF/2026/10120015",
+    nomorAgenda: "B/288/X/2026/0037/wirata.atmaja",
+    status: "Belum Terverifikasi",
+    catatanApproval: "",
+    dataPengajuan: {
+      jenis:"Kolektif", nomorSurat:"B/288/X/2026",
+      instansi:"Polres Metro Bekasi Kota", tglSurat:"9 Oktober 2026"
+    },
+    peserta: [
+      { nrp:"26062802", nama:"Hendra Gunawan", suamiIstri:"Ny. Ika Lestari", sts:"1", unor:"4", angkatan:"4",
+        pangkat:"IPDA", kdPangkat:"4771", noSkep:"KEP/2359/X/2026", tglSkep:"09/10/2026", tmtSkep:"1/11/2026",
+        kesatuan:"POLRES METRO BEKASI KOTA", kdKesatuan:"210101", kdKancab:"8000",
+        jnsKel:"1", tmpLahir:"Jakarta", tglLahir:"29/06/2003",
+        alamat:"Jl. Melati No. 26", kelurahan:"Harapan Jaya", kecamatan:"Bekasi Utara",
+        kota:"Kota Bekasi", propinsi:"Jawa Barat",
+        noHp:"089807972336", email:"hendra.gunawan03@gmail.com", nik:"3275062906036080", npwp:"90.915.783.6-358.000",
+        berkas:[
+          { label:"KTP", file:"ktp-hendra.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-hendra.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-hendra.pdf" }
+        ] },
+      { nrp:"26028028", nama:"Bryan Budi Lubis", suamiIstri:"Ny. Zahra Saraswati", sts:"1", unor:"4", angkatan:"4",
+        pangkat:"IPDA", kdPangkat:"4771", noSkep:"KEP/2359/X/2026", tglSkep:"09/10/2026", tmtSkep:"1/11/2026",
+        kesatuan:"POLRES METRO BEKASI KOTA", kdKesatuan:"210101", kdKancab:"8000",
+        jnsKel:"1", tmpLahir:"Pontianak", tglLahir:"28/02/1999",
+        alamat:"Jl. Veteran No. 118", kelurahan:"Harapan Jaya", kecamatan:"Bekasi Utara",
+        kota:"Kota Bekasi", propinsi:"Jawa Barat",
+        noHp:"081846867672", email:"bryan.lubis99@gmail.com", nik:"3275062802992305", npwp:"88.663.159.1-868.000",
+        berkas:[
+          { label:"KTP", file:"ktp-bryan.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-bryan.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-bryan.pdf" }
+        ] },
+      { nrp:"26037410", nama:"Joko Santoso", suamiIstri:"Ny. Vira Maryani", sts:"1", unor:"4", angkatan:"4",
+        pangkat:"IPTU", kdPangkat:"4772", noSkep:"KEP/2359/X/2026", tglSkep:"09/10/2026", tmtSkep:"1/11/2026",
+        kesatuan:"POLRES METRO BEKASI KOTA", kdKesatuan:"210101", kdKancab:"8000",
+        jnsKel:"1", tmpLahir:"Banjarmasin", tglLahir:"12/03/2002",
+        alamat:"Jl. Diponegoro No. 96", kelurahan:"Jatiasih", kecamatan:"Jatiasih",
+        kota:"Kota Bekasi", propinsi:"Jawa Barat",
+        noHp:"081892975664", email:"joko.santoso02@gmail.com", nik:"3275011203024773", npwp:"78.781.415.4-604.000",
+        berkas:[
+          { label:"KTP", file:"ktp-joko.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-joko.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-joko.pdf" }
+        ] },
+      { nrp:"26116044", nama:"Endah Setyowati", suamiIstri:"Tn. Satria Purwanto", sts:"1", unor:"4", angkatan:"4",
+        pangkat:"IPDA", kdPangkat:"4771", noSkep:"KEP/2359/X/2026", tglSkep:"09/10/2026", tmtSkep:"1/11/2026",
+        kesatuan:"POLRES METRO BEKASI KOTA", kdKesatuan:"210101", kdKancab:"8000",
+        jnsKel:"2", tmpLahir:"Surabaya", tglLahir:"03/11/1999",
+        alamat:"Jl. Pattimura No. 87", kelurahan:"Kranji", kecamatan:"Bekasi Barat",
+        kota:"Kota Bekasi", propinsi:"Jawa Barat",
+        noHp:"081846999434", email:"endah.setyowati99@mail.com", nik:"3275054311998836", npwp:"39.767.847.1-107.000",
+        berkas:[
+          { label:"KTP", file:"ktp-endah.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-endah.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-endah.pdf" }
+        ] }
+    ]
+  },
+  {
+    id: 14,
+    tglPengajuan: "9 Oktober 2026",
+    kesatuanPengaju: "Lantamal V Surabaya",
+    nomorBatch: "B-KOLEKTIF/2026/10090014",
+    nomorAgenda: "B/283/X/2026/0036/wirata.atmaja",
+    status: "Belum Terverifikasi",
+    catatanApproval: "",
+    dataPengajuan: {
+      jenis:"Kolektif", nomorSurat:"B/283/X/2026",
+      instansi:"Lantamal V Surabaya", tglSurat:"8 Oktober 2026"
+    },
+    peserta: [
+      { nrp:"26014294", nama:"Aldi Putra Widodo", suamiIstri:"Ny. Kirana Rahayu", sts:"1", unor:"2", angkatan:"2",
+        pangkat:"LETTU", kdPangkat:"2772", noSkep:"KEP/1675/X/2026", tglSkep:"08/10/2026", tmtSkep:"1/11/2026",
+        kesatuan:"LANTAMAL V SURABAYA", kdKesatuan:"121005", kdKancab:"7000",
+        jnsKel:"1", tmpLahir:"Jakarta", tglLahir:"21/01/1995",
+        alamat:"Jl. Pahlawan No. 57", kelurahan:"Keputran", kecamatan:"Tegalsari",
+        kota:"Kota Surabaya", propinsi:"Jawa Timur",
+        noHp:"082284447919", email:"aldi.widodo95@gmail.com", nik:"3578052101953553", npwp:"44.724.963.8-794.000",
+        berkas:[
+          { label:"KTP", file:"ktp-aldi.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-aldi.pdf" },
+          { label:"Surat Pengantar", file:null }
+        ] },
+      { nrp:"26104874", nama:"Agus Hermawan", suamiIstri:"Ny. Yasmin Puspitasari", sts:"1", unor:"2", angkatan:"2",
+        pangkat:"LETDA", kdPangkat:"2771", noSkep:"KEP/1675/X/2026", tglSkep:"08/10/2026", tmtSkep:"1/11/2026",
+        kesatuan:"LANTAMAL V SURABAYA", kdKesatuan:"121005", kdKancab:"7000",
+        jnsKel:"1", tmpLahir:"Magelang", tglLahir:"12/10/2001",
+        alamat:"Jl. Veteran No. 35", kelurahan:"Keputran", kecamatan:"Tegalsari",
+        kota:"Kota Surabaya", propinsi:"Jawa Timur",
+        noHp:"089827794048", email:"agus.hermawan01@gmail.com", nik:"3578051210010587", npwp:"20.072.791.9-745.000",
+        berkas:[
+          { label:"KTP", file:"ktp-agus.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-agus.pdf" },
+          { label:"Surat Pengantar", file:null }
+        ] },
+      { nrp:"26057725", nama:"Wahyu Maulana", suamiIstri:"Ny. Oktavia Sitorus", sts:"1", unor:"2", angkatan:"2",
+        pangkat:"LETTU", kdPangkat:"2772", noSkep:"KEP/1675/X/2026", tglSkep:"08/10/2026", tmtSkep:"1/11/2026",
+        kesatuan:"LANTAMAL V SURABAYA", kdKesatuan:"121005", kdKancab:"7000",
+        jnsKel:"1", tmpLahir:"Manado", tglLahir:"19/05/1996",
+        alamat:"Jl. Gajah Mada No. 1", kelurahan:"Wonokromo", kecamatan:"Wonokromo",
+        kota:"Kota Surabaya", propinsi:"Jawa Timur",
+        noHp:"087766545428", email:"wahyu.maulana96@mail.com", nik:"3578031905961867", npwp:"71.655.080.4-931.000",
+        berkas:[
+          { label:"KTP", file:"ktp-wahyu.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-wahyu.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-wahyu.pdf" }
+        ] },
+      { nrp:"26039119", nama:"Maya Siagian", suamiIstri:"Tn. Bambang Susanto", sts:"1", unor:"2", angkatan:"2",
+        pangkat:"LETTU", kdPangkat:"2772", noSkep:"KEP/1675/X/2026", tglSkep:"08/10/2026", tmtSkep:"1/11/2026",
+        kesatuan:"LANTAMAL V SURABAYA", kdKesatuan:"121005", kdKancab:"7000",
+        jnsKel:"2", tmpLahir:"Bekasi", tglLahir:"15/03/1997",
+        alamat:"Jl. Sam Ratulangi No. 102", kelurahan:"Gayungan", kecamatan:"Gayungan",
+        kota:"Kota Surabaya", propinsi:"Jawa Timur",
+        noHp:"085729348420", email:"maya.siagian97@mail.com", nik:"3578065503975618", npwp:"3578065503975618",
+        berkas:[
+          { label:"KTP", file:"ktp-maya.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-maya.pdf" },
+          { label:"Surat Pengantar", file:null }
+        ] },
+      { nrp:"26046290", nama:"Farhan Nasution", suamiIstri:"Ny. Hesti Damayanti", sts:"1", unor:"2", angkatan:"2",
+        pangkat:"LETTU", kdPangkat:"2772", noSkep:"KEP/1675/X/2026", tglSkep:"08/10/2026", tmtSkep:"1/11/2026",
+        kesatuan:"LANTAMAL V SURABAYA", kdKesatuan:"121005", kdKancab:"7000",
+        jnsKel:"1", tmpLahir:"Bogor", tglLahir:"12/04/2000",
+        alamat:"Jl. Melati No. 77", kelurahan:"Rungkut Kidul", kecamatan:"Rungkut",
+        kota:"Kota Surabaya", propinsi:"Jawa Timur",
+        noHp:"081485640884", email:"farhan.nasution00@gmail.com", nik:"3578011204002928", npwp:"34.308.910.1-922.000",
+        berkas:[
+          { label:"KTP", file:"ktp-farhan.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-farhan.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-farhan.pdf" }
+        ] }
+    ]
+  },
+  {
+    id: 13,
+    tglPengajuan: "7 Oktober 2026",
+    kesatuanPengaju: "PUSKERSIN",
+    nomorBatch: "B-KOLEKTIF/2026/10070013",
+    nomorAgenda: "B/279/X/2026/0035/wirata.atmaja",
+    status: "Belum Terverifikasi",
+    catatanApproval: "",
+    dataPengajuan: {
+      jenis:"Kolektif", nomorSurat:"B/279/X/2026",
+      instansi:"PUSKERSIN", tglSurat:"6 Oktober 2026"
+    },
+    peserta: [
+      { nrp:"199612172026111153", nama:"Haris Wahyu Hermawan", suamiIstri:"Ny. Utami Panjaitan", sts:"3", unor:"5", angkatan:"5",
+        pangkat:"GOL.III/A", kdPangkat:"7321", noSkep:"KEP/2035/X/2026", tglSkep:"06/10/2026", tmtSkep:"1/11/2026",
+        kesatuan:"PUSKERSIN", kdKesatuan:"100002", kdKancab:"1000",
+        jnsKel:"1", tmpLahir:"Jember", tglLahir:"17/12/1996",
+        alamat:"Jl. Veteran No. 14", kelurahan:"Cibubur", kecamatan:"Ciracas",
+        kota:"Jakarta Timur", propinsi:"DKI Jakarta",
+        noHp:"089778732113", email:"haris.hermawan96@outlook.com", nik:"3175011712963725", npwp:"67.481.230.9-642.000",
+        berkas:[
+          { label:"KTP", file:"ktp-haris.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-haris.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-haris.pdf" }
+        ] },
+      { nrp:"199506172026112832", nama:"Putri Siregar", suamiIstri:"Tn. Farhan Siregar", sts:"3", unor:"5", angkatan:"5",
+        pangkat:"GOL.III/A", kdPangkat:"7321", noSkep:"KEP/2035/X/2026", tglSkep:"06/10/2026", tmtSkep:"1/11/2026",
+        kesatuan:"PUSKERSIN", kdKesatuan:"100002", kdKancab:"1000",
+        jnsKel:"2", tmpLahir:"Bogor", tglLahir:"17/06/1995",
+        alamat:"Jl. Gatot Subroto No. 93", kelurahan:"Cibubur", kecamatan:"Ciracas",
+        kota:"Jakarta Timur", propinsi:"DKI Jakarta",
+        noHp:"087820419503", email:"putri.siregar95@gmail.com", nik:"3175015706950254", npwp:"47.226.320.1-128.000",
+        berkas:[
+          { label:"KTP", file:"ktp-putri.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-putri.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-putri.pdf" }
+        ] },
+      { nrp:"200311042026112007", nama:"Utami Wulandari", suamiIstri:"Tn. Febri Saputra", sts:"3", unor:"5", angkatan:"5",
+        pangkat:"GOL.III/A", kdPangkat:"7321", noSkep:"KEP/2035/X/2026", tglSkep:"06/10/2026", tmtSkep:"1/11/2026",
+        kesatuan:"PUSKERSIN", kdKesatuan:"100002", kdKancab:"1000",
+        jnsKel:"2", tmpLahir:"Manado", tglLahir:"04/11/2003",
+        alamat:"Jl. Imam Bonjol No. 57", kelurahan:"Pulo Gadung", kecamatan:"Pulo Gadung",
+        kota:"Jakarta Timur", propinsi:"DKI Jakarta",
+        noHp:"081902144669", email:"utami.wulandari03@gmail.com", nik:"3175064411039005", npwp:"62.317.303.1-955.000",
+        berkas:[
+          { label:"KTP", file:"ktp-utami.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-utami.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-utami.pdf" }
+        ] },
+      { nrp:"199111182026112131", nama:"Larasati Saraswati", suamiIstri:"Tn. Imam Prabowo", sts:"3", unor:"5", angkatan:"5",
+        pangkat:"GOL.III/C", kdPangkat:"7323", noSkep:"KEP/2035/X/2026", tglSkep:"06/10/2026", tmtSkep:"1/11/2026",
+        kesatuan:"PUSKERSIN", kdKesatuan:"100002", kdKancab:"1000",
+        jnsKel:"2", tmpLahir:"Malang", tglLahir:"18/11/1991",
+        alamat:"Jl. Anggrek No. 85", kelurahan:"Jatinegara", kecamatan:"Jatinegara",
+        kota:"Jakarta Timur", propinsi:"DKI Jakarta",
+        noHp:"082238360917", email:"larasati.saraswati91@gmail.com", nik:"3175055811915676", npwp:"3175055811915676",
+        berkas:[
+          { label:"KTP", file:"ktp-larasati.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-larasati.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-larasati.pdf" }
+        ] }
+    ]
+  },
+  {
+    id: 12,
+    tglPengajuan: "5 Oktober 2026",
+    kesatuanPengaju: "Polda Metro Jaya",
+    nomorBatch: "B-KOLEKTIF/2026/10050012",
+    nomorAgenda: "B/274/X/2026/0034/wirata.atmaja",
+    status: "Tertunda",
+    catatanApproval: "",
+    dataPengajuan: {
+      jenis:"Kolektif", nomorSurat:"B/274/X/2026",
+      instansi:"Polda Metro Jaya", tglSurat:"2 Oktober 2026"
+    },
+    peserta: [
+      { nrp:"26066697", nama:"Joko Purnomo", suamiIstri:"Ny. Maya Saraswati", sts:"1", unor:"4", angkatan:"4",
+        pangkat:"IPDA", kdPangkat:"4771", noSkep:"KEP/1696/X/2026", tglSkep:"02/10/2026", tmtSkep:"1/11/2026",
+        kesatuan:"POLDA METRO JAYA", kdKesatuan:"210001", kdKancab:"2000",
+        jnsKel:"1", tmpLahir:"Madiun", tglLahir:"16/06/2003",
+        alamat:"Jl. Merdeka No. 6", kelurahan:"Kemang", kecamatan:"Mampang Prapatan",
+        kota:"Jakarta Selatan", propinsi:"DKI Jakarta",
+        noHp:"081412209588", email:"joko.purnomo03@gmail.com", nik:"3174011606032956", npwp:"18.398.146.3-641.000",
+        berkas:[
+          { label:"KTP", file:"ktp-joko.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-joko.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-joko.pdf" }
+        ] },
+      { nrp:"26088136", nama:"Budi Nugroho", suamiIstri:"Ny. Hani Simanjuntak", sts:"1", unor:"4", angkatan:"4",
+        pangkat:"AKP", kdPangkat:"4773", noSkep:"KEP/1696/X/2026", tglSkep:"02/10/2026", tmtSkep:"1/11/2026",
+        kesatuan:"POLDA METRO JAYA", kdKesatuan:"210001", kdKancab:"2000",
+        jnsKel:"1", tmpLahir:"Bekasi", tglLahir:"15/08/1998",
+        alamat:"Jl. Kaliurang No. 68", kelurahan:"Pasar Minggu", kecamatan:"Pasar Minggu",
+        kota:"Jakarta Selatan", propinsi:"DKI Jakarta",
+        noHp:"085290189523", email:"budi.nugroho98@mail.com", nik:"3174051508982678", npwp:"07.442.778.6-932.000",
+        berkas:[
+          { label:"KTP", file:"ktp-budi.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-budi.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-budi.pdf" }
+        ] },
+      { nrp:"26056836", nama:"Joko Setiawan", suamiIstri:"Ny. Hesti Agustina", sts:"1", unor:"4", angkatan:"4",
+        pangkat:"AKP", kdPangkat:"4773", noSkep:"KEP/1696/X/2026", tglSkep:"02/10/2026", tmtSkep:"1/11/2026",
+        kesatuan:"POLDA METRO JAYA", kdKesatuan:"210001", kdKancab:"2000",
+        jnsKel:"1", tmpLahir:"Palembang", tglLahir:"15/05/1993",
+        alamat:"Jl. Cendrawasih No. 138", kelurahan:"Pasar Minggu", kecamatan:"Pasar Minggu",
+        kota:"Jakarta Selatan", propinsi:"DKI Jakarta",
+        noHp:"081326463237", email:"joko.setiawan93@mail.com", nik:"3174051505936364", npwp:"32.140.829.9-952.000",
+        berkas:[
+          { label:"KTP", file:"ktp-joko.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-joko.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-joko.pdf" }
+        ] },
+      { nrp:"26047488", nama:"Tari Eka", suamiIstri:"Tn. Komang Siregar", sts:"1", unor:"4", angkatan:"4",
+        pangkat:"IPDA", kdPangkat:"4771", noSkep:"KEP/1696/X/2026", tglSkep:"02/10/2026", tmtSkep:"1/11/2026",
+        kesatuan:"POLDA METRO JAYA", kdKesatuan:"210001", kdKancab:"2000",
+        jnsKel:"2", tmpLahir:"Madiun", tglLahir:"11/04/2000",
+        alamat:"Jl. Sudirman No. 22", kelurahan:"Tebet Barat", kecamatan:"Tebet",
+        kota:"Jakarta Selatan", propinsi:"DKI Jakarta",
+        noHp:"085227185038", email:"tari.eka00@yahoo.co.id", nik:"3174065104004982", npwp:"3174065104004982",
+        berkas:[
+          { label:"KTP", file:"ktp-tari.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-tari.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-tari.pdf" }
+        ] },
+      { nrp:"26057404", nama:"Dani Hartono", suamiIstri:"Ny. Bella Sihombing", sts:"1", unor:"4", angkatan:"4",
+        pangkat:"IPTU", kdPangkat:"4772", noSkep:"KEP/1696/X/2026", tglSkep:"02/10/2026", tmtSkep:"1/11/2026",
+        kesatuan:"POLDA METRO JAYA", kdKesatuan:"210001", kdKancab:"2000",
+        jnsKel:"1", tmpLahir:"Pontianak", tglLahir:"10/05/1995",
+        alamat:"Jl. Pemuda No. 36", kelurahan:"Cilandak Barat", kecamatan:"Cilandak",
+        kota:"Jakarta Selatan", propinsi:"DKI Jakarta",
+        noHp:"081519906777", email:"dani.hartono95@gmail.com", nik:"3174041005951975", npwp:"04.467.514.8-822.000",
+        berkas:[
+          { label:"KTP", file:"ktp-dani.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-dani.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-dani.pdf" }
+        ] },
+      { nrp:"26126177", nama:"Hendra Supriyadi", suamiIstri:"Ny. Laila Maryani", sts:"1", unor:"4", angkatan:"4",
+        pangkat:"IPTU", kdPangkat:"4772", noSkep:"KEP/1696/X/2026", tglSkep:"02/10/2026", tmtSkep:"1/11/2026",
+        kesatuan:"POLDA METRO JAYA", kdKesatuan:"210001", kdKancab:"2000",
+        jnsKel:"1", tmpLahir:"Medan", tglLahir:"03/12/2001",
+        alamat:"Jl. Ahmad Yani No. 114", kelurahan:"Senayan", kecamatan:"Kebayoran Baru",
+        kota:"Jakarta Selatan", propinsi:"DKI Jakarta",
+        noHp:"081756071682", email:"hendra.supriyadi01@mail.com", nik:"3174020312015041", npwp:"75.204.390.0-390.000",
+        berkas:[
+          { label:"KTP", file:"ktp-hendra.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-hendra.pdf" },
+          { label:"Surat Pengantar", file:null }
+        ] },
+      { nrp:"26058532", nama:"Iqbal Putra Purwanto", suamiIstri:"Ny. Shinta Wulandari", sts:"1", unor:"4", angkatan:"4",
+        pangkat:"AKP", kdPangkat:"4773", noSkep:"KEP/1696/X/2026", tglSkep:"02/10/2026", tmtSkep:"1/11/2026",
+        kesatuan:"POLDA METRO JAYA", kdKesatuan:"210001", kdKancab:"2000",
+        jnsKel:"1", tmpLahir:"Malang", tglLahir:"06/05/1993",
+        alamat:"Jl. Dahlia No. 57", kelurahan:"Pondok Pinang", kecamatan:"Kebayoran Lama",
+        kota:"Jakarta Selatan", propinsi:"DKI Jakarta",
+        noHp:"081983368016", email:"iqbal.purwanto93@yahoo.co.id", nik:"3174070605932443", npwp:"14.346.482.6-228.000",
+        berkas:[
+          { label:"KTP", file:"ktp-iqbal.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-iqbal.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-iqbal.pdf" }
+        ] }
+    ]
+  },
+  {
+    id: 11,
+    tglPengajuan: "28 September 2026",
+    kesatuanPengaju: "Kodam V/Brawijaya",
+    nomorBatch: "B-KOLEKTIF/2026/09280011",
+    nomorAgenda: "B/266/IX/2026/0033/wirata.atmaja",
+    status: "Tertunda",
+    catatanApproval: "",
+    dataPengajuan: {
+      jenis:"Kolektif", nomorSurat:"B/266/IX/2026",
+      instansi:"Kodam V/Brawijaya", tglSurat:"25 September 2026"
+    },
+    peserta: [
+      { nrp:"26129738", nama:"Deni Firmansyah", suamiIstri:"Ny. Bella Hutagalung", sts:"1", unor:"1", angkatan:"1",
+        pangkat:"KAPTEN", kdPangkat:"1773", noSkep:"KEP/2323/IX/2026", tglSkep:"25/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"KODAM V/BRAWIJAYA", kdKesatuan:"111005", kdKancab:"7000",
+        jnsKel:"1", tmpLahir:"Kediri", tglLahir:"23/12/1997",
+        alamat:"Jl. Mawar No. 84", kelurahan:"Gubeng", kecamatan:"Gubeng",
+        kota:"Kota Surabaya", propinsi:"Jawa Timur",
+        noHp:"081705794359", email:"deni.firmansyah97@gmail.com", nik:"3578022312973285", npwp:"13.024.850.5-150.000",
+        berkas:[
+          { label:"KTP", file:"ktp-deni.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-deni.pdf" },
+          { label:"Surat Pengantar", file:null }
+        ] },
+      { nrp:"26102921", nama:"Citra Panjaitan", suamiIstri:"Tn. Iqbal Sutrisno", sts:"1", unor:"1", angkatan:"1",
+        pangkat:"LETDA", kdPangkat:"1771", noSkep:"KEP/2323/IX/2026", tglSkep:"25/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"KODAM V/BRAWIJAYA", kdKesatuan:"111005", kdKancab:"7000",
+        jnsKel:"2", tmpLahir:"Medan", tglLahir:"13/10/1997",
+        alamat:"Jl. Kartini No. 112", kelurahan:"Gayungan", kecamatan:"Gayungan",
+        kota:"Kota Surabaya", propinsi:"Jawa Timur",
+        noHp:"081514633846", email:"citra.panjaitan97@mail.com", nik:"3578065310975952", npwp:"94.087.700.1-544.000",
+        berkas:[
+          { label:"KTP", file:"ktp-citra.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-citra.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-citra.pdf" }
+        ] },
+      { nrp:"26055287", nama:"Putri Ratna Wulandari", suamiIstri:"Tn. Surya Kurniawan", sts:"1", unor:"1", angkatan:"1",
+        pangkat:"LETTU", kdPangkat:"1772", noSkep:"KEP/2323/IX/2026", tglSkep:"25/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"KODAM V/BRAWIJAYA", kdKesatuan:"111005", kdKancab:"7000",
+        jnsKel:"2", tmpLahir:"Malang", tglLahir:"02/05/1995",
+        alamat:"Jl. Flamboyan No. 92", kelurahan:"Keputran", kecamatan:"Tegalsari",
+        kota:"Kota Surabaya", propinsi:"Jawa Timur",
+        noHp:"089762390138", email:"putri.wulandari95@gmail.com", nik:"3578054205959806", npwp:"20.458.024.7-751.000",
+        berkas:[
+          { label:"KTP", file:"ktp-putri.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-putri.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-putri.pdf" }
+        ] },
+      { nrp:"26013760", nama:"Yoga Putra Alamsyah", suamiIstri:"Ny. Wulan Panjaitan", sts:"1", unor:"1", angkatan:"1",
+        pangkat:"KAPTEN", kdPangkat:"1773", noSkep:"KEP/2323/IX/2026", tglSkep:"25/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"KODAM V/BRAWIJAYA", kdKesatuan:"111005", kdKancab:"7000",
+        jnsKel:"1", tmpLahir:"Surabaya", tglLahir:"10/01/1998",
+        alamat:"Jl. Cendrawasih No. 73", kelurahan:"Keputran", kecamatan:"Tegalsari",
+        kota:"Kota Surabaya", propinsi:"Jawa Timur",
+        noHp:"08181663246", email:"yoga.alamsyah98@mail.com", nik:"3578051001980367", npwp:"54.131.229.4-867.000",
+        berkas:[
+          { label:"KTP", file:"ktp-yoga.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-yoga.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-yoga.pdf" }
+        ] },
+      { nrp:"26023560", nama:"Fikri Aji Ramadhan", suamiIstri:"Ny. Eka Fitriani", sts:"1", unor:"1", angkatan:"1",
+        pangkat:"MAYOR", kdPangkat:"1881", noSkep:"KEP/2323/IX/2026", tglSkep:"25/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"KODAM V/BRAWIJAYA", kdKesatuan:"111005", kdKancab:"7000",
+        jnsKel:"1", tmpLahir:"Bekasi", tglLahir:"20/02/1989",
+        alamat:"Jl. Kamboja No. 73", kelurahan:"Tenggilis Mejoyo", kecamatan:"Tenggilis Mejoyo",
+        kota:"Kota Surabaya", propinsi:"Jawa Timur",
+        noHp:"08211311947", email:"fikri.ramadhan89@gmail.com", nik:"3578072002893498", npwp:"3578072002893498",
+        berkas:[
+          { label:"KTP", file:"ktp-fikri.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-fikri.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-fikri.pdf" }
+        ] },
+      { nrp:"26032795", nama:"Kadek Budi Permana", suamiIstri:"Ny. Larasati Siregar", sts:"1", unor:"1", angkatan:"1",
+        pangkat:"LETDA", kdPangkat:"1771", noSkep:"KEP/2323/IX/2026", tglSkep:"25/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"KODAM V/BRAWIJAYA", kdKesatuan:"111005", kdKancab:"7000",
+        jnsKel:"1", tmpLahir:"Bandung", tglLahir:"17/03/2004",
+        alamat:"Jl. Mawar No. 158", kelurahan:"Wonokromo", kecamatan:"Wonokromo",
+        kota:"Kota Surabaya", propinsi:"Jawa Timur",
+        noHp:"081330816410", email:"kadek.permana04@gmail.com", nik:"3578031703048857", npwp:"86.346.906.4-299.000",
+        berkas:[
+          { label:"KTP", file:"ktp-kadek.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-kadek.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-kadek.pdf" }
+        ] }
+    ]
+  },
+  {
+    id: 10,
+    tglPengajuan: "21 September 2026",
+    kesatuanPengaju: "Mabes TNI AU",
+    nomorBatch: "B-KOLEKTIF/2026/09210010",
+    nomorAgenda: "B/258/IX/2026/0032/wirata.atmaja",
+    status: "Tertunda",
+    catatanApproval: "",
+    dataPengajuan: {
+      jenis:"Kolektif", nomorSurat:"B/258/IX/2026",
+      instansi:"Mabes TNI AU", tglSurat:"18 September 2026"
+    },
+    peserta: [
+      { nrp:"200111142026101869", nama:"Satria Nur Susanto", suamiIstri:"Ny. Sri Handayani", sts:"2", unor:"3", angkatan:"3",
+        pangkat:"GOL.II/B", kdPangkat:"7312", noSkep:"KEP/1656/IX/2026", tglSkep:"18/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"MABES TNI AU", kdKesatuan:"130001", kdKancab:"1000",
+        jnsKel:"1", tmpLahir:"Garut", tglLahir:"14/11/2001",
+        alamat:"Jl. Imam Bonjol No. 63", kelurahan:"Pulo Gadung", kecamatan:"Pulo Gadung",
+        kota:"Jakarta Timur", propinsi:"DKI Jakarta",
+        noHp:"082314332966", email:"satria.susanto01@gmail.com", nik:"3175061411014108", npwp:"30.221.763.1-062.000",
+        berkas:[
+          { label:"KTP", file:"ktp-satria.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-satria.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-satria.pdf" }
+        ] },
+      { nrp:"199604212026102950", nama:"Elsa Utami", suamiIstri:"Tn. Wawan Sitorus", sts:"2", unor:"3", angkatan:"3",
+        pangkat:"GOL.III/A", kdPangkat:"7321", noSkep:"KEP/1656/IX/2026", tglSkep:"18/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"MABES TNI AU", kdKesatuan:"130001", kdKancab:"1000",
+        jnsKel:"2", tmpLahir:"Denpasar", tglLahir:"21/04/1996",
+        alamat:"Jl. Sam Ratulangi No. 119", kelurahan:"Cawang", kecamatan:"Kramat Jati",
+        kota:"Jakarta Timur", propinsi:"DKI Jakarta",
+        noHp:"081983830109", email:"elsa.utami96@mail.com", nik:"3175026104966457", npwp:"30.221.699.4-955.000",
+        berkas:[
+          { label:"KTP", file:"ktp-elsa.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-elsa.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-elsa.pdf" }
+        ] },
+      { nrp:"200201302026101470", nama:"Surya Maulana", suamiIstri:"Ny. Fitri Utami", sts:"2", unor:"3", angkatan:"3",
+        pangkat:"GOL.II/B", kdPangkat:"7312", noSkep:"KEP/1656/IX/2026", tglSkep:"18/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"MABES TNI AU", kdKesatuan:"130001", kdKancab:"1000",
+        jnsKel:"1", tmpLahir:"Madiun", tglLahir:"30/01/2002",
+        alamat:"Jl. Kamboja No. 84", kelurahan:"Jatinegara", kecamatan:"Jatinegara",
+        kota:"Jakarta Timur", propinsi:"DKI Jakarta",
+        noHp:"085245938180", email:"surya.maulana02@gmail.com", nik:"3175053001023983", npwp:"40.844.209.2-970.000",
+        berkas:[
+          { label:"KTP", file:"ktp-surya.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-surya.pdf" },
+          { label:"Surat Pengantar", file:null }
+        ] },
+      { nrp:"199709212026101707", nama:"Fauzi Siregar", suamiIstri:"Ny. Salsabila Oktaviani", sts:"2", unor:"3", angkatan:"3",
+        pangkat:"GOL.III/A", kdPangkat:"7321", noSkep:"KEP/1656/IX/2026", tglSkep:"18/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"MABES TNI AU", kdKesatuan:"130001", kdKancab:"1000",
+        jnsKel:"1", tmpLahir:"Pontianak", tglLahir:"21/09/1997",
+        alamat:"Jl. Gatot Subroto No. 51", kelurahan:"Pondok Bambu", kecamatan:"Duren Sawit",
+        kota:"Jakarta Timur", propinsi:"DKI Jakarta",
+        noHp:"085722957398", email:"fauzi.siregar97@mail.com", nik:"3175042109971253", npwp:"3175042109971253",
+        berkas:[
+          { label:"KTP", file:"ktp-fauzi.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-fauzi.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-fauzi.pdf" }
+        ] },
+      { nrp:"199110272026101510", nama:"Imam Wibowo", suamiIstri:"Ny. Kartika Siagian", sts:"2", unor:"3", angkatan:"3",
+        pangkat:"GOL.III/B", kdPangkat:"7322", noSkep:"KEP/1656/IX/2026", tglSkep:"18/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"MABES TNI AU", kdKesatuan:"130001", kdKancab:"1000",
+        jnsKel:"1", tmpLahir:"Magelang", tglLahir:"27/10/1991",
+        alamat:"Jl. Sam Ratulangi No. 119", kelurahan:"Kalisari", kecamatan:"Pasar Rebo",
+        kota:"Jakarta Timur", propinsi:"DKI Jakarta",
+        noHp:"089531569501", email:"imam.wibowo91@mail.com", nik:"3175072710916523", npwp:"00.317.455.7-922.000",
+        berkas:[
+          { label:"KTP", file:"ktp-imam.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-imam.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-imam.pdf" }
+        ] }
+    ]
+  },
+  {
+    id: 9,
+    tglPengajuan: "17 September 2026",
+    kesatuanPengaju: "Polda Jawa Tengah",
+    nomorBatch: "B-KOLEKTIF/2026/09170009",
+    nomorAgenda: "B/255/IX/2026/0031/wirata.atmaja",
+    status: "Ditolak Verifikasi",
+    catatanApproval: "",
+    catatanVerifikasi: "Surat Pengangkatan Pertama sebagian peserta belum lengkap, mohon dilengkapi lalu ajukan ulang.",
+    dataPengajuan: {
+      jenis:"Kolektif", nomorSurat:"B/255/IX/2026",
+      instansi:"Polda Jawa Tengah", tglSurat:"16 September 2026"
+    },
+    peserta: [
+      { nrp:"26081473", nama:"Desi Ratna", suamiIstri:"Tn. Eko Alamsyah", sts:"1", unor:"4", angkatan:"4",
+        pangkat:"ABRIP", kdPangkat:"4556", noSkep:"KEP/2530/IX/2026", tglSkep:"16/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"POLDA JAWA TENGAH", kdKesatuan:"210004", kdKancab:"1100",
+        jnsKel:"2", tmpLahir:"Garut", tglLahir:"17/08/2002",
+        alamat:"Jl. Hayam Wuruk No. 139", kelurahan:"Tembalang", kecamatan:"Tembalang",
+        kota:"Kota Semarang", propinsi:"Jawa Tengah",
+        noHp:"081825718567", email:"desi.ratna02@mail.com", nik:"3374015708024648", npwp:"92.385.758.9-414.000",
+        berkas:[
+          { label:"KTP", file:"ktp-desi.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:null },
+          { label:"Surat Pengantar", file:"surat-pengantar-desi.pdf" }
+        ] },
+      { nrp:"26111427", nama:"Larasati Indah Utami", suamiIstri:"Tn. Febri Purnomo", sts:"1", unor:"4", angkatan:"4",
+        pangkat:"ABRIPDA", kdPangkat:"4554", noSkep:"KEP/2530/IX/2026", tglSkep:"16/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"POLDA JAWA TENGAH", kdKesatuan:"210004", kdKancab:"1100",
+        jnsKel:"2", tmpLahir:"Yogyakarta", tglLahir:"06/11/1999",
+        alamat:"Jl. Imam Bonjol No. 54", kelurahan:"Candisari", kecamatan:"Candisari",
+        kota:"Kota Semarang", propinsi:"Jawa Tengah",
+        noHp:"081890907098", email:"larasati.utami99@gmail.com", nik:"3374034611997015", npwp:"3374034611997015",
+        berkas:[
+          { label:"KTP", file:"ktp-larasati.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-larasati.pdf" },
+          { label:"Surat Pengantar", file:null }
+        ] },
+      { nrp:"26125915", nama:"Ahmad Simanjuntak", suamiIstri:"Ny. Ayu Panjaitan", sts:"1", unor:"4", angkatan:"4",
+        pangkat:"BHARADA", kdPangkat:"4551", noSkep:"KEP/2530/IX/2026", tglSkep:"16/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"POLDA JAWA TENGAH", kdKesatuan:"210004", kdKancab:"1100",
+        jnsKel:"1", tmpLahir:"Yogyakarta", tglLahir:"12/12/2002",
+        alamat:"Jl. Slamet Riyadi No. 159", kelurahan:"Tembalang", kecamatan:"Tembalang",
+        kota:"Kota Semarang", propinsi:"Jawa Tengah",
+        noHp:"089826055668", email:"ahmad.simanjuntak02@gmail.com", nik:"3374011212025087", npwp:"75.939.844.5-119.000",
+        berkas:[
+          { label:"KTP", file:"ktp-ahmad.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:null },
+          { label:"Surat Pengantar", file:"surat-pengantar-ahmad.pdf" }
+        ] },
+      { nrp:"26041566", nama:"Dani Ardiansyah", suamiIstri:"Ny. Mega Lestari", sts:"1", unor:"4", angkatan:"4",
+        pangkat:"BHARAKA", kdPangkat:"4553", noSkep:"KEP/2530/IX/2026", tglSkep:"16/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"POLDA JAWA TENGAH", kdKesatuan:"210004", kdKancab:"1100",
+        jnsKel:"1", tmpLahir:"Banyuwangi", tglLahir:"05/04/2000",
+        alamat:"Jl. Kamboja No. 58", kelurahan:"Banyumanik", kecamatan:"Banyumanik",
+        kota:"Kota Semarang", propinsi:"Jawa Tengah",
+        noHp:"081694456286", email:"dani.ardiansyah00@gmail.com", nik:"3374020504005609", npwp:"3374020504005609",
+        berkas:[
+          { label:"KTP", file:"ktp-dani.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:null },
+          { label:"Surat Pengantar", file:"surat-pengantar-dani.pdf" }
+        ] },
+      { nrp:"26057979", nama:"Fauzi Setiawan", suamiIstri:"Ny. Wulan Fitriani", sts:"1", unor:"4", angkatan:"4",
+        pangkat:"BHARAKA", kdPangkat:"4553", noSkep:"KEP/2530/IX/2026", tglSkep:"16/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"POLDA JAWA TENGAH", kdKesatuan:"210004", kdKancab:"1100",
+        jnsKel:"1", tmpLahir:"Pontianak", tglLahir:"02/05/2004",
+        alamat:"Jl. Cut Nyak Dien No. 23", kelurahan:"Sampangan", kecamatan:"Gajahmungkur",
+        kota:"Kota Semarang", propinsi:"Jawa Tengah",
+        noHp:"082246586061", email:"fauzi.setiawan04@gmail.com", nik:"3374050205047242", npwp:"3374050205047242",
+        berkas:[
+          { label:"KTP", file:"ktp-fauzi.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-fauzi.pdf" },
+          { label:"Surat Pengantar", file:null }
+        ] },
+      { nrp:"26116590", nama:"Bagus Heri Hasibuan", suamiIstri:"Ny. Novita Fitriani", sts:"1", unor:"4", angkatan:"4",
+        pangkat:"BHARATU", kdPangkat:"4552", noSkep:"KEP/2530/IX/2026", tglSkep:"16/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"POLDA JAWA TENGAH", kdKesatuan:"210004", kdKancab:"1100",
+        jnsKel:"1", tmpLahir:"Manado", tglLahir:"02/11/2004",
+        alamat:"Jl. Melati No. 111", kelurahan:"Candisari", kecamatan:"Candisari",
+        kota:"Kota Semarang", propinsi:"Jawa Tengah",
+        noHp:"085673640746", email:"bagus.hasibuan04@gmail.com", nik:"3374030211047973", npwp:"93.316.408.4-095.000",
+        berkas:[
+          { label:"KTP", file:"ktp-bagus.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-bagus.pdf" },
+          { label:"Surat Pengantar", file:null }
+        ] }
+    ]
+  },
+  {
+    id: 8,
+    tglPengajuan: "14 September 2026",
+    kesatuanPengaju: "Kodam IX/Udayana",
+    nomorBatch: "B-KOLEKTIF/2026/09140008",
+    nomorAgenda: "B/250/IX/2026/0030/wirata.atmaja",
+    status: "Ditolak",
+    catatanApproval: "Nomor SKEP pada sebagian peserta tidak sesuai dengan surat pengantar, mohon diajukan ulang.",
+    tglApproval: "18 September 2026",
+    dataPengajuan: {
+      jenis:"Kolektif", nomorSurat:"B/250/IX/2026",
+      instansi:"Kodam IX/Udayana", tglSurat:"11 September 2026"
+    },
+    peserta: [
+      { nrp:"26087117", nama:"Wayan Adi Widodo", suamiIstri:"Ny. Anggun Utami", sts:"1", unor:"1", angkatan:"1",
+        pangkat:"SERDA", kdPangkat:"1551", noSkep:"KEP/2146/IX/2026", tglSkep:"11/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"KODAM IX/UDAYANA", kdKesatuan:"111009", kdKancab:"1400",
+        jnsKel:"1", tmpLahir:"Bandung", tglLahir:"10/08/1999",
+        alamat:"Jl. Mawar No. 164", kelurahan:"Renon", kecamatan:"Denpasar Selatan",
+        kota:"Kota Denpasar", propinsi:"Bali",
+        noHp:"082359743429", email:"wayan.widodo99@gmail.com", nik:"5171021008993886", npwp:"01.331.565.6-161.000",
+        berkas:[
+          { label:"KTP", file:"ktp-wayan.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-wayan.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-wayan.pdf" }
+        ] },
+      { nrp:"26093654", nama:"Putu Adi Sitorus", suamiIstri:"Ny. Melati Kusumawardani", sts:"1", unor:"1", angkatan:"1",
+        pangkat:"SERTU", kdPangkat:"1552", noSkep:"KEP/2146/IX/2026", tglSkep:"11/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"KODAM IX/UDAYANA", kdKesatuan:"111009", kdKancab:"1400",
+        jnsKel:"1", tmpLahir:"Jakarta", tglLahir:"05/09/2000",
+        alamat:"Jl. Cendrawasih No. 108", kelurahan:"Sumerta Kelod", kecamatan:"Denpasar Timur",
+        kota:"Kota Denpasar", propinsi:"Bali",
+        noHp:"087881167784", email:"putu.sitorus00@mail.com", nik:"5171060509001065", npwp:"55.243.896.5-942.000",
+        berkas:[
+          { label:"KTP", file:"ktp-putu.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-putu.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-putu.pdf" }
+        ] },
+      { nrp:"26025306", nama:"Laila Ayu Rahayu", suamiIstri:"Tn. Farhan Napitupulu", sts:"1", unor:"1", angkatan:"1",
+        pangkat:"SERTU", kdPangkat:"1552", noSkep:"KEP/2146/IX/2026", tglSkep:"11/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"KODAM IX/UDAYANA", kdKesatuan:"111009", kdKancab:"1400",
+        jnsKel:"2", tmpLahir:"Makassar", tglLahir:"26/02/1998",
+        alamat:"Jl. Pemuda No. 49", kelurahan:"Renon", kecamatan:"Denpasar Selatan",
+        kota:"Kota Denpasar", propinsi:"Bali",
+        noHp:"081121330634", email:"laila.rahayu98@gmail.com", nik:"5171026602985626", npwp:"87.030.740.1-351.000",
+        berkas:[
+          { label:"KTP", file:"ktp-laila.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-laila.pdf" },
+          { label:"Surat Pengantar", file:null }
+        ] },
+      { nrp:"26116924", nama:"Bagas Simanjuntak", suamiIstri:"Ny. Wulan Setyowati", sts:"1", unor:"1", angkatan:"1",
+        pangkat:"SERTU", kdPangkat:"1552", noSkep:"KEP/2146/IX/2026", tglSkep:"11/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"KODAM IX/UDAYANA", kdKesatuan:"111009", kdKancab:"1400",
+        jnsKel:"1", tmpLahir:"Tangerang", tglLahir:"06/11/2002",
+        alamat:"Jl. Hayam Wuruk No. 65", kelurahan:"Renon", kecamatan:"Denpasar Selatan",
+        kota:"Kota Denpasar", propinsi:"Bali",
+        noHp:"081646141076", email:"bagas.simanjuntak02@yahoo.co.id", nik:"5171020611028857", npwp:"26.142.014.6-823.000",
+        berkas:[
+          { label:"KTP", file:"ktp-bagas.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-bagas.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-bagas.pdf" }
+        ] }
+    ]
+  },
+  {
+    id: 7,
+    tglPengajuan: "10 September 2026",
+    kesatuanPengaju: "Lanud Halim Perdanakusuma",
+    nomorBatch: "B-KOLEKTIF/2026/09100007",
+    nomorAgenda: "B/245/IX/2026/0029/wirata.atmaja",
+    status: "Diterima",
+    catatanApproval: "Nomor SKEP dan tanggal lahir peserta sudah sesuai, disetujui.",
+    tglApproval: "15 September 2026",
+    dataPengajuan: {
+      jenis:"Kolektif", nomorSurat:"B/245/IX/2026",
+      instansi:"Lanud Halim Perdanakusuma", tglSurat:"9 September 2026"
+    },
+    peserta: [
+      { nrp:"26057413", nama:"Salsabila Suardana", suamiIstri:"Tn. Joko Simanjuntak", sts:"1", unor:"3", angkatan:"3",
+        pangkat:"LETTU", kdPangkat:"3772", noSkep:"KEP/2091/IX/2026", tglSkep:"09/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"LANUD HALIM PERDANAKUSUMA", kdKesatuan:"131001", kdKancab:"1000",
+        jnsKel:"2", tmpLahir:"Malang", tglLahir:"20/05/1997",
+        alamat:"Jl. Pemuda No. 42", kelurahan:"Pondok Bambu", kecamatan:"Duren Sawit",
+        kota:"Jakarta Timur", propinsi:"DKI Jakarta",
+        noHp:"089849349557", email:"salsabila.suardana97@mail.com", nik:"3175046005973204", npwp:"3175046005973204",
+        berkas:[
+          { label:"KTP", file:"ktp-salsabila.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-salsabila.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-salsabila.pdf" }
+        ] },
+      { nrp:"26019880", nama:"Dedi Nur Kurniawan", suamiIstri:"Ny. Yulia Rahayu", sts:"1", unor:"3", angkatan:"3",
+        pangkat:"MAYOR", kdPangkat:"3881", noSkep:"KEP/2091/IX/2026", tglSkep:"09/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"LANUD HALIM PERDANAKUSUMA", kdKesatuan:"131001", kdKancab:"1000",
+        jnsKel:"1", tmpLahir:"Cirebon", tglLahir:"13/01/1994",
+        alamat:"Jl. Sudirman No. 122", kelurahan:"Jatinegara", kecamatan:"Jatinegara",
+        kota:"Jakarta Timur", propinsi:"DKI Jakarta",
+        noHp:"085296216002", email:"dedi.kurniawan94@gmail.com", nik:"3175051301940607", npwp:"81.402.851.1-314.000",
+        berkas:[
+          { label:"KTP", file:"ktp-dedi.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-dedi.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-dedi.pdf" }
+        ] },
+      { nrp:"26057484", nama:"Irfan Gunawan", suamiIstri:"Ny. Endah Purnamasari", sts:"1", unor:"3", angkatan:"3",
+        pangkat:"LETDA", kdPangkat:"3771", noSkep:"KEP/2091/IX/2026", tglSkep:"09/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"LANUD HALIM PERDANAKUSUMA", kdKesatuan:"131001", kdKancab:"1000",
+        jnsKel:"1", tmpLahir:"Surabaya", tglLahir:"04/05/2002",
+        alamat:"Jl. Kaliurang No. 93", kelurahan:"Duren Sawit", kecamatan:"Duren Sawit",
+        kota:"Jakarta Timur", propinsi:"DKI Jakarta",
+        noHp:"082351491650", email:"irfan.gunawan02@gmail.com", nik:"3175030405020340", npwp:"68.265.745.5-757.000",
+        berkas:[
+          { label:"KTP", file:"ktp-irfan.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-irfan.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-irfan.pdf" }
+        ] },
+      { nrp:"26079484", nama:"Melati Safitri", suamiIstri:"Tn. Andi Suherman", sts:"1", unor:"3", angkatan:"3",
+        pangkat:"KAPTEN", kdPangkat:"3773", noSkep:"KEP/2091/IX/2026", tglSkep:"09/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"LANUD HALIM PERDANAKUSUMA", kdKesatuan:"131001", kdKancab:"1000",
+        jnsKel:"2", tmpLahir:"Denpasar", tglLahir:"10/07/1998",
+        alamat:"Jl. Kartini No. 89", kelurahan:"Cibubur", kecamatan:"Ciracas",
+        kota:"Jakarta Timur", propinsi:"DKI Jakarta",
+        noHp:"082372816691", email:"melati.safitri98@mail.com", nik:"3175015007984460", npwp:"61.161.500.3-065.000",
+        berkas:[
+          { label:"KTP", file:"ktp-melati.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-melati.pdf" },
+          { label:"Surat Pengantar", file:null }
+        ] },
+      { nrp:"26069783", nama:"Kevin Gunawan", suamiIstri:"Ny. Ratna Siagian", sts:"1", unor:"3", angkatan:"3",
+        pangkat:"LETKOL", kdPangkat:"3882", noSkep:"KEP/2091/IX/2026", tglSkep:"09/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"LANUD HALIM PERDANAKUSUMA", kdKesatuan:"131001", kdKancab:"1000",
+        jnsKel:"1", tmpLahir:"Jakarta", tglLahir:"23/06/1982",
+        alamat:"Jl. Imam Bonjol No. 104", kelurahan:"Cibubur", kecamatan:"Ciracas",
+        kota:"Jakarta Timur", propinsi:"DKI Jakarta",
+        noHp:"081113073261", email:"kevin.gunawan82@gmail.com", nik:"3175012306826406", npwp:"3175012306826406",
+        berkas:[
+          { label:"KTP", file:"ktp-kevin.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-kevin.pdf" },
+          { label:"Surat Pengantar", file:null }
+        ] }
+    ]
+  },
+  {
+    id: 6,
+    tglPengajuan: "8 September 2026",
+    kesatuanPengaju: "Kodam III/Siliwangi",
+    nomorBatch: "B-KOLEKTIF/2026/09080006",
+    nomorAgenda: "B/241/IX/2026/0028/wirata.atmaja",
+    status: "Diterima",
+    catatanApproval: "Nomor SKEP dan tanggal lahir peserta sudah sesuai, disetujui.",
+    tglApproval: "11 September 2026",
+    dataPengajuan: {
+      jenis:"Kolektif", nomorSurat:"B/241/IX/2026",
+      instansi:"Kodam III/Siliwangi", tglSurat:"7 September 2026"
+    },
+    peserta: [
+      { nrp:"26102365", nama:"Iqbal Tri Nugroho", suamiIstri:"Ny. Sri Damayanti", sts:"1", unor:"1", angkatan:"1",
+        pangkat:"SERKA", kdPangkat:"1553", noSkep:"KEP/2221/IX/2026", tglSkep:"07/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"KODAM III/SILIWANGI", kdKesatuan:"111003", kdKancab:"5000",
+        jnsKel:"1", tmpLahir:"Padang", tglLahir:"04/10/1998",
+        alamat:"Jl. Ahmad Yani No. 121", kelurahan:"Sukaluyu", kecamatan:"Cibeunying Kaler",
+        kota:"Kota Bandung", propinsi:"Jawa Barat",
+        noHp:"081440016574", email:"iqbal.nugroho98@mail.com", nik:"3273020410982311", npwp:"79.093.589.5-502.000",
+        berkas:[
+          { label:"KTP", file:"ktp-iqbal.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-iqbal.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-iqbal.pdf" }
+        ] },
+      { nrp:"26018273", nama:"Ningsih Maryani", suamiIstri:"Tn. Yudi Kusuma", sts:"1", unor:"1", angkatan:"1",
+        pangkat:"SERTU", kdPangkat:"1552", noSkep:"KEP/2221/IX/2026", tglSkep:"07/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"KODAM III/SILIWANGI", kdKesatuan:"111003", kdKancab:"5000",
+        jnsKel:"2", tmpLahir:"Tangerang", tglLahir:"23/01/1996",
+        alamat:"Jl. Pahlawan No. 135", kelurahan:"Antapani Kidul", kecamatan:"Antapani",
+        kota:"Kota Bandung", propinsi:"Jawa Barat",
+        noHp:"081516986964", email:"ningsih.maryani96@outlook.com", nik:"3273056301969698", npwp:"88.208.742.8-705.000",
+        berkas:[
+          { label:"KTP", file:"ktp-ningsih.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-ningsih.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-ningsih.pdf" }
+        ] },
+      { nrp:"26052382", nama:"Lukman Heri Napitupulu", suamiIstri:"Ny. Larasati Suardana", sts:"1", unor:"1", angkatan:"1",
+        pangkat:"SERDA", kdPangkat:"1551", noSkep:"KEP/2221/IX/2026", tglSkep:"07/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"KODAM III/SILIWANGI", kdKesatuan:"111003", kdKancab:"5000",
+        jnsKel:"1", tmpLahir:"Malang", tglLahir:"22/05/2003",
+        alamat:"Jl. Hayam Wuruk No. 153", kelurahan:"Dago", kecamatan:"Coblong",
+        kota:"Kota Bandung", propinsi:"Jawa Barat",
+        noHp:"081175779089", email:"lukman.napitupulu03@mail.com", nik:"3273032205036706", npwp:"67.550.178.1-299.000",
+        berkas:[
+          { label:"KTP", file:"ktp-lukman.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-lukman.pdf" },
+          { label:"Surat Pengantar", file:null }
+        ] },
+      { nrp:"26116302", nama:"Bambang Tri Utama", suamiIstri:"Ny. Sinta Puspitasari", sts:"1", unor:"1", angkatan:"1",
+        pangkat:"SERDA", kdPangkat:"1551", noSkep:"KEP/2221/IX/2026", tglSkep:"07/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"KODAM III/SILIWANGI", kdKesatuan:"111003", kdKancab:"5000",
+        jnsKel:"1", tmpLahir:"Yogyakarta", tglLahir:"19/11/2005",
+        alamat:"Jl. Kartini No. 23", kelurahan:"Lebak Gede", kecamatan:"Coblong",
+        kota:"Kota Bandung", propinsi:"Jawa Barat",
+        noHp:"085724640637", email:"bambang.utama05@mail.com", nik:"3273041911057511", npwp:"02.563.149.7-743.000",
+        berkas:[
+          { label:"KTP", file:"ktp-bambang.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-bambang.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-bambang.pdf" }
+        ] },
+      { nrp:"26034934", nama:"Dani Artana", suamiIstri:"Ny. Vira Safitri", sts:"1", unor:"1", angkatan:"1",
+        pangkat:"SERDA", kdPangkat:"1551", noSkep:"KEP/2221/IX/2026", tglSkep:"07/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"KODAM III/SILIWANGI", kdKesatuan:"111003", kdKancab:"5000",
+        jnsKel:"1", tmpLahir:"Surakarta", tglLahir:"19/03/2004",
+        alamat:"Jl. Gatot Subroto No. 109", kelurahan:"Lebak Gede", kecamatan:"Coblong",
+        kota:"Kota Bandung", propinsi:"Jawa Barat",
+        noHp:"081996171218", email:"dani.artana04@gmail.com", nik:"3273041903042854", npwp:"95.077.665.7-900.000",
+        berkas:[
+          { label:"KTP", file:"ktp-dani.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-dani.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-dani.pdf" }
+        ] },
+      { nrp:"26092188", nama:"Gilang Sitorus", suamiIstri:"Ny. Anisa Siregar", sts:"1", unor:"1", angkatan:"1",
+        pangkat:"SERTU", kdPangkat:"1552", noSkep:"KEP/2221/IX/2026", tglSkep:"07/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"KODAM III/SILIWANGI", kdKesatuan:"111003", kdKancab:"5000",
+        jnsKel:"1", tmpLahir:"Palembang", tglLahir:"07/09/1997",
+        alamat:"Jl. Sudirman No. 173", kelurahan:"Sukaluyu", kecamatan:"Cibeunying Kaler",
+        kota:"Kota Bandung", propinsi:"Jawa Barat",
+        noHp:"081757783773", email:"gilang.sitorus97@gmail.com", nik:"3273020709976879", npwp:"24.556.728.6-467.000",
+        berkas:[
+          { label:"KTP", file:"ktp-gilang.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-gilang.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-gilang.pdf" }
+        ] },
+      { nrp:"26079879", nama:"Bryan Maulana", suamiIstri:"Ny. Indah Nurhaliza", sts:"1", unor:"1", angkatan:"1",
+        pangkat:"PELDA", kdPangkat:"1555", noSkep:"KEP/2221/IX/2026", tglSkep:"07/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"KODAM III/SILIWANGI", kdKesatuan:"111003", kdKancab:"5000",
+        jnsKel:"1", tmpLahir:"Bandung", tglLahir:"18/07/1989",
+        alamat:"Jl. Teuku Umar No. 104", kelurahan:"Sukaluyu", kecamatan:"Cibeunying Kaler",
+        kota:"Kota Bandung", propinsi:"Jawa Barat",
+        noHp:"085760992426", email:"bryan.maulana89@yahoo.co.id", nik:"3273021807893638", npwp:"60.635.912.6-773.000",
+        berkas:[
+          { label:"KTP", file:"ktp-bryan.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-bryan.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-bryan.pdf" }
+        ] }
+    ]
+  },
+  {
+    id: 5,
+    tglPengajuan: "3 September 2026",
+    kesatuanPengaju: "Mabes TNI AL",
+    nomorBatch: "B-KOLEKTIF/2026/09030005",
+    nomorAgenda: "B/236/IX/2026/0027/wirata.atmaja",
+    status: "Diterima",
+    catatanApproval: "Berkas persyaratan lengkap, data peserta sesuai SKEP.",
+    tglApproval: "8 September 2026",
+    dataPengajuan: {
+      jenis:"Kolektif", nomorSurat:"B/236/IX/2026",
+      instansi:"Mabes TNI AL", tglSurat:"2 September 2026"
+    },
+    peserta: [
+      { nrp:"26014012", nama:"Bryan Susanto", suamiIstri:"Ny. Putri Saraswati", sts:"1", unor:"2", angkatan:"2",
+        pangkat:"KELASI DUA", kdPangkat:"2661", noSkep:"KEP/2306/IX/2026", tglSkep:"02/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"MABES TNI AL", kdKesatuan:"120001", kdKancab:"1000",
+        jnsKel:"1", tmpLahir:"Yogyakarta", tglLahir:"12/01/2008",
+        alamat:"Jl. Hasanuddin No. 133", kelurahan:"Pondok Bambu", kecamatan:"Duren Sawit",
+        kota:"Jakarta Timur", propinsi:"DKI Jakarta",
+        noHp:"089836217490", email:"bryan.susanto08@mail.com", nik:"3175041201088640", npwp:"77.787.828.4-049.000",
+        berkas:[
+          { label:"KTP", file:"ktp-bryan.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-bryan.pdf" },
+          { label:"Surat Pengantar", file:null }
+        ] },
+      { nrp:"26047238", nama:"Fikri Pratama", suamiIstri:"Ny. Citra Safitri", sts:"1", unor:"2", angkatan:"2",
+        pangkat:"LETTU", kdPangkat:"2772", noSkep:"KEP/2306/IX/2026", tglSkep:"02/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"MABES TNI AL", kdKesatuan:"120001", kdKancab:"1000",
+        jnsKel:"1", tmpLahir:"Malang", tglLahir:"04/04/2000",
+        alamat:"Jl. Cempaka No. 17", kelurahan:"Duren Sawit", kecamatan:"Duren Sawit",
+        kota:"Jakarta Timur", propinsi:"DKI Jakarta",
+        noHp:"081423185447", email:"fikri.pratama00@yahoo.co.id", nik:"3175030404003826", npwp:"48.520.965.8-656.000",
+        berkas:[
+          { label:"KTP", file:"ktp-fikri.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-fikri.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-fikri.pdf" }
+        ] },
+      { nrp:"26095120", nama:"Irfan Dwi Siregar", suamiIstri:"Ny. Sari Kusumawardani", sts:"1", unor:"2", angkatan:"2",
+        pangkat:"SERDA", kdPangkat:"2551", noSkep:"KEP/2306/IX/2026", tglSkep:"02/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"MABES TNI AL", kdKesatuan:"120001", kdKancab:"1000",
+        jnsKel:"1", tmpLahir:"Malang", tglLahir:"10/09/2001",
+        alamat:"Jl. Sudirman No. 106", kelurahan:"Duren Sawit", kecamatan:"Duren Sawit",
+        kota:"Jakarta Timur", propinsi:"DKI Jakarta",
+        noHp:"081945725669", email:"irfan.siregar01@gmail.com", nik:"3175031009014286", npwp:"08.552.735.1-598.000",
+        berkas:[
+          { label:"KTP", file:"ktp-irfan.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-irfan.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-irfan.pdf" }
+        ] },
+      { nrp:"26083261", nama:"Doni Sutrisno", suamiIstri:"Ny. Maya Hasibuan", sts:"1", unor:"2", angkatan:"2",
+        pangkat:"LETTU", kdPangkat:"2772", noSkep:"KEP/2306/IX/2026", tglSkep:"02/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"MABES TNI AL", kdKesatuan:"120001", kdKancab:"1000",
+        jnsKel:"1", tmpLahir:"Padang", tglLahir:"23/08/2001",
+        alamat:"Jl. Merdeka No. 98", kelurahan:"Pondok Bambu", kecamatan:"Duren Sawit",
+        kota:"Jakarta Timur", propinsi:"DKI Jakarta",
+        noHp:"082358667403", email:"doni.sutrisno01@gmail.com", nik:"3175042308013325", npwp:"22.614.251.3-999.000",
+        berkas:[
+          { label:"KTP", file:"ktp-doni.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-doni.pdf" },
+          { label:"Surat Pengantar", file:null }
+        ] },
+      { nrp:"26083767", nama:"Gita Putri Nasution", suamiIstri:"Tn. Haris Sitorus", sts:"1", unor:"2", angkatan:"2",
+        pangkat:"SERKA", kdPangkat:"2553", noSkep:"KEP/2306/IX/2026", tglSkep:"02/09/2026", tmtSkep:"1/10/2026",
+        kesatuan:"MABES TNI AL", kdKesatuan:"120001", kdKancab:"1000",
+        jnsKel:"2", tmpLahir:"Bogor", tglLahir:"29/08/1999",
+        alamat:"Jl. Sam Ratulangi No. 37", kelurahan:"Duren Sawit", kecamatan:"Duren Sawit",
+        kota:"Jakarta Timur", propinsi:"DKI Jakarta",
+        noHp:"089652091112", email:"gita.nasution99@mail.com", nik:"3175036908993314", npwp:"80.428.501.8-170.000",
+        berkas:[
+          { label:"KTP", file:"ktp-gita.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-gita.pdf" },
+          { label:"Surat Pengantar", file:null }
+        ] }
+    ]
+  },
+  {
+    id: 4,
+    tglPengajuan: "1 September 2026",
+    kesatuanPengaju: "Mabes TNI AD",
+    nomorBatch: "B-KOLEKTIF/2026/09010004",
+    nomorAgenda: "B/232/VIII/2026/0026/wirata.atmaja",
+    status: "Diterima",
+    catatanApproval: "Data lengkap dan sesuai, disetujui.",
+    tglApproval: "4 September 2026",
+    dataPengajuan: {
+      jenis:"Kolektif", nomorSurat:"B/232/VIII/2026",
+      instansi:"Mabes TNI AD", tglSurat:"31 Agustus 2026"
+    },
+    peserta: [
+      { nrp:"26038494", nama:"Dedi Nasution", suamiIstri:"Ny. Utami Panjaitan", sts:"1", unor:"1", angkatan:"1",
+        pangkat:"LETDA", kdPangkat:"1771", noSkep:"KEP/1931/VIII/2026", tglSkep:"31/08/2026", tmtSkep:"1/9/2026",
+        kesatuan:"MABES TNI AD", kdKesatuan:"110001", kdKancab:"3000",
+        jnsKel:"1", tmpLahir:"Makassar", tglLahir:"30/03/1999",
+        alamat:"Jl. Gatot Subroto No. 138", kelurahan:"Kramat", kecamatan:"Senen",
+        kota:"Jakarta Pusat", propinsi:"DKI Jakarta",
+        noHp:"089623354940", email:"dedi.nasution99@mail.com", nik:"3171073003997531", npwp:"80.186.187.8-506.000",
+        berkas:[
+          { label:"KTP", file:"ktp-dedi.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-dedi.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-dedi.pdf" }
+        ] },
+      { nrp:"26088256", nama:"Muh. Taufik", suamiIstri:"Ny. Hani Sihombing", sts:"1", unor:"1", angkatan:"1",
+        pangkat:"LETTU", kdPangkat:"1772", noSkep:"KEP/1931/VIII/2026", tglSkep:"31/08/2026", tmtSkep:"1/9/2026",
+        kesatuan:"MABES TNI AD", kdKesatuan:"110001", kdKancab:"3000",
+        jnsKel:"1", tmpLahir:"Denpasar", tglLahir:"03/08/1997",
+        alamat:"Jl. Cendrawasih No. 122", kelurahan:"Gondangdia", kecamatan:"Menteng",
+        kota:"Jakarta Pusat", propinsi:"DKI Jakarta",
+        noHp:"085737203058", email:"taufik97@gmail.com", nik:"3171040308974305", npwp:"3171040308974305",
+        berkas:[
+          { label:"KTP", file:"ktp-taufik.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-taufik.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-taufik.pdf" }
+        ] },
+      { nrp:"26047255", nama:"Surya Permana", suamiIstri:"Ny. Sri Utami", sts:"1", unor:"1", angkatan:"1",
+        pangkat:"KAPTEN", kdPangkat:"1773", noSkep:"KEP/1931/VIII/2026", tglSkep:"31/08/2026", tmtSkep:"1/9/2026",
+        kesatuan:"MABES TNI AD", kdKesatuan:"110001", kdKancab:"3000",
+        jnsKel:"1", tmpLahir:"Madiun", tglLahir:"26/04/1995",
+        alamat:"Jl. Slamet Riyadi No. 153", kelurahan:"Cideng", kecamatan:"Gambir",
+        kota:"Jakarta Pusat", propinsi:"DKI Jakarta",
+        noHp:"082235399898", email:"surya.permana95@outlook.com", nik:"3171022604950689", npwp:"91.873.300.2-722.000",
+        berkas:[
+          { label:"KTP", file:"ktp-surya.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-surya.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-surya.pdf" }
+        ] },
+      { nrp:"26021662", nama:"Doni Adi Hartono", suamiIstri:"Ny. Shinta Artana", sts:"1", unor:"1", angkatan:"1",
+        pangkat:"LETDA", kdPangkat:"1771", noSkep:"KEP/1931/VIII/2026", tglSkep:"31/08/2026", tmtSkep:"1/9/2026",
+        kesatuan:"MABES TNI AD", kdKesatuan:"110001", kdKancab:"3000",
+        jnsKel:"1", tmpLahir:"Palembang", tglLahir:"16/02/2001",
+        alamat:"Jl. Ahmad Yani No. 28", kelurahan:"Cempaka Putih Barat", kecamatan:"Cempaka Putih",
+        kota:"Jakarta Pusat", propinsi:"DKI Jakarta",
+        noHp:"085371203899", email:"doni.hartono01@mail.com", nik:"3171061602016368", npwp:"3171061602016368",
+        berkas:[
+          { label:"KTP", file:"ktp-doni.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-doni.pdf" },
+          { label:"Surat Pengantar", file:null }
+        ] },
+      { nrp:"26096806", nama:"Umar Alamsyah", suamiIstri:"Ny. Larasati Puspitasari", sts:"1", unor:"1", angkatan:"1",
+        pangkat:"LETTU", kdPangkat:"1772", noSkep:"KEP/1931/VIII/2026", tglSkep:"31/08/2026", tmtSkep:"1/9/2026",
+        kesatuan:"MABES TNI AD", kdKesatuan:"110001", kdKancab:"3000",
+        jnsKel:"1", tmpLahir:"Palembang", tglLahir:"13/09/2001",
+        alamat:"Jl. Veteran No. 180", kelurahan:"Kramat", kecamatan:"Senen",
+        kota:"Jakarta Pusat", propinsi:"DKI Jakarta",
+        noHp:"08138500227", email:"umar.alamsyah01@outlook.com", nik:"3171071309019140", npwp:"38.875.282.3-940.000",
+        berkas:[
+          { label:"KTP", file:"ktp-umar.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-umar.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-umar.pdf" }
+        ] },
+      { nrp:"26108146", nama:"Andi Sutrisno", suamiIstri:"Ny. Nurul Panjaitan", sts:"1", unor:"1", angkatan:"1",
+        pangkat:"LETDA", kdPangkat:"1771", noSkep:"KEP/1931/VIII/2026", tglSkep:"31/08/2026", tmtSkep:"1/9/2026",
+        kesatuan:"MABES TNI AD", kdKesatuan:"110001", kdKancab:"3000",
+        jnsKel:"1", tmpLahir:"Surakarta", tglLahir:"06/10/2003",
+        alamat:"Jl. Kartini No. 78", kelurahan:"Gondangdia", kecamatan:"Menteng",
+        kota:"Jakarta Pusat", propinsi:"DKI Jakarta",
+        noHp:"082172282736", email:"andi.sutrisno03@outlook.com", nik:"3171040610039069", npwp:"3171040610039069",
+        berkas:[
+          { label:"KTP", file:"ktp-andi.jpg" },
+          { label:"Surat Pengangkatan Pertama", file:"sk-pengangkatan-andi.pdf" },
+          { label:"Surat Pengantar", file:"surat-pengantar-andi.pdf" }
+        ] }
+    ]
+  },
   {
     id: 1,
     tglPengajuan: "6 Agustus 2026",
