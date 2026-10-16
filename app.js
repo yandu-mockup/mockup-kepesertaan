@@ -14487,3 +14487,305 @@ $("#lap-peserta-baru-unor-list").onmousedown = e => {
 };
 
 Object.keys(LAP_LAPORAN).forEach(lapNilaiAwal);
+
+/* ============================================ REKAP PERKIRAAN IURAN PREMI JKK DAN JKm
+   Dua layar: "Rekap Perkiraan Iuran Premi JKK dan JKm" (parameter, Generate Premi,
+   rekap per UNOR) dan "Verifikasi Rekap Premi JKK dan JKm" (lima bentuk rekap,
+   verifikasi, kirim notifikasi ke Divisi Keuangan). Angka dasar ada di data.js
+   (blok 30); bulan lain diskalakan. Hanya peserta aktif.                       */
+const RP_BASE_IDX = REKAP_PREMI_BULAN_DASAR.tahun * 12 + REKAP_PREMI_BULAN_DASAR.bulan;
+const RP_STATUS = {
+  menunggu:      { pill: "pill-warn", label: "Menunggu Verifikasi" },
+  terverifikasi: { pill: "pill-info", label: "Terverifikasi" },
+  terkirim:      { pill: "pill-ok",   label: "Terkirim ke Keuangan" }
+};
+const rpStateByPeriod = {};
+const rpPad = n => String(n).padStart(2, "0");
+const rpWaktu = (d = new Date()) => `${rpPad(d.getDate())}/${rpPad(d.getMonth() + 1)}/${d.getFullYear()} ${rpPad(d.getHours())}.${rpPad(d.getMinutes())}`;
+const rpPeriodeLabel = (t, b) => `${BULAN_ID[b - 1]} ${t}`;
+const rpIdx = (t, b) => t * 12 + b;
+const rpAdaData = (t, b) => rpIdx(t, b) <= RP_BASE_IDX;
+
+/* Status per periode dibuat saat pertama dibuka: bulan lampau sudah selesai,
+   bulan dasar (Oktober 2026) baru terbentuk dan menunggu verifikasi. */
+function rpState(t, b) {
+  const key = `${t}-${b}`;
+  if (!rpStateByPeriod[key]) {
+    const lampau = rpIdx(t, b) < RP_BASE_IDX;
+    const awal = `01/${rpPad(b)}/${t} 00.05`;
+    rpStateByPeriod[key] = {
+      status: lampau ? "terkirim" : "menunggu",
+      versi:  Object.fromEntries(REKAP_PREMI_UNOR.map(u => [u, 1])),
+      waktu:  Object.fromEntries(REKAP_PREMI_UNOR.map(u => [u, awal])),
+      verifOleh: lampau ? "Officer Bidang Lojita" : "", verifWaktu: lampau ? awal : "", kirimWaktu: lampau ? awal : ""
+    };
+  }
+  return rpStateByPeriod[key];
+}
+
+function rpBaris(t, b) {
+  const f = 1 - (RP_BASE_IDX - rpIdx(t, b)) * 0.004;
+  const T = REKAP_PREMI_TARIF, out = [];
+  const tambah = (unor, jenis, daftar) => daftar.forEach(([gol, p, g]) => {
+    const peserta = Math.round(p * f), gapok = Math.round(g * f);
+    out.push({ unor, jenis, gol, peserta, gapok,
+      jkk: Math.round(gapok * T.jkk / 10000), jkm: Math.round(gapok * T.jkm / 10000) });
+  });
+  Object.entries(REKAP_PREMI_PRAJURIT).forEach(([u, d]) => tambah(u, "PRAJURIT", d));
+  Object.entries(REKAP_PREMI_PNS_KEMHAN).forEach(([u, d]) => tambah(u, "PNS KEMHAN", d));
+  Object.entries(REKAP_PREMI_PPPK_KEMHAN).forEach(([u, d]) => tambah(u, "PPPK KEMHAN", d));
+  tambah("POLRI", "ANGGOTA POLRI", REKAP_PREMI_POLRI.anggota);
+  tambah("POLRI", "PNS POLRI", REKAP_PREMI_POLRI.pnsPolri);
+  tambah("POLRI", "PPPK POLRI", REKAP_PREMI_POLRI.pppkPolri);
+  return out;
+}
+const rpAgg = rows => {
+  const a = rows.reduce((s, r) => ({ peserta: s.peserta + r.peserta, gapok: s.gapok + r.gapok, jkk: s.jkk + r.jkk, jkm: s.jkm + r.jkm }),
+    { peserta: 0, gapok: 0, jkk: 0, jkm: 0 });
+  a.total = a.jkk + a.jkm;
+  return a;
+};
+const rpPerGol = rows => [...new Set(rows.map(r => r.gol))].map(g => [g, rpAgg(rows.filter(r => r.gol === g))]);
+const rpNum = n => (n ? lapAngka(n) : "-");
+
+function rpIsiPeriode(idT, idB) {
+  $(`#${idB}`).innerHTML = BULAN_ID.map((n, i) => `<option value="${i + 1}">${n}</option>`).join("");
+  $(`#${idT}`).innerHTML = [2025, 2026].map(t => `<option>${t}</option>`).join("");
+  $(`#${idB}`).value = REKAP_PREMI_BULAN_DASAR.bulan;
+  $(`#${idT}`).value = REKAP_PREMI_BULAN_DASAR.tahun;
+}
+const rpPeriodeDipilih = (idT, idB) => [Number($(`#${idT}`).value), Number($(`#${idB}`).value)];
+
+/* Notifikasi lonceng: sama dengan notifikasi lain (lihat ruNotifRequestUmum). */
+function rpNotif(untuk, judul, detail, tingkat = "High") {
+  ruNotifRequestUmum.unshift({ untuk, judul, detail, tingkat, tanggal: rpWaktu().slice(0, 10), go: "rekap-premi-verifikasi" });
+  renderTopNotif();
+  if ($("#s-home").classList.contains("active")) renderHome();
+}
+
+/* ------------------------------------------------ layar 1: Rekap & Generate */
+function renderRekapPremi() {
+  const [t, b] = rpPeriodeDipilih("rp-f-tahun", "rp-f-bulan");
+  const unorPilih = $("#rp-f-unor").value;
+  const label = rpPeriodeLabel(t, b);
+  $("#rp-btn-generate").disabled = !(roleOfficer() && rpAdaData(t, b));
+  $("#rp-generate-hint").textContent = !roleOfficer() ? "ⓘ Generate Premi hanya dapat dilakukan Officer Bidang (Lojita)."
+    : !rpAdaData(t, b) ? "ⓘ Periode ini belum memiliki data peserta aktif."
+    : "ⓘ Generate Premi membentuk ulang rekap dari data peserta aktif terkini. Status verifikasi kembali ke Menunggu Verifikasi.";
+  $("#rp-judul").textContent = `Rekap per UNOR — ${label}`;
+
+  if (!rpAdaData(t, b)) {
+    $("#rp-metrics").innerHTML = "";
+    $("#rp-body").innerHTML = `<tr><td colspan="8"><div class="empty"><h4>Rekap belum terbentuk</h4><p>Data peserta aktif dibentuk otomatis pada akhir bulan sebelumnya dan rekap terbentuk tanggal 1 ${esc(label)}.</p></div></td></tr>`;
+    $("#rp-note").textContent = "";
+    $("#rp-jadwal-body").innerHTML = rpJadwalHtml(t, b, null);
+    return;
+  }
+  const st = rpState(t, b), baris = rpBaris(t, b);
+  const daftarUnor = REKAP_PREMI_UNOR.filter(u => !unorPilih || u === unorPilih);
+  const semua = rpAgg(baris.filter(r => daftarUnor.includes(r.unor)));
+  $("#rp-metrics").innerHTML = [
+    ["Peserta Aktif", lapAngka(semua.peserta), "navy"], ["Gaji Pokok", rp(semua.gapok), ""],
+    ["Perkiraan JKK 0,62%", rp(semua.jkk), ""], ["Perkiraan JKm 0,81%", rp(semua.jkm), "ok"]
+  ].map(([l, v, c]) => `<div class="metric"><div class="metric-lbl">${l}</div><div class="metric-val ${c}">${esc(v)}</div></div>`).join("");
+
+  const kanan = ' style="text-align:right"';
+  $("#rp-body").innerHTML = daftarUnor.map(u => {
+    const a = rpAgg(baris.filter(r => r.unor === u));
+    return `<tr><td class="t-strong">${esc(u)}</td><td${kanan}>${lapAngka(a.peserta)}</td><td${kanan}>${lapAngka(a.gapok)}</td>
+      <td${kanan}>${lapAngka(a.jkk)}</td><td${kanan}>${lapAngka(a.jkm)}</td><td${kanan} class="t-strong">${lapAngka(a.total)}</td>
+      <td>v${st.versi[u]}</td><td>${esc(st.waktu[u])}</td></tr>`;
+  }).join("") + `<tr style="background:var(--field)"><td class="t-strong">TOTAL</td><td${kanan} class="t-strong">${lapAngka(semua.peserta)}</td>
+      <td${kanan} class="t-strong">${lapAngka(semua.gapok)}</td><td${kanan} class="t-strong">${lapAngka(semua.jkk)}</td>
+      <td${kanan} class="t-strong">${lapAngka(semua.jkm)}</td><td${kanan} class="t-strong">${lapAngka(semua.total)}</td><td></td><td></td></tr>`;
+  $("#rp-note").textContent = `${daftarUnor.length} UNOR · hanya peserta aktif · ${label}`;
+  $("#rp-jadwal-body").innerHTML = rpJadwalHtml(t, b, st);
+}
+
+function rpJadwalHtml(t, b, st) {
+  const akhirBulanLalu = new Date(t, b - 1, 0);
+  const snap = `${akhirBulanLalu.getDate()} ${BULAN_ID[akhirBulanLalu.getMonth()]} ${akhirBulanLalu.getFullYear()}, 00.00`;
+  const ada = !!st, s = st && st.status;
+  const pill = (ok, okLbl, noLbl) => `<span class="pill ${ok ? "pill-ok" : "pill-info"}">${ok ? okLbl : noLbl}</span>`;
+  const verif = !ada ? '<span class="pill pill-info">Belum dimulai</span>'
+    : s === "menunggu" ? '<span class="pill pill-warn">Menunggu Verifikasi</span>' : '<span class="pill pill-ok">Terverifikasi</span>';
+  const baris = [
+    ["1. Pembentukan data peserta aktif", snap, "Sistem menyimpan peserta aktif tiap UNOR (TNI AD, TNI AL, TNI AU, POLRI, MABES TNI, KEMHAN).", pill(ada, "Terbentuk", "Terjadwal")],
+    ["2. Pembentukan rekap JKK dan JKm", `1 ${rpPeriodeLabel(t, b)}`, "Rekap peserta, gaji pokok, JKK, dan JKm per UNOR. Sistem memberi notifikasi ke Bidang Lojita.", pill(ada, "Terbentuk", "Terjadwal")],
+    ["3. Verifikasi Bidang Lojita", "Setelah rekap terbentuk", "Periksa lima rekap; bila perlu ubah data peserta lalu generate ulang.", verif],
+    ["4. Notifikasi ke Divisi Keuangan", "Setelah rekap final", "Memberi tahu Divisi Keuangan bahwa rekap sudah diverifikasi Divisi Kepesertaan.", pill(s === "terkirim", "Terkirim", "Belum dikirim")]
+  ];
+  return baris.map(r => `<tr><td class="t-strong">${r[0]}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td>${r[3]}</td></tr>`).join("");
+}
+
+function rpGenerate(unorList, t, b) {
+  const st = rpState(t, b), label = rpPeriodeLabel(t, b), now = rpWaktu();
+  const cakupan = unorList.length === REKAP_PREMI_UNOR.length ? "semua UNOR" : unorList.join(", ");
+  unorList.forEach(u => { st.versi[u]++; st.waktu[u] = now; });
+  st.status = "menunggu"; st.verifOleh = ""; st.verifWaktu = ""; st.kirimWaktu = "";
+  rpNotif(ROLE_OFFICER_LOJITA, `Rekap Perkiraan Premi JKK dan JKm ${label} Dibentuk Ulang`,
+    `Rekap perkiraan iuran premi JKK dan JKm ${label} (${cakupan}) dibentuk ulang dan dapat diverifikasi di halaman Verifikasi Rekap Premi JKK dan JKm.`);
+  toast(`Rekap ${label} dibentuk ulang (${cakupan}).`, "ok");
+  renderRekapPremi(); renderVerifikasiPremi();
+}
+function rpGenerateDenganKonfirmasi(unorList, t, b) {
+  const st = rpState(t, b);
+  if (st.status === "menunggu") return rpGenerate(unorList, t, b);
+  confirmModal(`Rekap ${rpPeriodeLabel(t, b)} sudah berstatus "${RP_STATUS[st.status].label}". Generate ulang akan mengembalikan status ke Menunggu Verifikasi.`,
+    () => rpGenerate(unorList, t, b), { title: "Generate Premi Ulang", okLabel: "Generate Ulang", okClass: "btn-primary" });
+}
+
+$("#rp-f-unor").innerHTML = `<option value="">Semua UNOR</option>` + REKAP_PREMI_UNOR.map(u => `<option>${esc(u)}</option>`).join("");
+rpIsiPeriode("rp-f-tahun", "rp-f-bulan");
+["rp-f-unor", "rp-f-bulan", "rp-f-tahun"].forEach(id => $(`#${id}`).onchange = renderRekapPremi);
+$("#rp-btn-tampil").onclick = renderRekapPremi;
+$("#rp-btn-generate").onclick = () => {
+  const [t, b] = rpPeriodeDipilih("rp-f-tahun", "rp-f-bulan");
+  const u = $("#rp-f-unor").value;
+  rpGenerateDenganKonfirmasi(u ? [u] : [...REKAP_PREMI_UNOR], t, b);
+};
+$("#rp-btn-verifikasi").onclick = () => {
+  const [t, b] = rpPeriodeDipilih("rp-f-tahun", "rp-f-bulan");
+  $("#rv-f-tahun").value = t; $("#rv-f-bulan").value = b;
+  go("rekap-premi-verifikasi");
+};
+
+/* -------------------------------------------------- layar 2: Verifikasi */
+const RV_TAB = [
+  { k: "tagihan", tab: "Rekap Tagihan",               judul: p => `REKAP PERKIRAAN TAGIHAN JKK DAN JKM PRAJURIT TNI, ANGGOTA POLRI SERTA ASN KEMHAN DAN ASN POLRI BULAN ${p}` },
+  { k: "tni",     tab: "Prajurit TNI",                judul: p => `REKAP PERKIRAAN IURAN JKK DAN JKM PRAJURIT TNI BULAN ${p}` },
+  { k: "pns",     tab: "ASN PNS Kemhan",              judul: p => `REKAP PERKIRAAN IURAN JKK DAN JKM ASN PNS KEMHAN BULAN ${p}` },
+  { k: "pppk",    tab: "ASN PPPK Kemhan",             judul: p => `REKAP PERKIRAAN IURAN JKK DAN JKM ASN PPPK KEMHAN BULAN ${p}` },
+  { k: "polri",   tab: "Anggota Polri dan ASN Polri", judul: p => `REKAP PERKIRAAN IURAN JKK DAN JKM ANGGOTA POLRI DAN ASN POLRI BULAN ${p}` }
+];
+let rvTabAktif = "tagihan";
+const RV_KANAN = 'style="text-align:right"';
+const RV_KOLOM_ANGKA = ["peserta", "gapok", "jkk", "jkm", "total"];
+
+/* Satu blok = label kiri (rowspan) + baris golongan + baris subtotal. */
+function rvBlokHtml(label, daftar, subLabel) {
+  const sub = rpAgg(daftar.map(([, a]) => a));
+  const sel = (a, tebal) => RV_KOLOM_ANGKA.map(k => `<td ${RV_KANAN}${tebal ? ' class="t-strong"' : ""}>${rpNum(a[k])}</td>`).join("");
+  const span = daftar.length + (subLabel ? 0 : 1);
+  const awal = i => (i === 0 ? `<td rowspan="${span}" class="t-strong" style="background:var(--surface);text-align:center">${esc(label)}</td>` : "");
+  return daftar.map(([g, a], i) => `<tr>${awal(i)}<td>${esc(g)}</td>${sel(a)}</tr>`).join("")
+    + `<tr style="background:var(--field)">${subLabel ? `<td colspan="2" class="t-strong" style="text-align:center">${esc(subLabel)}</td>` : "<td></td>"}${sel(sub, true)}</tr>`;
+}
+const rvBarisTotal = (label, a) => `<tr style="background:var(--field)"><td colspan="2" class="t-strong" style="text-align:center">${esc(label)}</td>${
+  RV_KOLOM_ANGKA.map(k => `<td ${RV_KANAN} class="t-strong">${rpNum(a[k])}</td>`).join("")}</tr>`;
+const rvTabelIuran = (kolom1, isi) => `<div class="tbl-wrap"><table>
+  <thead><tr><th>${kolom1}</th><th>GOLONGAN</th><th ${RV_KANAN}>PESERTA</th><th ${RV_KANAN}>GAPOK</th><th ${RV_KANAN}>JKK 0,62%</th><th ${RV_KANAN}>JKM 0,81%</th><th ${RV_KANAN}>TOTAL</th></tr></thead>
+  <tbody>${isi}</tbody></table></div>`;
+
+function rvPerUnor(baris, jenis, unorList) {
+  const r = baris.filter(x => jenis.includes(x.jenis));
+  return unorList.map(u => rvBlokHtml(u, rpPerGol(r.filter(x => x.unor === u)))).join("")
+    + rvBlokHtml("TOTAL", rpPerGol(r));
+}
+
+function rvIsiTab(k, baris) {
+  const unorTni = ["TNI AD", "TNI AL", "TNI AU", "MABES TNI", "KEMHAN"];
+  const jenisIn = j => baris.filter(x => j.includes(x.jenis));
+  if (k === "tni") return rvTabelIuran("UNOR", rvPerUnor(baris, ["PRAJURIT"], unorTni));
+  if (k === "pns") return rvTabelIuran("UNOR", rvPerUnor(baris, ["PNS KEMHAN"], unorTni));
+  if (k === "pppk") {
+    return rvTabelIuran("UNOR", rvPerUnor(baris, ["PPPK KEMHAN"], unorTni)
+      + rvBarisTotal("TOTAL ASN KEMHAN", rpAgg(jenisIn(["PNS KEMHAN", "PPPK KEMHAN"]))));
+  }
+  if (k === "polri") {
+    return rvTabelIuran("JENIS PESERTA",
+      rvBlokHtml("ANGGOTA POLRI", rpPerGol(jenisIn(["ANGGOTA POLRI"])), "TOTAL ANGGOTA POLRI")
+      + rvBlokHtml("PNS POLRI", rpPerGol(jenisIn(["PNS POLRI"])))
+      + rvBlokHtml("PPPK POLRI", rpPerGol(jenisIn(["PPPK POLRI"])))
+      + rvBarisTotal("TOTAL ASN POLRI", rpAgg(jenisIn(["PNS POLRI", "PPPK POLRI"])))
+      + rvBarisTotal("TOTAL", rpAgg(jenisIn(["ANGGOTA POLRI", "PNS POLRI", "PPPK POLRI"]))));
+  }
+  /* Rekap Tagihan: dua tabel, JKK lalu JKm */
+  const grup = [
+    ["PRAJURIT TNI", ["PRAJURIT"]], ["ANGGOTA POLRI", ["ANGGOTA POLRI"]],
+    ["ASN KEMHAN", ["PNS KEMHAN", "PPPK KEMHAN"]], ["ASN POLRI", ["PNS POLRI", "PPPK POLRI"]]
+  ].map(([n, j]) => [n, rpAgg(jenisIn(j))]);
+  const tot = rpAgg(baris);
+  const tabel = (kunci, judulKolom) => `<div class="tbl-wrap" style="margin-bottom:18px"><table>
+    <thead><tr><th>UNOR</th><th ${RV_KANAN}>PESERTA</th><th ${RV_KANAN}>GAPOK</th><th ${RV_KANAN}>${judulKolom}</th></tr></thead><tbody>
+    ${grup.map(([n, a]) => `<tr><td class="t-strong">${n}</td><td ${RV_KANAN}>${lapAngka(a.peserta)}</td><td ${RV_KANAN}>${lapAngka(a.gapok)}</td><td ${RV_KANAN}>${lapAngka(a[kunci])}</td></tr>`).join("")}
+    <tr style="background:var(--field)"><td class="t-strong">TOTAL</td><td ${RV_KANAN} class="t-strong">${lapAngka(tot.peserta)}</td><td ${RV_KANAN} class="t-strong">${lapAngka(tot.gapok)}</td><td ${RV_KANAN} class="t-strong">${lapAngka(tot[kunci])}</td></tr>
+    </tbody></table></div>`;
+  return tabel("jkk", "JKK 0,62%") + tabel("jkm", "JKM 0,81%");
+}
+
+function renderVerifikasiPremi() {
+  const [t, b] = rpPeriodeDipilih("rv-f-tahun", "rv-f-bulan");
+  const label = rpPeriodeLabel(t, b);
+  if (!rpAdaData(t, b)) {
+    $("#rv-status").innerHTML = `<div class="alert alert-warn">⚠ Rekap ${esc(label)} belum terbentuk. Sistem membentuknya otomatis pada tanggal 1 ${esc(label)}.</div>`;
+    $("#rv-card").hidden = true;
+    return;
+  }
+  $("#rv-card").hidden = false;
+  const st = rpState(t, b), s = RP_STATUS[st.status], officer = roleOfficer();
+  const tombol = (id, cls, teks, mati) => `<button class="btn ${cls}" id="${id}"${officer && !mati ? "" : " disabled"}>${teks}</button>`;
+  const info = {
+    menunggu:      "Rekap sudah terbentuk dan menunggu verifikasi Bidang Lojita. Jika angka belum sesuai, ubah data peserta lalu generate ulang rekap.",
+    terverifikasi: `Rekap diverifikasi ${esc(st.verifOleh)} pada ${esc(st.verifWaktu)}. Kirim notifikasi ke Divisi Keuangan agar rekap dapat ditindaklanjuti.`,
+    terkirim:      `Notifikasi terkirim ke Divisi Keuangan pada ${esc(st.kirimWaktu)}. Rekap ${esc(label)} telah final.`
+  }[st.status];
+  $("#rv-status").innerHTML = `<div class="card">
+    <div class="toolbar" style="justify-content:space-between;margin-bottom:6px">
+      <h3 class="card-title" style="margin:0">Status Rekap ${esc(label)}</h3>
+      <span class="pill ${s.pill}">${s.label}</span>
+    </div>
+    <div style="font-size:12.5px;color:var(--body);line-height:1.5;margin-bottom:14px">${info}</div>
+    <div class="toolbar" style="margin-bottom:0">
+      ${tombol("rv-btn-ubah", "btn-ghost", "✎ Ubah Data Peserta", false)}
+      ${tombol("rv-btn-generate", "btn-ghost", "↻ Generate Ulang Rekap", false)}
+      ${tombol("rv-btn-verif", "btn-success", "✓ Tandai Terverifikasi", st.status !== "menunggu")}
+      ${tombol("rv-btn-kirim", "btn-primary", "✉ Kirim Notifikasi ke Divisi Keuangan", st.status !== "terverifikasi")}
+    </div>
+    ${officer ? "" : `<div class="hint" style="margin-top:10px">ⓘ Aksi verifikasi hanya untuk Officer Bidang. Role ini hanya dapat melihat rekap.</div>`}
+  </div>`;
+  const tab = RV_TAB.find(x => x.k === rvTabAktif);
+  $("#rv-tabs").innerHTML = RV_TAB.map(x => `<button class="tab ${x.k === rvTabAktif ? "active" : ""}" data-rv-tab="${x.k}">${esc(x.tab)}</button>`).join("");
+  $("#rv-judul").textContent = tab.judul(label.toUpperCase());
+  $("#rv-isi").innerHTML = rvIsiTab(rvTabAktif, rpBaris(t, b));
+}
+
+document.addEventListener("click", e => {
+  const tab = e.target.closest("[data-rv-tab]");
+  if (tab) { rvTabAktif = tab.dataset.rvTab; renderVerifikasiPremi(); return; }
+  const btn = e.target.closest("button");
+  const id = btn && btn.id;
+  if (!id || !id.startsWith("rv-btn-") || id === "rv-btn-tampil") return;
+  const [t, b] = rpPeriodeDipilih("rv-f-tahun", "rv-f-bulan"), st = rpState(t, b), label = rpPeriodeLabel(t, b);
+  if (id === "rv-btn-ubah") {
+    toast("Ubah data peserta lewat List Peserta (aksi Ubah), lalu kembali dan Generate Ulang Rekap.");
+    go("data-peserta");
+  } else if (id === "rv-btn-generate") {
+    rpGenerateDenganKonfirmasi([...REKAP_PREMI_UNOR], t, b);
+  } else if (id === "rv-btn-verif") {
+    st.status = "terverifikasi"; st.verifOleh = PENGATURAN.namaUser; st.verifWaktu = rpWaktu();
+    toast(`Rekap ${label} ditandai terverifikasi.`, "ok");
+    renderVerifikasiPremi(); renderRekapPremi();
+  } else if (id === "rv-btn-kirim") {
+    st.status = "terkirim"; st.kirimWaktu = rpWaktu();
+    rpNotif("Divisi Keuangan", `Rekap Perkiraan Premi JKK dan JKm ${label} Telah Diverifikasi`,
+      `Rekap Perkiraan Premi JKK dan JKm bulan ${label} sudah diverifikasi oleh Divisi Kepesertaan dan Pengembangan Manfaat.`);
+    toast(`Notifikasi rekap ${label} terkirim ke Divisi Keuangan.`, "ok");
+    renderVerifikasiPremi(); renderRekapPremi();
+  } else if (id === "rv-btn-xls" || id === "rv-btn-pdf") {
+    toast(`${$("#rv-judul").textContent} diunduh sebagai ${id === "rv-btn-xls" ? "Excel" : "PDF"}.`, "ok");
+  }
+});
+
+rpIsiPeriode("rv-f-tahun", "rv-f-bulan");
+["rv-f-bulan", "rv-f-tahun"].forEach(id => $(`#${id}`).onchange = renderVerifikasiPremi);
+$("#rv-btn-tampil").onclick = renderVerifikasiPremi;
+$("#top-role").addEventListener("change", () => { renderRekapPremi(); renderVerifikasiPremi(); });
+
+/* Sistem membentuk rekap Oktober 2026 pada 1 Oktober 2026 dan memberi tahu Bidang Lojita. */
+ruNotifRequestUmum.unshift({ untuk: ROLE_OFFICER_LOJITA, tingkat: "High", tanggal: "01/10/2026", go: "rekap-premi-verifikasi",
+  judul: "Rekap Perkiraan Premi JKK dan JKm Oktober 2026 Terbentuk",
+  detail: "Rekap perkiraan iuran premi JKK dan JKm Oktober 2026 sudah terbentuk dan dapat diverifikasi di halaman Verifikasi Rekap Premi JKK dan JKm." });
+renderTopNotif();
+renderRekapPremi();
+renderVerifikasiPremi();

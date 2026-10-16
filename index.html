@@ -102,6 +102,14 @@
       <button class="nav-item nav-child" data-go="lap-kpa-cabang">Laporan Penerbitan KPA Berdasarkan Kantor Cabang</button>
     </div>
 
+    <button class="nav-item nav-parent" id="nav-rekap-premi" aria-expanded="true">
+      <span>Rekap Premi JKK dan JKm</span><span class="chevron">⌄</span>
+    </button>
+    <div class="nav-children" id="nav-rekap-premi-children">
+      <button class="nav-item nav-child" data-go="rekap-premi">Rekap Perkiraan Iuran Premi JKK dan JKm</button>
+      <button class="nav-item nav-child" data-go="rekap-premi-verifikasi">Verifikasi Rekap Premi JKK dan JKm</button>
+    </div>
+
   </nav>
 
   <!-- ============ MAIN ============ -->
@@ -137,6 +145,7 @@
           <option>Kepala Bidang Pulminpes</option>
           <option>Kepala Bidang Pengembangan Manfaat</option>
           <option>Divisi Layanan</option>
+          <option>Divisi Keuangan</option>
           <option>Kantor Cabang</option>
           <option>PIC UNOR/Kesatuan</option>
         </select>
@@ -5651,6 +5660,112 @@
         </div>
       </section>
 
+      <!-- ============ REKAP PERKIRAAN IURAN PREMI JKK DAN JKm ============ -->
+      <section class="screen" id="s-rekap-premi">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Rekap Premi JKK dan JKm</span><span>›</span><b>Rekap Perkiraan Iuran Premi JKK dan JKm</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Rekap Perkiraan Iuran Premi JKK dan JKm</h1>
+            <div class="page-sub">Rekap peserta aktif, gaji pokok, dan perkiraan premi JKK dan JKm per UNOR. Hanya peserta berstatus aktif yang dihitung.</div>
+          </div>
+        </div>
+
+        <div class="alert alert-info">ⓘ Data peserta aktif dibentuk otomatis oleh sistem setiap akhir bulan pukul 00.00. Pada tanggal 1 bulan berikutnya, rekap perkiraan JKK dan JKm terbentuk dan Bidang Lojita menerima notifikasi. Rumus: <b>JKK = gaji pokok × 0,62%</b> · <b>JKm = gaji pokok × 0,81%</b>.</div>
+
+        <div class="card">
+          <h3 class="card-title">Parameter</h3>
+          <div class="grid3">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rp-f-unor">UNOR</label>
+              <select class="inp" id="rp-f-unor"></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rp-f-bulan">Bulan</label>
+              <select class="inp" id="rp-f-bulan"></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rp-f-tahun">Tahun</label>
+              <select class="inp" id="rp-f-tahun"></select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-ghost" id="rp-btn-tampil">⌕ Tampilkan</button>
+            <button class="btn btn-primary" id="rp-btn-generate">↻ Generate Premi</button>
+          </div>
+          <div class="hint" id="rp-generate-hint" style="margin-top:8px"></div>
+        </div>
+
+        <div class="metrics m4" id="rp-metrics"></div>
+
+        <div class="card">
+          <h3 class="card-title">Jadwal Proses Otomatis Sistem</h3>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Tahap</th><th>Jadwal</th><th>Keterangan</th><th>Status</th></tr></thead>
+              <tbody id="rp-jadwal-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h3 class="card-title" style="margin:0" id="rp-judul">Rekap per UNOR</h3>
+            <button class="btn btn-ghost" id="rp-btn-verifikasi">Buka Verifikasi Rekap →</button>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>UNOR</th><th style="text-align:right">Peserta Aktif</th><th style="text-align:right">Gaji Pokok</th>
+                <th style="text-align:right">JKK 0,62%</th><th style="text-align:right">JKm 0,81%</th>
+                <th style="text-align:right">Total</th><th>Versi</th><th>Terakhir Dibentuk</th>
+              </tr></thead>
+              <tbody id="rp-body"></tbody>
+            </table>
+          </div>
+          <div class="tbl-note" id="rp-note"></div>
+        </div>
+      </section>
+
+      <section class="screen" id="s-rekap-premi-verifikasi">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Rekap Premi JKK dan JKm</span><span>›</span><b>Verifikasi Rekap Premi JKK dan JKm</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Verifikasi Rekap Premi JKK dan JKm</h1>
+            <div class="page-sub">Periksa kelima rekap perkiraan iuran. Jika belum sesuai, ubah data peserta lalu generate ulang rekap.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">Periode</h3>
+          <div class="grid3">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rv-f-bulan">Bulan</label>
+              <select class="inp" id="rv-f-bulan"></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rv-f-tahun">Tahun</label>
+              <select class="inp" id="rv-f-tahun"></select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" id="rv-btn-tampil">⌕ Tampilkan</button>
+          </div>
+        </div>
+
+        <div id="rv-status"></div>
+
+        <div class="card" id="rv-card">
+          <div class="tabs" id="rv-tabs"></div>
+          <div class="toolbar" style="justify-content:space-between">
+            <h3 class="card-title" style="margin:0" id="rv-judul"></h3>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost" id="rv-btn-xls">⭳ Download Excel</button>
+              <button class="btn btn-ghost" id="rv-btn-pdf">⭳ Download PDF</button>
+            </div>
+          </div>
+          <div id="rv-isi"></div>
+        </div>
+      </section>
 
     </main>
   </div>

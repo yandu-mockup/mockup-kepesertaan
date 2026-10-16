@@ -6523,3 +6523,42 @@ const LAPORAN_KONTROL_KPA = {
     { unor:"KEMHAN",    nilai:[null, null, null, "AZ047218", "AY083561", "AX029407"] }
   ]
 };
+
+/* ---------------------------------------------------------------------------
+   30. REKAP PERKIRAAN IURAN PREMI JKK DAN JKm
+   Hanya peserta AKTIF. Sistem membentuk data peserta aktif tiap akhir bulan
+   (pukul 00.00); tanggal 1 bulan berikutnya rekap dibentuk dari data itu.
+   Tiap baris = satu golongan pada satu UNOR: [golongan, peserta, gaji pokok].
+   Angka dasar = Oktober 2026; bulan lain diskalakan di app.js.
+   JKK = gaji pokok x 0,62%   |   JKm = gaji pokok x 0,81%
+   --------------------------------------------------------------------------- */
+const REKAP_PREMI_TARIF = { jkk: 62, jkm: 81 };   /* per 10.000 (0,62% dan 0,81%) */
+const REKAP_PREMI_UNOR  = ["TNI AD", "TNI AL", "TNI AU", "POLRI", "MABES TNI", "KEMHAN"];
+const REKAP_PREMI_BULAN_DASAR = { tahun: 2026, bulan: 10 };
+
+const REKAP_PREMI_PRAJURIT = {   /* Tamtama, Bintara, Pama, Pamen, Pati */
+  "TNI AD":    [["Tamtama", 230776, 463618301600], ["Bintara", 190892, 571430941600], ["Pama", 28944, 114542035900], ["Pamen", 10778, 51973927400], ["Pati", 421, 2405535800]],
+  "TNI AL":    [["Tamtama", 30581, 71198190300],   ["Bintara", 30032, 89019923500],   ["Pama", 8166, 31335714500],   ["Pamen", 5156, 25178650000],  ["Pati", 270, 1562530000]],
+  "TNI AU":    [["Tamtama", 14317, 29361482800],   ["Bintara", 20031, 57902976000],   ["Pama", 7136, 26972077300],   ["Pamen", 3678, 17554309200],  ["Pati", 188, 1083444700]],
+  "MABES TNI": [["Tamtama", 2903, 7284499000],     ["Bintara", 6296, 20302948400],    ["Pama", 2144, 8602573100],    ["Pamen", 3221, 15897752900],  ["Pati", 500, 2872058300]],
+  "KEMHAN":    [["Tamtama", 306, 727015600],       ["Bintara", 719, 2314603000],      ["Pama", 374, 1525144200],     ["Pamen", 1207, 6221523600],   ["Pati", 146, 840969600]]
+};
+const REKAP_PREMI_PNS_KEMHAN = {   /* GOL I - IV */
+  "TNI AD":    [["GOL I", 222, 552848500], ["GOL II", 8500, 27876025300], ["GOL III", 12517, 49498837000], ["GOL IV", 559, 2503520000]],
+  "TNI AL":    [["GOL I", 16, 42433100],   ["GOL II", 1956, 6161264600],  ["GOL III", 3807, 15436292100],  ["GOL IV", 244, 1177894200]],
+  "TNI AU":    [["GOL I", 21, 56950900],   ["GOL II", 1225, 4035972900],  ["GOL III", 2212, 8727825500],   ["GOL IV", 193, 901994000]],
+  "MABES TNI": [["GOL I", 2, 5360300],     ["GOL II", 352, 1048371700],   ["GOL III", 994, 4130903900],    ["GOL IV", 95, 461610700]],
+  "KEMHAN":    [["GOL I", 0, 0],           ["GOL II", 414, 1159463800],   ["GOL III", 2072, 7689942900],   ["GOL IV", 284, 1355788000]]
+};
+const REKAP_PREMI_PPPK_KEMHAN = {   /* GOL I - IV, V - VIII, IX - XII, XIII - XVII */
+  "TNI AD":    [["GOL I - IV", 0, 0],        ["GOL V - VIII", 1912, 5480485700],  ["GOL IX - XII", 242, 801792100],   ["GOL XIII - XVII", 0, 0]],
+  "TNI AL":    [["GOL I - IV", 0, 0],        ["GOL V - VIII", 1001, 2869398800],  ["GOL IX - XII", 441, 1460578900],  ["GOL XIII - XVII", 0, 0]],
+  "TNI AU":    [["GOL I - IV", 0, 0],        ["GOL V - VIII", 463, 1323624400],   ["GOL IX - XII", 193, 634690300],   ["GOL XIII - XVII", 0, 0]],
+  "MABES TNI": [["GOL I - IV", 0, 0],        ["GOL V - VIII", 36, 103096800],     ["GOL IX - XII", 26, 86769700],     ["GOL XIII - XVII", 0, 0]],
+  "KEMHAN":    [["GOL I - IV", 356, 759250000], ["GOL V - VIII", 7751, 20847782200], ["GOL IX - XII", 2579, 8431058800], ["GOL XIII - XVII", 1, 3940900]]
+};
+const REKAP_PREMI_POLRI = {
+  anggota:  [["Tamtama", 14428, 27788557900], ["Bintara", 392756, 1213276667100], ["Pama", 54232, 225077902400], ["Pamen", 11965, 57078050200], ["Pati", 559, 3191989300]],
+  pnsPolri: [["GOL I", 106, 281995300], ["GOL II", 6111, 20590008300], ["GOL III", 8029, 31877025400], ["GOL IV", 1411, 6410752300]],
+  pppkPolri:[["GOL I - IV", 139, 295447500], ["GOL V - VIII", 1250, 3186491800], ["GOL IX - XII", 293, 940298200], ["GOL XIII - XVII", 0, 0]]
+};
