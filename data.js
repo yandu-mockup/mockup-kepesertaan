@@ -6207,8 +6207,8 @@ const SPP_BERKAS_TETAP = [
    sisaHutang    : pokok pinjaman yang belum terbayar.
    bruto         : nilai bruto manfaat sebelum potongan.
    nominal       : nominal yang dipotong untuk pelunasan.
-   imbalJasa     : imbal jasa yang hanya berlaku untuk jenis pinjaman Program
-                   Reguler YPPSDP — tidak ada pada jenis lain.
+   imbalJasa     : imbal jasa yang hanya berlaku untuk jenis pinjaman YKPP
+                   PROGREG — tidak ada pada jenis lain.
    tglRekon      : tanggal rekonsiliasi data pelunasan dengan mitra.
    tglSp / tglDps / tglPeriode : tanggal Surat Perintah, tanggal DPS, dan
    tanggal periode pembayaran.
@@ -6562,3 +6562,141 @@ const REKAP_PREMI_POLRI = {
   pnsPolri: [["GOL I", 106, 281995300], ["GOL II", 6111, 20590008300], ["GOL III", 8029, 31877025400], ["GOL IV", 1411, 6410752300]],
   pppkPolri:[["GOL I - IV", 139, 295447500], ["GOL V - VIII", 1250, 3186491800], ["GOL IX - XII", 293, 940298200], ["GOL XIII - XVII", 0, 0]]
 };
+
+/* ===========================================================================
+   REKAP MOVEMENT — 8 sub laporan perubahan data peserta per periode (bulan)
+   ---------------------------------------------------------------------------
+   Dibangkitkan deterministik. Satu peserta bisa muncul di beberapa jenis
+   movement. Periode = "YYYY-MM", Januari–Oktober 2026. Rekap KPPN & Satuan
+   Kerja dihitung di app.js dari daftar mutasi + saldo awal + baru/berhenti.
+   =========================================================================== */
+const RM_PERIODE = ["2026-01","2026-02","2026-03","2026-04","2026-05","2026-06","2026-07","2026-08","2026-09","2026-10"];
+const RM_BULAN = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+const RM_UNOR = ["TNI AD", "TNI AL", "TNI AU", "POLRI", "KEMHAN"];
+
+/* Tangga pangkat per UNOR (rendah → tinggi). */
+const RM_PANGKAT = {
+  "TNI AD": ["PRADA","PRATU","KOPDA","KOPTU","KOPKA","SERDA","SERTU","SERKA","SERMA","LETDA","LETTU","KAPTEN","MAYOR"],
+  "TNI AL": ["KLD","KLS","KOPDA","KOPTU","KOPKA","SERDA","SERTU","SERKA","SERMA","LETDA","LETTU","KAPTEN","MAYOR"],
+  "TNI AU": ["PRADA","PRATU","KOPDA","KOPTU","KOPKA","SERDA","SERTU","SERKA","SERMA","LETDA","LETTU","KAPTEN","MAYOR"],
+  "POLRI":  ["BHARADA","BHARATU","BHARAKA","BRIPDA","BRIPTU","BRIGPOL","BRIPKA","AIPDA","AIPTU","IPDA","IPTU","AKP","KOMPOL"],
+  "KEMHAN": ["GOL.II/A","GOL.II/B","GOL.II/C","GOL.II/D","GOL.III/A","GOL.III/B","GOL.III/C","GOL.III/D","GOL.IV/A","GOL.IV/B","GOL.IV/C","GOL.IV/D","GOL.IV/E"]
+};
+const RM_SATKER = [
+  ["MAKORPASKHAS","TNI AD"], ["KODAM III/SILIWANGI","TNI AD"], ["KODIM 0601/PANDEGLANG","TNI AD"], ["YONIF 305/TENGKORAK","TNI AD"],
+  ["LANTAMAL III JAKARTA","TNI AL"], ["KOARMADA I","TNI AL"], ["KORMAR","TNI AL"],
+  ["LANUD HUSEIN SASTRANEGARA","TNI AU"], ["KOOPSUDNAS","TNI AU"], ["PASKHAS","TNI AU"],
+  ["POLDA JAWA BARAT","POLRI"], ["POLRES BEKASI","POLRI"], ["POLDA METRO JAYA","POLRI"], ["POLRESTABES SURABAYA","POLRI"],
+  ["SETJEN KEMHAN","KEMHAN"], ["BALITBANG KEMHAN","KEMHAN"]
+];
+const RM_KPPN = ["KPPN Jakarta I","KPPN Jakarta II","KPPN Jakarta III","KPPN Bandung I","KPPN Bandung II","KPPN Semarang I","KPPN Yogyakarta",
+  "KPPN Surabaya I","KPPN Surabaya II","KPPN Medan I","KPPN Palembang","KPPN Makassar I","KPPN Denpasar","KPPN Balikpapan"];
+
+const RM = (() => {
+  let seed = 20261020;
+  const acak = n => { seed = (seed * 1664525 + 1013904223) % 4294967296; return Math.floor(seed / 4294967296 * n); };
+  const pilih = a => a[acak(a.length)];
+  const NAMA_DEPAN = ["AHMAD","BUDI","CAHYO","DIMAS","EKO","FAJAR","GILANG","HENDRA","IRFAN","JOKO","KURNIA","LUKMAN","MULYONO","NUR","OKTAVIAN","PRASETYO","RIZKY","SETIAWAN","TEGUH","WAHYU","YUDI","SITI","DEWI","RINA","AYU"];
+  const NAMA_BELAKANG = ["SANTOSO","PRATAMA","WIJAYA","HIDAYAT","SAPUTRA","KURNIAWAN","NUGROHO","RAHMAN","SETIAWAN","UTOMO","LESTARI","WIBOWO","FIRMANSYAH","HAKIM","MAULANA"];
+  const ROMAWI = ["I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"];
+  const p2 = n => String(n).padStart(2, "0");
+  const gaji = (idx, mkg) => Math.round((1650000 + idx * 215000 + mkg * 47000) / 100) * 100;
+
+  const peserta = [];
+  for (let i = 0; i < 260; i++) {
+    const u = RM_UNOR[[0,0,0,1,1,2,2,3,3,3,3,4][acak(12)]];
+    peserta.push({
+      nrp: String(1e7 + acak(9e7)),
+      nama: `${pilih(NAMA_DEPAN)} ${pilih(NAMA_BELAKANG)}`,
+      unor: u, satker: pilih(RM_SATKER.filter(s => s[1] === u))[0],
+      idx: acak(10), mkg: 2 + acak(26), kppn: pilih(RM_KPPN)
+    });
+  }
+  const ambil = n => { const r = []; for (let i = 0; i < n; i++) r.push(peserta[acak(peserta.length)]); return r; };
+  const urut = a => a.sort((x, y) => y.tanggal.localeCompare(x.tanggal) || x.nama.localeCompare(y.nama));
+  const dasar = (p, per, d) => ({ nrp: p.nrp, nama: p.nama, unor: p.unor, satker: p.satker, periode: per, tanggal: `${per}-${p2(d)}` });
+
+  /* 1. Gaji pokok */
+  const gajiPokok = ambil(220).map(p => {
+    const per = pilih(RM_PERIODE);
+    const sebab = pilih(["Kenaikan Pangkat","Kenaikan Pangkat","Kenaikan Gaji Berkala (MKG)","Kenaikan Gaji Berkala (MKG)","Penyesuaian Peraturan Gaji","Koreksi Data Gaji"]);
+    const lama = gaji(p.idx, p.mkg);
+    const baru = sebab === "Kenaikan Pangkat" ? gaji(p.idx + 1, p.mkg)
+      : sebab.startsWith("Kenaikan Gaji") ? gaji(p.idx, p.mkg + 2)
+      : sebab.startsWith("Penyesuaian") ? Math.round(lama * 1.08 / 100) * 100
+      : lama - (1 + acak(3)) * 100000;
+    return { ...dasar(p, per, 1), pangkat: RM_PANGKAT[p.unor][p.idx], sebab, lama, baru, selisih: baru - lama };
+  });
+
+  /* 2. Pangkat */
+  const pangkat = ambil(200).map(p => {
+    const per = pilih(RM_PERIODE);
+    const jenis = pilih(["Kenaikan Pangkat Reguler","Kenaikan Pangkat Reguler","Kenaikan Pangkat Reguler","Kenaikan Pangkat Pilihan","Kenaikan Pangkat Luar Biasa","Kenaikan Pangkat Anumerta"]);
+    const t = RM_PANGKAT[p.unor], i = Math.min(p.idx, t.length - 2);
+    return { ...dasar(p, per, 1), jenis, lama: t[i], baru: t[i + 1], skep: `KEP/${100 + acak(700)}/${ROMAWI[+per.slice(5) - 1]}/2026` };
+  });
+
+  /* 3. MKG */
+  const mkg = ambil(210).map(p => {
+    const per = pilih(RM_PERIODE);
+    const jenis = pilih(["Kenaikan MKG Berkala","Kenaikan MKG Berkala","Kenaikan MKG Berkala","Penyesuaian MKG (Masa Dinas Tambahan)","Koreksi MKG"]);
+    const lamaBl = pilih([0, 0, 0, 6]), tambah = jenis === "Kenaikan MKG Berkala" ? 2 : 1 + acak(3);
+    return { ...dasar(p, per, 1), pangkat: RM_PANGKAT[p.unor][p.idx], jenis, lamaTh: p.mkg, lamaBl, baruTh: p.mkg + tambah, baruBl: lamaBl };
+  });
+
+  /* 4. Status kawin */
+  const statusKawin = ambil(190).map(p => {
+    const per = pilih(RM_PERIODE);
+    const [lama, baru, alasan] = pilih([
+      ["Belum Kawin","Kawin","Pernikahan"],["Belum Kawin","Kawin","Pernikahan"],["Belum Kawin","Kawin","Pernikahan"],["Belum Kawin","Kawin","Pernikahan"],
+      ["Kawin","Cerai Hidup","Putusan Pengadilan"],["Kawin","Cerai Hidup","Putusan Pengadilan"],
+      ["Kawin","Cerai Mati","Pasangan Meninggal Dunia"],
+      ["Cerai Hidup","Kawin","Pernikahan Kembali"],["Cerai Mati","Kawin","Pernikahan Kembali"]
+    ]);
+    return { ...dasar(p, per, 1 + acak(27)), lama, baru, alasan,
+      dokumen: baru === "Kawin" ? `Akta Nikah No. ${3000 + acak(6000)}/${ROMAWI[+per.slice(5) - 1]}/2026`
+        : baru === "Cerai Hidup" ? `Akta Cerai No. ${200 + acak(900)}/Pdt.G/2026/PA`
+        : `Akta Kematian No. ${1000 + acak(8000)}/2026` };
+  });
+
+  /* 5. Anak */
+  const anak = ambil(210).map(p => {
+    const per = pilih(RM_PERIODE);
+    const [jenis, tambah] = pilih([
+      ["Kelahiran Anak",true],["Kelahiran Anak",true],["Kelahiran Anak",true],["Adopsi / Pengesahan Anak",true],
+      ["Usia Melewati Batas (21 Tahun)",false],["Usia Melewati Batas (25 Tahun, Kuliah)",false],["Anak Menikah",false],["Anak Bekerja",false],["Anak Meninggal Dunia",false]
+    ]);
+    const lama = tambah ? acak(3) : 1 + acak(3);
+    return { ...dasar(p, per, 1 + acak(27)), jenis, lama, baru: tambah ? lama + 1 : lama - 1, namaAnak: `${pilih(NAMA_DEPAN)} ${p.nama.split(" ")[1]}` };
+  });
+
+  /* 7. Mutasi KPPN */
+  const mutasiKppn = ambil(280).map(p => {
+    const per = pilih(RM_PERIODE), asal = p.kppn;
+    let tujuan = pilih(RM_KPPN); if (tujuan === asal) tujuan = RM_KPPN[(RM_KPPN.indexOf(asal) + 1) % RM_KPPN.length];
+    return { ...dasar(p, per, 1), asal, tujuan, alasan: pilih(["Pindah Domisili","Pindah Domisili","Mutasi Satuan Kerja","Permintaan Sendiri","Penyesuaian Wilayah Bayar"]) };
+  });
+
+  /* 8. Mutasi Satuan Kerja */
+  const mutasiSatker = ambil(280).map(p => {
+    const per = pilih(RM_PERIODE), asal = p.satker;
+    let tujuan = pilih(RM_SATKER.filter(s => s[1] === p.unor))[0];
+    if (tujuan === asal) tujuan = RM_SATKER[(RM_SATKER.findIndex(s => s[0] === asal) + 1) % RM_SATKER.length][0];
+    return { ...dasar(p, per, 1), asal, tujuan, alasan: pilih(["Mutasi Jabatan","Mutasi Jabatan","Penugasan Baru","Promosi","Permintaan Sendiri"]) };
+  });
+
+  /* Saldo awal 1 Januari 2026; peserta baru & berhenti per bulan → [baru, berhenti]. */
+  const saldoKppn = {}, saldoSatker = {}, baruBerhentiKppn = {}, baruBerhentiSatker = {};
+  RM_KPPN.forEach(k => { saldoKppn[k] = 18000 + acak(42000); });
+  RM_SATKER.forEach(s => { saldoSatker[s[0]] = 6000 + acak(24000); });
+  RM_PERIODE.forEach(per => {
+    RM_KPPN.forEach(k => { baruBerhentiKppn[k + "|" + per] = [20 + acak(160), 10 + acak(120)]; });
+    RM_SATKER.forEach(s => { baruBerhentiSatker[s[0] + "|" + per] = [10 + acak(100), 5 + acak(80)]; });
+  });
+
+  return {
+    gajiPokok: urut(gajiPokok), pangkat: urut(pangkat), mkg: urut(mkg), statusKawin: urut(statusKawin), anak: urut(anak),
+    mutasiKppn: urut(mutasiKppn), mutasiSatker: urut(mutasiSatker),
+    saldoKppn, saldoSatker, baruBerhentiKppn, baruBerhentiSatker
+  };
+})();

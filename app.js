@@ -124,6 +124,7 @@ function go(id) {
   if (id === "dapem-keuangan") renderKeuangan();
   if (id === "upload-rekening") { urGotoList(); renderUploadRekening(); }
   if (id.startsWith("lap-")) renderLaporan(id);
+  if (id.startsWith("rm-")) rmRender(id);
 }
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-go]");
@@ -14789,3 +14790,226 @@ ruNotifRequestUmum.unshift({ untuk: ROLE_OFFICER_LOJITA, tingkat: "High", tangga
 renderTopNotif();
 renderRekapPremi();
 renderVerifikasiPremi();
+
+/* ===========================================================================
+   REKAP MOVEMENT — 8 sub laporan (layar "rm-…")
+   ---------------------------------------------------------------------------
+   Data dari RM (data.js). Filter berid "<layar>-f-<nama>"; hasil dirender ke
+   "<layar>-metrics / -head / -body / -note / -pagination". Enam layar berisi
+   daftar nominatif per peserta (berhalaman); dua layar (KPPN, Satuan Kerja)
+   berisi rekap saldo yang dihitung dari mutasi + saldo awal + baru/berhenti.
+   =========================================================================== */
+const rmAngka = n => Number(n).toLocaleString("id-ID");
+const rmTgl = s => s.split("-").reverse().join("/");
+const rmPeriodeLabel = p => `${RM_BULAN[+p.slice(5) - 1]} ${p.slice(0, 4)}`;
+const rmHalaman = {};
+const rmUnik = (rows, f) => new Set(rows.map(f)).size;
+const rmHitung = (rows, f) => rows.filter(f).length;
+
+const RM_LAYAR = {
+  "rm-gaji": {
+    sumber: () => RM.gajiPokok, jenis: r => r.sebab,
+    jenisOpsi: ["Kenaikan Pangkat", "Kenaikan Gaji Berkala (MKG)", "Penyesuaian Peraturan Gaji", "Koreksi Data Gaji"],
+    head: ["NO", "NRP/NIP", "NAMA", "UNOR", "SATUAN KERJA", "PANGKAT", "GAJI POKOK LAMA", "GAJI POKOK BARU", "SELISIH", "TMT", "PENYEBAB"], angka: [6, 7, 8],
+    baris: r => [r.nrp, r.nama, r.unor, r.satker, r.pangkat, rp(r.lama), rp(r.baru),
+      { html: `<span style="color:${r.selisih < 0 ? "var(--red-ink)" : "var(--green-ink)"};font-weight:700">${r.selisih < 0 ? "−" : "+"}${esc(rp(Math.abs(r.selisih)))}</span>` },
+      rmTgl(r.tanggal), r.sebab],
+    metrics: rows => [
+      ["Total Perubahan", rmAngka(rows.length) + " peserta"],
+      ["Gaji Naik", rmAngka(rmHitung(rows, r => r.selisih > 0))],
+      ["Gaji Turun (Koreksi)", rmAngka(rmHitung(rows, r => r.selisih < 0))],
+      ["Total Selisih Gaji Pokok", rp(rows.reduce((a, r) => a + r.selisih, 0))]]
+  },
+  "rm-pangkat": {
+    sumber: () => RM.pangkat, jenis: r => r.jenis,
+    jenisOpsi: ["Kenaikan Pangkat Reguler", "Kenaikan Pangkat Pilihan", "Kenaikan Pangkat Luar Biasa", "Kenaikan Pangkat Anumerta"],
+    head: ["NO", "NRP/NIP", "NAMA", "UNOR", "SATUAN KERJA", "PANGKAT LAMA", "PANGKAT BARU", "TMT", "NOMOR SKEP", "JENIS"], angka: [],
+    baris: r => [r.nrp, r.nama, r.unor, r.satker, r.lama, r.baru, rmTgl(r.tanggal), r.skep, r.jenis],
+    metrics: rows => [
+      ["Total Perubahan Pangkat", rmAngka(rows.length) + " peserta"],
+      ["Reguler", rmAngka(rmHitung(rows, r => r.jenis.endsWith("Reguler")))],
+      ["Pilihan / Luar Biasa", rmAngka(rmHitung(rows, r => /Pilihan|Luar Biasa/.test(r.jenis)))],
+      ["Anumerta", rmAngka(rmHitung(rows, r => r.jenis.endsWith("Anumerta")))]]
+  },
+  "rm-mkg": {
+    sumber: () => RM.mkg, jenis: r => r.jenis,
+    jenisOpsi: ["Kenaikan MKG Berkala", "Penyesuaian MKG (Masa Dinas Tambahan)", "Koreksi MKG"],
+    head: ["NO", "NRP/NIP", "NAMA", "UNOR", "SATUAN KERJA", "PANGKAT", "MKG LAMA", "MKG BARU", "TMT", "JENIS"], angka: [],
+    baris: r => [r.nrp, r.nama, r.unor, r.satker, r.pangkat, `${r.lamaTh} Th ${r.lamaBl} Bl`, `${r.baruTh} Th ${r.baruBl} Bl`, rmTgl(r.tanggal), r.jenis],
+    metrics: rows => [
+      ["Total Perubahan MKG", rmAngka(rows.length) + " peserta"],
+      ["Kenaikan Berkala", rmAngka(rmHitung(rows, r => r.jenis === "Kenaikan MKG Berkala"))],
+      ["Penyesuaian / Koreksi", rmAngka(rmHitung(rows, r => r.jenis !== "Kenaikan MKG Berkala"))],
+      ["Peserta Terdampak", rmAngka(rmUnik(rows, r => r.nrp))]]
+  },
+  "rm-status-kawin": {
+    sumber: () => RM.statusKawin, jenis: r => `${r.lama} → ${r.baru}`,
+    jenisOpsi: ["Belum Kawin → Kawin", "Kawin → Cerai Hidup", "Kawin → Cerai Mati", "Cerai Hidup → Kawin", "Cerai Mati → Kawin"],
+    head: ["NO", "NRP/NIP", "NAMA", "UNOR", "SATUAN KERJA", "STATUS LAMA", "STATUS BARU", "TANGGAL PERISTIWA", "ALASAN", "DOKUMEN"], angka: [],
+    baris: r => [r.nrp, r.nama, r.unor, r.satker, r.lama, r.baru, rmTgl(r.tanggal), r.alasan, r.dokumen],
+    metrics: rows => [
+      ["Total Perubahan Status", rmAngka(rows.length) + " peserta"],
+      ["Menikah", rmAngka(rmHitung(rows, r => r.baru === "Kawin"))],
+      ["Cerai Hidup", rmAngka(rmHitung(rows, r => r.baru === "Cerai Hidup"))],
+      ["Cerai Mati", rmAngka(rmHitung(rows, r => r.baru === "Cerai Mati"))]]
+  },
+  "rm-anak": {
+    sumber: () => RM.anak, jenis: r => r.jenis,
+    jenisOpsi: ["Kelahiran Anak", "Adopsi / Pengesahan Anak", "Usia Melewati Batas (21 Tahun)", "Usia Melewati Batas (25 Tahun, Kuliah)", "Anak Menikah", "Anak Bekerja", "Anak Meninggal Dunia"],
+    head: ["NO", "NRP/NIP", "NAMA", "UNOR", "SATUAN KERJA", "JUMLAH ANAK LAMA", "JUMLAH ANAK BARU", "NAMA ANAK", "TANGGAL PERISTIWA", "JENIS"], angka: [5, 6],
+    baris: r => [r.nrp, r.nama, r.unor, r.satker, r.lama, r.baru, r.namaAnak, rmTgl(r.tanggal), r.jenis],
+    metrics: rows => [
+      ["Total Perubahan", rmAngka(rows.length) + " peserta"],
+      ["Penambahan Anak", rmAngka(rmHitung(rows, r => r.baru > r.lama))],
+      ["Pengurangan Anak", rmAngka(rmHitung(rows, r => r.baru < r.lama))],
+      ["Selisih Bersih", rows.reduce((a, r) => a + r.baru - r.lama, 0).toLocaleString("id-ID")]]
+  },
+  "rm-peserta-kppn": {
+    sumber: () => RM.mutasiKppn, jenis: r => [r.asal, r.tujuan], jenisOpsi: RM_KPPN,
+    head: ["NO", "NRP/NIP", "NAMA", "UNOR", "SATUAN KERJA", "KPPN ASAL", "KPPN TUJUAN", "TMT PINDAH", "ALASAN"], angka: [],
+    baris: r => [r.nrp, r.nama, r.unor, r.satker, r.asal, r.tujuan, rmTgl(r.tanggal), r.alasan],
+    metrics: rows => {
+      const top = f => { const c = {}; rows.forEach(r => { c[f(r)] = (c[f(r)] || 0) + 1; }); const e = Object.entries(c).sort((a, b) => b[1] - a[1])[0]; return e ? `${e[0]} (${e[1]})` : "-"; };
+      return [["Total Mutasi KPPN", rmAngka(rows.length) + " peserta"], ["Peserta Unik", rmAngka(rmUnik(rows, r => r.nrp))],
+        ["KPPN Asal Terbanyak", top(r => r.asal)], ["KPPN Tujuan Terbanyak", top(r => r.tujuan)]];
+    }
+  },
+  "rm-kppn": {
+    rekap: true, kunci: "Kppn", daftar: () => RM_KPPN.slice(), mutasi: () => RM.mutasiKppn, label: "KPPN"
+  },
+  "rm-satker": {
+    rekap: true, kunci: "Satker", daftar: scr => RM_SATKER.filter(s => !lapNilai(scr, "unor") || s[1] === lapNilai(scr, "unor")).map(s => s[0]),
+    mutasi: () => RM.mutasiSatker, label: "SATUAN KERJA", kolomExtra: s => RM_SATKER.find(x => x[0] === s)[1]
+  }
+};
+
+/* Isi dropdown & nilai awal filter: periode = Januari s.d. bulan terakhir (Oktober 2026). */
+$$("select[data-rm-periode]").forEach(sel => {
+  sel.innerHTML = RM_PERIODE.map(p => `<option value="${p}">${esc(rmPeriodeLabel(p))}</option>`).join("");
+});
+$$("select[data-rm-unor]").forEach(sel => {
+  sel.innerHTML = `<option value="">Semua Unit Organisasi</option>` + RM_UNOR.map(u => `<option value="${esc(u)}">${esc(u)}</option>`).join("");
+});
+Object.entries(RM_LAYAR).forEach(([scr, c]) => {
+  const sel = $(`#${scr}-f-jenis`);
+  if (sel) sel.innerHTML = `<option value="">Semua</option>` + c.jenisOpsi.map(o => `<option value="${esc(o)}">${esc(o)}</option>`).join("");
+});
+
+function rmNilaiAwal(scr) {
+  $$(`[id^="${scr}-f-"]`).forEach(el => { if (el.tagName === "SELECT") el.selectedIndex = 0; else el.value = ""; });
+  const s = $(`#${scr}-f-sampai`); s.selectedIndex = s.options.length - 1;
+}
+
+/* Rekap saldo per KPPN / Satuan Kerja. Saldo awal periode = saldo 1 Jan 2026
+   + mutasi bersih dan peserta baru − berhenti pada bulan sebelum "Periode Dari". */
+function rmRekap(scr, c) {
+  const dari = lapNilai(scr, "dari"), sampai = lapNilai(scr, "sampai");
+  const saldo = RM["saldo" + c.kunci], bb = RM["baruBerhenti" + c.kunci], mutasi = c.mutasi();
+  const rows = c.daftar(scr).map(k => {
+    let awal = saldo[k], masuk = 0, keluar = 0, baru = 0, berhenti = 0;
+    RM_PERIODE.forEach(p => {
+      const [b, h] = bb[k + "|" + p];
+      const mi = mutasi.filter(m => m.periode === p && m.tujuan === k).length, mo = mutasi.filter(m => m.periode === p && m.asal === k).length;
+      if (p < dari) awal += b - h + mi - mo;
+      else if (p <= sampai) { baru += b; berhenti += h; masuk += mi; keluar += mo; }
+    });
+    return { k, awal, masuk, keluar, baru, berhenti, akhir: awal + masuk - keluar + baru - berhenti };
+  });
+  const jml = f => rows.reduce((a, r) => a + r[f], 0);
+  return { rows, jml };
+}
+
+function rmRender(scr) {
+  const c = RM_LAYAR[scr];
+  const dari = lapNilai(scr, "dari"), sampai = lapNilai(scr, "sampai");
+  const periode = dari === sampai ? rmPeriodeLabel(dari) : `${rmPeriodeLabel(dari)} s.d. ${rmPeriodeLabel(sampai)}`;
+  const kosong = n => `<tr><td colspan="${n}"><div class="empty"><h4>Tidak ada data</h4><p>Ubah filter lalu tampilkan kembali.</p></div></td></tr>`;
+  const metrics = items => {
+    $(`#${scr}-metrics`).innerHTML = items.map(([l, v]) => `
+    <div class="metric">
+      <div class="metric-lbl">${esc(l)}</div>
+      <div class="metric-val">${esc(v)}</div>
+    </div>`).join("");
+  };
+
+  if (dari > sampai) {
+    $(`#${scr}-head`).innerHTML = ""; $(`#${scr}-body`).innerHTML = kosong(5); metrics([]);
+    $(`#${scr}-note`).textContent = "Periode Dari tidak boleh melebihi Periode Sampai.";
+    $(`#${scr}-pagination`).innerHTML = "";
+    toast("Periode Dari tidak boleh melebihi Periode Sampai.", "bad");
+    return;
+  }
+  $(`#${scr}-judul`).textContent = `${$(`#s-${scr} .page-title`).textContent} — ${periode}`;
+
+  /* ---- rekap saldo (KPPN, Satuan Kerja) ---- */
+  if (c.rekap) {
+    const { rows, jml } = rmRekap(scr, c);
+    const extra = !!c.kolomExtra;
+    const head = ["NO", c.label, ...(extra ? ["UNOR"] : []), "SALDO AWAL", "MUTASI MASUK", "MUTASI KELUAR", "PESERTA BARU", "BERHENTI", "SALDO AKHIR", "PERUBAHAN"];
+    const aw = extra ? 3 : 2;
+    const sel = (v, i, t) => `<td${i >= aw ? ' style="text-align:right"' : ""}${t ? ' class="t-strong"' : ""}>${v}</td>`;
+    const perub = (a, b) => { const d = b - a; return `<span style="color:${d < 0 ? "var(--red-ink)" : "var(--green-ink)"};font-weight:700">${d < 0 ? "−" : "+"}${rmAngka(Math.abs(d))}</span>`; };
+    metrics([["Saldo Awal", rmAngka(jml("awal"))], ["Mutasi Masuk", rmAngka(jml("masuk"))], ["Mutasi Keluar", rmAngka(jml("keluar"))], ["Saldo Akhir", rmAngka(jml("akhir"))]]);
+    $(`#${scr}-head`).innerHTML = `<tr>${head.map((h, i) => `<th${i >= aw ? ' style="text-align:right"' : ""}>${h}</th>`).join("")}</tr>`;
+    $(`#${scr}-body`).innerHTML = rows.length
+      ? rows.map((r, n) => `<tr>${[n + 1, esc(r.k), ...(extra ? [esc(c.kolomExtra(r.k))] : []), rmAngka(r.awal), rmAngka(r.masuk), rmAngka(r.keluar), rmAngka(r.baru), rmAngka(r.berhenti), rmAngka(r.akhir), perub(r.awal, r.akhir)]
+        .map((v, i) => sel(v, i, i === aw + 5)).join("")}</tr>`).join("")
+        + `<tr>${["", "JUMLAH", ...(extra ? [""] : []), rmAngka(jml("awal")), rmAngka(jml("masuk")), rmAngka(jml("keluar")), rmAngka(jml("baru")), rmAngka(jml("berhenti")), rmAngka(jml("akhir")), perub(jml("awal"), jml("akhir"))]
+          .map((v, i) => sel(v, i, true)).join("")}</tr>`
+      : kosong(head.length);
+    $(`#${scr}-note`).textContent = `${rows.length} baris ditampilkan · Saldo Akhir = Saldo Awal + Mutasi Masuk − Mutasi Keluar + Peserta Baru − Berhenti`;
+    $(`#${scr}-pagination`).innerHTML = "";
+    return;
+  }
+
+  /* ---- daftar nominatif per peserta ---- */
+  const unor = lapNilai(scr, "unor"), jenis = lapNilai(scr, "jenis"), q = lapNilai(scr, "cari").trim().toLowerCase();
+  const rows = c.sumber().filter(r => r.periode >= dari && r.periode <= sampai
+    && (!unor || r.unor === unor)
+    && (!jenis || [].concat(c.jenis(r)).includes(jenis))
+    && (!q || r.nrp.includes(q) || r.nama.toLowerCase().includes(q)));
+  const ukuran = Number($(`#${scr}-page-size`).value) || 20;
+  const totalHal = Math.max(1, Math.ceil(rows.length / ukuran));
+  const hal = Math.min(rmHalaman[scr] || 1, totalHal);
+  rmHalaman[scr] = hal;
+  const awal = (hal - 1) * ukuran;
+
+  metrics(c.metrics(rows));
+  $(`#${scr}-head`).innerHTML = `<tr>${c.head.map((h, i) => `<th${c.angka.includes(i) ? ' style="text-align:right"' : ""}>${esc(h)}</th>`).join("")}</tr>`;
+  $(`#${scr}-body`).innerHTML = rows.length
+    ? rows.slice(awal, awal + ukuran).map((r, n) => `<tr><td>${awal + n + 1}</td>${c.baris(r).map((v, i) =>
+        `<td${c.angka.includes(i + 1) ? ' style="text-align:right"' : ""}>${v && v.html ? v.html : esc(v)}</td>`).join("")}</tr>`).join("")
+    : kosong(c.head.length);
+  $(`#${scr}-note`).textContent = `Menampilkan ${rows.length ? awal + 1 : 0} sampai ${Math.min(awal + ukuran, rows.length)} dari ${rmAngka(rows.length)} perubahan`;
+
+  const pag = $(`#${scr}-pagination`);
+  if (totalHal < 2) { pag.innerHTML = ""; return; }
+  const tombol = (p, label, mati) => `<button class="btn ${p === hal && !mati ? "btn-primary" : "btn-ghost"} btn-sm" style="min-width:30px;padding:0" ${mati ? "disabled" : `data-rm-page="${p}"`}>${label}</button>`;
+  let html = tombol(hal - 1, "‹", hal === 1);
+  for (let p = 1; p <= totalHal; p++) {
+    if (p === 1 || p === totalHal || Math.abs(p - hal) <= 1) html += tombol(p, p);
+    else if (Math.abs(p - hal) === 2) html += `<span style="padding:0 4px;color:var(--faint)">…</span>`;
+  }
+  pag.innerHTML = html + tombol(hal + 1, "›", hal === totalHal);
+}
+
+document.addEventListener("click", e => {
+  const cari = e.target.closest("[data-rm-cari]");
+  if (cari) { rmHalaman[cari.dataset.rmCari] = 1; rmRender(cari.dataset.rmCari); return; }
+  const reset = e.target.closest("[data-rm-reset]");
+  if (reset) { rmNilaiAwal(reset.dataset.rmReset); rmHalaman[reset.dataset.rmReset] = 1; rmRender(reset.dataset.rmReset); return; }
+  const exp = e.target.closest("[data-rm-export]");
+  if (exp) { toast(`${$(`#${exp.dataset.rmExport}-judul`).textContent} diunduh sebagai Excel.`, "ok"); return; }
+  const pdf = e.target.closest("[data-rm-pdf]");
+  if (pdf) { toast(`${$(`#${pdf.dataset.rmPdf}-judul`).textContent} diunduh sebagai PDF.`, "ok"); return; }
+  const hal = e.target.closest("[data-rm-page]");
+  if (hal) { const scr = $(".screen.active").id.slice(2); rmHalaman[scr] = Number(hal.dataset.rmPage); rmRender(scr); }
+});
+Object.keys(RM_LAYAR).forEach(scr => {
+  rmNilaiAwal(scr);
+  const ps = $(`#${scr}-page-size`);
+  if (ps) ps.onchange = () => { rmHalaman[scr] = 1; rmRender(scr); };
+  $(`#s-${scr}`).addEventListener("keydown", e => {
+    if (e.key === "Enter" && e.target.tagName === "INPUT") { rmHalaman[scr] = 1; rmRender(scr); }
+  });
+});

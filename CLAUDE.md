@@ -42,6 +42,7 @@ strukturnya. Hampir semua pola sudah pernah dipakai di suatu tempat.
 | `template-satuan-kerja.xlsx` | Berkas yang diunduh tombol "⤓ Download Template Satuan Kerja" di Tambah Satuan Kerja mekanisme Kolektif; dirujuk lewat `templateFile` di `SATUAN_KERJA_KOLEKTIF_CONTOH` |
 | `pemulihan-data-peserta-dummy.xlsx` | Salinan Excel dari `DATA_SPP` untuk bahan uji manual — 5 sheet (Ringkasan, Pengajuan, Data Keluarga, Data Pangkat, Rekomendasi). Tidak dibaca aplikasi; buat ulang bila `DATA_SPP` berubah |
 | — | Menu **Laporan** (9 sub laporan, layar `s-lap-*`): dihitung di `app.js` (`LAP_LAPORAN`, `renderLaporan`) dari `LAPORAN_PESERTA_BARU` di akhir `data.js` — data dibangkitkan deterministik, bukan berkas |
+| — | Menu **Rekap Movement** (8 sub laporan, layar `rm-*`): dirender di `app.js` (`RM_LAYAR`, `rmRender`) dari `RM` di akhir `data.js` — data dibangkitkan deterministik, bukan berkas. Lima layar berisi daftar nominatif perubahan per peserta (Gaji Pokok, Pangkat, MKG, Status Kawin, Anak); Peserta Per KPPN berisi mutasi KPPN; KPPN dan Satuan Kerja berisi rekap saldo |
 | `pum/` | **Aplikasi terpisah "KPR (PUM)"** — lihat di bawah |
 | `flagging/` | **Aplikasi terpisah "Flagging Mitra Bayar"** — lihat di bawah |
 

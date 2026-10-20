@@ -102,6 +102,19 @@
       <button class="nav-item nav-child" data-go="lap-kpa-cabang">Laporan Penerbitan KPA Berdasarkan Kantor Cabang</button>
     </div>
 
+    <button class="nav-item nav-parent" id="nav-rekap-movement" aria-expanded="true">
+      <span>Rekap Movement</span><span class="chevron">⌄</span>
+    </button>
+    <div class="nav-children" id="nav-rekap-movement-children">
+      <button class="nav-item nav-child" data-go="rm-gaji">Rekap Movement Gaji Pokok</button>
+      <button class="nav-item nav-child" data-go="rm-pangkat">Rekap Movement Pangkat</button>
+      <button class="nav-item nav-child" data-go="rm-mkg">Rekap Movement MKG</button>
+      <button class="nav-item nav-child" data-go="rm-status-kawin">Rekap Movement Status Kawin</button>
+      <button class="nav-item nav-child" data-go="rm-anak">Rekap Movement Anak</button>
+      <button class="nav-item nav-child" data-go="rm-kppn">Rekap Movement KPPN</button>
+      <button class="nav-item nav-child" data-go="rm-peserta-kppn">Rekap Movement Peserta Per KPPN</button>
+      <button class="nav-item nav-child" data-go="rm-satker">Rekap Movement Satuan Kerja</button>
+    </div>
     <button class="nav-item nav-parent" id="nav-rekap-premi" aria-expanded="true">
       <span>Rekap Premi JKK dan JKm</span><span class="chevron">⌄</span>
     </button>
@@ -5764,6 +5777,520 @@
             </div>
           </div>
           <div id="rv-isi"></div>
+        </div>
+      </section>
+
+      <section class="screen" id="s-rm-gaji">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Rekap Movement</span><span>›</span><b>Rekap Movement Gaji Pokok</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Rekap Movement Gaji Pokok</h1>
+            <div class="page-sub">Perubahan gaji pokok peserta per periode: kenaikan pangkat, kenaikan gaji berkala (MKG), penyesuaian peraturan gaji, dan koreksi data.</div>
+          </div>
+        </div>
+
+        <div class="metrics m4" id="rm-gaji-metrics"></div>
+
+        <div class="card">
+          <h3 class="card-title">Filter</h3>
+          <div class="grid3">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-gaji-f-dari">Periode Dari</label>
+              <select class="inp" id="rm-gaji-f-dari" data-rm-periode></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-gaji-f-sampai">Periode Sampai</label>
+              <select class="inp" id="rm-gaji-f-sampai" data-rm-periode></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-gaji-f-unor">Unit Organisasi</label>
+              <select class="inp" id="rm-gaji-f-unor" data-rm-unor></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-gaji-f-cari">NRP/NIP atau Nama</label>
+              <input class="inp" id="rm-gaji-f-cari" placeholder="Masukkan NRP/NIP atau nama">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-gaji-f-jenis">Penyebab Perubahan</label>
+              <select class="inp" id="rm-gaji-f-jenis" data-rm-jenis></select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" data-rm-cari="rm-gaji">⌕ Tampilkan</button>
+            <button class="btn btn-ghost" data-rm-reset="rm-gaji">↺ Reset</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h2 class="card-title" style="margin:0" id="rm-gaji-judul">Rekap Movement Gaji Pokok</h2>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost" data-rm-export="rm-gaji">⭳ Download Excel</button>
+              <button class="btn btn-ghost" data-rm-pdf="rm-gaji">⭳ Download PDF</button>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table class="wide-table">
+              <thead id="rm-gaji-head"></thead>
+              <tbody id="rm-gaji-body"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+            <div class="tbl-note" id="rm-gaji-note" style="margin:0"></div>
+            <div style="display:flex;align-items:center;gap:14px">
+              <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)">
+                Baris
+                <select class="inp" id="rm-gaji-page-size" style="width:64px;height:30px;padding:0 6px;font-size:11px">
+                  <option>10</option><option selected>20</option><option>50</option>
+                </select>
+              </div>
+              <div id="rm-gaji-pagination" style="display:flex;gap:4px"></div>
+            </div>
+          </div>        </div>
+      </section>
+
+      <section class="screen" id="s-rm-pangkat">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Rekap Movement</span><span>›</span><b>Rekap Movement Pangkat</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Rekap Movement Pangkat</h1>
+            <div class="page-sub">Perubahan pangkat/golongan peserta per periode beserta nomor SKEP dan TMT.</div>
+          </div>
+        </div>
+
+        <div class="metrics m4" id="rm-pangkat-metrics"></div>
+
+        <div class="card">
+          <h3 class="card-title">Filter</h3>
+          <div class="grid3">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-pangkat-f-dari">Periode Dari</label>
+              <select class="inp" id="rm-pangkat-f-dari" data-rm-periode></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-pangkat-f-sampai">Periode Sampai</label>
+              <select class="inp" id="rm-pangkat-f-sampai" data-rm-periode></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-pangkat-f-unor">Unit Organisasi</label>
+              <select class="inp" id="rm-pangkat-f-unor" data-rm-unor></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-pangkat-f-cari">NRP/NIP atau Nama</label>
+              <input class="inp" id="rm-pangkat-f-cari" placeholder="Masukkan NRP/NIP atau nama">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-pangkat-f-jenis">Jenis Kenaikan Pangkat</label>
+              <select class="inp" id="rm-pangkat-f-jenis" data-rm-jenis></select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" data-rm-cari="rm-pangkat">⌕ Tampilkan</button>
+            <button class="btn btn-ghost" data-rm-reset="rm-pangkat">↺ Reset</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h2 class="card-title" style="margin:0" id="rm-pangkat-judul">Rekap Movement Pangkat</h2>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost" data-rm-export="rm-pangkat">⭳ Download Excel</button>
+              <button class="btn btn-ghost" data-rm-pdf="rm-pangkat">⭳ Download PDF</button>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table class="wide-table">
+              <thead id="rm-pangkat-head"></thead>
+              <tbody id="rm-pangkat-body"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+            <div class="tbl-note" id="rm-pangkat-note" style="margin:0"></div>
+            <div style="display:flex;align-items:center;gap:14px">
+              <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)">
+                Baris
+                <select class="inp" id="rm-pangkat-page-size" style="width:64px;height:30px;padding:0 6px;font-size:11px">
+                  <option>10</option><option selected>20</option><option>50</option>
+                </select>
+              </div>
+              <div id="rm-pangkat-pagination" style="display:flex;gap:4px"></div>
+            </div>
+          </div>        </div>
+      </section>
+
+      <section class="screen" id="s-rm-mkg">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Rekap Movement</span><span>›</span><b>Rekap Movement MKG</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Rekap Movement MKG</h1>
+            <div class="page-sub">Perubahan Masa Kerja Golongan (MKG) peserta per periode.</div>
+          </div>
+        </div>
+
+        <div class="metrics m4" id="rm-mkg-metrics"></div>
+
+        <div class="card">
+          <h3 class="card-title">Filter</h3>
+          <div class="grid3">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-mkg-f-dari">Periode Dari</label>
+              <select class="inp" id="rm-mkg-f-dari" data-rm-periode></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-mkg-f-sampai">Periode Sampai</label>
+              <select class="inp" id="rm-mkg-f-sampai" data-rm-periode></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-mkg-f-unor">Unit Organisasi</label>
+              <select class="inp" id="rm-mkg-f-unor" data-rm-unor></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-mkg-f-cari">NRP/NIP atau Nama</label>
+              <input class="inp" id="rm-mkg-f-cari" placeholder="Masukkan NRP/NIP atau nama">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-mkg-f-jenis">Jenis Perubahan MKG</label>
+              <select class="inp" id="rm-mkg-f-jenis" data-rm-jenis></select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" data-rm-cari="rm-mkg">⌕ Tampilkan</button>
+            <button class="btn btn-ghost" data-rm-reset="rm-mkg">↺ Reset</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h2 class="card-title" style="margin:0" id="rm-mkg-judul">Rekap Movement MKG</h2>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost" data-rm-export="rm-mkg">⭳ Download Excel</button>
+              <button class="btn btn-ghost" data-rm-pdf="rm-mkg">⭳ Download PDF</button>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table class="wide-table">
+              <thead id="rm-mkg-head"></thead>
+              <tbody id="rm-mkg-body"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+            <div class="tbl-note" id="rm-mkg-note" style="margin:0"></div>
+            <div style="display:flex;align-items:center;gap:14px">
+              <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)">
+                Baris
+                <select class="inp" id="rm-mkg-page-size" style="width:64px;height:30px;padding:0 6px;font-size:11px">
+                  <option>10</option><option selected>20</option><option>50</option>
+                </select>
+              </div>
+              <div id="rm-mkg-pagination" style="display:flex;gap:4px"></div>
+            </div>
+          </div>        </div>
+      </section>
+
+      <section class="screen" id="s-rm-status-kawin">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Rekap Movement</span><span>›</span><b>Rekap Movement Status Kawin</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Rekap Movement Status Kawin</h1>
+            <div class="page-sub">Perubahan status perkawinan peserta per periode beserta dokumen pendukungnya.</div>
+          </div>
+        </div>
+
+        <div class="metrics m4" id="rm-status-kawin-metrics"></div>
+
+        <div class="card">
+          <h3 class="card-title">Filter</h3>
+          <div class="grid3">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-status-kawin-f-dari">Periode Dari</label>
+              <select class="inp" id="rm-status-kawin-f-dari" data-rm-periode></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-status-kawin-f-sampai">Periode Sampai</label>
+              <select class="inp" id="rm-status-kawin-f-sampai" data-rm-periode></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-status-kawin-f-unor">Unit Organisasi</label>
+              <select class="inp" id="rm-status-kawin-f-unor" data-rm-unor></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-status-kawin-f-cari">NRP/NIP atau Nama</label>
+              <input class="inp" id="rm-status-kawin-f-cari" placeholder="Masukkan NRP/NIP atau nama">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-status-kawin-f-jenis">Perubahan Status Kawin</label>
+              <select class="inp" id="rm-status-kawin-f-jenis" data-rm-jenis></select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" data-rm-cari="rm-status-kawin">⌕ Tampilkan</button>
+            <button class="btn btn-ghost" data-rm-reset="rm-status-kawin">↺ Reset</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h2 class="card-title" style="margin:0" id="rm-status-kawin-judul">Rekap Movement Status Kawin</h2>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost" data-rm-export="rm-status-kawin">⭳ Download Excel</button>
+              <button class="btn btn-ghost" data-rm-pdf="rm-status-kawin">⭳ Download PDF</button>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table class="wide-table">
+              <thead id="rm-status-kawin-head"></thead>
+              <tbody id="rm-status-kawin-body"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+            <div class="tbl-note" id="rm-status-kawin-note" style="margin:0"></div>
+            <div style="display:flex;align-items:center;gap:14px">
+              <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)">
+                Baris
+                <select class="inp" id="rm-status-kawin-page-size" style="width:64px;height:30px;padding:0 6px;font-size:11px">
+                  <option>10</option><option selected>20</option><option>50</option>
+                </select>
+              </div>
+              <div id="rm-status-kawin-pagination" style="display:flex;gap:4px"></div>
+            </div>
+          </div>        </div>
+      </section>
+
+      <section class="screen" id="s-rm-anak">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Rekap Movement</span><span>›</span><b>Rekap Movement Anak</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Rekap Movement Anak</h1>
+            <div class="page-sub">Penambahan dan pengurangan jumlah anak tertanggung peserta per periode.</div>
+          </div>
+        </div>
+
+        <div class="metrics m4" id="rm-anak-metrics"></div>
+
+        <div class="card">
+          <h3 class="card-title">Filter</h3>
+          <div class="grid3">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-anak-f-dari">Periode Dari</label>
+              <select class="inp" id="rm-anak-f-dari" data-rm-periode></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-anak-f-sampai">Periode Sampai</label>
+              <select class="inp" id="rm-anak-f-sampai" data-rm-periode></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-anak-f-unor">Unit Organisasi</label>
+              <select class="inp" id="rm-anak-f-unor" data-rm-unor></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-anak-f-cari">NRP/NIP atau Nama</label>
+              <input class="inp" id="rm-anak-f-cari" placeholder="Masukkan NRP/NIP atau nama">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-anak-f-jenis">Jenis Perubahan Anak</label>
+              <select class="inp" id="rm-anak-f-jenis" data-rm-jenis></select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" data-rm-cari="rm-anak">⌕ Tampilkan</button>
+            <button class="btn btn-ghost" data-rm-reset="rm-anak">↺ Reset</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h2 class="card-title" style="margin:0" id="rm-anak-judul">Rekap Movement Anak</h2>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost" data-rm-export="rm-anak">⭳ Download Excel</button>
+              <button class="btn btn-ghost" data-rm-pdf="rm-anak">⭳ Download PDF</button>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table class="wide-table">
+              <thead id="rm-anak-head"></thead>
+              <tbody id="rm-anak-body"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+            <div class="tbl-note" id="rm-anak-note" style="margin:0"></div>
+            <div style="display:flex;align-items:center;gap:14px">
+              <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)">
+                Baris
+                <select class="inp" id="rm-anak-page-size" style="width:64px;height:30px;padding:0 6px;font-size:11px">
+                  <option>10</option><option selected>20</option><option>50</option>
+                </select>
+              </div>
+              <div id="rm-anak-pagination" style="display:flex;gap:4px"></div>
+            </div>
+          </div>        </div>
+      </section>
+
+      <section class="screen" id="s-rm-kppn">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Rekap Movement</span><span>›</span><b>Rekap Movement KPPN</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Rekap Movement KPPN</h1>
+            <div class="page-sub">Rekap saldo peserta per KPPN: saldo awal, mutasi masuk/keluar, peserta baru, berhenti, dan saldo akhir.</div>
+          </div>
+        </div>
+
+        <div class="metrics m4" id="rm-kppn-metrics"></div>
+
+        <div class="card">
+          <h3 class="card-title">Filter</h3>
+          <div class="grid3">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-kppn-f-dari">Periode Dari</label>
+              <select class="inp" id="rm-kppn-f-dari" data-rm-periode></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-kppn-f-sampai">Periode Sampai</label>
+              <select class="inp" id="rm-kppn-f-sampai" data-rm-periode></select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" data-rm-cari="rm-kppn">⌕ Tampilkan</button>
+            <button class="btn btn-ghost" data-rm-reset="rm-kppn">↺ Reset</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h2 class="card-title" style="margin:0" id="rm-kppn-judul">Rekap Movement KPPN</h2>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost" data-rm-export="rm-kppn">⭳ Download Excel</button>
+              <button class="btn btn-ghost" data-rm-pdf="rm-kppn">⭳ Download PDF</button>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table class="">
+              <thead id="rm-kppn-head"></thead>
+              <tbody id="rm-kppn-body"></tbody>
+            </table>
+          </div>
+          <div class="tbl-note" id="rm-kppn-note"></div>
+          <div id="rm-kppn-pagination"></div>
+        </div>
+      </section>
+
+      <section class="screen" id="s-rm-peserta-kppn">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Rekap Movement</span><span>›</span><b>Rekap Movement Peserta Per KPPN</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Rekap Movement Peserta Per KPPN</h1>
+            <div class="page-sub">Daftar nominatif peserta yang berpindah KPPN pembayar pada periode terpilih.</div>
+          </div>
+        </div>
+
+        <div class="metrics m4" id="rm-peserta-kppn-metrics"></div>
+
+        <div class="card">
+          <h3 class="card-title">Filter</h3>
+          <div class="grid3">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-peserta-kppn-f-dari">Periode Dari</label>
+              <select class="inp" id="rm-peserta-kppn-f-dari" data-rm-periode></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-peserta-kppn-f-sampai">Periode Sampai</label>
+              <select class="inp" id="rm-peserta-kppn-f-sampai" data-rm-periode></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-peserta-kppn-f-unor">Unit Organisasi</label>
+              <select class="inp" id="rm-peserta-kppn-f-unor" data-rm-unor></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-peserta-kppn-f-cari">NRP/NIP atau Nama</label>
+              <input class="inp" id="rm-peserta-kppn-f-cari" placeholder="Masukkan NRP/NIP atau nama">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-peserta-kppn-f-jenis">KPPN (Asal atau Tujuan)</label>
+              <select class="inp" id="rm-peserta-kppn-f-jenis" data-rm-jenis></select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" data-rm-cari="rm-peserta-kppn">⌕ Tampilkan</button>
+            <button class="btn btn-ghost" data-rm-reset="rm-peserta-kppn">↺ Reset</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h2 class="card-title" style="margin:0" id="rm-peserta-kppn-judul">Rekap Movement Peserta Per KPPN</h2>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost" data-rm-export="rm-peserta-kppn">⭳ Download Excel</button>
+              <button class="btn btn-ghost" data-rm-pdf="rm-peserta-kppn">⭳ Download PDF</button>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table class="wide-table">
+              <thead id="rm-peserta-kppn-head"></thead>
+              <tbody id="rm-peserta-kppn-body"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+            <div class="tbl-note" id="rm-peserta-kppn-note" style="margin:0"></div>
+            <div style="display:flex;align-items:center;gap:14px">
+              <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)">
+                Baris
+                <select class="inp" id="rm-peserta-kppn-page-size" style="width:64px;height:30px;padding:0 6px;font-size:11px">
+                  <option>10</option><option selected>20</option><option>50</option>
+                </select>
+              </div>
+              <div id="rm-peserta-kppn-pagination" style="display:flex;gap:4px"></div>
+            </div>
+          </div>        </div>
+      </section>
+
+      <section class="screen" id="s-rm-satker">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Rekap Movement</span><span>›</span><b>Rekap Movement Satuan Kerja</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Rekap Movement Satuan Kerja</h1>
+            <div class="page-sub">Rekap saldo peserta per satuan kerja: saldo awal, mutasi masuk/keluar, peserta baru, berhenti, dan saldo akhir.</div>
+          </div>
+        </div>
+
+        <div class="metrics m4" id="rm-satker-metrics"></div>
+
+        <div class="card">
+          <h3 class="card-title">Filter</h3>
+          <div class="grid3">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-satker-f-dari">Periode Dari</label>
+              <select class="inp" id="rm-satker-f-dari" data-rm-periode></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-satker-f-sampai">Periode Sampai</label>
+              <select class="inp" id="rm-satker-f-sampai" data-rm-periode></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps" for="rm-satker-f-unor">Unit Organisasi</label>
+              <select class="inp" id="rm-satker-f-unor" data-rm-unor></select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" data-rm-cari="rm-satker">⌕ Tampilkan</button>
+            <button class="btn btn-ghost" data-rm-reset="rm-satker">↺ Reset</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h2 class="card-title" style="margin:0" id="rm-satker-judul">Rekap Movement Satuan Kerja</h2>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost" data-rm-export="rm-satker">⭳ Download Excel</button>
+              <button class="btn btn-ghost" data-rm-pdf="rm-satker">⭳ Download PDF</button>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table class="">
+              <thead id="rm-satker-head"></thead>
+              <tbody id="rm-satker-body"></tbody>
+            </table>
+          </div>
+          <div class="tbl-note" id="rm-satker-note"></div>
+          <div id="rm-satker-pagination"></div>
         </div>
       </section>
 
