@@ -14809,17 +14809,7 @@ const rmHitung = (rows, f) => rows.filter(f).length;
 const RM_LAYAR = {
   "rm-gaji": { matriks: "perubahan", data: () => RM_GAJI_MATRIKS, nama: "Gaji Pokok", objek: "gaji pokok", kosongKet: "peserta tanpa gaji pokok" },
   "rm-pangkat": { matriks: "perubahan", data: () => RM_PANGKAT_MATRIKS, nama: "Pangkat", objek: "pangkat", kosongKet: "peserta tanpa data pangkat" },
-  "rm-mkg": {
-    sumber: () => RM.mkg, jenis: r => r.jenis,
-    jenisOpsi: ["Kenaikan MKG Berkala", "Penyesuaian MKG (Masa Dinas Tambahan)", "Koreksi MKG"],
-    head: ["NO", "NRP/NIP", "NAMA", "UNOR", "SATUAN KERJA", "PANGKAT", "MKG LAMA", "MKG BARU", "TMT", "JENIS"], angka: [],
-    baris: r => [r.nrp, r.nama, r.unor, r.satker, r.pangkat, `${r.lamaTh} Th ${r.lamaBl} Bl`, `${r.baruTh} Th ${r.baruBl} Bl`, rmTgl(r.tanggal), r.jenis],
-    metrics: rows => [
-      ["Total Perubahan MKG", rmAngka(rows.length) + " peserta"],
-      ["Kenaikan Berkala", rmAngka(rmHitung(rows, r => r.jenis === "Kenaikan MKG Berkala"))],
-      ["Penyesuaian / Koreksi", rmAngka(rmHitung(rows, r => r.jenis !== "Kenaikan MKG Berkala"))],
-      ["Peserta Terdampak", rmAngka(rmUnik(rows, r => r.nrp))]]
-  },
+  "rm-mkg": { matriks: "perubahan", data: () => RM_MKG_MATRIKS, nama: "MKG", objek: "MKG", kosongKet: "peserta tanpa data MKG" },
   "rm-status-kawin": {
     sumber: () => RM.statusKawin, jenis: r => `${r.lama} → ${r.baru}`,
     jenisOpsi: ["Belum Kawin → Kawin", "Kawin → Cerai Hidup", "Kawin → Cerai Mati", "Cerai Hidup → Kawin", "Cerai Mati → Kawin"],

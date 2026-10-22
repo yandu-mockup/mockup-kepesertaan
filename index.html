@@ -5889,7 +5889,7 @@
         <div class="page-head">
           <div>
             <h1 class="page-title">Rekap Movement MKG</h1>
-            <div class="page-sub">Perubahan Masa Kerja Golongan (MKG) peserta per periode.</div>
+            <div class="page-sub">Jumlah peserta per UNOR dan status personil yang MKG-nya naik, turun, berubah, atau kosong pada setiap bulan.</div>
           </div>
         </div>
 
@@ -5899,24 +5899,16 @@
           <h3 class="card-title">Filter</h3>
           <div class="grid3">
             <div class="field" style="margin-bottom:0">
-              <label class="fl caps" for="rm-mkg-f-dari">Periode Dari</label>
-              <select class="inp" id="rm-mkg-f-dari" data-rm-periode></select>
-            </div>
-            <div class="field" style="margin-bottom:0">
-              <label class="fl caps" for="rm-mkg-f-sampai">Periode Sampai</label>
-              <select class="inp" id="rm-mkg-f-sampai" data-rm-periode></select>
+              <label class="fl caps" for="rm-mkg-f-tahun">Tahun</label>
+              <select class="inp" id="rm-mkg-f-tahun"><option>2026</option></select>
             </div>
             <div class="field" style="margin-bottom:0">
               <label class="fl caps" for="rm-mkg-f-unor">Unit Organisasi</label>
               <select class="inp" id="rm-mkg-f-unor" data-rm-unor></select>
             </div>
             <div class="field" style="margin-bottom:0">
-              <label class="fl caps" for="rm-mkg-f-cari">NRP/NIP atau Nama</label>
-              <input class="inp" id="rm-mkg-f-cari" placeholder="Masukkan NRP/NIP atau nama">
-            </div>
-            <div class="field" style="margin-bottom:0">
-              <label class="fl caps" for="rm-mkg-f-jenis">Jenis Perubahan MKG</label>
-              <select class="inp" id="rm-mkg-f-jenis" data-rm-jenis></select>
+              <label class="fl caps" for="rm-mkg-f-stpers">Status Personil</label>
+              <select class="inp" id="rm-mkg-f-stpers"><option value="">Semua</option><option>PRAJURIT</option><option>PNS</option></select>
             </div>
           </div>
           <div class="form-actions">
@@ -5934,23 +5926,14 @@
             </div>
           </div>
           <div class="tbl-wrap">
-            <table class="wide-table">
+            <table class="tbl-navy">
               <thead id="rm-mkg-head"></thead>
               <tbody id="rm-mkg-body"></tbody>
             </table>
           </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
-            <div class="tbl-note" id="rm-mkg-note" style="margin:0"></div>
-            <div style="display:flex;align-items:center;gap:14px">
-              <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)">
-                Baris
-                <select class="inp" id="rm-mkg-page-size" style="width:64px;height:30px;padding:0 6px;font-size:11px">
-                  <option>10</option><option selected>20</option><option>50</option>
-                </select>
-              </div>
-              <div id="rm-mkg-pagination" style="display:flex;gap:4px"></div>
-            </div>
-          </div>        </div>
+          <div class="tbl-note" id="rm-mkg-note"></div>
+          <div id="rm-mkg-pagination"></div>
+        </div>
       </section>
 
       <section class="screen" id="s-rm-status-kawin">

@@ -6802,3 +6802,7 @@ const RM_PANGKAT_MATRIKS = (() => {
   });
   return [...tetap, ...g.slice(4).map(turunan)];
 })();
+
+/* Rekap Movement MKG — bentuk sama dengan RM_GAJI_MATRIKS; naik / turun = peserta yang MKG-nya
+   naik / turun. Angkanya mengikuti data referensi yang sama dengan Rekap Movement Pangkat. */
+const RM_MKG_MATRIKS = RM_PANGKAT_MATRIKS;
