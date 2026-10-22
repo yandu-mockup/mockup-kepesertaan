@@ -860,3 +860,7 @@ textarea.inp{height:auto; padding:9px 12px; line-height:1.5}
 .tbl-navy tbody td{padding:9px 12px; border-right:1px solid var(--line-soft)}
 .tbl-navy tbody td:last-child{border-right:0}
 .tbl-navy tbody tr.tr-total td{background:var(--navy); color:var(--surface); border-bottom:0}
+/* Baris berwarna pada tabel matriks Rekap Movement Gaji Pokok */
+.tbl-navy tbody tr.tr-naik td{background:var(--blue-soft)}
+.tbl-navy tbody tr.tr-turun td{background:var(--amber-soft)}
+.tbl-navy tbody tr.tr-kosong td{background:var(--red-soft)}

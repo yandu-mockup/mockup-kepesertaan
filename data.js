@@ -6740,3 +6740,43 @@ const RM_KPPN_PESERTA = [
   ["182", "JAKARTA VII", [320, 317, 321, 319, 298, 301, 315, 315, 310, 310]],
   ["185", "TANJUNG SELOR", [4719, 4810, 4771, 4735, 4503, 4560, 4967, 4913, 4870, 4868]]
 ];
+
+/* Rekap Movement Gaji Pokok — jumlah peserta per UNOR × status personil per bulan
+   Januari–Oktober 2026. total = peserta bergaji pokok; naik / turun = peserta yang gajinya
+   naik / turun dibanding bulan sebelumnya; kosong = peserta tanpa gaji pokok. 0 ditampilkan "-".
+   "Berubah" = naik + turun, dihitung di app.js. Tiga kelompok pertama dari data referensi;
+   sisanya dibangkitkan deterministik. */
+const RM_GAJI_MATRIKS = (() => {
+  const tetap = [
+    { unor: "TNI AD", stpers: "PRAJURIT",
+      total:  [379008, 378443, 383886, 383177, 405392, 405161, 406028, 405566, 405394, 415935],
+      naik:   [0, 22957, 1121, 12597, 43548, 23007, 19497, 14071, 19218, 0],
+      turun:  [0, 0, 1, 0, 43, 14, 23, 0, 0, 0],
+      kosong: [0, 723, 1462, 2205, 4540, 4771, 3904, 15093, 15265, 4724] },
+    { unor: "TNI AD", stpers: "PNS",
+      total:  [23261, 23061, 22885, 22680, 22458, 22259, 22025, 21769, 21541, 21374],
+      naik:   [0, 1263, 254, 1979, 1189, 617, 540, 1042, 388, 0],
+      turun:  [0, 0, 0, 0, 0, 0, 3, 0, 0, 0],
+      kosong: [0, 200, 376, 581, 803, 1002, 1236, 1497, 1725, 1892] },
+    { unor: "TNI AL", stpers: "PRAJURIT",
+      total:  [66623, 66536, 66346, 66174, 68347, 68478, 68529, 68492, 69101, 69156],
+      naik:   [0, 2749, 167, 2709, 3105, 3979, 5616, 3402, 4817, 0],
+      turun:  [0, 0, 0, 0, 1, 6, 3, 1, 0, 0],
+      kosong: [0, 188, 378, 551, 901, 770, 719, 1538, 929, 874] }
+  ];
+  let seed = 20261022;
+  const acak = n => { seed = (seed * 1664525 + 1013904223) % 4294967296; return Math.floor(seed / 4294967296 * n); };
+  const bangkit = (unor, stpers, dasar) => {
+    const total = [dasar], naik = [0], turun = [0], kosong = [0];
+    for (let i = 1; i < 10; i++) {
+      total.push(total[i - 1] + acak(Math.round(dasar * 0.03)) - Math.round(dasar * 0.012));
+      naik.push(i === 9 ? 0 : Math.round(dasar * (0.004 + acak(60) / 1000)));
+      turun.push(i === 9 || acak(3) ? 0 : 1 + acak(Math.max(2, Math.round(dasar / 4000))));
+      kosong.push(Math.round(dasar * (0.002 + i * 0.0012) + acak(Math.max(2, Math.round(dasar * 0.004)))));
+    }
+    return { unor, stpers, total, naik, turun, kosong };
+  };
+  return [...tetap,
+    bangkit("TNI AL", "PNS", 9800), bangkit("TNI AU", "PRAJURIT", 54000), bangkit("TNI AU", "PNS", 7600),
+    bangkit("POLRI", "PRAJURIT", 460000), bangkit("POLRI", "PNS", 15500), bangkit("KEMHAN", "PNS", 11200)];
+})();
