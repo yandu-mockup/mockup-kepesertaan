@@ -6178,7 +6178,7 @@
         <div class="page-head">
           <div>
             <h1 class="page-title">Rekap Movement Peserta Per KPPN</h1>
-            <div class="page-sub">Daftar nominatif peserta yang berpindah KPPN pembayar pada periode terpilih.</div>
+            <div class="page-sub">Jumlah peserta per KPPN pembayar pada setiap bulan dalam satu tahun.</div>
           </div>
         </div>
 
@@ -6186,26 +6186,14 @@
 
         <div class="card">
           <h3 class="card-title">Filter</h3>
-          <div class="grid3">
+          <div class="grid2">
             <div class="field" style="margin-bottom:0">
-              <label class="fl caps" for="rm-peserta-kppn-f-dari">Periode Dari</label>
-              <select class="inp" id="rm-peserta-kppn-f-dari" data-rm-periode></select>
+              <label class="fl caps" for="rm-peserta-kppn-f-tahun">Tahun</label>
+              <select class="inp" id="rm-peserta-kppn-f-tahun"><option>2026</option></select>
             </div>
             <div class="field" style="margin-bottom:0">
-              <label class="fl caps" for="rm-peserta-kppn-f-sampai">Periode Sampai</label>
-              <select class="inp" id="rm-peserta-kppn-f-sampai" data-rm-periode></select>
-            </div>
-            <div class="field" style="margin-bottom:0">
-              <label class="fl caps" for="rm-peserta-kppn-f-unor">Unit Organisasi</label>
-              <select class="inp" id="rm-peserta-kppn-f-unor" data-rm-unor></select>
-            </div>
-            <div class="field" style="margin-bottom:0">
-              <label class="fl caps" for="rm-peserta-kppn-f-cari">NRP/NIP atau Nama</label>
-              <input class="inp" id="rm-peserta-kppn-f-cari" placeholder="Masukkan NRP/NIP atau nama">
-            </div>
-            <div class="field" style="margin-bottom:0">
-              <label class="fl caps" for="rm-peserta-kppn-f-jenis">KPPN (Asal atau Tujuan)</label>
-              <select class="inp" id="rm-peserta-kppn-f-jenis" data-rm-jenis></select>
+              <label class="fl caps" for="rm-peserta-kppn-f-cari">Kode atau Nama KPPN</label>
+              <input class="inp" id="rm-peserta-kppn-f-cari" placeholder="Contoh: 004 atau Medan">
             </div>
           </div>
           <div class="form-actions">
@@ -6223,23 +6211,14 @@
             </div>
           </div>
           <div class="tbl-wrap">
-            <table class="wide-table">
+            <table class="tbl-navy">
               <thead id="rm-peserta-kppn-head"></thead>
               <tbody id="rm-peserta-kppn-body"></tbody>
             </table>
           </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
-            <div class="tbl-note" id="rm-peserta-kppn-note" style="margin:0"></div>
-            <div style="display:flex;align-items:center;gap:14px">
-              <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)">
-                Baris
-                <select class="inp" id="rm-peserta-kppn-page-size" style="width:64px;height:30px;padding:0 6px;font-size:11px">
-                  <option>10</option><option selected>20</option><option>50</option>
-                </select>
-              </div>
-              <div id="rm-peserta-kppn-pagination" style="display:flex;gap:4px"></div>
-            </div>
-          </div>        </div>
+          <div class="tbl-note" id="rm-peserta-kppn-note"></div>
+          <div id="rm-peserta-kppn-pagination"></div>
+        </div>
       </section>
 
       <section class="screen" id="s-rm-satker">

@@ -854,3 +854,9 @@ textarea.inp{height:auto; padding:9px 12px; line-height:1.5}
   .metrics.m4{grid-template-columns:1fr}
   .tipe-grid{grid-template-columns:1fr}
 }
+/* Tabel matriks rekap (kepala & baris TOTAL navy, garis tegak antar kolom) — Rekap Movement Peserta Per KPPN */
+.tbl-navy thead th{background:var(--navy); color:var(--surface); text-align:center; border-right:1px solid var(--line); border-bottom:0}
+.tbl-navy thead th:last-child{border-right:0}
+.tbl-navy tbody td{padding:9px 12px; border-right:1px solid var(--line-soft)}
+.tbl-navy tbody td:last-child{border-right:0}
+.tbl-navy tbody tr.tr-total td{background:var(--navy); color:var(--surface); border-bottom:0}

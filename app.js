@@ -14864,16 +14864,7 @@ const RM_LAYAR = {
       ["Pengurangan Anak", rmAngka(rmHitung(rows, r => r.baru < r.lama))],
       ["Selisih Bersih", rows.reduce((a, r) => a + r.baru - r.lama, 0).toLocaleString("id-ID")]]
   },
-  "rm-peserta-kppn": {
-    sumber: () => RM.mutasiKppn, jenis: r => [r.asal, r.tujuan], jenisOpsi: RM_KPPN,
-    head: ["NO", "NRP/NIP", "NAMA", "UNOR", "SATUAN KERJA", "KPPN ASAL", "KPPN TUJUAN", "TMT PINDAH", "ALASAN"], angka: [],
-    baris: r => [r.nrp, r.nama, r.unor, r.satker, r.asal, r.tujuan, rmTgl(r.tanggal), r.alasan],
-    metrics: rows => {
-      const top = f => { const c = {}; rows.forEach(r => { c[f(r)] = (c[f(r)] || 0) + 1; }); const e = Object.entries(c).sort((a, b) => b[1] - a[1])[0]; return e ? `${e[0]} (${e[1]})` : "-"; };
-      return [["Total Mutasi KPPN", rmAngka(rows.length) + " peserta"], ["Peserta Unik", rmAngka(rmUnik(rows, r => r.nrp))],
-        ["KPPN Asal Terbanyak", top(r => r.asal)], ["KPPN Tujuan Terbanyak", top(r => r.tujuan)]];
-    }
-  },
+  "rm-peserta-kppn": { matriks: true },
   "rm-kppn": {
     rekap: true, kunci: "Kppn", daftar: () => RM_KPPN.slice(), mutasi: () => RM.mutasiKppn, label: "KPPN"
   },
@@ -14897,7 +14888,37 @@ Object.entries(RM_LAYAR).forEach(([scr, c]) => {
 
 function rmNilaiAwal(scr) {
   $$(`[id^="${scr}-f-"]`).forEach(el => { if (el.tagName === "SELECT") el.selectedIndex = 0; else el.value = ""; });
-  const s = $(`#${scr}-f-sampai`); s.selectedIndex = s.options.length - 1;
+  const s = $(`#${scr}-f-sampai`); if (s) s.selectedIndex = s.options.length - 1;
+}
+
+/* Matriks jumlah peserta per KPPN (baris) × bulan Jan–Des (kolom), baris TOTAL di bawah. */
+function rmRenderMatriks(scr) {
+  const q = lapNilai(scr, "cari").trim().toLowerCase(), tahun = lapNilai(scr, "tahun");
+  const rows = RM_KPPN_PESERTA.filter(r => !q || r[0].includes(q) || r[1].toLowerCase().includes(q));
+  const bulan = RM_BULAN.map(b => b.slice(0, 3).toUpperCase());
+  const nilai = (r, i) => r[2][i];
+  const total = i => rows.reduce((a, r) => a + nilai(r, i), 0);
+  const tdAngka = v => `<td style="text-align:right">${v === undefined ? "-" : rmAngka(v)}</td>`;
+  const terisi = RM_PERIODE.length, akhir = terisi - 1;
+  const selisih = rows.length ? total(akhir) - total(0) : 0;
+
+  $(`#${scr}-judul`).textContent = `Rekap Movement Peserta Per KPPN — ${tahun}`;
+  $(`#${scr}-metrics`).innerHTML = [
+    ["Jumlah KPPN", rmAngka(rows.length)],
+    [`Peserta ${bulan[0]}`, rmAngka(rows.length ? total(0) : 0)],
+    [`Peserta ${bulan[akhir]}`, rmAngka(rows.length ? total(akhir) : 0)],
+    ["Perubahan Jan–Okt", (selisih < 0 ? "−" : "+") + rmAngka(Math.abs(selisih))]
+  ].map(([l, v]) => `
+    <div class="metric">
+      <div class="metric-lbl">${esc(l)}</div>
+      <div class="metric-val">${esc(v)}</div>
+    </div>`).join("");
+  $(`#${scr}-head`).innerHTML = `<tr><th>NO</th><th>KODE</th><th>KPPN</th>${bulan.map(b => `<th style="text-align:right">${b}</th>`).join("")}</tr>`;
+  $(`#${scr}-body`).innerHTML = rows.length
+    ? rows.map((r, n) => `<tr><td>${n + 1}</td><td class="t-strong">${esc(r[0])}</td><td class="t-strong">${esc(r[1])}</td>${bulan.map((_, i) => tdAngka(nilai(r, i))).join("")}</tr>`).join("")
+      + `<tr class="tr-total"><td colspan="3" class="t-strong" style="text-align:center">TOTAL</td>${bulan.map((_, i) => `<td class="t-strong" style="text-align:right">${i < terisi ? rmAngka(total(i)) : 0}</td>`).join("")}</tr>`
+    : `<tr><td colspan="${3 + bulan.length}"><div class="empty"><h4>Tidak ada data</h4><p>Ubah filter lalu tampilkan kembali.</p></div></td></tr>`;
+  $(`#${scr}-note`).textContent = `${rows.length} KPPN ditampilkan · jumlah peserta per akhir bulan; bulan yang belum berjalan ditampilkan "-"`;
 }
 
 /* Rekap saldo per KPPN / Satuan Kerja. Saldo awal periode = saldo 1 Jan 2026
@@ -14921,6 +14942,7 @@ function rmRekap(scr, c) {
 
 function rmRender(scr) {
   const c = RM_LAYAR[scr];
+  if (c.matriks) return rmRenderMatriks(scr);
   const dari = lapNilai(scr, "dari"), sampai = lapNilai(scr, "sampai");
   const periode = dari === sampai ? rmPeriodeLabel(dari) : `${rmPeriodeLabel(dari)} s.d. ${rmPeriodeLabel(sampai)}`;
   const kosong = n => `<tr><td colspan="${n}"><div class="empty"><h4>Tidak ada data</h4><p>Ubah filter lalu tampilkan kembali.</p></div></td></tr>`;
