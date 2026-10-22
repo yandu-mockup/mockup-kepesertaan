@@ -6780,3 +6780,25 @@ const RM_GAJI_MATRIKS = (() => {
     bangkit("TNI AL", "PNS", 9800), bangkit("TNI AU", "PRAJURIT", 54000), bangkit("TNI AU", "PNS", 7600),
     bangkit("POLRI", "PRAJURIT", 460000), bangkit("POLRI", "PNS", 15500), bangkit("KEMHAN", "PNS", 11200)];
 })();
+
+/* Rekap Movement Pangkat — bentuk sama dengan RM_GAJI_MATRIKS, tetapi naik / turun
+   = peserta yang pangkatnya naik / turun. total & kosong mengikuti data gaji pokok
+   (populasi peserta yang sama). Empat kelompok pertama dari data referensi, sisanya dibangkitkan. */
+const RM_PANGKAT_MATRIKS = (() => {
+  const g = RM_GAJI_MATRIKS;
+  const tetap = [
+    { ...g[0], naik: [0, 31516, 1198, 13105, 88841, 23080, 19728, 65184, 19301, 0], turun: [0, 0, 1, 0, 76, 17, 19, 4, 0, 0] },
+    { ...g[1], naik: [0, 2341, 262, 2001, 2958, 641, 548, 2534, 567, 0],            turun: [0, 0, 0, 0, 1, 2, 3, 0, 0, 0] },
+    { ...g[2], naik: [0, 2765, 169, 2712, 3114, 3984, 5628, 3411, 4825, 0],         turun: [0, 0, 0, 0, 0, 6, 3, 1, 0, 0] },
+    { unor: "TNI AL", stpers: "PNS", total: [6110, 6077, 6050, 6008, 5975, 5936, 5892, 5852, 5812, 5773],
+      naik: [0, 74, 31, 66, 59, 97, 120, 88, 52, 0], turun: [0, 0, 0, 0, 1, 0, 2, 0, 0, 0], kosong: [0, 31, 49, 72, 90, 118, 141, 160, 183, 201] }
+  ];
+  let seed = 20261023;
+  const acak = n => { seed = (seed * 1664525 + 1013904223) % 4294967296; return Math.floor(seed / 4294967296 * n); };
+  const turunan = x => ({
+    ...x,
+    naik: x.total.map((t, i) => (i === 0 || i === 9 ? 0 : Math.round(t * (0.004 + acak(80) / 1000)))),
+    turun: x.total.map((t, i) => (i === 0 || i === 9 || acak(3) ? 0 : 1 + acak(Math.max(2, Math.round(t / 5000)))))
+  });
+  return [...tetap, ...g.slice(4).map(turunan)];
+})();

@@ -14807,18 +14807,8 @@ const rmUnik = (rows, f) => new Set(rows.map(f)).size;
 const rmHitung = (rows, f) => rows.filter(f).length;
 
 const RM_LAYAR = {
-  "rm-gaji": { matriks: "gaji" },
-  "rm-pangkat": {
-    sumber: () => RM.pangkat, jenis: r => r.jenis,
-    jenisOpsi: ["Kenaikan Pangkat Reguler", "Kenaikan Pangkat Pilihan", "Kenaikan Pangkat Luar Biasa", "Kenaikan Pangkat Anumerta"],
-    head: ["NO", "NRP/NIP", "NAMA", "UNOR", "SATUAN KERJA", "PANGKAT LAMA", "PANGKAT BARU", "TMT", "NOMOR SKEP", "JENIS"], angka: [],
-    baris: r => [r.nrp, r.nama, r.unor, r.satker, r.lama, r.baru, rmTgl(r.tanggal), r.skep, r.jenis],
-    metrics: rows => [
-      ["Total Perubahan Pangkat", rmAngka(rows.length) + " peserta"],
-      ["Reguler", rmAngka(rmHitung(rows, r => r.jenis.endsWith("Reguler")))],
-      ["Pilihan / Luar Biasa", rmAngka(rmHitung(rows, r => /Pilihan|Luar Biasa/.test(r.jenis)))],
-      ["Anumerta", rmAngka(rmHitung(rows, r => r.jenis.endsWith("Anumerta")))]]
-  },
+  "rm-gaji": { matriks: "perubahan", data: () => RM_GAJI_MATRIKS, nama: "Gaji Pokok", objek: "gaji pokok", kosongKet: "peserta tanpa gaji pokok" },
+  "rm-pangkat": { matriks: "perubahan", data: () => RM_PANGKAT_MATRIKS, nama: "Pangkat", objek: "pangkat", kosongKet: "peserta tanpa data pangkat" },
   "rm-mkg": {
     sumber: () => RM.mkg, jenis: r => r.jenis,
     jenisOpsi: ["Kenaikan MKG Berkala", "Penyesuaian MKG (Masa Dinas Tambahan)", "Koreksi MKG"],
@@ -14879,10 +14869,10 @@ function rmNilaiAwal(scr) {
   const s = $(`#${scr}-f-sampai`); if (s) s.selectedIndex = s.options.length - 1;
 }
 
-/* Matriks Gaji Pokok: per UNOR × status personil, lima baris (Total, Naik, Turun, Berubah, Kosong) × bulan Jan–Des. */
-function rmRenderGaji(scr) {
+/* Matriks perubahan (Gaji Pokok, Pangkat): per UNOR × status personil, lima baris (Total, Naik, Turun, Berubah, Kosong) × bulan Jan–Des. */
+function rmRenderPerubahan(scr, c) {
   const unor = lapNilai(scr, "unor"), st = lapNilai(scr, "stpers"), tahun = lapNilai(scr, "tahun");
-  const grup = RM_GAJI_MATRIKS.filter(g => (!unor || g.unor === unor) && (!st || g.stpers === st));
+  const grup = c.data().filter(g => (!unor || g.unor === unor) && (!st || g.stpers === st));
   const bulan = RM_BULAN.map(b => b.slice(0, 3).toUpperCase());
   const akhir = RM_PERIODE.length - 1;
   const sel = (g, f, i) => f === "berubah" ? g.naik[i] + g.turun[i] : g[f][i];
@@ -14890,12 +14880,12 @@ function rmRenderGaji(scr) {
   const BARIS = [["total", "Total", ""], ["naik", "Naik", "tr-naik"], ["turun", "Turun", "tr-turun"], ["berubah", "Berubah", ""], ["kosong", "Kosong", "tr-kosong"]];
   const angka = v => (v ? rmAngka(v) : "-");
 
-  $(`#${scr}-judul`).textContent = `Rekap Movement Gaji Pokok — ${tahun}`;
+  $(`#${scr}-judul`).textContent = `Rekap Movement ${c.nama} — ${tahun}`;
   $(`#${scr}-metrics`).innerHTML = [
-    ["Total Peserta Bergaji Okt", rmAngka(jml("total", akhir))],
-    ["Gaji Naik Jan–Sep", rmAngka(RM_PERIODE.slice(0, akhir).reduce((a, _, i) => a + jml("naik", i), 0))],
-    ["Gaji Turun Jan–Sep", rmAngka(RM_PERIODE.slice(0, akhir).reduce((a, _, i) => a + jml("turun", i), 0))],
-    ["Gaji Pokok Kosong Okt", rmAngka(jml("kosong", akhir))]
+    ["Total Peserta Okt", rmAngka(jml("total", akhir))],
+    [`${c.nama} Naik Jan–Sep`, rmAngka(RM_PERIODE.slice(0, akhir).reduce((a, _, i) => a + jml("naik", i), 0))],
+    [`${c.nama} Turun Jan–Sep`, rmAngka(RM_PERIODE.slice(0, akhir).reduce((a, _, i) => a + jml("turun", i), 0))],
+    [`${c.nama} Kosong Okt`, rmAngka(jml("kosong", akhir))]
   ].map(([l, v]) => `
     <div class="metric">
       <div class="metric-lbl">${esc(l)}</div>
@@ -14912,7 +14902,7 @@ function rmRenderGaji(scr) {
       + bulan.map((_, i) => `<td style="text-align:right">${i > akhir ? "-" : (i === 0 && f !== "total" && f !== "kosong") || (i === akhir && (f === "naik" || f === "turun" || f === "berubah")) ? "-" : angka(sel(g, f, i))}</td>`).join("")
       + `</tr>`).join("");
   }).join("") : `<tr><td colspan="${3 + bulan.length}"><div class="empty"><h4>Tidak ada data</h4><p>Ubah filter lalu tampilkan kembali.</p></div></td></tr>`;
-  $(`#${scr}-note`).textContent = `${grup.length} kelompok ditampilkan · Berubah = Naik + Turun · Kosong = peserta tanpa gaji pokok · Okt belum selesai, naik/turun ditampilkan "-"`;
+  $(`#${scr}-note`).textContent = `${grup.length} kelompok ditampilkan · Berubah = Naik + Turun · Kosong = ${c.kosongKet} · Okt belum selesai, naik/turun ditampilkan "-"`;
 }
 
 /* Matriks jumlah peserta per KPPN (baris) × bulan Jan–Des (kolom), baris TOTAL di bawah. */
@@ -14967,7 +14957,7 @@ function rmRekap(scr, c) {
 function rmRender(scr) {
   const c = RM_LAYAR[scr];
   if (c.matriks === "kppn") return rmRenderMatriks(scr);
-  if (c.matriks === "gaji") return rmRenderGaji(scr);
+  if (c.matriks === "perubahan") return rmRenderPerubahan(scr, c);
   const dari = lapNilai(scr, "dari"), sampai = lapNilai(scr, "sampai");
   const periode = dari === sampai ? rmPeriodeLabel(dari) : `${rmPeriodeLabel(dari)} s.d. ${rmPeriodeLabel(sampai)}`;
   const kosong = n => `<tr><td colspan="${n}"><div class="empty"><h4>Tidak ada data</h4><p>Ubah filter lalu tampilkan kembali.</p></div></td></tr>`;

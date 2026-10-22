@@ -5837,7 +5837,7 @@
         <div class="page-head">
           <div>
             <h1 class="page-title">Rekap Movement Pangkat</h1>
-            <div class="page-sub">Perubahan pangkat/golongan peserta per periode beserta nomor SKEP dan TMT.</div>
+            <div class="page-sub">Jumlah peserta per UNOR dan status personil yang pangkatnya naik, turun, berubah, atau kosong pada setiap bulan.</div>
           </div>
         </div>
 
@@ -5847,24 +5847,16 @@
           <h3 class="card-title">Filter</h3>
           <div class="grid3">
             <div class="field" style="margin-bottom:0">
-              <label class="fl caps" for="rm-pangkat-f-dari">Periode Dari</label>
-              <select class="inp" id="rm-pangkat-f-dari" data-rm-periode></select>
-            </div>
-            <div class="field" style="margin-bottom:0">
-              <label class="fl caps" for="rm-pangkat-f-sampai">Periode Sampai</label>
-              <select class="inp" id="rm-pangkat-f-sampai" data-rm-periode></select>
+              <label class="fl caps" for="rm-pangkat-f-tahun">Tahun</label>
+              <select class="inp" id="rm-pangkat-f-tahun"><option>2026</option></select>
             </div>
             <div class="field" style="margin-bottom:0">
               <label class="fl caps" for="rm-pangkat-f-unor">Unit Organisasi</label>
               <select class="inp" id="rm-pangkat-f-unor" data-rm-unor></select>
             </div>
             <div class="field" style="margin-bottom:0">
-              <label class="fl caps" for="rm-pangkat-f-cari">NRP/NIP atau Nama</label>
-              <input class="inp" id="rm-pangkat-f-cari" placeholder="Masukkan NRP/NIP atau nama">
-            </div>
-            <div class="field" style="margin-bottom:0">
-              <label class="fl caps" for="rm-pangkat-f-jenis">Jenis Kenaikan Pangkat</label>
-              <select class="inp" id="rm-pangkat-f-jenis" data-rm-jenis></select>
+              <label class="fl caps" for="rm-pangkat-f-stpers">Status Personil</label>
+              <select class="inp" id="rm-pangkat-f-stpers"><option value="">Semua</option><option>PRAJURIT</option><option>PNS</option></select>
             </div>
           </div>
           <div class="form-actions">
@@ -5882,23 +5874,14 @@
             </div>
           </div>
           <div class="tbl-wrap">
-            <table class="wide-table">
+            <table class="tbl-navy">
               <thead id="rm-pangkat-head"></thead>
               <tbody id="rm-pangkat-body"></tbody>
             </table>
           </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
-            <div class="tbl-note" id="rm-pangkat-note" style="margin:0"></div>
-            <div style="display:flex;align-items:center;gap:14px">
-              <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)">
-                Baris
-                <select class="inp" id="rm-pangkat-page-size" style="width:64px;height:30px;padding:0 6px;font-size:11px">
-                  <option>10</option><option selected>20</option><option>50</option>
-                </select>
-              </div>
-              <div id="rm-pangkat-pagination" style="display:flex;gap:4px"></div>
-            </div>
-          </div>        </div>
+          <div class="tbl-note" id="rm-pangkat-note"></div>
+          <div id="rm-pangkat-pagination"></div>
+        </div>
       </section>
 
       <section class="screen" id="s-rm-mkg">
