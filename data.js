@@ -6806,3 +6806,7 @@ const RM_PANGKAT_MATRIKS = (() => {
 /* Rekap Movement MKG — bentuk sama dengan RM_GAJI_MATRIKS; naik / turun = peserta yang MKG-nya
    naik / turun. Angkanya mengikuti data referensi yang sama dengan Rekap Movement Pangkat. */
 const RM_MKG_MATRIKS = RM_PANGKAT_MATRIKS;
+
+/* Periode rekap premi (daftar di Verifikasi Rekap Premi JKK dan JKm), terbaru di atas.
+   Dua periode terbaru belum terverifikasi; sisanya sudah dan tampil di Rekap Perkiraan Iuran. */
+const REKAP_PREMI_PERIODE = ["2026-11-15", "2026-10-15", "2026-09-15", "2026-08-15", "2026-07-15", "2026-06-15", "2026-05-15", "2026-04-15"];

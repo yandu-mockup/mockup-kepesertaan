@@ -5673,110 +5673,123 @@
         </div>
       </section>
 
-      <!-- ============ REKAP PERKIRAAN IURAN PREMI JKK DAN JKm ============ -->
-      <section class="screen" id="s-rekap-premi">
-        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Rekap Premi JKK dan JKm</span><span>›</span><b>Rekap Perkiraan Iuran Premi JKK dan JKm</b></div>
-        <div class="page-head">
-          <div>
-            <h1 class="page-title">Rekap Perkiraan Iuran Premi JKK dan JKm</h1>
-            <div class="page-sub">Rekap peserta aktif, gaji pokok, dan perkiraan premi JKK dan JKm per UNOR. Hanya peserta berstatus aktif yang dihitung.</div>
+      <!-- ============ VERIFIKASI REKAP PREMI JKK DAN JKm ============ -->
+      <section class="screen" id="s-rekap-premi-verifikasi">
+        <div class="crumb" id="rv-crumb"></div>
+
+        <div id="rv-list-view">
+          <div class="page-head">
+            <div>
+              <h1 class="page-title">Verifikasi Rekap Premi JKK dan JKm</h1>
+              <div class="page-sub">Periksa rekap perkiraan premi JKK dan JKm per periode, lalu verifikasi bila sudah sesuai.</div>
+            </div>
+          </div>
+
+          <div class="alert alert-info">ⓘ Hasil rekap diambil dari Simulasi Premi melalui API. Jika premi belum sesuai, ubah data peserta lewat Peremajaan Data; data peserta dikirim ke Simulasi Premi untuk dihitung ulang dan hasilnya diterima kembali oleh YANDU. Setelah data peserta dipadankan, klik Generate Ulang di halaman Detail.</div>
+
+          <div class="card">
+            <h3 class="card-title">Filter</h3>
+            <div class="grid3">
+              <div class="field" style="margin-bottom:0">
+                <label class="fl caps" for="rv-f-periode">Periode</label>
+                <input class="inp" type="date" id="rv-f-periode">
+              </div>
+              <div class="field" style="margin-bottom:0">
+                <label class="fl caps" for="rv-f-status">Status</label>
+                <select class="inp" id="rv-f-status">
+                  <option value="">Semua Status</option>
+                  <option value="belum">Belum Terverifikasi</option>
+                  <option value="terverifikasi">Terverifikasi</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-ghost" id="rv-btn-reset">↺ Reset</button>
+              <button class="btn btn-primary" id="rv-btn-cari">⌕ Tampilkan</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">Daftar Rekap Premi</h3>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>Periode</th><th>Status</th><th>Aksi</th></tr></thead>
+                <tbody id="rv-body"></tbody>
+              </table>
+            </div>
+            <div class="tbl-note" id="rv-note"></div>
           </div>
         </div>
 
-        <div class="alert alert-info">ⓘ Data peserta aktif dibentuk otomatis oleh sistem setiap akhir bulan pukul 00.00. Pada tanggal 1 bulan berikutnya, rekap perkiraan JKK dan JKm terbentuk dan Bidang Lojita menerima notifikasi. Rumus: <b>JKK = gaji pokok × 0,62%</b> · <b>JKm = gaji pokok × 0,81%</b>.</div>
-
-        <div class="card">
-          <h3 class="card-title">Parameter</h3>
-          <div class="grid3">
-            <div class="field" style="margin-bottom:0">
-              <label class="fl caps" for="rp-f-unor">UNOR</label>
-              <select class="inp" id="rp-f-unor"></select>
+        <div id="rv-detail-view" style="display:none">
+          <div class="page-head">
+            <div>
+              <h1 class="page-title">Detail Verifikasi Rekap Premi JKK dan JKm</h1>
+              <div class="page-sub">Periksa kelima rekap di bawah ini sebelum diverifikasi.</div>
             </div>
-            <div class="field" style="margin-bottom:0">
-              <label class="fl caps" for="rp-f-bulan">Bulan</label>
-              <select class="inp" id="rp-f-bulan"></select>
-            </div>
-            <div class="field" style="margin-bottom:0">
-              <label class="fl caps" for="rp-f-tahun">Tahun</label>
-              <select class="inp" id="rp-f-tahun"></select>
-            </div>
+            <button class="btn btn-ghost" id="rv-btn-kembali">← Kembali</button>
           </div>
-          <div class="form-actions">
-            <button class="btn btn-ghost" id="rp-btn-tampil">⌕ Tampilkan</button>
-            <button class="btn btn-primary" id="rp-btn-generate">↻ Generate Premi</button>
+          <div class="card" id="rv-d-head"></div>
+          <div class="card">
+            <div class="tabs" id="rv-tabs"></div>
+            <h3 class="card-title" id="rv-judul"></h3>
+            <div id="rv-isi"></div>
           </div>
-          <div class="hint" id="rp-generate-hint" style="margin-top:8px"></div>
-        </div>
-
-        <div class="metrics m4" id="rp-metrics"></div>
-
-        <div class="card">
-          <h3 class="card-title">Jadwal Proses Otomatis Sistem</h3>
-          <div class="tbl-wrap">
-            <table>
-              <thead><tr><th>Tahap</th><th>Jadwal</th><th>Keterangan</th><th>Status</th></tr></thead>
-              <tbody id="rp-jadwal-body"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="toolbar" style="justify-content:space-between">
-            <h3 class="card-title" style="margin:0" id="rp-judul">Rekap per UNOR</h3>
-            <button class="btn btn-ghost" id="rp-btn-verifikasi">Buka Verifikasi Rekap →</button>
-          </div>
-          <div class="tbl-wrap">
-            <table>
-              <thead><tr>
-                <th>UNOR</th><th style="text-align:right">Peserta Aktif</th><th style="text-align:right">Gaji Pokok</th>
-                <th style="text-align:right">JKK 0,62%</th><th style="text-align:right">JKm 0,81%</th>
-                <th style="text-align:right">Total</th><th>Versi</th><th>Terakhir Dibentuk</th>
-              </tr></thead>
-              <tbody id="rp-body"></tbody>
-            </table>
-          </div>
-          <div class="tbl-note" id="rp-note"></div>
         </div>
       </section>
 
-      <section class="screen" id="s-rekap-premi-verifikasi">
-        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Rekap Premi JKK dan JKm</span><span>›</span><b>Verifikasi Rekap Premi JKK dan JKm</b></div>
-        <div class="page-head">
-          <div>
-            <h1 class="page-title">Verifikasi Rekap Premi JKK dan JKm</h1>
-            <div class="page-sub">Periksa kelima rekap perkiraan iuran. Jika belum sesuai, ubah data peserta lalu generate ulang rekap.</div>
+      <!-- ============ REKAP PERKIRAAN IURAN PREMI JKK DAN JKm ============ -->
+      <section class="screen" id="s-rekap-premi">
+        <div class="crumb" id="rp-crumb"></div>
+
+        <div id="rp-list-view">
+          <div class="page-head">
+            <div>
+              <h1 class="page-title">Rekap Perkiraan Iuran Premi JKK dan JKm</h1>
+              <div class="page-sub">Rekap premi yang sudah diverifikasi Divisi Kepesertaan. Hanya peserta aktif yang dihitung.</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">Filter</h3>
+            <div class="grid3">
+              <div class="field" style="margin-bottom:0">
+                <label class="fl caps" for="rp-f-periode">Periode</label>
+                <input class="inp" type="date" id="rp-f-periode">
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-ghost" id="rp-btn-reset">↺ Reset</button>
+              <button class="btn btn-primary" id="rp-btn-cari">⌕ Tampilkan</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">Daftar Rekap Premi Terverifikasi</h3>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>Periode</th><th>Status</th><th>Aksi</th></tr></thead>
+                <tbody id="rp-body"></tbody>
+              </table>
+            </div>
+            <div class="tbl-note" id="rp-note"></div>
           </div>
         </div>
 
-        <div class="card">
-          <h3 class="card-title">Periode</h3>
-          <div class="grid3">
-            <div class="field" style="margin-bottom:0">
-              <label class="fl caps" for="rv-f-bulan">Bulan</label>
-              <select class="inp" id="rv-f-bulan"></select>
+        <div id="rp-detail-view" style="display:none">
+          <div class="page-head">
+            <div>
+              <h1 class="page-title">Detail Rekap Perkiraan Iuran Premi JKK dan JKm</h1>
+              <div class="page-sub">Rekap sudah terverifikasi; Generate Ulang dinonaktifkan.</div>
             </div>
-            <div class="field" style="margin-bottom:0">
-              <label class="fl caps" for="rv-f-tahun">Tahun</label>
-              <select class="inp" id="rv-f-tahun"></select>
-            </div>
+            <button class="btn btn-ghost" id="rp-btn-kembali">← Kembali</button>
           </div>
-          <div class="form-actions">
-            <button class="btn btn-primary" id="rv-btn-tampil">⌕ Tampilkan</button>
+          <div class="card" id="rp-d-head"></div>
+          <div class="card">
+            <div class="tabs" id="rp-tabs"></div>
+            <h3 class="card-title" id="rp-judul"></h3>
+            <div id="rp-isi"></div>
           </div>
-        </div>
-
-        <div id="rv-status"></div>
-
-        <div class="card" id="rv-card">
-          <div class="tabs" id="rv-tabs"></div>
-          <div class="toolbar" style="justify-content:space-between">
-            <h3 class="card-title" style="margin:0" id="rv-judul"></h3>
-            <div style="display:flex;gap:8px">
-              <button class="btn btn-ghost" id="rv-btn-xls">⭳ Download Excel</button>
-              <button class="btn btn-ghost" id="rv-btn-pdf">⭳ Download PDF</button>
-            </div>
-          </div>
-          <div id="rv-isi"></div>
         </div>
       </section>
 

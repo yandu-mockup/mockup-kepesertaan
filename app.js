@@ -124,6 +124,8 @@ function go(id) {
   if (id === "dapem-keuangan") renderKeuangan();
   if (id === "upload-rekening") { urGotoList(); renderUploadRekening(); }
   if (id.startsWith("lap-")) renderLaporan(id);
+  if (id === "rekap-premi") rpGotoView("rp", "list");
+  if (id === "rekap-premi-verifikasi") rpGotoView("rv", "list");
   if (id.startsWith("rm-")) rmRender(id);
 }
 document.addEventListener("click", e => {
@@ -14490,39 +14492,29 @@ $("#lap-peserta-baru-unor-list").onmousedown = e => {
 Object.keys(LAP_LAPORAN).forEach(lapNilaiAwal);
 
 /* ============================================ REKAP PERKIRAAN IURAN PREMI JKK DAN JKm
-   Dua layar: "Rekap Perkiraan Iuran Premi JKK dan JKm" (parameter, Generate Premi,
-   rekap per UNOR) dan "Verifikasi Rekap Premi JKK dan JKm" (lima bentuk rekap,
-   verifikasi, kirim notifikasi ke Divisi Keuangan). Angka dasar ada di data.js
-   (blok 30); bulan lain diskalakan. Hanya peserta aktif.                       */
+   Dua layar dengan pola daftar + detail yang sama:
+     rv = Verifikasi Rekap Premi JKK dan JKm   (semua periode; Generate Ulang & Verifikasi)
+     rp = Rekap Perkiraan Iuran Premi JKK dan JKm (hanya yang sudah terverifikasi;
+          Generate Ulang dinonaktifkan)
+   Hasil rekap disimulasikan sebagai data dari API Simulasi Premi. Angka dasar ada
+   di data.js (blok 30); bulan lain diskalakan. Hanya peserta aktif.            */
 const RP_BASE_IDX = REKAP_PREMI_BULAN_DASAR.tahun * 12 + REKAP_PREMI_BULAN_DASAR.bulan;
 const RP_STATUS = {
-  menunggu:      { pill: "pill-warn", label: "Menunggu Verifikasi" },
-  terverifikasi: { pill: "pill-info", label: "Terverifikasi" },
-  terkirim:      { pill: "pill-ok",   label: "Terkirim ke Keuangan" }
+  belum:         { pill: "pill-warn", label: "Belum Terverifikasi" },
+  terverifikasi: { pill: "pill-ok",   label: "Terverifikasi" }
 };
-const rpStateByPeriod = {};
 const rpPad = n => String(n).padStart(2, "0");
-const rpWaktu = (d = new Date()) => `${rpPad(d.getDate())}/${rpPad(d.getMonth() + 1)}/${d.getFullYear()} ${rpPad(d.getHours())}.${rpPad(d.getMinutes())}`;
-const rpPeriodeLabel = (t, b) => `${BULAN_ID[b - 1]} ${t}`;
 const rpIdx = (t, b) => t * 12 + b;
-const rpAdaData = (t, b) => rpIdx(t, b) <= RP_BASE_IDX;
+const rpWaktu = (d = new Date()) => `${rpPad(d.getDate())}/${rpPad(d.getMonth() + 1)}/${d.getFullYear()} ${rpPad(d.getHours())}.${rpPad(d.getMinutes())}`;
+const rpTglLabel = iso => { const [y, m, d] = iso.split("-"); return `${+d} ${BULAN_ID[+m - 1]} ${y}`; };
+const rpBulanTahun = iso => { const [y, m] = iso.split("-"); return `${BULAN_ID[+m - 1]} ${y}`.toUpperCase(); };
 
-/* Status per periode dibuat saat pertama dibuka: bulan lampau sudah selesai,
-   bulan dasar (Oktober 2026) baru terbentuk dan menunggu verifikasi. */
-function rpState(t, b) {
-  const key = `${t}-${b}`;
-  if (!rpStateByPeriod[key]) {
-    const lampau = rpIdx(t, b) < RP_BASE_IDX;
-    const awal = `01/${rpPad(b)}/${t} 00.05`;
-    rpStateByPeriod[key] = {
-      status: lampau ? "terkirim" : "menunggu",
-      versi:  Object.fromEntries(REKAP_PREMI_UNOR.map(u => [u, 1])),
-      waktu:  Object.fromEntries(REKAP_PREMI_UNOR.map(u => [u, awal])),
-      verifOleh: lampau ? "Officer Bidang Lojita" : "", verifWaktu: lampau ? awal : "", kirimWaktu: lampau ? awal : ""
-    };
-  }
-  return rpStateByPeriod[key];
-}
+/* Dua periode terbaru belum terverifikasi; sisanya sudah. */
+const rpPeriode = REKAP_PREMI_PERIODE.map((tgl, i) => {
+  const [y, m] = tgl.split("-");
+  return { tgl, status: i < 2 ? "belum" : "terverifikasi", versi: 1, waktu: `01/${m}/${y} 00.05`,
+           verifWaktu: i < 2 ? "" : `02/${m}/${y} 09.00`, kirimWaktu: "" };
+});
 
 function rpBaris(t, b) {
   const f = 1 - (RP_BASE_IDX - rpIdx(t, b)) * 0.004;
@@ -14549,112 +14541,9 @@ const rpAgg = rows => {
 const rpPerGol = rows => [...new Set(rows.map(r => r.gol))].map(g => [g, rpAgg(rows.filter(r => r.gol === g))]);
 const rpNum = n => (n ? lapAngka(n) : "-");
 
-function rpIsiPeriode(idT, idB) {
-  $(`#${idB}`).innerHTML = BULAN_ID.map((n, i) => `<option value="${i + 1}">${n}</option>`).join("");
-  $(`#${idT}`).innerHTML = [2025, 2026].map(t => `<option>${t}</option>`).join("");
-  $(`#${idB}`).value = REKAP_PREMI_BULAN_DASAR.bulan;
-  $(`#${idT}`).value = REKAP_PREMI_BULAN_DASAR.tahun;
-}
-const rpPeriodeDipilih = (idT, idB) => [Number($(`#${idT}`).value), Number($(`#${idB}`).value)];
-
-/* Notifikasi lonceng: sama dengan notifikasi lain (lihat ruNotifRequestUmum). */
-function rpNotif(untuk, judul, detail, tingkat = "High") {
-  ruNotifRequestUmum.unshift({ untuk, judul, detail, tingkat, tanggal: rpWaktu().slice(0, 10), go: "rekap-premi-verifikasi" });
-  renderTopNotif();
-  if ($("#s-home").classList.contains("active")) renderHome();
-}
-
-/* ------------------------------------------------ layar 1: Rekap & Generate */
-function renderRekapPremi() {
-  const [t, b] = rpPeriodeDipilih("rp-f-tahun", "rp-f-bulan");
-  const unorPilih = $("#rp-f-unor").value;
-  const label = rpPeriodeLabel(t, b);
-  $("#rp-btn-generate").disabled = !(roleOfficer() && rpAdaData(t, b));
-  $("#rp-generate-hint").textContent = !roleOfficer() ? "ⓘ Generate Premi hanya dapat dilakukan Officer Bidang (Lojita)."
-    : !rpAdaData(t, b) ? "ⓘ Periode ini belum memiliki data peserta aktif."
-    : "ⓘ Generate Premi membentuk ulang rekap dari data peserta aktif terkini. Status verifikasi kembali ke Menunggu Verifikasi.";
-  $("#rp-judul").textContent = `Rekap per UNOR — ${label}`;
-
-  if (!rpAdaData(t, b)) {
-    $("#rp-metrics").innerHTML = "";
-    $("#rp-body").innerHTML = `<tr><td colspan="8"><div class="empty"><h4>Rekap belum terbentuk</h4><p>Data peserta aktif dibentuk otomatis pada akhir bulan sebelumnya dan rekap terbentuk tanggal 1 ${esc(label)}.</p></div></td></tr>`;
-    $("#rp-note").textContent = "";
-    $("#rp-jadwal-body").innerHTML = rpJadwalHtml(t, b, null);
-    return;
-  }
-  const st = rpState(t, b), baris = rpBaris(t, b);
-  const daftarUnor = REKAP_PREMI_UNOR.filter(u => !unorPilih || u === unorPilih);
-  const semua = rpAgg(baris.filter(r => daftarUnor.includes(r.unor)));
-  $("#rp-metrics").innerHTML = [
-    ["Peserta Aktif", lapAngka(semua.peserta), "navy"], ["Gaji Pokok", rp(semua.gapok), ""],
-    ["Perkiraan JKK 0,62%", rp(semua.jkk), ""], ["Perkiraan JKm 0,81%", rp(semua.jkm), "ok"]
-  ].map(([l, v, c]) => `<div class="metric"><div class="metric-lbl">${l}</div><div class="metric-val ${c}">${esc(v)}</div></div>`).join("");
-
-  const kanan = ' style="text-align:right"';
-  $("#rp-body").innerHTML = daftarUnor.map(u => {
-    const a = rpAgg(baris.filter(r => r.unor === u));
-    return `<tr><td class="t-strong">${esc(u)}</td><td${kanan}>${lapAngka(a.peserta)}</td><td${kanan}>${lapAngka(a.gapok)}</td>
-      <td${kanan}>${lapAngka(a.jkk)}</td><td${kanan}>${lapAngka(a.jkm)}</td><td${kanan} class="t-strong">${lapAngka(a.total)}</td>
-      <td>v${st.versi[u]}</td><td>${esc(st.waktu[u])}</td></tr>`;
-  }).join("") + `<tr style="background:var(--field)"><td class="t-strong">TOTAL</td><td${kanan} class="t-strong">${lapAngka(semua.peserta)}</td>
-      <td${kanan} class="t-strong">${lapAngka(semua.gapok)}</td><td${kanan} class="t-strong">${lapAngka(semua.jkk)}</td>
-      <td${kanan} class="t-strong">${lapAngka(semua.jkm)}</td><td${kanan} class="t-strong">${lapAngka(semua.total)}</td><td></td><td></td></tr>`;
-  $("#rp-note").textContent = `${daftarUnor.length} UNOR · hanya peserta aktif · ${label}`;
-  $("#rp-jadwal-body").innerHTML = rpJadwalHtml(t, b, st);
-}
-
-function rpJadwalHtml(t, b, st) {
-  const akhirBulanLalu = new Date(t, b - 1, 0);
-  const snap = `${akhirBulanLalu.getDate()} ${BULAN_ID[akhirBulanLalu.getMonth()]} ${akhirBulanLalu.getFullYear()}, 00.00`;
-  const ada = !!st, s = st && st.status;
-  const pill = (ok, okLbl, noLbl) => `<span class="pill ${ok ? "pill-ok" : "pill-info"}">${ok ? okLbl : noLbl}</span>`;
-  const verif = !ada ? '<span class="pill pill-info">Belum dimulai</span>'
-    : s === "menunggu" ? '<span class="pill pill-warn">Menunggu Verifikasi</span>' : '<span class="pill pill-ok">Terverifikasi</span>';
-  const baris = [
-    ["1. Pembentukan data peserta aktif", snap, "Sistem menyimpan peserta aktif tiap UNOR (TNI AD, TNI AL, TNI AU, POLRI, MABES TNI, KEMHAN).", pill(ada, "Terbentuk", "Terjadwal")],
-    ["2. Pembentukan rekap JKK dan JKm", `1 ${rpPeriodeLabel(t, b)}`, "Rekap peserta, gaji pokok, JKK, dan JKm per UNOR. Sistem memberi notifikasi ke Bidang Lojita.", pill(ada, "Terbentuk", "Terjadwal")],
-    ["3. Verifikasi Bidang Lojita", "Setelah rekap terbentuk", "Periksa lima rekap; bila perlu ubah data peserta lalu generate ulang.", verif],
-    ["4. Notifikasi ke Divisi Keuangan", "Setelah rekap final", "Memberi tahu Divisi Keuangan bahwa rekap sudah diverifikasi Divisi Kepesertaan.", pill(s === "terkirim", "Terkirim", "Belum dikirim")]
-  ];
-  return baris.map(r => `<tr><td class="t-strong">${r[0]}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td>${r[3]}</td></tr>`).join("");
-}
-
-function rpGenerate(unorList, t, b) {
-  const st = rpState(t, b), label = rpPeriodeLabel(t, b), now = rpWaktu();
-  const cakupan = unorList.length === REKAP_PREMI_UNOR.length ? "semua UNOR" : unorList.join(", ");
-  unorList.forEach(u => { st.versi[u]++; st.waktu[u] = now; });
-  st.status = "menunggu"; st.verifOleh = ""; st.verifWaktu = ""; st.kirimWaktu = "";
-  rpNotif(ROLE_OFFICER_LOJITA, `Rekap Perkiraan Premi JKK dan JKm ${label} Dibentuk Ulang`,
-    `Rekap perkiraan iuran premi JKK dan JKm ${label} (${cakupan}) dibentuk ulang dan dapat diverifikasi di halaman Verifikasi Rekap Premi JKK dan JKm.`);
-  toast(`Rekap ${label} dibentuk ulang (${cakupan}).`, "ok");
-  renderRekapPremi(); renderVerifikasiPremi();
-}
-function rpGenerateDenganKonfirmasi(unorList, t, b) {
-  const st = rpState(t, b);
-  if (st.status === "menunggu") return rpGenerate(unorList, t, b);
-  confirmModal(`Rekap ${rpPeriodeLabel(t, b)} sudah berstatus "${RP_STATUS[st.status].label}". Generate ulang akan mengembalikan status ke Menunggu Verifikasi.`,
-    () => rpGenerate(unorList, t, b), { title: "Generate Premi Ulang", okLabel: "Generate Ulang", okClass: "btn-primary" });
-}
-
-$("#rp-f-unor").innerHTML = `<option value="">Semua UNOR</option>` + REKAP_PREMI_UNOR.map(u => `<option>${esc(u)}</option>`).join("");
-rpIsiPeriode("rp-f-tahun", "rp-f-bulan");
-["rp-f-unor", "rp-f-bulan", "rp-f-tahun"].forEach(id => $(`#${id}`).onchange = renderRekapPremi);
-$("#rp-btn-tampil").onclick = renderRekapPremi;
-$("#rp-btn-generate").onclick = () => {
-  const [t, b] = rpPeriodeDipilih("rp-f-tahun", "rp-f-bulan");
-  const u = $("#rp-f-unor").value;
-  rpGenerateDenganKonfirmasi(u ? [u] : [...REKAP_PREMI_UNOR], t, b);
-};
-$("#rp-btn-verifikasi").onclick = () => {
-  const [t, b] = rpPeriodeDipilih("rp-f-tahun", "rp-f-bulan");
-  $("#rv-f-tahun").value = t; $("#rv-f-bulan").value = b;
-  go("rekap-premi-verifikasi");
-};
-
-/* -------------------------------------------------- layar 2: Verifikasi */
 const RV_TAB = [
   { k: "tagihan", tab: "Rekap Tagihan",               judul: p => `REKAP PERKIRAAN TAGIHAN JKK DAN JKM PRAJURIT TNI, ANGGOTA POLRI SERTA ASN KEMHAN DAN ASN POLRI BULAN ${p}` },
-  { k: "tni",     tab: "Prajurit TNI",                judul: p => `REKAP PERKIRAAN IURAN JKK DAN JKM PRAJURIT TNI BULAN ${p}` },
+  { k: "tni",     tab: "Prajurit",                    judul: p => `REKAP PERKIRAAN IURAN JKK DAN JKM PRAJURIT TNI BULAN ${p}` },
   { k: "pns",     tab: "ASN PNS Kemhan",              judul: p => `REKAP PERKIRAAN IURAN JKK DAN JKM ASN PNS KEMHAN BULAN ${p}` },
   { k: "pppk",    tab: "ASN PPPK Kemhan",             judul: p => `REKAP PERKIRAAN IURAN JKK DAN JKM ASN PPPK KEMHAN BULAN ${p}` },
   { k: "polri",   tab: "Anggota Polri dan ASN Polri", judul: p => `REKAP PERKIRAAN IURAN JKK DAN JKM ANGGOTA POLRI DAN ASN POLRI BULAN ${p}` }
@@ -14715,81 +14604,142 @@ function rvIsiTab(k, baris) {
   return tabel("jkk", "JKK 0,62%") + tabel("jkm", "JKM 0,81%");
 }
 
-function renderVerifikasiPremi() {
-  const [t, b] = rpPeriodeDipilih("rv-f-tahun", "rv-f-bulan");
-  const label = rpPeriodeLabel(t, b);
-  if (!rpAdaData(t, b)) {
-    $("#rv-status").innerHTML = `<div class="alert alert-warn">⚠ Rekap ${esc(label)} belum terbentuk. Sistem membentuknya otomatis pada tanggal 1 ${esc(label)}.</div>`;
-    $("#rv-card").hidden = true;
-    return;
-  }
-  $("#rv-card").hidden = false;
-  const st = rpState(t, b), s = RP_STATUS[st.status], officer = roleOfficer();
-  const tombol = (id, cls, teks, mati) => `<button class="btn ${cls}" id="${id}"${officer && !mati ? "" : " disabled"}>${teks}</button>`;
-  const info = {
-    menunggu:      "Rekap sudah terbentuk dan menunggu verifikasi Bidang Lojita. Jika angka belum sesuai, ubah data peserta lalu generate ulang rekap.",
-    terverifikasi: `Rekap diverifikasi ${esc(st.verifOleh)} pada ${esc(st.verifWaktu)}. Kirim notifikasi ke Divisi Keuangan agar rekap dapat ditindaklanjuti.`,
-    terkirim:      `Notifikasi terkirim ke Divisi Keuangan pada ${esc(st.kirimWaktu)}. Rekap ${esc(label)} telah final.`
-  }[st.status];
-  $("#rv-status").innerHTML = `<div class="card">
-    <div class="toolbar" style="justify-content:space-between;margin-bottom:6px">
-      <h3 class="card-title" style="margin:0">Status Rekap ${esc(label)}</h3>
-      <span class="pill ${s.pill}">${s.label}</span>
+
+/* Notifikasi lonceng: sama dengan notifikasi lain (lihat ruNotifRequestUmum). */
+function rpNotif(untuk, judul, detail, go, tingkat = "High") {
+  ruNotifRequestUmum.unshift({ untuk, judul, detail, tingkat, tanggal: rpWaktu().slice(0, 10), go });
+  renderTopNotif();
+  if ($("#s-home").classList.contains("active")) renderHome();
+}
+
+const RP_MODUL = {
+  rv: { screen: "rekap-premi-verifikasi", nama: "Verifikasi Rekap Premi JKK dan JKm",       tab: "tagihan", aktif: null },
+  rp: { screen: "rekap-premi",            nama: "Rekap Perkiraan Iuran Premi JKK dan JKm", tab: "tagihan", aktif: null }
+};
+const rpCari = (tgl) => rpPeriode.find(r => r.tgl === tgl);
+
+function rpGotoView(p, view) {
+  $(`#${p}-list-view`).style.display   = view === "list" ? "" : "none";
+  $(`#${p}-detail-view`).style.display = view === "detail" ? "" : "none";
+  const awal = `<span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Rekap Premi JKK dan JKm</span><span>›</span>`;
+  $(`#${p}-crumb`).innerHTML = view === "detail"
+    ? `${awal}<span>${esc(RP_MODUL[p].nama)}</span><span>›</span><b>Detail</b>`
+    : `${awal}<b>${esc(RP_MODUL[p].nama)}</b>`;
+  window.scrollTo({ top: 0, behavior: "instant" });
+}
+
+/* ------------------------------------------------------------- daftar */
+function rpRenderDaftar(p) {
+  const tgl = $(`#${p}-f-periode`).value;
+  const st  = p === "rv" ? $(`#${p}-f-status`).value : "terverifikasi";
+  const rows = rpPeriode.filter(r => (p === "rv" || r.status === "terverifikasi")
+    && (!tgl || r.tgl === tgl) && (!st || r.status === st));
+  $(`#${p}-body`).innerHTML = rows.length ? rows.map(r => `<tr>
+      <td class="t-strong">${esc(rpTglLabel(r.tgl))}</td>
+      <td><span class="pill ${RP_STATUS[r.status].pill}">${RP_STATUS[r.status].label}</span></td>
+      <td><button class="btn btn-info btn-sm" data-rp-detail="${p}:${r.tgl}">Detail</button></td></tr>`).join("")
+    : `<tr><td colspan="3"><div class="empty"><h4>Tidak ada data</h4><p>Ubah filter lalu tampilkan kembali.</p></div></td></tr>`;
+  $(`#${p}-note`).textContent = `${rows.length} periode ditampilkan`;
+}
+
+/* ------------------------------------------------------------- detail */
+function rpRenderDetail(p) {
+  const m = RP_MODUL[p], r = rpCari(m.aktif);
+  if (!r) return;
+  const [t, b] = r.tgl.split("-").map(Number);
+  const officer = roleOfficer(), s = RP_STATUS[r.status], sudah = r.status === "terverifikasi";
+  const btn = (aksi, cls, teks, mati, judul) =>
+    `<button class="btn ${cls}" data-rp-aksi="${p}:${aksi}"${mati ? " disabled" : ""}${judul ? ` title="${esc(judul)}"` : ""}>${teks}</button>`;
+  const tombol = p === "rv"
+    ? btn("generate", "btn-ghost", "↻ Generate Ulang", !officer || sudah, sudah ? "Rekap sudah terverifikasi" : "")
+      + btn("verifikasi", "btn-success", "✓ Verifikasi", !officer || sudah)
+    : btn("generate", "btn-ghost", "↻ Generate Ulang", true, "Rekap sudah terverifikasi")
+      + btn("kirim", "btn-primary", r.kirimWaktu ? "✓ Notifikasi Terkirim" : "✉ Kirim Notifikasi ke Divisi Keuangan", !officer || !!r.kirimWaktu);
+  const catatan = p === "rv"
+    ? (sudah ? `Rekap diverifikasi pada ${esc(r.verifWaktu)} dan dapat dilihat di halaman Rekap Perkiraan Iuran Premi JKK dan JKm.`
+             : "Jika premi belum sesuai, ubah data peserta lewat Peremajaan Data. Data peserta dikirim ke Simulasi Premi melalui API dan hasil perhitungannya diterima kembali. Setelah data peserta dipadankan, klik Generate Ulang.")
+    : (r.kirimWaktu ? `Rekap diverifikasi pada ${esc(r.verifWaktu)}. Notifikasi ke Divisi Keuangan terkirim pada ${esc(r.kirimWaktu)}.`
+                    : `Rekap diverifikasi pada ${esc(r.verifWaktu)}. Kirim notifikasi agar Divisi Keuangan mengetahui rekap sudah diverifikasi Divisi Kepesertaan.`);
+  $(`#${p}-d-head`).innerHTML = `
+    <div class="toolbar" style="justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+      <div>
+        <h3 class="card-title" style="margin:0 0 6px">Rekap Premi JKK dan JKm</h3>
+        <div style="font-size:12.5px;color:var(--body)">Periode: <b class="t-strong">${esc(rpTglLabel(r.tgl))}</b>
+          <span class="pill ${s.pill}" style="margin-left:8px">${s.label}</span></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">Versi rekap v${r.versi} · diperbarui ${esc(r.waktu)}</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">${tombol}</div>
     </div>
-    <div style="font-size:12.5px;color:var(--body);line-height:1.5;margin-bottom:14px">${info}</div>
-    <div class="toolbar" style="margin-bottom:0">
-      ${tombol("rv-btn-ubah", "btn-ghost", "✎ Ubah Data Peserta", false)}
-      ${tombol("rv-btn-generate", "btn-ghost", "↻ Generate Ulang Rekap", false)}
-      ${tombol("rv-btn-verif", "btn-success", "✓ Tandai Terverifikasi", st.status !== "menunggu")}
-      ${tombol("rv-btn-kirim", "btn-primary", "✉ Kirim Notifikasi ke Divisi Keuangan", st.status !== "terverifikasi")}
-    </div>
-    ${officer ? "" : `<div class="hint" style="margin-top:10px">ⓘ Aksi verifikasi hanya untuk Officer Bidang. Role ini hanya dapat melihat rekap.</div>`}
-  </div>`;
-  const tab = RV_TAB.find(x => x.k === rvTabAktif);
-  $("#rv-tabs").innerHTML = RV_TAB.map(x => `<button class="tab ${x.k === rvTabAktif ? "active" : ""}" data-rv-tab="${x.k}">${esc(x.tab)}</button>`).join("");
-  $("#rv-judul").textContent = tab.judul(label.toUpperCase());
-  $("#rv-isi").innerHTML = rvIsiTab(rvTabAktif, rpBaris(t, b));
+    <div class="hint" style="margin:0"><span>ⓘ</span> ${catatan}</div>
+    ${officer ? "" : `<div class="hint" style="margin-top:6px"><span>ⓘ</span> Aksi hanya untuk Officer Bidang. Role ini hanya dapat melihat rekap.</div>`}`;
+
+  const tab = RV_TAB.find(x => x.k === m.tab);
+  $(`#${p}-tabs`).innerHTML = RV_TAB.map(x => `<button class="tab ${x.k === m.tab ? "active" : ""}" data-rp-tab="${p}:${x.k}">${esc(x.tab)}</button>`).join("");
+  $(`#${p}-judul`).textContent = tab.judul(rpBulanTahun(r.tgl));
+  $(`#${p}-isi`).innerHTML = rvIsiTab(m.tab, rpBaris(t, b));
+}
+
+function rpBukaDetail(p, tgl) {
+  RP_MODUL[p].aktif = tgl;
+  RP_MODUL[p].tab = "tagihan";
+  rpRenderDetail(p);
+  rpGotoView(p, "detail");
+}
+
+function rpGenerate(r) {
+  r.versi++; r.waktu = rpWaktu();
+  toast(`Data peserta dikirim ke Simulasi Premi dan hasil perhitungan diterima. Rekap ${rpTglLabel(r.tgl)} dibentuk ulang (v${r.versi}).`, "ok");
+  rpRenderDetail("rv");
+}
+function rpVerifikasi(r) {
+  r.status = "terverifikasi"; r.verifWaktu = rpWaktu();
+  toast(`Rekap ${rpTglLabel(r.tgl)} terverifikasi dan masuk ke Rekap Perkiraan Iuran Premi JKK dan JKm.`, "ok");
+  rpRenderDaftar("rv"); rpRenderDaftar("rp");
+  rpGotoView("rv", "list");
+}
+function rpKirim(r) {
+  r.kirimWaktu = rpWaktu();
+  rpNotif("Divisi Keuangan", `Rekap Perkiraan Premi JKK dan JKm Periode ${rpTglLabel(r.tgl)} Telah Diverifikasi`,
+    `Rekap Perkiraan Premi JKK dan JKm periode ${rpTglLabel(r.tgl)} sudah diverifikasi oleh Divisi Kepesertaan dan Pengembangan Manfaat.`, "rekap-premi");
+  toast(`Notifikasi rekap ${rpTglLabel(r.tgl)} terkirim ke Divisi Keuangan.`, "ok");
+  rpRenderDetail("rp");
 }
 
 document.addEventListener("click", e => {
-  const tab = e.target.closest("[data-rv-tab]");
-  if (tab) { rvTabAktif = tab.dataset.rvTab; renderVerifikasiPremi(); return; }
-  const btn = e.target.closest("button");
-  const id = btn && btn.id;
-  if (!id || !id.startsWith("rv-btn-") || id === "rv-btn-tampil") return;
-  const [t, b] = rpPeriodeDipilih("rv-f-tahun", "rv-f-bulan"), st = rpState(t, b), label = rpPeriodeLabel(t, b);
-  if (id === "rv-btn-ubah") {
-    toast("Ubah data peserta lewat List Peserta (aksi Ubah), lalu kembali dan Generate Ulang Rekap.");
-    go("data-peserta");
-  } else if (id === "rv-btn-generate") {
-    rpGenerateDenganKonfirmasi([...REKAP_PREMI_UNOR], t, b);
-  } else if (id === "rv-btn-verif") {
-    st.status = "terverifikasi"; st.verifOleh = PENGATURAN.namaUser; st.verifWaktu = rpWaktu();
-    toast(`Rekap ${label} ditandai terverifikasi.`, "ok");
-    renderVerifikasiPremi(); renderRekapPremi();
-  } else if (id === "rv-btn-kirim") {
-    st.status = "terkirim"; st.kirimWaktu = rpWaktu();
-    rpNotif("Divisi Keuangan", `Rekap Perkiraan Premi JKK dan JKm ${label} Telah Diverifikasi`,
-      `Rekap Perkiraan Premi JKK dan JKm bulan ${label} sudah diverifikasi oleh Divisi Kepesertaan dan Pengembangan Manfaat.`);
-    toast(`Notifikasi rekap ${label} terkirim ke Divisi Keuangan.`, "ok");
-    renderVerifikasiPremi(); renderRekapPremi();
-  } else if (id === "rv-btn-xls" || id === "rv-btn-pdf") {
-    toast(`${$("#rv-judul").textContent} diunduh sebagai ${id === "rv-btn-xls" ? "Excel" : "PDF"}.`, "ok");
+  const det = e.target.closest("[data-rp-detail]");
+  if (det) { const [p, tgl] = det.dataset.rpDetail.split(":"); rpBukaDetail(p, tgl); return; }
+  const tab = e.target.closest("[data-rp-tab]");
+  if (tab) { const [p, k] = tab.dataset.rpTab.split(":"); RP_MODUL[p].tab = k; rpRenderDetail(p); return; }
+  const aksi = e.target.closest("[data-rp-aksi]");
+  if (!aksi || aksi.disabled) return;
+  const [p, a] = aksi.dataset.rpAksi.split(":"), r = rpCari(RP_MODUL[p].aktif), label = rpTglLabel(r.tgl);
+  if (a === "generate") {
+    confirmModal(`Data peserta terkini periode ${label} akan dikirim ke Simulasi Premi melalui API, lalu hasil perhitungannya diterima untuk membentuk ulang rekap. Lanjutkan?`,
+      () => rpGenerate(r), { title: "Generate Ulang Rekap Premi", icon: "↻", okLabel: "Generate Ulang", okClass: "btn-primary" });
+  } else if (a === "verifikasi") {
+    confirmModal(`Setelah diverifikasi, rekap periode ${label} tidak dapat digenerate ulang dan masuk ke halaman Rekap Perkiraan Iuran Premi JKK dan JKm. Lanjutkan verifikasi?`,
+      () => rpVerifikasi(r), { title: "Verifikasi Rekap Premi", icon: "✓", okLabel: "Ya, Verifikasi", okClass: "btn-success" });
+  } else if (a === "kirim") {
+    rpKirim(r);
   }
 });
 
-rpIsiPeriode("rv-f-tahun", "rv-f-bulan");
-["rv-f-bulan", "rv-f-tahun"].forEach(id => $(`#${id}`).onchange = renderVerifikasiPremi);
-$("#rv-btn-tampil").onclick = renderVerifikasiPremi;
-$("#top-role").addEventListener("change", () => { renderRekapPremi(); renderVerifikasiPremi(); });
+["rv", "rp"].forEach(p => {
+  $(`#${p}-btn-cari`).onclick = () => rpRenderDaftar(p);
+  $(`#${p}-btn-reset`).onclick = () => { $(`#${p}-f-periode`).value = ""; if (p === "rv") $("#rv-f-status").value = ""; rpRenderDaftar(p); };
+  $(`#${p}-btn-kembali`).onclick = () => rpGotoView(p, "list");
+  rpRenderDaftar(p);
+  rpGotoView(p, "list");
+});
+$("#top-role").addEventListener("change", () => {
+  ["rv", "rp"].forEach(p => { if (RP_MODUL[p].aktif && $(`#${p}-detail-view`).style.display !== "none") rpRenderDetail(p); });
+});
 
-/* Sistem membentuk rekap Oktober 2026 pada 1 Oktober 2026 dan memberi tahu Bidang Lojita. */
+/* Sistem membentuk rekap periode 15 Oktober 2026 dan memberi tahu Bidang Lojita. */
 ruNotifRequestUmum.unshift({ untuk: ROLE_OFFICER_LOJITA, tingkat: "High", tanggal: "01/10/2026", go: "rekap-premi-verifikasi",
-  judul: "Rekap Perkiraan Premi JKK dan JKm Oktober 2026 Terbentuk",
-  detail: "Rekap perkiraan iuran premi JKK dan JKm Oktober 2026 sudah terbentuk dan dapat diverifikasi di halaman Verifikasi Rekap Premi JKK dan JKm." });
+  judul: "Rekap Perkiraan Premi JKK dan JKm Periode 15 Oktober 2026 Terbentuk",
+  detail: "Rekap perkiraan iuran premi JKK dan JKm periode 15 Oktober 2026 sudah terbentuk dan dapat diverifikasi di halaman Verifikasi Rekap Premi JKK dan JKm." });
 renderTopNotif();
-renderRekapPremi();
-renderVerifikasiPremi();
 
 /* ===========================================================================
    REKAP MOVEMENT — 8 sub laporan (layar "rm-…")
