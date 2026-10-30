@@ -14564,7 +14564,7 @@ function rvBlokHtml(label, daftar, subLabel) {
 const rvBarisTotal = (label, a) => `<tr style="background:var(--field)"><td colspan="2" class="t-strong" style="text-align:center">${esc(label)}</td>${
   RV_KOLOM_ANGKA.map(k => `<td ${RV_KANAN} class="t-strong">${rpNum(a[k])}</td>`).join("")}</tr>`;
 const rvTabelIuran = (kolom1, isi) => `<div class="tbl-wrap"><table>
-  <thead><tr><th>${kolom1}</th><th>GOLONGAN</th><th ${RV_KANAN}>PESERTA</th><th ${RV_KANAN}>GAPOK</th><th ${RV_KANAN}>JKK 0,62%</th><th ${RV_KANAN}>JKM 0,81%</th><th ${RV_KANAN}>TOTAL</th></tr></thead>
+  <thead><tr><th>${kolom1}</th><th>GOLONGAN</th><th ${RV_KANAN}>PESERTA</th><th ${RV_KANAN}>GAPOK</th><th ${RV_KANAN}>JKK</th><th ${RV_KANAN}>JKM</th><th ${RV_KANAN}>TOTAL</th></tr></thead>
   <tbody>${isi}</tbody></table></div>`;
 
 function rvPerUnor(baris, jenis, unorList) {
@@ -14601,7 +14601,7 @@ function rvIsiTab(k, baris) {
     ${grup.map(([n, a]) => `<tr><td class="t-strong">${n}</td><td ${RV_KANAN}>${lapAngka(a.peserta)}</td><td ${RV_KANAN}>${lapAngka(a.gapok)}</td><td ${RV_KANAN}>${lapAngka(a[kunci])}</td></tr>`).join("")}
     <tr style="background:var(--field)"><td class="t-strong">TOTAL</td><td ${RV_KANAN} class="t-strong">${lapAngka(tot.peserta)}</td><td ${RV_KANAN} class="t-strong">${lapAngka(tot.gapok)}</td><td ${RV_KANAN} class="t-strong">${lapAngka(tot[kunci])}</td></tr>
     </tbody></table></div>`;
-  return tabel("jkk", "JKK 0,62%") + tabel("jkm", "JKM 0,81%");
+  return tabel("jkk", "JKK") + tabel("jkm", "JKM");
 }
 
 
