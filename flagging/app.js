@@ -2697,43 +2697,32 @@ function ftuHapus(r) {
   };
 }
 
-/* ---- Tambahkan Top Up: cari peserta lalu ajukan sebagai permintaan baru. */
+/* ---- Tambahkan Top Up: diajukan dari peserta yang sudah ditentukan lewat
+   tombol Top Up di tabel Flagging — lihat ftutBuka(). Satu-satunya jalan
+   masuk ke layar ini sudah membawa KPA-nya, jadi tidak ada lagi card
+   pencarian terpisah di sini. */
 let ftutPeserta = null;
 
-/* Form Data Top Up hanya boleh tampil sebagai hasil pencarian. Begitu KPA-nya
-   diubah, hasilnya tidak lagi mewakili apa yang tertulis di field — jadi
-   disembunyikan sampai Search ditekan lagi. Isinya ikut dikosongkan supaya
-   nilai peserta sebelumnya tidak sempat terlihat saat form muncul kembali. */
 function ftutSembunyikanHasil() {
   ftutPeserta = null;
   $("#ftut-hasil").style.display = "none";
   $$("#ftut-hasil input").forEach(el => { el.value = ""; });
 }
-$("#ftut-kpa").oninput = ftutSembunyikanHasil;
 
 function ftutReset() {
-  $("#ftut-kpa").value = "";
   ftutSembunyikanHasil();
 }
 
-/* Dipanggil tombol Top Up di tabel Flagging: buka layarnya, isikan KPA-nya,
-   lalu jalankan pencarian supaya formnya langsung terbuka. `go()` mereset
-   layar lebih dulu, jadi pengisian harus terjadi sesudahnya. */
+/* Dipanggil tombol Top Up di tabel Flagging: buka layarnya lalu langsung
+   isikan Data Top Up untuk KPA tsb. `go()` mereset layar lebih dulu, jadi
+   pengisian harus terjadi sesudahnya. */
 function ftutBuka(ktpa) {
   go("flagging-topup-tambah");
-  $("#ftut-kpa").value = ktpa;
-  $("#ftut-search").click();
-}
-
-$("#ftut-search").onclick = () => {
-  const kpa = $("#ftut-kpa").value.trim();
-  ftutSembunyikanHasil();
-  if (!kpa) { toast("Nomor KPA belum diisi.", "bad"); return; }
 
   /* Top up hanya masuk akal untuk pinjaman yang flagging-nya masih berjalan —
      yang sudah Lunas atau Dibatalkan tidak punya plafon untuk ditambah. */
-  const p = fflRows.find(x => x.ktpa.toLowerCase() === kpa.toLowerCase());
-  if (!p) { toast(`Nomor KPA "${kpa}" tidak ditemukan pada daftar flagging.`, "bad"); return; }
+  const p = fflRows.find(x => x.ktpa.toLowerCase() === ktpa.toLowerCase());
+  if (!p) { toast(`Nomor KPA "${ktpa}" tidak ditemukan pada daftar flagging.`, "bad"); return; }
   if (p.statusPinjaman !== "Disetujui") {
     toast(`Pinjaman ${p.nama} berstatus ${p.statusPinjaman} — tidak bisa di-top up.`, "bad");
     return;
@@ -2742,7 +2731,7 @@ $("#ftut-search").onclick = () => {
   ftutPeserta = p;
   ftutIsiForm(p);
   $("#ftut-hasil").style.display = "";
-};
+}
 
 function ftutIsiForm(p) {
   const j  = p.pinjaman;
