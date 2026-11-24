@@ -6810,3 +6810,36 @@ const RM_MKG_MATRIKS = RM_PANGKAT_MATRIKS;
 /* Periode rekap premi (daftar di Verifikasi Rekap Premi JKK dan JKm), terbaru di atas.
    Dua periode terbaru belum terverifikasi; sisanya sudah dan tampil di Rekap Perkiraan Iuran. */
 const REKAP_PREMI_PERIODE = ["2026-11-15", "2026-10-15", "2026-09-15", "2026-08-15", "2026-07-15", "2026-06-15", "2026-05-15", "2026-04-15"];
+
+/* ===========================================================================
+   31. IURAN PREMI — periode, perhitungan, dan berkas unggahan
+   ---------------------------------------------------------------------------
+   Dipakai layar Iuran Premi (Daftar Premi, Perhitungan Premi, BA Rekonsiliasi,
+   Penerimaan Premi THT dan AIP, SKP PFK). Angka premi dihitung di app.js dari
+   rpBaris() (blok 30). Berkas hanya contoh — isinya tidak dibaca.
+   =========================================================================== */
+const IURAN_PREMI_TAHUN = [2026];
+const IURAN_PREMI_PERIODE = [   /* [tahun, bulan]; terbaru di atas */
+  [2026, 11], [2026, 10], [2026, 9], [2026, 8], [2026, 7], [2026, 6], [2026, 5], [2026, 4], [2026, 3], [2026, 2], [2026, 1]
+];
+/* BA Rekonsiliasi: faktor = pencairan iuran ÷ realisasi kepesertaan (1 = sesuai). */
+const IURAN_PREMI_BA = [
+  { tahun: 2026, bulan: 9, nomorBa: "BA/REK/IX/2026",   tglBa: "2026-10-12", faktor: 1,      berkas: "BA Rekonsiliasi Sep 2026.pdf",  diunggah: "13/10/2026 10.15" },
+  { tahun: 2026, bulan: 8, nomorBa: "BA/REK/VIII/2026", tglBa: "2026-09-10", faktor: 0.9984, berkas: "BA Rekonsiliasi Ags 2026.pdf",  diunggah: "11/09/2026 09.40" },
+  { tahun: 2026, bulan: 7, nomorBa: "BA/REK/VII/2026",  tglBa: "2026-08-11", faktor: 1,      berkas: "BA Rekonsiliasi Jul 2026.pdf",  diunggah: "12/08/2026 14.05" },
+  { tahun: 2026, bulan: 6, nomorBa: "BA/REK/VI/2026",   tglBa: "2026-07-10", faktor: 1.0012, berkas: "BA Rekonsiliasi Jun 2026.pdf",  diunggah: "10/07/2026 11.20" },
+  { tahun: 2026, bulan: 5, nomorBa: "BA/REK/V/2026",    tglBa: "2026-06-09", faktor: 1,      berkas: "BA Rekonsiliasi Mei 2026.pdf",  diunggah: "10/06/2026 08.55" }
+];
+const IURAN_PREMI_THT = [   /* BNBA THT dan AIP dari DIGIT Kemenkeu */
+  { tahun: 2026, bulan: 10, berkas: "BNBA THT AIP 2026-10.xlsx", diunggah: "03/11/2026 09.10" },
+  { tahun: 2026, bulan: 9,  berkas: "BNBA THT AIP 2026-09.xlsx", diunggah: "02/10/2026 10.30" },
+  { tahun: 2026, bulan: 8,  berkas: "BNBA THT AIP 2026-08.xlsx", diunggah: "02/09/2026 13.45" },
+  { tahun: 2026, bulan: 7,  berkas: "BNBA THT AIP 2026-07.xlsx", diunggah: "03/08/2026 09.00" },
+  { tahun: 2026, bulan: 6,  berkas: "BNBA THT AIP 2026-06.xlsx", diunggah: "02/07/2026 15.20" }
+];
+const IURAN_PREMI_SKP = [   /* SKP PFK dari DIGIT Kemenkeu */
+  { tahun: 2026, bulan: 9, berkas: "SKP PFK 2026-09.xlsx", diunggah: "05/10/2026 11.00" },
+  { tahun: 2026, bulan: 8, berkas: "SKP PFK 2026-08.xlsx", diunggah: "04/09/2026 10.10" },
+  { tahun: 2026, bulan: 7, berkas: "SKP PFK 2026-07.xlsx", diunggah: "05/08/2026 09.35" },
+  { tahun: 2026, bulan: 6, berkas: "SKP PFK 2026-06.xlsx", diunggah: "03/07/2026 14.00" }
+];

@@ -124,6 +124,7 @@ function go(id) {
   if (id === "dapem-keuangan") renderKeuangan();
   if (id === "upload-rekening") { urGotoList(); renderUploadRekening(); }
   if (id.startsWith("lap-")) renderLaporan(id);
+  if (id === "ip-daftar") ipDaftarView("list");
   if (id === "rekap-premi") rpGotoView("rp", "list");
   if (id === "rekap-premi-verifikasi") rpGotoView("rv", "list");
   if (id.startsWith("rm-")) rmRender(id);
@@ -14971,3 +14972,260 @@ Object.keys(RM_LAYAR).forEach(scr => {
     if (e.key === "Enter" && e.target.tagName === "INPUT") { rmHalaman[scr] = 1; rmRender(scr); }
   });
 });
+
+/* ===========================================================================
+   IURAN PREMI — 5 sub modul (layar "ip-…")
+   ---------------------------------------------------------------------------
+   ip-daftar  Daftar Premi JKK dan JKm       (otomatis; Detail = tab JKK / JKm)
+   ip-hitung  Perhitungan Premi JKK dan JKm  (otomatis; Generate Ulang)
+   ip-ba      BA Rekonsiliasi                (unggah; pencairan vs realisasi)
+   ip-tht     Penerimaan Premi THT dan AIP   (unggah)
+   ip-skp     SKP PFK                        (unggah)
+   Premi dihitung dari rpBaris() (rekap premi di atas) — hanya peserta aktif.
+   =========================================================================== */
+const ipPeriodeKey = (t, b) => `${t}-${b}`;
+const ipLabel = (t, b) => `${BULAN_ID[b - 1]} ${t}`;
+const ipRp = n => "Rp " + lapAngka(n);
+const ipAgg = (t, b) => rpAgg(rpBaris(t, b));
+const ipKanan = 'style="text-align:right"';
+
+/* Salinan berkas yang dapat diubah (data hanya di memori). */
+const ipData = {
+  ba:  IURAN_PREMI_BA.map(r => ({ ...r })),
+  tht: IURAN_PREMI_THT.map(r => ({ ...r })),
+  skp: IURAN_PREMI_SKP.map(r => ({ ...r }))
+};
+const ipHitungState = {};
+IURAN_PREMI_PERIODE.forEach(([t, b]) => { ipHitungState[ipPeriodeKey(t, b)] = { versi: 1, waktu: `01/${rpPad(b)}/${t} 00.05` }; });
+
+/* ------------------------------------------------------------- filter bersama */
+function ipIsiFilter(p) {
+  $(`#ip-${p}-f-tahun`).innerHTML = `<option value="">Semua Tahun</option>` + IURAN_PREMI_TAHUN.map(t => `<option>${t}</option>`).join("");
+  $(`#ip-${p}-f-bulan`).innerHTML = `<option value="">Semua Bulan</option>` + BULAN_ID.map((n, i) => `<option value="${i + 1}">${n}</option>`).join("");
+}
+function ipFilter(p, rows) {
+  const t = $(`#ip-${p}-f-tahun`).value, b = $(`#ip-${p}-f-bulan`).value;
+  return rows.filter(r => (!t || r.tahun === +t) && (!b || r.bulan === +b));
+}
+const ipKosong = (kolom, teks) => `<tr><td colspan="${kolom}"><div class="empty"><h4>${teks || "Tidak ada data"}</h4><p>Ubah filter lalu tampilkan kembali.</p></div></td></tr>`;
+const ipPeriodeRows = () => IURAN_PREMI_PERIODE.map(([tahun, bulan]) => ({ tahun, bulan }));
+const ipUrut = rows => rows.sort((a, b) => b.tahun - a.tahun || b.bulan - a.bulan);
+
+/* ------------------------------------------------------------- 1. Daftar Premi */
+const ipDaftar = { aktif: null, tab: "jkk" };
+const IP_TAB = [
+  { k: "jkk", tab: "JKK", nama: "Jaminan Kecelakaan Kerja (JKK)", tarif: REKAP_PREMI_TARIF.jkk },
+  { k: "jkm", tab: "JKm", nama: "Jaminan Kematian (JKm)",         tarif: REKAP_PREMI_TARIF.jkm }
+];
+const ipTarifTeks = v => (v / 100).toLocaleString("id-ID", { minimumFractionDigits: 2 }) + "%";
+
+function ipDaftarView(view) {
+  $("#ip-daftar-list-view").style.display   = view === "list" ? "" : "none";
+  $("#ip-daftar-detail-view").style.display = view === "detail" ? "" : "none";
+  const awal = `<span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Iuran Premi</span><span>›</span>`;
+  $("#ip-daftar-crumb").innerHTML = view === "detail"
+    ? `${awal}<span>Daftar Premi JKK dan JKm</span><span>›</span><b>Detail</b>`
+    : `${awal}<b>Daftar Premi JKK dan JKm</b>`;
+  window.scrollTo({ top: 0, behavior: "instant" });
+}
+function ipRenderDaftar() {
+  const rows = ipFilter("daftar", ipPeriodeRows());
+  $("#ip-daftar-body").innerHTML = rows.length ? rows.map(r => `<tr>
+      <td class="t-strong">${r.tahun}, ${BULAN_ID[r.bulan - 1]}</td>
+      <td><button class="btn btn-info btn-sm" data-ip-detail="${r.tahun}-${r.bulan}">Detail</button></td></tr>`).join("") : ipKosong(2);
+  $("#ip-daftar-note").textContent = `${rows.length} periode ditampilkan`;
+}
+function ipRenderDetail() {
+  const [t, b] = ipDaftar.aktif, a = ipAgg(t, b), tab = IP_TAB.find(x => x.k === ipDaftar.tab);
+  const st = ipHitungState[ipPeriodeKey(t, b)];
+  $("#ip-daftar-d-head").innerHTML = `
+    <h3 class="card-title" style="margin:0 0 6px">Premi JKK dan JKm</h3>
+    <div style="font-size:12.5px;color:var(--body)">Periode: <b class="t-strong">${esc(ipLabel(t, b))}</b>
+      <span class="pill pill-ok" style="margin-left:8px">Terbentuk Otomatis</span></div>
+    <div style="font-size:11px;color:var(--muted);margin-top:4px">Versi perhitungan v${st.versi} · diperbarui ${esc(st.waktu)}</div>`;
+  $("#ip-daftar-metrics").innerHTML = [
+    ["Peserta Aktif", lapAngka(a.peserta)],
+    ["Total Gaji Pokok", ipRp(a.gapok)],
+    [`Total Premi ${tab.tab} (${ipTarifTeks(tab.tarif)})`, ipRp(a[tab.k])]
+  ].map(([l, v]) => `<div class="metric"><div class="metric-lbl">${esc(l)}</div><div class="metric-val navy">${esc(v)}</div></div>`).join("");
+  $("#ip-daftar-tabs").innerHTML = IP_TAB.map(x => `<button class="tab ${x.k === tab.k ? "active" : ""}" data-ip-tab="${x.k}">${x.tab}</button>`).join("");
+  $("#ip-daftar-judul").textContent = `PREMI ${tab.nama.toUpperCase()} — ${ipLabel(t, b).toUpperCase()}`;
+
+  const baris = rpBaris(t, b), grup = [];
+  baris.forEach(r => {
+    let g = grup.find(x => x.unor === r.unor && x.jenis === r.jenis);
+    if (!g) grup.push(g = { unor: r.unor, jenis: r.jenis, rows: [] });
+    g.rows.push(r);
+  });
+  const sel = x => `<td ${ipKanan}>${lapAngka(x.peserta)}</td><td ${ipKanan}>${lapAngka(x.gapok)}</td><td ${ipKanan}>${lapAngka(x[tab.k])}</td>`;
+  $("#ip-daftar-isi").innerHTML = `<div class="tbl-wrap"><table>
+    <thead><tr><th>Unit Organisasi</th><th>Jenis Peserta</th><th ${ipKanan}>Peserta Aktif</th><th ${ipKanan}>Gaji Pokok</th><th ${ipKanan}>Premi ${tab.tab}</th></tr></thead>
+    <tbody>${grup.map(g => `<tr><td class="t-strong">${esc(g.unor)}</td><td>${esc(g.jenis)}</td>${sel(rpAgg(g.rows))}</tr>`).join("")}
+      <tr style="background:var(--field)"><td colspan="2" class="t-strong" style="text-align:center">TOTAL</td>${sel(a).replace(/<td /g, '<td class="t-strong" ')}</tr>
+    </tbody></table></div>`;
+}
+
+/* ------------------------------------------------------------- 2. Perhitungan */
+function ipRenderHitung() {
+  const rows = ipFilter("hitung", ipPeriodeRows());
+  $("#ip-hitung-body").innerHTML = rows.length ? rows.map(r => {
+    const st = ipHitungState[ipPeriodeKey(r.tahun, r.bulan)];
+    return `<tr>
+      <td class="t-strong">${esc(ipLabel(r.tahun, r.bulan))}</td><td>${r.tahun}</td><td>${BULAN_ID[r.bulan - 1]}</td>
+      <td>${esc(st.waktu)} <span class="hint" style="display:inline;margin-left:4px">v${st.versi}</span></td>
+      <td><button class="btn btn-ghost btn-sm" data-ip-generate="${r.tahun}-${r.bulan}">↻ Generate Ulang</button></td></tr>`;
+  }).join("") : ipKosong(5);
+  $("#ip-hitung-note").textContent = `${rows.length} periode ditampilkan`;
+}
+/* Hasil tiap tahap disimulasikan dari jumlah peserta aktif periode itu. */
+function ipHasilGenerate(t, b) {
+  const a = ipAgg(t, b), n = a.peserta, per = f => lapAngka(Math.round(n * f));
+  return [
+    ["Peserta aktif YANDU NextGen", `${lapAngka(n)} peserta dihitung; ${per(0.031)} peserta berstatus non-aktif (pensiun, BUP, alih status, tewas, gugur, PTDH, hilang, PDH, mengundurkan diri, meninggal aktif, desersi) dikeluarkan.`, "ok"],
+    ["Validasi NIK — API Dukcapil", `${per(0.0012)} NIK tidak ditemukan atau tidak sesuai; perlu pemutakhiran data.`, "warn"],
+    ["Validasi status perkawinan — API Kemenag", `${per(0.0004)} peserta berbeda dengan data Kemenag; perlu pemutakhiran data.`, "warn"],
+    ["Pencocokan gaji pokok — API Kemenkeu", `${per(0.0021)} peserta selisih gaji pokok dengan data Kemenkeu.`, "warn"],
+    ["Perhitungan premi", `JKK ${ipRp(a.jkk)} dan JKm ${ipRp(a.jkm)} dari total gaji pokok ${ipRp(a.gapok)}.`, "ok"]
+  ];
+}
+function ipGenerate(t, b) {
+  const st = ipHitungState[ipPeriodeKey(t, b)];
+  st.versi++; st.waktu = rpWaktu();
+  ipRenderHitung();
+  $("#modal-title").textContent = "Hasil Generate Ulang";
+  $("#modal-sub").textContent = `${ipLabel(t, b)} · versi v${st.versi}`;
+  $("#modal-ico").style.display = "";
+  $("#modal-ico").textContent = "✓";
+  $("#modal-body").innerHTML = `
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Tahap</th><th>Hasil</th></tr></thead>
+      <tbody>${ipHasilGenerate(t, b).map(([n, h, tone]) => `<tr><td class="t-strong">${esc(n)}</td><td><span class="pill pill-${tone}" style="margin-right:6px">${tone === "ok" ? "Selesai" : "Perlu Tindak Lanjut"}</span>${esc(h)}</td></tr>`).join("")}</tbody>
+    </table></div>
+    <div class="hint" style="margin:10px 0 14px"><span>ⓘ</span> Data yang belum sesuai diperbaiki lewat Peremajaan Data, lalu Generate Ulang kembali.</div>
+    <div class="form-actions" style="justify-content:flex-end"><button class="btn btn-primary" id="ip-hasil-tutup">Tutup</button></div>`;
+  openModal();
+  $("#ip-hasil-tutup").onclick = closeModal;
+}
+
+/* ------------------------------------------------------------- 3-5. Daftar unggahan */
+function ipUnduhBtn(berkas) { return `<button class="btn btn-info btn-sm" data-ip-unduh="${esc(berkas)}">⤓ Unduh</button>`; }
+function ipRenderBa() {
+  const rows = ipFilter("ba", ipData.ba);
+  $("#ip-ba-body").innerHTML = rows.length ? rows.map(r => {
+    const real = ipAgg(r.tahun, r.bulan), cair = r.pencairan != null ? r.pencairan : Math.round(real.total * r.faktor);
+    const sel = cair - real.total;
+    return `<tr>
+      <td class="t-strong">${esc(ipLabel(r.tahun, r.bulan))}</td><td>${esc(r.nomorBa)}</td>
+      <td ${ipKanan}>${ipRp(cair)}</td>
+      <td ${ipKanan}>${ipRp(real.total)}<div class="hint" style="margin:0">${lapAngka(real.peserta)} peserta aktif</div></td>
+      <td ${ipKanan}>${sel === 0 ? "-" : (sel > 0 ? "+" : "−") + ipRp(Math.abs(sel))}</td>
+      <td><span class="pill ${sel === 0 ? "pill-ok" : "pill-warn"}">${sel === 0 ? "Sesuai" : "Ada Selisih"}</span></td>
+      <td>${ipUnduhBtn(r.berkas)}</td></tr>`;
+  }).join("") : ipKosong(7, "Belum ada BA Rekonsiliasi");
+  $("#ip-ba-note").textContent = `${rows.length} BA Rekonsiliasi ditampilkan`;
+}
+function ipRenderBerkas(p) {
+  const rows = ipFilter(p, ipData[p]);
+  $(`#ip-${p}-body`).innerHTML = rows.length ? rows.map(r => `<tr>
+      <td class="t-strong">${esc(ipLabel(r.tahun, r.bulan))}</td><td>${r.tahun}</td><td>${BULAN_ID[r.bulan - 1]}</td>
+      <td>${esc(r.berkas)}</td><td>${esc(r.diunggah)}</td><td>${ipUnduhBtn(r.berkas)}</td></tr>`).join("")
+    : ipKosong(6, "Belum ada berkas");
+  $(`#ip-${p}-note`).textContent = `${rows.length} periode ditampilkan`;
+}
+const ipRenderBerkasAtauBa = p => (p === "ba" ? ipRenderBa() : ipRenderBerkas(p));
+
+/* ------------------------------------------------------------- unggah (modal) */
+const IP_UNGGAH = {
+  ba:  { judul: "Unggah Rekonsiliasi",                   berkas: "BA Rekonsiliasi.pdf",              format: "Format .pdf, maksimal 10 MB" },
+  tht: { judul: "Unggah Penerimaan Premi THT dan AIP",   berkas: "BNBA THT AIP.xlsx",                format: "Format .xlsx (unduhan DIGIT Kemenkeu), maksimal 10 MB" },
+  skp: { judul: "Unggah SKP PFK",                        berkas: "SKP PFK.xlsx",                     format: "Format .xlsx (unduhan DIGIT Kemenkeu), maksimal 10 MB" }
+};
+function ipBukaUnggah(p) {
+  const c = IP_UNGGAH[p], terisi = new Set(ipData[p].map(r => ipPeriodeKey(r.tahun, r.bulan)));
+  const usul = ipPeriodeRows().find(r => !terisi.has(ipPeriodeKey(r.tahun, r.bulan))) || ipPeriodeRows()[0];
+  let file = false;
+  $("#modal-title").textContent = c.judul;
+  $("#modal-sub").textContent = "";
+  $("#modal-ico").style.display = "none";
+  $("#modal-body").innerHTML = `
+    <div class="grid2">
+      <div class="field"><label class="fl" for="ip-u-tahun">Tahun <span class="req">*</span></label>
+        <select class="inp" id="ip-u-tahun">${IURAN_PREMI_TAHUN.map(t => `<option ${t === usul.tahun ? "selected" : ""}>${t}</option>`).join("")}</select></div>
+      <div class="field"><label class="fl" for="ip-u-bulan">Bulan <span class="req">*</span></label>
+        <select class="inp" id="ip-u-bulan">${BULAN_ID.map((n, i) => `<option value="${i + 1}" ${i + 1 === usul.bulan ? "selected" : ""}>${n}</option>`).join("")}</select></div>
+    </div>
+    ${p === "ba" ? `<div class="grid2">
+      <div class="field"><label class="fl" for="ip-u-nomor">Nomor BA <span class="req">*</span></label><input class="inp" id="ip-u-nomor" placeholder="BA/REK/…/2026"></div>
+      <div class="field"><label class="fl" for="ip-u-tgl">Tanggal BA <span class="req">*</span></label><input class="inp" type="date" id="ip-u-tgl"></div>
+      <div class="field span2"><label class="fl" for="ip-u-cair">Pencairan Iuran (Rp) <span class="req">*</span></label>
+        <input class="inp money" id="ip-u-cair" inputmode="numeric" placeholder="0">
+        <div class="hint">Dibandingkan dengan realisasi kepesertaan hasil perhitungan sistem pada periode yang dipilih.</div></div>
+    </div>` : ""}
+    <div class="dropzone" id="ip-u-drop" style="margin-bottom:6px">
+      <div style="font-size:26px;color:var(--slate);margin-bottom:10px">☁⬆</div>
+      <div style="font-weight:600;margin-bottom:4px" id="ip-u-file">Tarik file ke sini atau klik untuk memilih</div>
+      <div class="hint" style="margin:0">${esc(c.format)}</div>
+    </div>
+    <div class="hint" id="ip-u-info" style="margin:0 0 14px"></div>
+    <div class="form-actions" style="justify-content:flex-end">
+      <button class="btn btn-ghost" id="ip-u-batal">Batal</button>
+      <button class="btn btn-primary" id="ip-u-simpan">Simpan</button>
+    </div>`;
+  openModal();
+  const info = () => {
+    const t = +$("#ip-u-tahun").value, b = +$("#ip-u-bulan").value;
+    $("#ip-u-info").innerHTML = terisi.has(ipPeriodeKey(t, b)) ? `<span>⚠</span> Periode ${esc(ipLabel(t, b))} sudah ada; berkas lama akan diganti.` : "";
+  };
+  $("#ip-u-tahun").onchange = $("#ip-u-bulan").onchange = info; info();
+  if (p === "ba") $("#ip-u-cair").oninput = e => { const n = parseNum(e.target.value); e.target.value = n ? lapAngka(n) : ""; };
+  $("#ip-u-drop").onclick = () => {
+    file = true;
+    $("#ip-u-drop").classList.add("has-file");
+    $("#ip-u-file").textContent = c.berkas;
+  };
+  $("#ip-u-batal").onclick = closeModal;
+  $("#ip-u-simpan").onclick = () => {
+    const t = +$("#ip-u-tahun").value, b = +$("#ip-u-bulan").value;
+    if (!file) return toast("Pilih berkas yang akan diunggah.", "bad");
+    const baru = { tahun: t, bulan: b, berkas: c.berkas.replace(/(\.\w+)$/, ` ${t}-${rpPad(b)}$1`), diunggah: rpWaktu() };
+    if (p === "ba") {
+      const nomor = $("#ip-u-nomor").value.trim(), tgl = $("#ip-u-tgl").value, cair = parseNum($("#ip-u-cair").value);
+      if (!nomor || !tgl || !cair) return toast("Lengkapi Nomor BA, Tanggal BA, dan Pencairan Iuran.", "bad");
+      Object.assign(baru, { nomorBa: nomor, tglBa: tgl, pencairan: cair });
+    }
+    const idx = ipData[p].findIndex(r => r.tahun === t && r.bulan === b);
+    if (idx >= 0) ipData[p][idx] = baru; else ipData[p].push(baru);
+    ipUrut(ipData[p]);
+    closeModal();
+    ipRenderBerkasAtauBa(p);
+    toast(`${c.judul.replace("Unggah ", "")} periode ${ipLabel(t, b)} ${idx >= 0 ? "diperbarui" : "tersimpan"}.`, "ok");
+  };
+}
+
+/* ------------------------------------------------------------- pengikatan */
+document.addEventListener("click", e => {
+  const det = e.target.closest("[data-ip-detail]");
+  if (det) { ipDaftar.aktif = det.dataset.ipDetail.split("-").map(Number); ipDaftar.tab = "jkk"; ipRenderDetail(); ipDaftarView("detail"); return; }
+  const tab = e.target.closest("[data-ip-tab]");
+  if (tab) { ipDaftar.tab = tab.dataset.ipTab; ipRenderDetail(); return; }
+  const gen = e.target.closest("[data-ip-generate]");
+  if (gen) {
+    const [t, b] = gen.dataset.ipGenerate.split("-").map(Number);
+    confirmModal(`Peserta aktif periode ${ipLabel(t, b)} akan ditarik ulang dari YANDU NextGen, divalidasi ke Dukcapil, Kemenag, dan Kemenkeu, lalu premi JKK dan JKm dihitung ulang. Lanjutkan?`,
+      () => ipGenerate(t, b), { title: "Generate Ulang Perhitungan Premi", icon: "↻", okLabel: "Generate Ulang", okClass: "btn-primary" });
+    return;
+  }
+  const unduh = e.target.closest("[data-ip-unduh]");
+  if (unduh) toast(`${unduh.dataset.ipUnduh} diunduh.`);
+});
+["daftar", "hitung", "ba", "tht", "skp"].forEach(p => {
+  ipIsiFilter(p);
+  const render = { daftar: ipRenderDaftar, hitung: ipRenderHitung, ba: ipRenderBa, tht: () => ipRenderBerkas("tht"), skp: () => ipRenderBerkas("skp") }[p];
+  $(`#ip-${p}-btn-cari`).onclick = render;
+  $(`#ip-${p}-btn-reset`).onclick = () => { $(`#ip-${p}-f-tahun`).value = ""; $(`#ip-${p}-f-bulan`).value = ""; render(); };
+  render();
+});
+["ba", "tht", "skp"].forEach(p => { $(`#ip-${p}-btn-unggah`).onclick = () => ipBukaUnggah(p); });
+$("#ip-daftar-btn-kembali").onclick = () => ipDaftarView("list");
+$("#ip-daftar-btn-export").onclick = () => toast("Daftar premi diekspor.");
+ipDaftarView("list");

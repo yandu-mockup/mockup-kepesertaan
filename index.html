@@ -39,6 +39,17 @@
 
     <button class="nav-item" data-go="iuran-premi">Pengelolaan Iuran Premi THT, JKK, dan JKm</button>
 
+    <button class="nav-item nav-parent" id="nav-iuran-premi-modul" aria-expanded="true">
+      <span>Iuran Premi</span><span class="chevron">⌄</span>
+    </button>
+    <div class="nav-children" id="nav-iuran-premi-modul-children">
+      <button class="nav-item nav-child" data-go="ip-daftar">Daftar Premi JKK dan JKm</button>
+      <button class="nav-item nav-child" data-go="ip-hitung">Perhitungan Premi JKK dan JKm</button>
+      <button class="nav-item nav-child" data-go="ip-ba">BA Rekonsiliasi</button>
+      <button class="nav-item nav-child" data-go="ip-tht">Penerimaan Premi THT dan AIP</button>
+      <button class="nav-item nav-child" data-go="ip-skp">SKP PFK</button>
+    </div>
+
     <button class="nav-item nav-parent" id="nav-klaim-bum" aria-expanded="true">
       <span>Pengelolaan Klaim KPR (BUM)</span><span class="chevron">⌄</span>
     </button>
@@ -5670,6 +5681,204 @@
             </table>
           </div>
           <div class="tbl-note" id="lap-kpa-cabang-note"></div>
+        </div>
+      </section>
+
+      <!-- ============ IURAN PREMI: DAFTAR PREMI JKK DAN JKm ============ -->
+      <section class="screen" id="s-ip-daftar">
+        <div class="crumb" id="ip-daftar-crumb"></div>
+
+        <div id="ip-daftar-list-view">
+          <div class="page-head">
+            <div>
+              <h1 class="page-title">Daftar Premi JKK dan JKm</h1>
+              <div class="page-sub">Premi dibentuk otomatis oleh sistem dari peserta berstatus aktif pada database YANDU NextGen.</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">Filter</h3>
+            <div class="grid3">
+              <div class="field" style="margin-bottom:0"><label class="fl caps" for="ip-daftar-f-tahun">Tahun</label><select class="inp" id="ip-daftar-f-tahun"></select></div>
+              <div class="field" style="margin-bottom:0"><label class="fl caps" for="ip-daftar-f-bulan">Bulan</label><select class="inp" id="ip-daftar-f-bulan"></select></div>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-ghost" id="ip-daftar-btn-reset">↺ Reset</button>
+              <button class="btn btn-primary" id="ip-daftar-btn-cari">⌕ Tampilkan</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">Daftar Premi</h3>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>Periode</th><th>Aksi</th></tr></thead>
+                <tbody id="ip-daftar-body"></tbody>
+              </table>
+            </div>
+            <div class="tbl-note" id="ip-daftar-note"></div>
+          </div>
+        </div>
+
+        <div id="ip-daftar-detail-view" style="display:none">
+          <div class="page-head">
+            <div style="display:flex;align-items:center;gap:16px">
+              <button class="btn btn-ghost" id="ip-daftar-btn-kembali">← Kembali</button>
+              <div>
+                <h1 class="page-title">Detail Premi JKK dan JKm</h1>
+                <div class="page-sub">Rincian premi per Unit Organisasi dan jenis peserta. Hanya peserta berstatus aktif yang dihitung.</div>
+              </div>
+            </div>
+            <button class="btn btn-ghost" id="ip-daftar-btn-export">⤓ Export</button>
+          </div>
+          <div class="card" id="ip-daftar-d-head"></div>
+          <div class="metrics m3" id="ip-daftar-metrics"></div>
+          <div class="card">
+            <div class="tabs" id="ip-daftar-tabs"></div>
+            <h3 class="card-title" id="ip-daftar-judul"></h3>
+            <div id="ip-daftar-isi"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ IURAN PREMI: PERHITUNGAN PREMI JKK DAN JKm ============ -->
+      <section class="screen" id="s-ip-hitung">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Iuran Premi</span><span>›</span><b>Perhitungan Premi JKK dan JKm</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Perhitungan Premi JKK dan JKm</h1>
+            <div class="page-sub">Perhitungan berjalan otomatis setiap awal bulan. Gunakan Generate Ulang bila data peserta berubah.</div>
+          </div>
+        </div>
+
+        <div class="alert alert-info"><span>ⓘ</span><span>Sumber data: <b>YANDU NextGen</b> (peserta berstatus aktif; status pensiun, BUP, alih status, tewas, gugur, PTDH, hilang, PDH, mengundurkan diri, meninggal aktif, dan desersi tidak dihitung), divalidasi lewat API <b>Dukcapil</b> (NIK), <b>Kemenag</b> (status perkawinan), dan <b>Kemenkeu</b> (gaji pokok).</span></div>
+
+        <div class="card">
+          <h3 class="card-title">Filter</h3>
+          <div class="grid3">
+            <div class="field" style="margin-bottom:0"><label class="fl caps" for="ip-hitung-f-tahun">Tahun</label><select class="inp" id="ip-hitung-f-tahun"></select></div>
+            <div class="field" style="margin-bottom:0"><label class="fl caps" for="ip-hitung-f-bulan">Bulan</label><select class="inp" id="ip-hitung-f-bulan"></select></div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-ghost" id="ip-hitung-btn-reset">↺ Reset</button>
+            <button class="btn btn-primary" id="ip-hitung-btn-cari">⌕ Tampilkan</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">Daftar Perhitungan Premi</h3>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Periode</th><th>Tahun</th><th>Bulan</th><th>Terakhir Digenerate</th><th>Aksi</th></tr></thead>
+              <tbody id="ip-hitung-body"></tbody>
+            </table>
+          </div>
+          <div class="tbl-note" id="ip-hitung-note"></div>
+        </div>
+      </section>
+
+      <!-- ============ IURAN PREMI: BA REKONSILIASI ============ -->
+      <section class="screen" id="s-ip-ba">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Iuran Premi</span><span>›</span><b>BA Rekonsiliasi</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">BA Rekonsiliasi</h1>
+            <div class="page-sub">Pencocokan pencairan iuran dengan realisasi kepesertaan hasil perhitungan sistem, berdasarkan BA yang diunggah.</div>
+          </div>
+          <button class="btn btn-primary" id="ip-ba-btn-unggah">⬆ Unggah Rekonsiliasi</button>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">Filter</h3>
+          <div class="grid3">
+            <div class="field" style="margin-bottom:0"><label class="fl caps" for="ip-ba-f-tahun">Tahun</label><select class="inp" id="ip-ba-f-tahun"></select></div>
+            <div class="field" style="margin-bottom:0"><label class="fl caps" for="ip-ba-f-bulan">Bulan</label><select class="inp" id="ip-ba-f-bulan"></select></div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-ghost" id="ip-ba-btn-reset">↺ Reset</button>
+            <button class="btn btn-primary" id="ip-ba-btn-cari">⌕ Tampilkan</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">Pencairan Iuran vs Realisasi Kepesertaan</h3>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Periode</th><th>Nomor BA</th><th style="text-align:right">Pencairan Iuran</th><th style="text-align:right">Realisasi Kepesertaan</th><th style="text-align:right">Selisih</th><th>Status</th><th>Berkas BA</th></tr></thead>
+              <tbody id="ip-ba-body"></tbody>
+            </table>
+          </div>
+          <div class="tbl-note" id="ip-ba-note"></div>
+        </div>
+      </section>
+
+      <!-- ============ IURAN PREMI: PENERIMAAN PREMI THT DAN AIP ============ -->
+      <section class="screen" id="s-ip-tht">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Iuran Premi</span><span>›</span><b>Penerimaan Premi THT dan AIP</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Penerimaan Premi THT dan AIP</h1>
+            <div class="page-sub">Berkas BNBA THT dan AIP hasil unduhan aplikasi DIGIT Kemenkeu, diunggah per periode.</div>
+          </div>
+          <button class="btn btn-primary" id="ip-tht-btn-unggah">⬆ Unggah Penerimaan Premi THT dan AIP</button>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">Filter</h3>
+          <div class="grid3">
+            <div class="field" style="margin-bottom:0"><label class="fl caps" for="ip-tht-f-tahun">Tahun</label><select class="inp" id="ip-tht-f-tahun"></select></div>
+            <div class="field" style="margin-bottom:0"><label class="fl caps" for="ip-tht-f-bulan">Bulan</label><select class="inp" id="ip-tht-f-bulan"></select></div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-ghost" id="ip-tht-btn-reset">↺ Reset</button>
+            <button class="btn btn-primary" id="ip-tht-btn-cari">⌕ Tampilkan</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">Daftar Penerimaan Premi THT dan AIP</h3>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Periode</th><th>Tahun</th><th>Bulan</th><th>Berkas</th><th>Diunggah</th><th>Aksi</th></tr></thead>
+              <tbody id="ip-tht-body"></tbody>
+            </table>
+          </div>
+          <div class="tbl-note" id="ip-tht-note"></div>
+        </div>
+      </section>
+
+      <!-- ============ IURAN PREMI: SKP PFK ============ -->
+      <section class="screen" id="s-ip-skp">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Iuran Premi</span><span>›</span><b>SKP PFK</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">SKP PFK</h1>
+            <div class="page-sub">Berkas SKP PFK hasil unduhan aplikasi DIGIT Kemenkeu, diunggah per periode.</div>
+          </div>
+          <button class="btn btn-primary" id="ip-skp-btn-unggah">⬆ Unggah SKP PFK</button>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">Filter</h3>
+          <div class="grid3">
+            <div class="field" style="margin-bottom:0"><label class="fl caps" for="ip-skp-f-tahun">Tahun</label><select class="inp" id="ip-skp-f-tahun"></select></div>
+            <div class="field" style="margin-bottom:0"><label class="fl caps" for="ip-skp-f-bulan">Bulan</label><select class="inp" id="ip-skp-f-bulan"></select></div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-ghost" id="ip-skp-btn-reset">↺ Reset</button>
+            <button class="btn btn-primary" id="ip-skp-btn-cari">⌕ Tampilkan</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">Daftar SKP PFK</h3>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Periode</th><th>Tahun</th><th>Bulan</th><th>Berkas</th><th>Diunggah</th><th>Aksi</th></tr></thead>
+              <tbody id="ip-skp-body"></tbody>
+            </table>
+          </div>
+          <div class="tbl-note" id="ip-skp-note"></div>
         </div>
       </section>
 
