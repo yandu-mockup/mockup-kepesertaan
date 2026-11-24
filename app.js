@@ -15072,7 +15072,7 @@ function ipRenderHitung() {
     const st = ipHitungState[ipPeriodeKey(r.tahun, r.bulan)];
     return `<tr>
       <td class="t-strong">${esc(ipLabel(r.tahun, r.bulan))}</td><td>${r.tahun}</td><td>${BULAN_ID[r.bulan - 1]}</td>
-      <td>${esc(st.waktu)} <span class="hint" style="display:inline;margin-left:4px">v${st.versi}</span></td>
+      <td>${esc(st.waktu)}</td>
       <td><button class="btn btn-ghost btn-sm" data-ip-generate="${r.tahun}-${r.bulan}">↻ Generate Ulang</button></td></tr>`;
   }).join("") : ipKosong(5);
   $("#ip-hitung-note").textContent = `${rows.length} periode ditampilkan`;
